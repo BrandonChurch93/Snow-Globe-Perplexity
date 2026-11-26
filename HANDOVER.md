@@ -282,3 +282,182 @@ On `main` 27e83641 (the caller lines in; 06:35 to 06:50 UTC). `/root` asked for 
 ## Pictures on this branch
 
 See `captions.txt`.
+
+## Appendix: the two scratch tools behind the measures on `main` 27e83641
+
+Neither is committed anywhere else. They are here so the measures can be made again on a later `main`.
+
+The walk of the app's own session (`tests/zz-live.test.ts`, run with `npx vitest run tests/zz-live.test.ts`; it prints
+one line a screen and asserts nothing):
+
+```ts
+// Scratch, never committed: the app's own session and the app's own call of the camera, frame by frame at 60 a second.
+import { it } from 'vitest'
+import { config } from '../src/config'
+import { FRAME, liveRig, roomUnder } from '../src/app/framing'
+import { LiveSession, type LiveSim } from '../src/app/session'
+import { poseOfRig, reachOf, type Rig } from '../src/film/moves'
+import { beatSeconds, type Timeline } from '../src/film/timeline'
+import type { GlobePose } from '../src/shake/table'
+
+const RAD = Math.PI / 180
+class FakeSim implements LiveSim {
+  step = 0
+  advanceTo(step: number, _tl: Timeline): void {
+    this.step = Math.max(this.step, step)
+  }
+  reset(): void {
+    this.step = 0
+  }
+}
+const cover = (rig: Rig, g: GlobePose): { side: number; glassSide: number; top: number; foot: number; heap: number } => {
+  const r = reachOf(poseOfRig(rig), g)
+  const p = rig.pitchDeg * RAD
+  const k = Math.tan((rig.fovDeg * RAD) / 2)
+  let side = r.side
+  for (const end of [-FRAME.baseReachMm, FRAME.baseReachMm]) {
+    for (const up of [0, config.globe.baseHeightMm]) {
+      const ax = end * Math.cos(g.tiltZ) - up * Math.sin(g.tiltZ)
+      const ay = end * Math.sin(g.tiltZ) + up * Math.cos(g.tiltZ)
+      const y = ay * Math.cos(g.tiltX) + g.y - rig.aimHeightMm
+      const z = ay * Math.sin(g.tiltX) + g.z
+      side = Math.max(side, Math.abs(ax + g.x) / (rig.distanceMm - y * Math.sin(p) - z * Math.cos(p)) / k)
+    }
+  }
+  const reachMm = config.globe.baseDiameterMm / 2 + FRAME.heapMm
+  const heap = (rig.aimHeightMm * Math.cos(p) + reachMm * Math.sin(p)) / (rig.distanceMm + rig.aimHeightMm * Math.sin(p) - reachMm * Math.cos(p)) / k
+  return { side, glassSide: r.side, top: r.top, foot: r.foot, heap }
+}
+
+it('prints the worst margins of eight shakes of one session, as the app calls the camera', () => {
+  const screens: [string, number, number, (number | null)[]][] = [
+    ['phone 390 x 844', 390, 844, [null, 154]],
+    ['tablet 1024 x 1366', 1024, 1366, [null, Math.round(0.152 * 1366)]],
+    ['hd 1920 x 1080', 1920, 1080, [null, Math.round(0.152 * 1080)]],
+  ]
+  for (const [name, w, h, bars] of screens) {
+    const a = w / h
+    for (const controls of bars) {
+      const under = roomUnder(h, controls, w)
+      const low = -1 + 2 * under
+      const s = new LiveSession(new FakeSim(), config.seasons[0]!)
+      const worst = { side: Infinity, sideAt: '', top: Infinity, topAt: '', foot: Infinity, footAt: '', glass: Infinity, barSide: Infinity, barSideAt: '', barTop: Infinity, barTopAt: '', barGlass: Infinity, barGlassAt: '' }
+      let far = 0
+      let near = Infinity
+      let frames = 0
+      for (let n = 0; n < FRAME.shakePaths; n++) {
+        const asked = s.shake()
+        if (asked === null) throw new Error(`shake ${n} refused`)
+        let f = 0
+        let after = 0
+        while (after < Math.round((FRAME.homeBars * config.film.beatsPerBar * beatSeconds + 0.5) * 60)) {
+          s.tick(1 / 60)
+          f++
+          frames++
+          if (!s.busy) after++
+          const m = s.moment(1, 1)
+          const rig = liveRig(a, 0, 0, under, m)
+          const c = cover(rig, m.globe)
+          far = Math.max(far, rig.distanceMm)
+          near = Math.min(near, rig.distanceMm)
+          const side = ((a - c.side) * h) / 2
+          const top = ((1 - c.top) * h) / 2
+          const foot = ((-Math.max(c.foot, c.heap) - low) * h) / 2
+          const at = `shake ${n + 1} frame ${f}${m.beat === null ? ' (after the landing)' : ` (beat ${m.beat.toFixed(2)})`}`
+          if (side < worst.side) (worst.side = side), (worst.sideAt = at)
+          if (top < worst.top) (worst.top = top), (worst.topAt = at)
+          if (foot < worst.foot) (worst.foot = foot), (worst.footAt = at)
+          worst.glass = Math.min(worst.glass, ((a - c.glassSide) * h) / 2)
+          if (m.beat !== null) {
+            if (side < worst.barSide) (worst.barSide = side), (worst.barSideAt = at)
+            if (top < worst.barTop) (worst.barTop = top), (worst.barTopAt = at)
+            const gl = ((a - c.glassSide) * h) / 2
+            if (gl < worst.barGlass) (worst.barGlass = gl), (worst.barGlassAt = at)
+          }
+        }
+      }
+      console.log(
+        `LIVE ${name}, controls ${controls ?? 'estimated'}: ${frames} frames of 8 shakes; camera ${near.toFixed(0)} to ${far.toFixed(0)} mm; ` +
+          `least to a side ${worst.side.toFixed(1)} px at ${worst.sideAt} (glass alone ${worst.glass.toFixed(1)} px); ` +
+          `least under the top edge ${worst.top.toFixed(1)} px at ${worst.topAt}; least over the line of the controls ${worst.foot.toFixed(1)} px at ${worst.footAt}; ` +
+          `margin asked ${(FRAME.edgeShare * w).toFixed(1)} px sides, ${(FRAME.edgeShare * h).toFixed(1)} px top; IN THE BAR: side ${worst.barSide.toFixed(1)} px at ${worst.barSideAt}, glass ${worst.barGlass.toFixed(1)} px at ${worst.barGlassAt}, top ${worst.barTop.toFixed(1)} px at ${worst.barTopAt}`,
+      )
+    }
+  }
+})
+```
+
+The page script that reads every frame the live app draws (`tools/zz-live2.mjs`; build, `npx vite preview --port 4173
+--host 127.0.0.1 --strictPort`, then `node tools/zz-live2.mjs 250 26`; frames and a log go to `/tmp/live4`). The tap
+lands late on a slow renderer, so the frames of the shake are the ones the log marks `control disabled true`:
+
+```js
+// Scratch, never committed: one shake in the live app on a phone-sized touch screen; every frame the app draws is kept,
+// read off the canvas in the same task as the app's own frame.
+import fs from 'node:fs'
+import { launch, watchPage } from './lib/browser.mjs'
+const out = '/tmp/live4'
+const seconds = Number(process.argv[2] ?? 240)
+const most = Number(process.argv[3] ?? 26)
+fs.rmSync(out, { recursive: true, force: true })
+fs.mkdirSync(out, { recursive: true })
+const t0 = Date.now()
+const log = (s) => fs.appendFileSync(out + '/log.txt', `${((Date.now() - t0) / 1000).toFixed(1)} ${s}\n`)
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+const browser = await launch()
+const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, hasTouch: true, isMobile: true })
+const page = await context.newPage()
+const errors = watchPage(page)
+await page.addInitScript(() => {
+  const raf = window.requestAnimationFrame.bind(window)
+  window.__shots = []
+  window.__grab = false
+  window.__pressed = null
+  window.requestAnimationFrame = (cb) =>
+    raf((t) => {
+      cb(t)
+      if (!window.__grab) return
+      try {
+        const c = document.querySelector('canvas')
+        const b = document.querySelector('#ui [data-control="shake"]')
+        if (c) window.__shots.push({ at: performance.now(), pressed: window.__pressed, disabled: b?.getAttribute('aria-disabled') ?? null, w: c.width, h: c.height, url: c.toDataURL('image/jpeg', 0.92) })
+      } catch (e) {
+        window.__shots.push({ at: performance.now(), error: String(e) })
+      }
+    })
+})
+await page.goto('http://127.0.0.1:4173/?quality=low', { waitUntil: 'domcontentloaded' })
+await page.waitForFunction(() => document.querySelector('[data-interface="shown"]') !== null, null, { timeout: 300000 })
+log('controls shown')
+await page.evaluate(() => {
+  window.__grab = true
+})
+await sleep(1500)
+fs.writeFileSync(`${out}/page-rest.png`, await page.screenshot({ type: 'png' }))
+const before = await page.evaluate(() => window.__shots.length)
+log(`rest pictures ${before}`)
+await page.evaluate(() => {
+  window.__pressed = performance.now()
+})
+await page.locator('#ui [data-control="shake"]').tap({ timeout: 120000 }).catch(async () => page.locator('#ui [data-control="shake"]').click({ timeout: 120000 }))
+log('pressed shake')
+const until = Date.now() + seconds * 1000
+let saved = 0
+const dump = async () => {
+  const shots = await page.evaluate((from) => window.__shots.slice(from).map((s) => s), saved)
+  for (const s of shots) {
+    const name = `f${String(saved).padStart(3, '0')}`
+    if (s.url) fs.writeFileSync(`${out}/${name}.jpg`, Buffer.from(s.url.split(',')[1], 'base64'))
+    log(`${name} at ${(s.at / 1000).toFixed(2)} s of the page, ${s.pressed === null ? 'before the press' : `${((s.at - s.pressed) / 1000).toFixed(2)} s after the press`}, control disabled ${s.disabled}, canvas ${s.w} x ${s.h}${s.error ? ` ERROR ${s.error}` : ''}`)
+    saved++
+  }
+}
+while (Date.now() < until && saved < before + most) {
+  await sleep(1500)
+  await dump()
+}
+fs.writeFileSync(`${out}/page-end.png`, await page.screenshot({ type: 'png' }))
+log(`done, page errors ${JSON.stringify(errors)}`)
+await browser.close()
+```
+
