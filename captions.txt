@@ -65,3 +65,9 @@ After. Second change, spring to summer: film frames 1393 to 1398, whole frames s
 
 20-swap2-foot-1393-1398-review.jpg
 After. The foot of the glass in the same six frames at their own pixels, two to a row: 1393 and 1394, 1395 and 1396, 1397 and 1398, cut as in picture 18. Format hd, tier review, commit bbe4db9b. 1395 and 1396 hold the same outline. Summer's collar comes in with the base's pass: its dark top covers a thin strip of the lit foot grain by grain, and its lit arc under that strip is faint in 1396, plainer in 1397 and plain in 1398, so it does not come in in one frame.
+
+21-swap3-2113-2118-review.jpg
+After. Third change, summer to fall: film frames 2113 to 2118, whole frames set down to 398 by 224, three to a row from the top left. Format hd, tier review, commit bbe4db9b. The glass is a lit globe with its halo in all six.
+
+22-swap3-foot-2113-2118-review.jpg
+After. The foot of the glass in the same six frames at their own pixels, two to a row: 2113 and 2114, 2115 and 2116, 2117 and 2118, cut as in picture 18. Format hd, tier review, commit bbe4db9b. Fall's base stands lower than summer's collar, so a strip of the lit foot about 30 to 40 px high comes into sight grain by grain, a little more each frame, and summer's lit arc goes out with it: plain in 2113 and 2114, fainter in 2115, nearly gone in 2116, gone in 2117. 2115 and 2116 hold the same outline. This is the widest strip of grain of the four changes seen so far.
