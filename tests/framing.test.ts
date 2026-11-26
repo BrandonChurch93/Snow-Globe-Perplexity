@@ -268,8 +268,9 @@ describe('the framing of the app through a shake', () => {
       const under = roomUnder(h, null, w)
       const rest = liveRig(a, 0, 0, under)
       const far = liveRig(a, 0, 0, under, through)
-      for (const k of ['fovDeg', 'yawDeg', 'pitchDeg', 'aimHeightMm', 'apertureMm', 'focusShiftMm'] as const) expect(far[k], `${name} ${k}`).toBe(rest[k])
+      for (const k of ['fovDeg', 'yawDeg', 'pitchDeg', 'apertureMm', 'focusShiftMm'] as const) expect(far[k], `${name} ${k}`).toBe(rest[k])
       expect(far.distanceMm, name).toBeGreaterThanOrEqual(rest.distanceMm)
+      expect(far.aimHeightMm, name).toBeGreaterThanOrEqual(rest.aimHeightMm)
       let side = 0
       for (let n = 0; n < FRAME.shakePaths; n++) for (let b = 0; b <= bar; b += FRAME.pathStepBeats / 4) side = Math.max(side, cover(far, livePath(n).poseAt(b)).side)
       if (a >= 16 / 10) expect(far.distanceMm, name).toBe(rest.distanceMm)
@@ -353,7 +354,7 @@ describe('the framing of the app through a shake', () => {
     expect(was).toBeCloseTo(liveRig(a, 0, 0, under).distanceMm, 6)
   })
 
-  it('is still the wide camera of the film, moved back along its own axis, while it stands back', () => {
+  it('is still the wide camera of the film in its pitch, its turn and its lens while it stands back, never nearer than the film stands', () => {
     const hero = rigOf('hero')
     for (const [name, w, h] of screens) {
       for (const back of [0.2, 0.5, 1]) {
