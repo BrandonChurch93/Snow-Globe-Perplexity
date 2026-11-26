@@ -27,3 +27,21 @@ page's own, and the pictures with the globe are the live app at `?quality=low` o
   Shows: the dimmed bar at 400 px wide over winter, spring, summer and fall, top to bottom (fault 3, item 221 b). Phone
   layout, the live app at quality low. Left column, BEFORE: the floor at 36 percent. Right column, AFTER (0913be14): the
   floor at 60 percent. Tier: none.
+
+THE WALK of main bcad846f (second job, looking only). Pictures under `walk/`: the page as a visitor has it, the live app
+at `?quality=low` drawn by the tools' software renderer (lavapipe), the page's own controls drawn on the processor. No
+source file was changed for them: none is the before or the after of a mend. Tier: none (the live app at quality low).
+
+walk/phone-1-rest.jpg
+  Shows: phone 390 x 844, touch, at rest in winter with the controls, after the one hint. State: winter lit, not busy,
+  the bar awake (not dimmed), no sound control (there are no sound files on this machine). Run phone-1, picture
+  02-hint-after.
+
+walk/phone-2-mid-shake.jpg
+  Shows: the same page in the middle of a shake by the Shake control, winter to spring, the first of four in a row. The
+  camera has drawn back; the controls keep their place, clear of the globe. State: busy, winter still lit, a small dot
+  under the spring mark for the season to come, the Shake control held. Run phone-1, picture 09-row-1-spring-across-2.
+
+walk/phone-3-landed.jpg
+  Shows: just landed in spring. State: not busy, spring lit, the page says "Spring". The bar is at its dimmed floor (60
+  percent): a shake takes more than eight seconds without input on this renderer. Run phone-1, picture 11-row-1-spring.
