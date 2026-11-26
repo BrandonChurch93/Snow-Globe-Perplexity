@@ -29,31 +29,35 @@ const NEAR = { lamp: { power: 2.1, reachMm: 7 }, pane: { power: 2.2, reachMm: 4 
 // takes it from the lantern drawn up to it, the turf from a point just over it; the lamp post lays its own on the path.
 // It follows its lantern up after the landing (the times are the tree's, `LANTERN` in tree.ts) and never burns: what it adds
 // bends over under `cap`.
-const POOL = { patch: 600, patchReach: 1.3, patchCap: 0.5, ember: [1, 0.4, 0.1] as Rgb, emberShare: 0.85, down: 0.55, face: 0.3, frontMm: 8, leaf: 0.015, hug: 1.1, lawn: 9, lawnReach: 2.4, overMm: 3, ends: 2.2, wrap: 0.22, post: 10, postReachMm: 4.5, postOverMm: 2.5, wash: 0.12, cap: 0.65, dim: 0.4, firstStepS: 0.23, firstRampS: 0.42, rampS: 0.8, stepS: 0.6, orange: [1, 0.5, 0.17] as Rgb, cream: [1, 0.68, 0.34] as Rgb, gold: [1, 0.62, 0.28] as Rgb, straw: [0.3, 0.22, 0.1] as Rgb, strawShare: 0.35 }
+const POOL = { patch: 600, patchReach: 1.3, patchCap: 0.5, ember: [1, 0.4, 0.1] as Rgb, emberShare: 0.65, down: 0.55, face: 0.3, frontMm: 8, leaf: 0.015, hug: 1.1, lawn: 2.0, lawnReach: 2.4, overMm: 3, ends: 2.2, wrap: 0.22, post: 10, postReachMm: 4.5, postOverMm: 2.5, wash: 0.12, cap: 0.65, dim: 0.4, firstStepS: 0.23, firstRampS: 0.42, rampS: 0.8, stepS: 0.6, orange: [1, 0.5, 0.17] as Rgb, cream: [1, 0.68, 0.34] as Rgb, gold: [1, 0.62, 0.28] as Rgb, straw: [0.32, 0.27, 0.17] as Rgb, strawShare: 0.45 }
 // The liquid is lit: it lies between the eye and every dark thing in the ball, so nothing in it is black.
 const LIFT: Rgb = [0.012, 0.0098, 0.0062]
 // The bank's turf faces away from the low sun: it takes the sky's light, as the mound's front does in the approved image.
 const SLOPE = { ground: 2.6, blade: 6.5, fromMm: 55.6, toMm: 56.3 }
 // The low sun stands behind the scene to the right. What turns from the eye toward it takes a rim of it; a blade's tip lets it through.
-const RIM = { wall: 2.0, tint: [0.62, 0.46, 0.26] as Rgb, share: 0.5, turf: 0.5, tip: 2.4, tipFar: 1.6, tipLow: 0.12, tipTint: [1.0, 0.7, 0.26] as Rgb, tipShare: 0.8, edge: 1.8, edgeTint: [1.0, 0.9, 0.7] as Rgb, edgeFromMm: 0.1, edgeToMm: 0.6, topMm: 0.85, eave: 0.7, eaveFromMm: 1.25, eaveToMm: 1.6, leaf: 1.2, petal: 3.0, rail: 0.65 }
+const RIM = { wall: 2.0, tint: [0.62, 0.46, 0.26] as Rgb, share: 0.5, turf: 0.5, tip: 2.4, tipFar: 1.6, tipLow: 0.12, tipTint: [1.0, 0.7, 0.26] as Rgb, tipShare: 0.8, edge: 1.8, edgeTint: [1.0, 0.82, 0.55] as Rgb, edgeFromMm: 0.1, edgeToMm: 0.9, topMm: 0.85, eave: 0.7, eaveFromMm: 1.25, eaveToMm: 1.6, leaf: 1.2, petal: 3.0, rail: 0.65 }
 const NEAR_WALL = { lamp: { power: 1.6, reachMm: 8, ends: 3 }, pane: { power: 2.0, reachMm: 4.5, ends: 3 }, paper: { power: 3.4, reachMm: 6.5, ends: 3 } }
 const MIRROR = { lamp: 9, flame: 5, pane: 1.2, paper: 1.6, tight: 0.002, wide: 0.03, wideShare: 0.01, lowMm: 3.4 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 3.6, rest: 0.08, hot: 0, bloom: 0.2 }, pane: { size: 2.6, rest: 0.07, hot: 0, bloom: 0.2 }, pool: { size: 5, rest: 0, hot: 0, bloom: 0.06 } }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [1.6, 0.66, 0.15]
-const WALL_FILL = 0.22
+const WALL_FILL = 0.3
 const SAND = { white: [0.93, 0.86, 0.72] as Rgb, whiten: 0.9, clumpPerMm: 1.1, midPerMm: 2.1, sparkMid: 0.08, grainPerMm: 4.2, heapPerMm: 0.16, heapLow: 0.9, heap: 0.16, reliefMm: 0.5, reliefClump: 0.12, reliefMid: 0.05, body: 1.15, floor: 1.0, wrap: 0.6, foot: [0.5, 0.42, 0.33] as Rgb, footFrom: 0.55, footTo: 1.0, mottleLow: 0.8, mottle: 1.1, lip: 1.1, lipLow: 0.5, lipFrom: 0.15, lipTo: 0.75, breakPerMm: 0.3, shade: [1.2, 1.36, 1.6] as Rgb, shadeLow: 0.8, right: [0.75, 0.7, 0.64] as Rgb, rightFromMm: 6, rightToMm: 26, left: 0.5, leftFromMm: -36, leftToMm: -14, edgeSoft: 0.12, lipTint: [0.95, 1.0, 1.08] as Rgb, edgeVary: 0.1, fadeFrom: 0.95, fadeTo: 1.4, bump: 0.6, grainLow: 0.68, grain: 0.36, spark: 0.3, glint: 1.2 }
-const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.4, wrap: 0.5, sun: 2.0, moss: [0.15, 0.2, 0.34] as Rgb, rim: 0.9, rimFromMm: 30, rimToMm: 46 }
+const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.4, wrap: 0.5, sun: 0.7, moss: [0.15, 0.2, 0.34] as Rgb, rim: 0.9, rimFromMm: 30, rimToMm: 46 }
 // Where the low sun reaches the floor: the same four pools as `sunAt` in assets-src/village-summer/build.mjs, which the grass carries.
 const SUN_POOLS: readonly [number, number, number, number, number][] = [[1.5, 24, 4, 13, 9], [0.7, 6, -4, 9, 6], [0.4, -24, 21, 6, 5], [0.5, 24, 22, 9, 6]]
-const GRASS_LOOK = { fill: 0.26, wrap: 1.0, through: 0.16, near: 0.3, sun: 3.0, patchLow: 0.12, moss: [0.15, 0.2, 0.34] as Rgb, patchPerMm: 0.3, sunRoot: 0.12, rightDark: 0.35, rightGlow: 0.15, rightFromMm: 1, rightToMm: 6, shade: [0.26, 0.3, 0.45] as Rgb }
-const ROOF = { slate: [0.14, 0.18, 0.27] as Rgb, chimney: [0.115, 0.145, 0.2] as Rgb, vary: 0.75, varyMm: 1.3, stone: [0.6, 0.47, 0.33] as Rgb, block: [0.66, 0.52, 0.36] as Rgb, paneMm: 2.2, stoneMid: 0.42, stoneFlat: 0.45, stoneHue: 0.5, plank: [0.36, 0.3, 0.26] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.85, 0.5, 0.27] as Rgb, picketMm: 1.6, boardMm: 0.9, boardVary: 0.9, grainMm: 0.22, grainVary: 0.5, boardFoot: 0.7, boardTall: 3.2, pale: 0.25, rail: [1.5, 1.3, 1.05] as Rgb, railTop: 1.9, door: [0.1, 0.052, 0.034] as Rgb, verge: [0.09, 0.062, 0.046] as Rgb, sheen: 4.2, sheenMm: 3.5, doorMm: 2.9, reachMm: 0.4, buryMm: 1.5 }
+const GRASS_LOOK = { fill: 0.2, wrap: 1.0, through: 0.16, near: 0.3, sun: 0.9, patchLow: 0.12, moss: [0.15, 0.2, 0.34] as Rgb, patchPerMm: 0.3, sunRoot: 0.12, rightDark: 0.35, rightGlow: 0.15, rightFromMm: 1, rightToMm: 6, shade: [0.26, 0.3, 0.45] as Rgb }
+const ROOF = { slate: [0.2, 0.25, 0.33] as Rgb, chimney: [0.21, 0.225, 0.25] as Rgb, vary: 0.75, varyMm: 1.3, stone: [0.66, 0.58, 0.46] as Rgb, block: [0.7, 0.62, 0.5] as Rgb, paneMm: 2.2, stoneMid: 0.42, blockMid: 0.6, gableMm: 0.55, stoneFlat: 1.0, stoneHue: 0.5, plank: [0.36, 0.3, 0.26] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.85, 0.5, 0.27] as Rgb, picketMm: 1.6, boardMm: 0.9, boardVary: 0.9, grainMm: 0.22, grainVary: 0.5, boardFoot: 0.7, boardTall: 3.2, pale: 0.25, rail: [3.0, 2.0, 1.15] as Rgb, railTop: 1.9, door: [0.1, 0.052, 0.034] as Rgb, verge: [0.11, 0.085, 0.07] as Rgb, sheen: 4.2, sheenMm: 3.5, doorMm: 2.9, reachMm: 0.4, buryMm: 1.5 }
 const DARK_PANE = 0.8
+// The shared stone map lies stretched along the walls and reads as courses of logs. The approved's walls are round cobbles of
+// unlike size in dark joints, lit on their upper left: cells drawn pixel by pixel in place of the map's grain, the bump laid flat.
+// The lanterns' patch is capped and would level the stones out: it takes their light and dark after the cap.
+const COBBLE = { cellMm: 1.9, joint: 0.3, dark: 0.2, lit: 0.9, flat: 1.0, base: 0.66, grain: 0.3, smooth: 0.8, patch: 0.8, patchTop: 1.2 }
 // The approved cottage has a short stack: what stands over the ridge is drawn in to under half its height, in this season's
 // copy of the mesh and in what the particles meet.
 const STACK = { fromMm: 18.8, squash: 0.45, marginMm: 0.9, pot: 0.3 }
-const WATER = { spark: 0.5, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.4, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.84, shoreTo: 1.0, sky: 1.5, skyFrom: -0.75, skyTo: 0.35, skyAt: -2.3, skyWide: 6.5, skyLow: 0.07, bankMm: 0.7, bankVary: 1.1, bankEdge: 0.16, bankDark: 0.975, env: 0.1, glint: 0.65, squash: 0.14, paperGlint: 0.16, paperMm: 0.9, paperTall: 0.5, post: 0.93, postMm: 0.75, postTall: 11.5, trunk: 0.975, trunkMm: 5.2, trunkTall: 26, body: 0.4 }
+const WATER = { spark: 0.5, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.4, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.84, shoreTo: 1.0, sky: 1.25, skyFrom: -0.75, skyTo: 0.35, skyAt: -2.3, skyWide: 8, skyLow: 0.1, bankMm: 0.7, bankVary: 1.1, bankEdge: 0.16, bankDark: 0.6, env: 0.1, glint: 0.65, squash: 0.14, paperGlint: 0.16, paperMm: 0.9, paperTall: 0.5, post: 0.93, postMm: 0.75, postTall: 11.5, trunk: 0.975, trunkMm: 5.2, trunkTall: 26, body: 0.4 }
 
 const flame = lampFlame()
 const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
@@ -130,6 +134,45 @@ function withPools(g: THREE.BufferGeometry, pools: readonly Pool[]): THREE.Buffe
 }
 
 const PATCH_VERT_PARS = 'varying vec3 vPoolN;'
+const COBBLE_AT = 'float villageMetal = villageIron * 0.55;'
+const BUMP_AT = 'normal = villageBump(-vViewPosition, normal, villageDh, faceDirection);'
+const COBBLE_PARS = `varying float vCobble;
+float cobbleShade = 1.0;
+vec2 cobbleHash(vec2 p) {
+  vec3 q = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
+  q += dot(q, q.yzx + 33.33);
+  return fract((q.xx + q.yz) * q.zy);
+}`
+const cobbleMap = (): string => `if (vCobble > 0.001) {
+  vec2 cobbleP = vec2(dot(vStageLocal.xz, vec2(${(frame.u[0] + frame.v[0]).toFixed(4)}, ${(frame.u[1] + frame.v[1]).toFixed(4)})), vStageLocal.y) * ${(1 / COBBLE.cellMm).toFixed(4)};
+  vec2 cobbleI = floor(cobbleP);
+  vec2 cobbleF = cobbleP - cobbleI;
+  float cobbleNear = 8.0;
+  float cobbleNext = 8.0;
+  vec2 cobbleTo = vec2(0.0);
+  vec2 cobbleId = vec2(0.0);
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      vec2 cobbleG = vec2(float(i), float(j));
+      vec2 cobbleH = cobbleHash(cobbleI + cobbleG);
+      vec2 cobbleR = cobbleG + 0.15 + 0.7 * cobbleH - cobbleF;
+      float cobbleD = dot(cobbleR, cobbleR);
+      if (cobbleD < cobbleNear) {
+        cobbleNext = cobbleNear;
+        cobbleNear = cobbleD;
+        cobbleTo = cobbleR;
+        cobbleId = cobbleH;
+      } else if (cobbleD < cobbleNext) {
+        cobbleNext = cobbleD;
+      }
+    }
+  }
+  float cobbleJoint = smoothstep(0.02, ${COBBLE.joint.toFixed(2)}, sqrt(cobbleNext) - sqrt(cobbleNear));
+  float cobbleLit = clamp(1.0 + ${COBBLE.lit.toFixed(2)} * dot(cobbleTo, vec2(0.6, -0.8)), 0.5, 1.6);
+  vec3 cobbleTone = mix(vec3(0.78, 0.74, 0.68), vec3(1.3, 1.22, 1.08), cobbleId.x) * mix(vec3(1.0), vec3(1.05, 0.9, 0.74), step(0.62, cobbleId.y));
+  cobbleShade = mix(1.0, clamp(cobbleLit * mix(${COBBLE.dark.toFixed(2)}, 1.0, cobbleJoint) * dot(cobbleTone, vec3(0.3, 0.6, 0.1)) * ${COBBLE.patch.toFixed(2)}, 0.0, ${COBBLE.patchTop.toFixed(2)}), vCobble);
+  diffuseColor.rgb *= mix(vec3(1.0), cobbleTone * (cobbleLit * mix(${COBBLE.dark.toFixed(2)}, 1.0, cobbleJoint) * mix(${COBBLE.base.toFixed(2)}, villageTone, ${COBBLE.grain.toFixed(2)}) / max(villageTone, 0.05)), vCobble);
+}`
 const PATCH_VERT_MAIN = 'vPoolN = normal;'
 const POOL_VERT_PARS = 'attribute vec4 aPool;\nvarying vec4 vPool;'
 const POOL_VERT_MAIN = 'vPool = aPool;'
@@ -155,9 +198,9 @@ ${patches
   poolSum += ${glsl(q.color)} * (exp(-poolR / ${(q.reachMm * q.reachMm).toFixed(3)}) * mix(${POOL.face.toFixed(2)}, 1.0, mix(max(poolF, 0.0), abs(poolF), villageLeaf)) * mix(${POOL.dim.toFixed(2)}, 1.0, smoothstep(0.0, ${q.rampS.toFixed(2)}, uPoolSince - ${q.startS.toFixed(2)})));`,
   )
   .join('\n')}
-  vec3 poolP = poolSum * (uGlowGain * ${POOL.patch.toFixed(1)}) * ${body};
+  vec3 poolP = poolSum * (uGlowGain * ${POOL.patch.toFixed(1)}) * ${body} / max(cobbleShade, 0.05);
   float poolQ = max(max(poolP.r, poolP.g), poolP.b);
-  totalEmissiveRadiance += poolP * (${POOL.patchCap.toFixed(2)} * (1.0 - exp(-poolQ / ${POOL.patchCap.toFixed(2)})) / max(poolQ, 1e-4));
+  totalEmissiveRadiance += poolP * (${POOL.patchCap.toFixed(2)} * (1.0 - exp(-poolQ / ${POOL.patchCap.toFixed(2)})) / max(poolQ, 1e-4)) * cobbleShade;
 }`
 
 const near: GlowSource[] = [
@@ -263,7 +306,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb, ${glsl(SAND.white
 }
 `,
         )
-      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * uGlowGain * material.diffuseContribution;\n${poolLight(`mix(material.diffuseContribution, ${glsl(POOL.straw)}, ${POOL.strawShare.toFixed(2)} * (1.0 - sandAmt))`)}\n{\n  float sandBank = sandAmt;\n  vec3 sandBody = stageKeyC * (RECIPROCAL_PI * ${SAND.body.toFixed(2)} * mix(${SAND.floor.toFixed(2)}, 1.0, stageWrap(dot(geometryNormal, stageKeyL), ${SAND.wrap.toFixed(2)})) * mix(vec3(1.0), ${glsl(SAND.foot)}, smoothstep(${SAND.footFrom.toFixed(2)}, ${SAND.footTo.toFixed(2)}, vSurf.y))) * material.diffuseContribution;\n  // The low sun whitens the lip of the sand where it meets the ground and leaves the face against the glass in warm shade, deepest at the left end.\n  float sandLip = (1.0 - smoothstep(${SAND.lipFrom.toFixed(2)}, ${SAND.lipTo.toFixed(2)}, vSurf.y + 0.1 * (sandNoise(vStageLocal * 0.3 + 2.3) - 0.5)));\n  // The shelf is not one white band: heaps catch the sun, the hollows between them stay in shade.\n  float sandBreak = smoothstep(0.25, 0.75, 0.6 * sandNoise(vStageLocal * ${SAND.breakPerMm.toFixed(2)} + 9.7) + 0.4 * sandFineB);\n  sandBody *= mix(${glsl(SAND.shade)} * mix(${SAND.shadeLow.toFixed(2)}, 1.0, sandBreak), ${glsl(SAND.lipTint)} * (1.0 + mix(${SAND.lipLow.toFixed(2)}, ${SAND.lip.toFixed(2)}, sandBreak) + ${SAND.glint.toFixed(2)} * sandSpark), sandLip) * (1.0 + ${SAND.left.toFixed(2)} * (1.0 - smoothstep(${SAND.leftFromMm.toFixed(1)}, ${SAND.leftToMm.toFixed(1)}, vStageLocal.x))) * mix(vec3(1.0), ${glsl(SAND.right)}, smoothstep(${SAND.rightFromMm.toFixed(1)}, ${SAND.rightToMm.toFixed(1)}, vStageLocal.x)) * mix(${SAND.mottleLow.toFixed(2)}, ${SAND.mottle.toFixed(2)}, 0.5 * sandFineB + 0.5 * sandFineM);\n  reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, sandBody, sandBank);\n}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${TURF_LOOK.wrap.toFixed(2)}) + ${SLOPE.ground.toFixed(2)} * smoothstep(0.0, 0.25, -vSurf.y))) * material.diffuseContribution;\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.sun.toFixed(2)} * turfSunAt(vStageLocal.xz) * (1.0 - sandAmt) * (1.0 - ${GRASS_LOOK.rightDark.toFixed(2)} * smoothstep(${GRASS_LOOK.rightFromMm.toFixed(1)}, ${GRASS_LOOK.rightToMm.toFixed(1)}, vStageLocal.x))) * mix(material.diffuseContribution, vec3(0.3, 0.2, 0.11), 0.58);\n{\n  float turfTurn = 1.0 - max(dot(geometryNormal, geometryViewDir), 0.0);\n  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${RIM.turf.toFixed(2)} * turfTurn * turfTurn * turfTurn * smoothstep(-0.2, 0.5, dot(geometryNormal, stageKeyL)) * (1.0 - sandAmt)) * mix(material.diffuseContribution, ${glsl(POOL.straw)}, ${POOL.strawShare.toFixed(2)});\n}\ntotalEmissiveRadiance += ${glsl(LIFT)};`)
+      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * uGlowGain * material.diffuseContribution;\n${poolLight(`mix(material.diffuseContribution, ${glsl(POOL.straw)}, ${POOL.strawShare.toFixed(2)} * (1.0 - sandAmt))`)}\n{\n  float sandBank = sandAmt;\n  vec3 sandBody = stageKeyC * (RECIPROCAL_PI * ${SAND.body.toFixed(2)} * mix(${SAND.floor.toFixed(2)}, 1.0, stageWrap(dot(geometryNormal, stageKeyL), ${SAND.wrap.toFixed(2)})) * mix(vec3(1.0), ${glsl(SAND.foot)}, smoothstep(${SAND.footFrom.toFixed(2)}, ${SAND.footTo.toFixed(2)}, vSurf.y))) * material.diffuseContribution;\n  // The low sun whitens the lip of the sand where it meets the ground and leaves the face against the glass in warm shade, deepest at the left end.\n  float sandLip = (1.0 - smoothstep(${SAND.lipFrom.toFixed(2)}, ${SAND.lipTo.toFixed(2)}, vSurf.y + 0.1 * (sandNoise(vStageLocal * 0.3 + 2.3) - 0.5)));\n  // The shelf is not one white band: heaps catch the sun, the hollows between them stay in shade.\n  float sandBreak = smoothstep(0.25, 0.75, 0.6 * sandNoise(vStageLocal * ${SAND.breakPerMm.toFixed(2)} + 9.7) + 0.4 * sandFineB);\n  sandBody *= mix(${glsl(SAND.shade)} * mix(${SAND.shadeLow.toFixed(2)}, 1.0, sandBreak), ${glsl(SAND.lipTint)} * (1.0 + mix(${SAND.lipLow.toFixed(2)}, ${SAND.lip.toFixed(2)}, sandBreak) + ${SAND.glint.toFixed(2)} * sandSpark), sandLip) * (1.0 + ${SAND.left.toFixed(2)} * (1.0 - smoothstep(${SAND.leftFromMm.toFixed(1)}, ${SAND.leftToMm.toFixed(1)}, vStageLocal.x))) * mix(vec3(1.0), ${glsl(SAND.right)}, smoothstep(${SAND.rightFromMm.toFixed(1)}, ${SAND.rightToMm.toFixed(1)}, vStageLocal.x)) * mix(${SAND.mottleLow.toFixed(2)}, ${SAND.mottle.toFixed(2)}, 0.5 * sandFineB + 0.5 * sandFineM);\n  reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, sandBody, sandBank);\n}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${TURF_LOOK.wrap.toFixed(2)}) + ${SLOPE.ground.toFixed(2)} * smoothstep(0.0, 0.25, -vSurf.y))) * material.diffuseContribution;\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.sun.toFixed(2)} * turfSunAt(vStageLocal.xz) * (1.0 - sandAmt) * (1.0 - ${GRASS_LOOK.rightDark.toFixed(2)} * smoothstep(${GRASS_LOOK.rightFromMm.toFixed(1)}, ${GRASS_LOOK.rightToMm.toFixed(1)}, vStageLocal.x))) * mix(material.diffuseContribution, vec3(0.2, 0.19, 0.08), 0.3);\n{\n  float turfTurn = 1.0 - max(dot(geometryNormal, geometryViewDir), 0.0);\n  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${RIM.turf.toFixed(2)} * turfTurn * turfTurn * turfTurn * smoothstep(-0.2, 0.5, dot(geometryNormal, stageKeyL)) * (1.0 - sandAmt)) * mix(material.diffuseContribution, ${glsl(POOL.straw)}, ${POOL.strawShare.toFixed(2)});\n}\ntotalEmissiveRadiance += ${glsl(LIFT)};`)
     },
   })
 }
@@ -301,7 +344,7 @@ ${poolLight(`mix(material.diffuseContribution, ${glsl(POOL.straw)}, ${POOL.straw
 reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${GRASS_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${GRASS_LOOK.wrap.toFixed(2)}) + ${SLOPE.blade.toFixed(2)} * smoothstep(${SLOPE.fromMm.toFixed(1)}, ${SLOPE.toMm.toFixed(1)}, length(vStageLocal)) * (0.35 + 0.65 * vSurf.y) + ${GRASS_LOOK.through.toFixed(2)} * vSurf.x * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), 2.0))) * material.diffuseContribution;
 // The low sun does not lie evenly on the lawn: it catches tufts and leaves the moss between them in shade.
 float grassPatch = 0.5 + 0.5 * sin(vStageLocal.x * ${GRASS_LOOK.patchPerMm.toFixed(2)} + 1.7 * sin(vStageLocal.z * ${(GRASS_LOOK.patchPerMm * 0.87).toFixed(3)} + 0.6)) * sin(vStageLocal.z * ${(GRASS_LOOK.patchPerMm * 1.16).toFixed(3)} + 1.3 * sin(vStageLocal.x * ${(GRASS_LOOK.patchPerMm * 0.71).toFixed(3)}) + 2.1);
-reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${GRASS_LOOK.sun.toFixed(2)} * mix(${GRASS_LOOK.patchLow.toFixed(2)}, 1.0, smoothstep(0.35, 0.8, grassPatch)) * vSurf.y * vSurf.y * mix(${GRASS_LOOK.sunRoot.toFixed(2)}, 1.0, vSurf.x)) * mix(material.diffuseContribution, vec3(0.34, 0.21, 0.07), 0.78);
+reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${GRASS_LOOK.sun.toFixed(2)} * mix(${GRASS_LOOK.patchLow.toFixed(2)}, 1.0, smoothstep(0.35, 0.8, grassPatch)) * vSurf.y * vSurf.y * mix(${GRASS_LOOK.sunRoot.toFixed(2)}, 1.0, vSurf.x)) * mix(material.diffuseContribution, vec3(0.22, 0.2, 0.06), 0.4);
 // The key does not reach the lawn right of the lamp post: it lies in the crown's shade and is the dark moss of the rest.
 reflectedLight.directDiffuse *= 1.0 - ${GRASS_LOOK.rightDark.toFixed(2)} * smoothstep(${GRASS_LOOK.rightFromMm.toFixed(1)}, ${GRASS_LOOK.rightToMm.toFixed(1)}, vStageLocal.x);
 reflectedLight.indirectDiffuse *= 1.0 - ${GRASS_LOOK.rightGlow.toFixed(2)} * smoothstep(${GRASS_LOOK.rightFromMm.toFixed(1)}, ${GRASS_LOOK.rightToMm.toFixed(1)}, vStageLocal.x);
@@ -504,6 +547,19 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
   const cottage = only('cottage')
   // The low sun from the back right draws the ridge and the right verge: how near a point of the roof lies to that edge.
   const rim = new Float32Array(P.count)
+  const cobble = new Float32Array(P.count)
+  const flatten = (i: number): void => {
+    const along = frame.u[0] * (P.getX(i) - house.x) + frame.u[1] * (P.getZ(i) - house.z)
+    const across = frame.v[0] * (P.getX(i) - house.x) + frame.v[1] * (P.getZ(i) - house.z)
+    const gable = Math.abs(along) / house.halfLength >= Math.abs(across) / house.halfWidth
+    const axis = gable ? frame.u : frame.v
+    const out = (gable ? along : across) < 0 ? -COBBLE.flat : COBBLE.flat
+    const x = (1 - COBBLE.flat) * N.getX(i) + out * axis[0]
+    const y = (1 - COBBLE.flat) * N.getY(i)
+    const z = (1 - COBBLE.flat) * N.getZ(i) + out * axis[1]
+    const l = Math.hypot(x, y, z) || 1
+    N.setXYZ(i, x / l, y / l, z / l)
+  }
   const ridgeY = frame.floor + house.wall + house.rise + RIM.topMm
   // The top of a rail or a post is seen edge on and holds no light: the sides take it at their upper edge, where they meet it.
   const placed = (i: number): string => `${Math.round(P.getX(i) * 20)},${Math.round(P.getY(i) * 20)},${Math.round(P.getZ(i) * 20)}`
@@ -524,6 +580,8 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
     const lum = Math.max(0.3 * C.getX(i) + 0.6 * C.getY(i) + 0.1 * C.getZ(i), stack ? STACK.pot : 0)
     // The roof's solid fills the gable too: only what faces up is slate, the wall under the verge stays stone.
     const nearRoof = solidDistance(x, y, z, roof) < ROOF.reachMm
+    // The gable's own face under the verge boards is wall, not board: it lies in the wall's plane, inside the eaves, and does not face down.
+    const gableWall = nearRoof && N.getY(i) > -0.5 && Math.abs(frame.u[0] * (x - house.x) + frame.u[1] * (z - house.z)) < house.halfLength + ROOF.gableMm && Math.abs(frame.v[0] * (x - house.x) + frame.v[1] * (z - house.z)) < house.halfWidth + 0.3
     if (tops.has(placed(i)) && solidDistance(x, y, z, fence) < ROOF.reachMm) rim[i] = RIM.rail
     if (nearRoof && !stack && solidDistance(x, y, z, chimney) >= ROOF.reachMm) {
       const across = frame.v[0] * (x - house.x) + frame.v[1] * (z - house.z)
@@ -534,6 +592,7 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
     if (stack || solidDistance(x, y, z, chimney) < ROOF.reachMm) {
       const v = 2 * stoneVary(x, y, z)
       C.setXYZ(i, lum * ROOF.chimney[0] * v, lum * ROOF.chimney[1] * v, lum * ROOF.chimney[2] * v)
+      cobble[i] = 1
     }
     else if (nearRoof && N.getY(i) > ROOF.pitch) {
       // A soft sheen along the ridge, where the slate turns up to the sky.
@@ -542,13 +601,20 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
     }
     else if (Math.hypot(x - anchors.door[0], z - anchors.door[2]) < ROOF.doorMm && C.getX(i) > 1.2 * C.getZ(i) && Math.abs(y - anchors.door[1]) < ROOF.doorMm * 1.6) C.setXYZ(i, lum * ROOF.door[0], lum * ROOF.door[1], lum * ROOF.door[2])
     else if (Math.hypot(x - anchors.door[0], z - anchors.door[2]) < ROOF.plankMm && Math.abs(y - anchors.door[1]) < ROOF.plankTall) C.setXYZ(i, lum * ROOF.plank[0], lum * ROOF.plank[1], lum * ROOF.plank[2])
-    else if (nearRoof && C.getX(i) > 1.25 * C.getZ(i)) C.setXYZ(i, C.getX(i) * ROOF.verge[0], C.getY(i) * ROOF.verge[1], C.getZ(i) * ROOF.verge[2])
+    else if (nearRoof && !gableWall && C.getX(i) > 1.25 * C.getZ(i)) C.setXYZ(i, C.getX(i) * ROOF.verge[0], C.getY(i) * ROOF.verge[1], C.getZ(i) * ROOF.verge[2])
     else if ((nearRoof || solidDistance(x, y, z, cottage) < ROOF.stoneMm) && Math.abs(C.getX(i) - C.getZ(i)) < ROOF.stoneHue * lum) {
       const v = stoneVary(x, y, z)
       C.setXYZ(i, (C.getX(i) + (ROOF.stoneMid - lum) * ROOF.stoneFlat) * ROOF.stone[0] * v, (C.getY(i) + (ROOF.stoneMid - lum) * ROOF.stoneFlat) * ROOF.stone[1] * v, (C.getZ(i) + (ROOF.stoneMid - lum) * ROOF.stoneFlat) * ROOF.stone[2] * v)
+      cobble[i] = 1
+      flatten(i)
     }
-    // The warm blocks left on the walls read as orange brick in the low sun: they take the stone's grey brown and keep their own light and dark.
-    else if (solidDistance(x, y, z, cottage) < ROOF.stoneMm && Math.hypot(x - anchors.window[0], y - anchors.window[1], z - anchors.window[2]) > ROOF.paneMm) C.setXYZ(i, lum * ROOF.block[0], lum * ROOF.block[1], lum * ROOF.block[2])
+    // The warm blocks left on the walls are painted in courses and read as logs: they take the stone's cream and one level, and the cobbles drawn on them give the light and dark.
+    else if ((gableWall || solidDistance(x, y, z, cottage) < ROOF.stoneMm) && Math.hypot(x - anchors.window[0], y - anchors.window[1], z - anchors.window[2]) > ROOF.paneMm) {
+      const level = lum + (ROOF.blockMid - lum) * ROOF.stoneFlat
+      C.setXYZ(i, level * ROOF.block[0], level * ROOF.block[1], level * ROOF.block[2])
+      cobble[i] = 1
+      flatten(i)
+    }
     else if (solidDistance(x, y, z, fence) < ROOF.picketMm && Math.min(C.getX(i), C.getY(i), C.getZ(i)) > 0.45 * Math.max(C.getX(i), C.getY(i), C.getZ(i)) && lum > ROOF.pale) {
       // Each board has its own tone and a grain that runs up it; the foot of the fence stands in the shade of the grass.
       const v = stoneVary(x, y, z, ROOF.boardMm, 0.12, ROOF.boardVary) * stoneVary(x, y, z, ROOF.grainMm, 0.2, ROOF.grainVary) * (ROOF.boardFoot + (1 - ROOF.boardFoot) * Math.min(1, Math.max(0, (y - groundAt(x, z)) / ROOF.boardTall)))
@@ -560,6 +626,7 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
     }
   }
   g.setAttribute('aRim', new THREE.BufferAttribute(rim, 1))
+  g.setAttribute('aCobble', new THREE.BufferAttribute(cobble, 1))
   C.needsUpdate = true
   P.needsUpdate = true
   N.needsUpdate = true
@@ -572,8 +639,12 @@ function rimmed(m: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial {
   m.onBeforeCompile = (shader, renderer) => {
     before.call(m, shader, renderer)
     Object.assign(shader.uniforms, { uPoolSince: since })
-    shader.vertexShader = shader.vertexShader.replace('#include <uv_pars_vertex>', `#include <uv_pars_vertex>\n${POOL_VERT_PARS}\n${PATCH_VERT_PARS}\nattribute float aRim;\nvarying float vRim;`).replace('#include <uv_vertex>', `#include <uv_vertex>\n${POOL_VERT_MAIN}\n${PATCH_VERT_MAIN}\nvRim = aRim;`)
-    shader.fragmentShader = shader.fragmentShader.replace('#include <map_pars_fragment>', `#include <map_pars_fragment>\n${POOL_FRAG_PARS}\n${PATCH_VERT_PARS}\nvarying float vRim;`)
+    shader.vertexShader = shader.vertexShader.replace('#include <uv_pars_vertex>', `#include <uv_pars_vertex>\n${POOL_VERT_PARS}\n${PATCH_VERT_PARS}\nattribute float aRim;\nvarying float vRim;\nattribute float aCobble;\nvarying float vCobble;`).replace('#include <uv_vertex>', `#include <uv_vertex>\n${POOL_VERT_MAIN}\n${PATCH_VERT_MAIN}\nvRim = aRim;\nvCobble = aCobble;`)
+    shader.fragmentShader = shader.fragmentShader.replace('#include <map_pars_fragment>', `#include <map_pars_fragment>\n${POOL_FRAG_PARS}\n${PATCH_VERT_PARS}\nvarying float vRim;\n${COBBLE_PARS}`)
+    if (!shader.fragmentShader.includes(COBBLE_AT)) throw new Error('village-summer: the surface map of the walls has moved')
+    shader.fragmentShader = shader.fragmentShader.replace(COBBLE_AT, `${COBBLE_AT}\n${cobbleMap()}`)
+    if (!shader.fragmentShader.includes(BUMP_AT)) throw new Error('village-summer: the bump of the walls has moved')
+    shader.fragmentShader = shader.fragmentShader.replace(BUMP_AT, `${BUMP_AT}\n  normal = mix(normal, nonPerturbedNormal, ${COBBLE.smooth.toFixed(2)} * vCobble);\n  normal /= max(length(normal), 1e-4);`)
     afterLight(
       shader,
       `${poolLight(`(material.diffuseContribution * (1.0 - ${(1 - POOL.leaf).toFixed(2)} * villageLeaf))`)}
