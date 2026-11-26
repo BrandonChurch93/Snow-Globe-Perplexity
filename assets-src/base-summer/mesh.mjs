@@ -271,16 +271,18 @@ function seaGlass(soup, fr, it, rnd) {
     }
     return Math.max(z, 0)
   }
+  // G15: a piece a few pixels across is given no more facets than its outline can show.
+  const [around, across] = R >= 3.2 ? [65, 15] : R >= 1.8 ? [49, 13] : [33, 9]
   surf(
     soup,
     fr,
-    65,
-    15,
+    around,
+    across,
     (u, v) => {
       const phi = u * 2 * Math.PI
       const out = R * P.shardAt(it, phi)
       const rho = Math.sin((v * Math.PI) / 2)
-      return [out * rho * Math.cos(phi), out * rho * Math.sin(phi) * long, T * top(u, v) - 0.4 * T]
+      return [out * rho * Math.cos(phi), out * rho * Math.sin(phi) * long, T * top(u, v) - 0.16 * T]
     },
     (u, v, p) => ({ uv: [p[0] / 3, p[1] / 3], uv2: [clamp(top(u, v)), it.frost ? 1 : 0.25 + 0.3 * rnd.a], c: it.c }),
     true,
