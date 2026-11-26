@@ -180,6 +180,39 @@ export const GLINT_LOW = 0.9925
 export const GLINT_HIGH = 0.9994
 
 /** The kinds drawn as cards (shapes from 3 on): a thin curved sheet with its own outline, turned by the particle's turn. For these `flash` is the share of light let through from behind. */
+/**
+ * Where a few seeds lie when the liquid is calm: on the roof at its eaves, at the chimney's foot and in the seams of the
+ * shingles, on bare wood of the tree, on the lawn and on the fence. Each is a place on the drawn thing itself (given by the
+ * owners of the miniature and of the tree), in millimetres from the ball's centre, with the way out of the surface there and
+ * the head's own radius. A head stands on its down, so its heart is `lift` of that radius off the surface. In the storm they
+ * are gone with all the others (`until` of the storm's share; they fade over `fade`), and lie again when it has settled.
+ */
+export const SEED_RESTS = {
+  until: 0.3,
+  fade: [0.04, 0.25] as const,
+  lift: 0.75,
+  at: [
+    [-26.11, -9.23, -10.41, -0.5, 0.82, 0.27, 1.2],
+    [-23.31, -9.24, -5.11, -0.5, 0.82, 0.27, 0.93],
+    [-20.56, -9.31, 0.23, -0.5, 0.82, 0.27, 1.35],
+    [-18.63, -3.17, -10.43, -0.48, 0.83, 0.27, 1.43],
+    [-21.57, -5.16, -11.58, -0.5, 0.82, 0.27, 0.99],
+    [-19.14, -6.99, -2.79, -0.5, 0.82, 0.27, 1.05],
+    [-18.88, -4.3, -8.59, -0.5, 0.82, 0.27, 0.87],
+    [-19.21, -8.38, 0.07, -0.5, 0.82, 0.27, 0.9],
+    [5.8, -0.2, -4.5, 0.14, 0.99, 0.05, 1.28],
+    [18.4, -2.95, -1.9, -0.67, 0.74, -0.11, 1.05],
+    [24.1, -3.52, -0.8, -0.07, 0.99, 0.09, 1.43],
+    [-17.3, -19.62, 14.15, 0, 1, 0, 1.35],
+    [25.75, -18.18, 7.2, 0, 1, 0, 1.5],
+    [1.7, -18.96, 3.15, 0, 1, 0, 1.2],
+    [-29.5, -19.99, 14.96, 0, 1, 0, 1.05],
+    [-26, -20.95, 18.87, 0, 1, 0, 0.9],
+    [-21.73, -21.99, 21.93, 0, 1, 0, 1.28],
+    [-27.78, -19.55, 16.95, 0, 1, 0, 1.13],
+  ] as const,
+} as const
+
 export const CARD = {
   thick: 0.1,
   petalThick: 0.42,
@@ -198,8 +231,8 @@ export const CARD = {
   blob: [0.45, 1.3] as const,
   /** The most a card's bends may move its outline on the picture, as a share of what keeps the outline whole when the card is seen edge on. */
   bendFit: 0.55,
-  /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). In the storm a streak is the true path of one exposure: the lengths in pixels it comes in between, the half length up to which it keeps its light (longer ones thin with their length), its width's share and the skew of its paleness. `stormHold` is the share of a stroke's path through the shutter that it is held back from: all of it, so that a short stroke is one stroke and not a row of dashes. */
-  line: { shutFromPx: [3, 14] as const, dwellPx: 13, shutLong: [1.2, 2.6] as const, shutSeedSkew: 1.9, shutSeedWide: 1.4, stormLong: [0.8, 3.6] as const, stormLongSkew: 1.8, stormDwellPx: 70, stormHold: 1, stormSoft: 0.1, stormHue: 0.12, stormFog: 0.35, stormFromPx: [0.8, 3] as const, stormWidePx: [0.1, 0.25] as const, stormWideSkew: 2.5, stormWideFaint: 0.6, stormBow: [0, 0.05] as const, stormBowSkew: 2, stormArc: 0.4, stormBowMost: 0.1, stormTaper: 0.4, stormTail: 0.3, stormGain: 6, stormAlign: [0.3, 0.8] as const, stormLeaves: 0.005, stormLeafLongPx: [12, 30] as const, stormLeafWidePx: [3, 7] as const, stormLeafSeen: 0.9, stormLeaf: [0.07, 0.17, 0.03] as const, shutWide: 0.6, shutPale: 2.2, deepMostMm: 14, seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.5, 1.6] as const, seedWidePx: [0.3, 0.6] as const, seedHeads: 0.3, fanPx: [9, 24] as const, fanHairs: 7, fanSpread: 1.2, fanShort: 0.55, fanWide: 0.7, fanCore: 0.06, fanOpen: [0.08, 0.4] as const, headSeen: 0.6, deep: [0.6, 1.2] as const, frontCut: 0.2, share: [0.2, 0.4] as const, leafStretch: [1, 2.8] as const, leafPale: 0.6, leafSkew: 1.8, petalHeads: 0.55, petalHeadPx: [4.5, 10] as const, leafHeads: 0.45, leafHeadPx: [3, 8] as const, leafWidePx: [0.9, 1.9] as const, headOval: [0.5, 0.85] as const, headLift: 3, headGain: 1.1, petalHead: [[1, 0.74, 0.86], [1.25, 1.25, 1.25]] as const, petalWhite: 0.72, leafHead: [[1, 0.52, 0.18], [1.25, 0.85, 0.4]] as const, leafWhite: 0.85, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [0.8, 2.4] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.8, 1.8] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.5, 1.0, 0.6] as const, leafHigh: [1.7, 1.25, 0.75] as const },
+  /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). In the storm a streak is the true path of one exposure: the lengths in pixels it comes in between, the half length up to which it keeps its light (longer ones thin with their length), its width's share and the skew of its paleness. `stormHold` is the share of a stroke's path through the shutter that it is held back from: all of it, so that a short stroke is one stroke and not a row of dashes. `stormWhite` is how far the body of a stroke of the storm's down goes to white. */
+  line: { shutFromPx: [3, 14] as const, dwellPx: 13, shutLong: [1.2, 2.6] as const, shutSeedSkew: 1.9, shutSeedWide: 1.4, stormLong: [1.5, 14] as const, stormLongSkew: 2.6, stormArms: 3, stormArmPitchMm: 16, stormArmWide: 0.5, stormArmEdge: 0.14, stormArmJitter: 0.12, stormGapSeen: 0.08, stormGapHeads: 0.5, stormMostPx: 520, stormDwellPx: 70, stormHold: 1, stormSoft: 0.08, stormHue: 0.06, stormWhite: 0.6, stormFog: 0.15, stormFromPx: [0.8, 3] as const, stormWidePx: [0.1, 0.95] as const, stormWideSkew: 3.2, stormWideFaint: 0.4, stormBow: [0, 0.05] as const, stormBowSkew: 2, stormArc: 1, stormBowMost: 0.3, stormTaper: 0.4, stormTail: 0.3, stormGain: 9, stormAlign: [0.8, 1] as const, stormLeaves: 0, stormLeafLongPx: [12, 30] as const, stormLeafWidePx: [3, 7] as const, stormLeafSeen: 0.9, stormLeaf: [0.07, 0.17, 0.03] as const, shutWide: 0.6, shutPale: 2.2, deepMostMm: 14, seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.5, 1.6] as const, seedWidePx: [0.3, 0.6] as const, seedHeads: 0.3, fanPx: [9, 24] as const, fanHairs: 7, fanSpread: 1.2, fanShort: 0.55, fanWide: 0.7, fanCore: 0.06, fanOpen: [0.08, 0.4] as const, headSeen: 0.6, deep: [0.6, 1.2] as const, frontCut: 0.2, share: [0.2, 0.4] as const, leafStretch: [1, 2.8] as const, leafPale: 0.6, leafSkew: 1.8, petalHeads: 0.55, petalHeadPx: [4.5, 10] as const, leafHeads: 0.45, leafHeadPx: [3, 8] as const, leafWidePx: [0.9, 1.9] as const, headOval: [0.5, 0.85] as const, headLift: 3, headGain: 1.1, petalHead: [[1, 0.74, 0.86], [1.25, 1.25, 1.25]] as const, petalWhite: 0.72, leafHead: [[1, 0.52, 0.18], [1.25, 0.85, 0.4]] as const, leafWhite: 0.85, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [0.8, 2.4] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.8, 1.8] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.5, 1.0, 0.6] as const, leafHigh: [1.7, 1.25, 0.75] as const },
   /** A card in the storm, seen for the whole shutter: the places along its path it is drawn at, from which length of a piece of the path (in the card's own thin width) the card is the soft blob of its outline, and for a seed's head from which length of path (in its own radius) the hairs give way to the smear of the tuft, how much of the tuft is seen and how fast it thins with the path. */
   run: { taps: 5, blob: [0.35, 1.1] as const, seedFrom: [0.5, 2] as const, seedTuft: 0.02, seedTailMost: 1, seedThin: 0.8, seedHairs: 1, seedTrail: 0.6, seedDrawn: 0.35 },
   /** How much of the storm's sheets is taken away in front of the cottage, so that it still reads. */
@@ -224,7 +257,7 @@ export const CARD = {
   stormRock: 2.8,
   yawSway: 0.6,
   /** Of the ones that settle and stay down, the share drawn whole, in the storm and lying; the rest are the storm's small dabs and are gone once they are down. */
-  chosen: [0.01, 0.012, 0.035] as const,
+  chosen: [0.01, 0.012, 0.2] as const,
   dabSize: 0.36,
   leafDab: 0.55,
   /** How far inside the glass's outline a bat's middle stays, in its own radius: no wing is drawn outside the globe. */
@@ -258,7 +291,7 @@ export const CARD = {
   leafLie: 0.7,
   leafSheen: 0.22,
   /** Of the rest, the share that is a solid small dab in the storm, and how much the others and they are seen. */
-  dabShare: [0.2, 0.12, 0.6] as const,
+  dabShare: [0.2, 0.12, 0.42] as const,
   dabKeep: [0, 1] as const,
   /** How much of a moving card is drawn sharp at the head of its path; the rest is its trail through the shutter. */
   head: 0.85,
@@ -299,8 +332,10 @@ export const CARD = {
   /** How much lighter a bat's edge is than its body, so that its outline holds on dark air. */
   batRim: 1.5,
   /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. In the storm: how much brighter a light is (`stormGain`), how much of its wide glow is taken off (`stormHalo`), and the share of its path through the shutter it is held back from (`stormHold`), so that it is a short stroke and not a faint thread. */
-  glow: { unlit: 0.4, gain: 4, lightHide: 0, stormHalo: 0.6, stormHold: 0.8, stormGain: 3.2, discSeen: 0.55, swarm: [17, 1.3, 15, 0.4, 29, 2] as const, swarmFine: 0.45, swarmFrom: [-0.2, 0.35] as const, swarmOut: 0.93, cottageOut: 0.75, spread: [0.5, 1.6, 2.4] as const, nearPx: [8, 13] as const, discEdge: 0.7, discFrom: [3.5, 6] as const, discWide: 1.55, discRim: 0.3, discHold: 0.8, core: 0.26, halo: 1.15, wide: 4.5, haloShare: 0.15, wideShare: 0.01, soft: 0.1, hide: 0.6, blinkLow: 0.25, blinkSkew: 1.2, pale: 0.95, sparkPale: 0.65, nearShare: 0.05, lowAt: [-0.6, 0.12] as const, lowWide: [0.3, 0.28] as const, ring: [0.95, 0.4] as const, moreKeep: 1, fieldOut: 0.1, topAt: [-0.05, 0.7] as const, topWide: [0.35, 0.22] as const, topOut: 0.8, green: [0.93, 1, 1] as const, gold: [1, 0.82, 1.4] as const, goldFrom: [0.4, 0.8] as const },
+  glow: { unlit: 0.4, gain: 5.6, lightHide: 0, stormHalo: 0.6, stormHold: 0.8, stormGain: 3.2, discSeen: 0.55, swarm: [17, 1.3, 15, 0.4, 29, 2] as const, swarmFine: 0.45, swarmFrom: [-0.6, 0.6] as const, swarmEdge: 0.5, swarmFly: [2, 5] as const, swarmOut: 0.93, cottageOut: 0.75, spread: [0.5, 1.6, 2.4] as const, nearPx: [8, 13] as const, discEdge: 0.7, discFrom: [3.5, 6] as const, discWide: 1.55, discRim: 0.3, discHold: 0.8, core: 0.26, coreVary: [0.6, 1.5] as const, coreSkew: 2, halo: 0.95, haloVary: [0.5, 1.8] as const, haloSkew: 1.5, haloSeen: [0.4, 1.8] as const, wide: 4.5, haloShare: 0.15, wideShare: 0.01, soft: 0.1, hide: 0.6, blinkLow: 0.25, blinkSkew: 1.2, lensFilm: 0.5, pale: 0.7, sparkPale: 0.65, nearShare: 0.05, lowAt: [-0.6, 0.12] as const, lowWide: [0.3, 0.28] as const, ring: [0.95, 0.4] as const, moreKeep: 1, fieldOut: 0.1, topAt: [-0.05, 0.7] as const, topWide: [0.35, 0.22] as const, topOut: 0.8, green: [0.9, 1, 0.9] as const, gold: [1, 0.82, 1.4] as const, goldFrom: [0.4, 0.8] as const },
   spark: { gain: 2.1, core: 0.3, halo: 1.3, haloShare: 0.07, tail: 1.6, calmTail: 0.1, hotCore: 0.8, hotWide: 0.3, hotFrom: [0.8, 2.2] as const, discHold: 0.25, discRim: 0.08, soft: 0.12, nearShare: 0.022, nearFrom: [0.05, 0.45] as const, nearPx: [9, 20] as const, calmStreak: 0.08, small: 1.8, large: 0.75, fromMm: [0.12, 0.7] as const, hot: [1, 0.68, 0.2] as const, dying: [0.85, 0.17, 0.03] as const },
   // `stormHold` is the share of a head's path through the shutter that it is held back from: a head of the storm smears by about its own width and keeps its tuft.
-  hair: { gain: 1, soft: 0.06, stormSoft: 0.1, stormBall: 0.04, stormSize: 1.25, stormShare: 0.9, stormFog: 0.35, nearSeen: 1.5, restSize: 1.85, restShare: 1, restClear: 0.45, even: 0.62, evenX: [-0.45, -0.15] as const, evenY: [-0.25, 0.1] as const, evenMost: 0.92, evenAt: [-0.32, 0.34] as const, evenWide: [0.27, 0.19] as const, nearDense: 0.9, nearLow: [-0.4, -0.28] as const, litMost: 0.95, rimFrom: [0.84, 0.92] as const, farSize: 0.55, farFrom: [-0.6, 0.2] as const, farSoft: 0.15, nearShare: 0.27, nearFrom: [-0.15, 0.2] as const, nearSize: 1.15, dim: [0.4, 0.62] as const, softPx: [0.6, 1.2] as const, puffFrom: [-0.55, -0.1] as const, puffPx: [2, 3] as const, puffBall: 1.4, sceneEdge: [0.75, 1.1] as const, cottageAt: [-0.48, -0.17] as const, cottageWide: [0.36, 0.27] as const, crownAt: [0.34, 0.26] as const, crownWide: [0.41, 0.3] as const, sceneOut: [0.7, 0.78] as const, sceneDim: 0.3, heartShare: 0.85, heartWide: 0.2, heartSeen: 0.6, heartTint: [1.6, 1.25, 0.8] as const, restBall: 0.05, runHead: 0.5, runTrail: 0.6, runWide: 0.04, wide: 0.0024, seen: 1.25, seedSeen: 2, hairSeen: 1.25, faint: 0.7, hubSeen: 0.6, stemSeen: 0.4, stalks: 0.34, lens: 0.04, stormSeen: 1.3, reach: 1.4, foot: 1.15, footSpan: [0.85, 1.1] as const, stem: 0.004, body: 0.022, grain: 0.1, hub: 0.55, spread: [0.5, 1.4, 1.4] as const, count: 52, least: 0.62, jitter: 0.85, long: [0.36, 0.84] as const, thin: 0.2, lean: 0.1, tipFade: 0.55, ballAt: 0.2, ballWide: 0.3, ball: [0.3, 0.5] as const, ballFrom: [0.06, 0.45] as const, stemTint: [0.5, 0.4, 0.28] as const, grainTint: [0.08, 0.045, 0.025] as const, bow: 0.4, cup: 0.4, heartDim: 0.2, dimTint: [1, 0.9, 0.76] as const, stormHold: 0.7, stormPale: 0.5, stormScene: 0.55 },
+  // `inside` is the share of the ball's outline on the picture that no part of a seed is drawn past, and `insidePad` a seed's spare room to it in its own radius.
+  hair: { gain: 2.1, inside: 0.97, insidePad: 0.2, soft: 0.015, stormSoft: 0.05, stormBall: 0.04, stormSize: 1.25, stormShare: 0.9, stormFog: 0.35, nearSeen: 1.2, restSize: 2.15, restShare: 0.66, restClear: 0.45, even: 0.62, evenX: [-0.45, -0.15] as const, evenY: [-0.25, 0.1] as const, evenMost: 0.92, evenAt: [-0.32, 0.34] as const, evenWide: [0.27, 0.19] as const, nearDense: 0.9, nearLow: [-0.4, -0.28] as const, litMost: 0.95, rimFrom: [0.84, 0.92] as const, farSize: 0.75, farFrom: [-0.6, 0.2] as const, farSoft: 0.15, nearShare: 0.27, nearFrom: [-0.15, 0.2] as const, nearSize: 1.15, dim: [0.4, 0.62] as const, softPx: [0, 0.04] as const, puffFrom: [-0.55, -0.1] as const, puffPx: [2, 3] as const, puffBall: 1.4, sceneEdge: [0.75, 1.1] as const, cottageAt: [-0.48, -0.17] as const, cottageWide: [0.36, 0.27] as const, crownAt: [0.34, 0.26] as const, crownWide: [0.41, 0.3] as const, sceneOut: [0.7, 0.78] as const, sceneDim: 0.3, heartShare: 1, heartWide: 0.09, heartSeen: 1, heartTint: [4.2, 3.9, 3.1] as const, rayHeart: 1.5, rayTip: 0.6, restBall: 0.05, runHead: 0.5, runTrail: 0.6, runWide: 0.04, seen: 1.25, seedSeen: 2, hairSeen: 1.25, faint: 0.7, hubSeen: 0.6, stemSeen: 0.45, stalks: 0.25, lens: 0.09, lensFilm: 0.3, stormSeen: 1.3, reach: 2, foot: 1.6, footSpan: [0.85, 1.1] as const, stem: 0.004, body: 0.03, grain: 0.07, hub: 0.8, spread: [0.55, 2, 1.8] as const, bigFrom: [0.45, 0.95] as const, bigSoftPx: 0.05, bigSeen: 0.85, lensShare: 0.08, lensPx: [1.6, 4.5] as const, stormStalks: 0.12, lean: 0.1, ballAt: 0.05, ballWide: 0.3, ball: [0.3, 0.5] as const, ballFrom: [0.06, 0.45] as const, stemTint: [1.25, 1.1, 0.85] as const, grainTint: [0.22, 0.1, 0.05] as const, heartDim: 0.5, dimTint: [1, 0.9, 0.76] as const, stormHold: 0.7, stormPale: 0.5, stormScene: 0 },
+  down: { tile: 256, tilts: 8, half: 1.3, size: 0.66, most: 4, lodMost: 5, lodPx: 0.3, lodBlur: 3, leanSkew: 1.5, stormLeanSkew: 0.5, faceOn: 0.03, jitter: 0.06, wide: 0.5, long: [0.82, 1] as const, weight: [0.8, 1.1] as const, bow: 0.05, tipFade: 0.5, tips: 0.9, tipSeen: 0.5, tipWide: 1.8, fineShare: 0.3, fineLong: 0.94, fineSeen: 0.75, heart: 3, heartWide: 0.03, forms: [{ hairs: 64, cap: [0.7, 0.15] }, { hairs: 58, cap: [0.75, 0.2] }, { hairs: 70, cap: [0.6, 0.05] }, { hairs: 60, cap: [0.8, 0.25] }] as const },
 }
