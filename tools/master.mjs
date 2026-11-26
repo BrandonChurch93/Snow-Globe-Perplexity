@@ -10,8 +10,8 @@ import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './li
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
 import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, headerRefFrames, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
-import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, hours, intermediateVideo, joinPlan, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
-import { Shipper, collectBranches, repoFacts } from './lib/mastergit.mjs'
+import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, heldLine, heldRanges, hours, intermediateVideo, joinPlan, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, parseTake, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
+import { Shipper, identityProblem, mainAuthor, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const say = console.log
@@ -19,8 +19,8 @@ const USAGE = [
   'npm run master -- --what film-b|loop|opening [--first N --last M] [--ship BRANCH] [--procs P] [--crf N] [--part-mb N]',
   'npm run master -- --calibrate',
   'npm run master -- --hd film-a|film-b [--test]',
-  'npm run master -- --collect DIR [--files FOLDER] [--keep]',
-  'npm run master -- --encode film-b|film-a|loop --from DIR [--target-mb N] [--preset P] [--keyint N] [--min-keyint N] [--x264 PARAMS] [--final-min-psnr N]',
+  'npm run master -- --collect DIR [--files FOLDER] [--keep] [--no-branches] [--take BRANCH | WHAT:FIRST-LAST=BRANCH,...]',
+  'npm run master -- --encode film-b|film-a|loop --from DIR [--target-mb N] [--preset P] [--keyint N] [--min-keyint N] [--x264 PARAMS] [--final-min-psnr N] [--take ...]',
   '  and for the loop: [--crf N] [--min-crf N] [--loop-x264 PARAMS] [--seam-db N]',
   'npm run master -- --split FILE [--part-mb N]',
   'npm run master -- --unsplit DIR [--out FILE]',
@@ -562,6 +562,8 @@ async function render() {
     say(`${all - todo.length} ${all - todo.length === 1 ? 'chunk is' : 'chunks are'} finished, ${todo.length} to do, ${progress.left} frames to render (${todo.reduce((n, c) => n + c.last - c.first + 1 - c.missing.length, 0)} more are on disk as PNGs)`)
     if (args.ship !== undefined) {
       shipper = new Shipper({ branch: argText(args, 'ship', ''), say })
+      const who = identityProblem(mainAuthor(), shipper.identity())
+      if (who) throw new Error(who)
       shipper.prepare()
       for (const c of ctx.chunks) if (!todo.some((t) => t.first === c.first)) ship(shipper, ctx, c)
     }
@@ -610,9 +612,9 @@ function printOutbox(ctx) {
   groups.forEach((g, k) => say(`  message ${k + 1}: ${g.map(short).join(' ')}`))
 }
 
-function printCover(chunks) {
-  for (const r of coverReport(chunks, totalsFromCut())) {
-    say(`${r.what}: ${r.chunks} of ${r.wanted} chunks. There: ${r.there.length ? r.there.map(span).join(', ') : 'nothing'}. Missing: ${r.missing.length ? r.missing.map(span).join(', ') : 'nothing'}`)
+function printCover(chunks, open = []) {
+  for (const r of coverReport(chunks, totalsFromCut(), SIZE, open)) {
+    say(`${r.what}: ${r.chunks} of ${r.wanted} chunks. There: ${r.there.length ? r.there.map(span).join(', ') : 'nothing'}. Missing: ${r.missing.length ? r.missing.map(span).join(', ') : 'nothing'}${r.notAgreed.length ? `. Held but not agreed: ${r.notAgreed.map(span).join(', ')}` : ''}`)
   }
   const tests = chunks.filter((c) => c.record.test)
   if (tests.length) say(`test chunks, which no master is made from: ${tests.length} (${[...new Set(tests.map((c) => c.record.what))].join(', ')})`)
@@ -636,9 +638,12 @@ function collect() {
     for (const p of got.problems) say(`NOT COMPLETE: ${p}`)
     if (got.strangers.length) say(`${got.strangers.length} ${got.strangers.length === 1 ? 'file' : 'files'} in ${short(folder)} that no record here names (left there): ${got.strangers.slice(0, 8).map((f) => path.basename(f)).join(', ')}${got.strangers.length > 8 ? ', ...' : ''}`)
   }
-  const all = readChunks([rel('out', 'master'), dir])
-  const taken = all.filter((c) => fs.existsSync(c.file))
-  const waiting = all.filter((c) => !fs.existsSync(c.file))
+  const held = heldRanges(readChunks([rel('out', 'master'), dir]), { take: parseTake(args.take), exists: fs.existsSync })
+  for (const g of held) if (g.holders.length > 1) say(g.taken ? heldLine(g) : `NOT AGREED: ${heldLine(g)}`)
+  const open = held.filter((g) => !g.taken)
+  const all = held.map((g) => g.taken ?? g.holders.find((c) => notNumberOf(c.record)) ?? g.holders[0])
+  const taken = held.filter((g) => g.taken && fs.existsSync(g.taken.file)).map((g) => g.taken)
+  const waiting = held.filter((g) => g.taken && !fs.existsSync(g.taken.file)).map((g) => g.taken)
   if (waiting.length) say(`${waiting.length} ${waiting.length === 1 ? 'record has' : 'records have'} no picture here yet: ${waiting.slice(0, 12).map(chunkName).join('; ')}${waiting.length > 12 ? '; ...' : ''}`)
   const nan = all.filter((c) => notNumberOf(c.record))
   for (const c of nan) say(`${NOT_A_NUMBER}: ${notNumberLine(c)}. Do not encode from it, and do not draw it again hoping: tell /root the frames.`)
@@ -647,8 +652,8 @@ function collect() {
   const bad = flatChunks(taken)
   for (const b of bad) say(`FLAT: ${flatLine(b)}. Do not encode from it: render that range again.`)
   if (!bad.length) say(`no flat frame in ${taken.length} ${taken.length === 1 ? 'chunk' : 'chunks'}`)
-  printCover(taken)
-  if (bad.length || incomplete.length || nan.length) process.exit(1)
+  printCover(taken, open)
+  if (bad.length || incomplete.length || nan.length || open.length) process.exit(1)
 }
 
 function flatChunks(chunks) {
@@ -733,7 +738,7 @@ async function encodeMaster() {
   if (from && !fs.existsSync(from)) throw new Error(`--from ${args.from} does not exist. Run --collect ${args.from} first.`)
   const totals = totalsFromCut()
   const chunks = readChunks([rel('out', 'master'), ...(from ? [from] : [])]).filter((c) => c.test === test)
-  const plan = joinPlan({ which, chunks, totals, test, size: test ? Math.max(SIZE, ...chunks.map((c) => c.record.frames ?? 0)) : SIZE, gaps: args.gaps === true, sha: (f) => (fs.existsSync(f) ? bigSha(f) : null) })
+  const plan = joinPlan({ which, chunks, totals, test, take: parseTake(args.take), exists: fs.existsSync, size: test ? Math.max(SIZE, ...chunks.map((c) => c.record.frames ?? 0)) : SIZE, gaps: args.gaps === true, sha: (f) => (fs.existsSync(f) ? bigSha(f) : null) })
   if (!plan.ok) {
     say(`${which} cannot be encoded:`)
     for (const p of plan.problems) say(`- ${p}`)
