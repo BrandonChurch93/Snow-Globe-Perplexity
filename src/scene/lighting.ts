@@ -52,7 +52,7 @@ export const ROOM_RIG = {
  * dark of the room: the light reads as pouring out of the glass, not as a pale frame. `lens` is the tint of the glow round
  * what burns, risen over `fall` of the swell from `swellFrom` of the window. The live picture has the same cover.
  */
-export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, glare: 3, glareReach: 0.8, glareSeat: 0.1 } as const
+export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, glare: 2, glareReach: 0.7, glareSeat: 0.1 } as const
 
 const SHADOW_OFF = 10
 

@@ -1,11 +1,12 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
-import { FRAME, livePath, liveRig, roomUnder, standBack, type Shaking } from '../src/app/framing'
+import { FRAME, edges, livePath, liveRig, roomUnder, shakeReach, standBack, type Shaking } from '../src/app/framing'
 import { config } from '../src/config'
 import { poseOfRig, reachOf, rigOf, type Rig } from '../src/film/moves'
 import { beatSeconds } from '../src/film/timeline'
 import { lensPlace } from '../src/globe/lens'
-import { poseById, sphereCentreMm } from '../src/scene/cameras'
+import { Backdrop } from '../src/scene/backdrop'
+import { farApertureMm, farFromMm, poseById, sphereCentreMm } from '../src/scene/cameras'
 import { framingOf, globeTopMm, sphereRadiusMm } from '../src/scene/framing'
 import { anchors, centreHeightMm, shapePoints, shapes, type Role } from '../src/scene/layout'
 import { SLAB_SHAPE } from '../src/scene/surface'
@@ -464,10 +465,178 @@ describe('the framing of the app through a shake', () => {
       for (const back of [0.2, 0.5, 1]) {
         const rig = liveRig(w / h, 0, 0, roomUnder(h, null, w), { beat: back * liftBeats, sinceLanding: long })
         expect(rig.pitchDeg, name).toBe(hero.pitchDeg)
-        expect(rig.yawDeg, name).toBe(hero.yawDeg)
+        expect(rig.yawDeg, name).toBe(hero.yawDeg + (w / h < FRAME.narrowAspect ? FRAME.narrowYawDeg : 0))
         expect(rig.fovDeg, name).toBe(hero.fovDeg)
         expect(rig.distanceMm, name).toBeGreaterThanOrEqual(hero.distanceMm)
       }
     }
+  })
+
+  /** The tilts a visitor can hold, in degrees from the level view: the lowest, then `n` evenly up to the highest. */
+  const tiltsOf = (n: number): number[] => {
+    const level = rigOf('hero').pitchDeg
+    return [config.live.orbitPitchMinDeg - level, ...Array.from({ length: n }, (_, i) => ((i + 1) / n) * (config.live.orbitPitchMaxDeg - level))]
+  }
+
+  it('keeps a tilted view to the room the level one has: at every tilt the orbit allows, at rest and at every moment of every shake, the heap stays over the line of the controls and the lifted glass under the top edge by the margin, and the globe stays between the sides', () => {
+    const paths = Array.from({ length: FRAME.shakePaths }, (_, n) => livePath(n))
+    const all = moments(8 * FRAME.pathStepBeats)
+    for (const [name, w, h] of screens) {
+      const a = w / h
+      for (const controls of [null, Math.round(0.152 * h)]) {
+        const under = roomUnder(h, controls, w)
+        const low = -1 + 2 * under
+        for (const tilt of tiltsOf(4)) {
+          const worst = cover(liveRig(a, 0, tilt, under), REST_POSE)
+          for (const m of all) {
+            const rig = liveRig(a, 0, tilt, under, m.at)
+            for (const path of paths) {
+              const c = cover(rig, path.poseAt(m.beat))
+              worst.side = Math.max(worst.side, c.side)
+              worst.top = Math.max(worst.top, c.top)
+              worst.foot = Math.max(worst.foot, c.foot)
+              worst.heap = Math.max(worst.heap, c.heap)
+            }
+          }
+          expect(worst.top, `${name} ${controls} ${tilt} top`).toBeLessThanOrEqual(room + slack)
+          expect(-worst.foot, `${name} ${controls} ${tilt} foot`).toBeGreaterThanOrEqual(low - slack)
+          expect(-worst.heap, `${name} ${controls} ${tilt} heap`).toBeGreaterThanOrEqual(low - slack)
+          // A tilt changes how near each end of a stroke stands, so the sides keep at least half the margin, not all of it.
+          expect(worst.side / a, `${name} ${controls} ${tilt} side`).toBeLessThanOrEqual(1 - FRAME.edgeShare)
+        }
+      }
+    }
+  })
+
+  it('moves the camera for a tilt only where the room asks: never nearer, not at all where the tilted globe still stands between the line and the margin, and where it stands back, only until the heap is on the line and the lifted glass on the margin', () => {
+    let stood = 0
+    let still = 0
+    for (const [name, w, h] of screens) {
+      const a = w / h
+      for (const controls of [null, Math.round(0.152 * h)]) {
+        const under = roomUnder(h, controls, w)
+        const low = -1 + 2 * under
+        for (const at of [null, { beat: liftBeats, sinceLanding: long }]) {
+          const level = liveRig(a, 0, 0, under, at)
+          for (const tilt of tiltsOf(8)) {
+            const rig = liveRig(a, 0, tilt, under, at)
+            const plain = { ...level, pitchDeg: rig.pitchDeg }
+            expect(rig.distanceMm, `${name} ${controls} ${tilt}`).toBeGreaterThanOrEqual(level.distanceMm)
+            if (edges(plain).heap >= low && shakeReach(plain).top <= room) {
+              expect(rig.distanceMm, `${name} ${controls} ${tilt}`).toBe(level.distanceMm)
+              still++
+            }
+            if (rig.distanceMm > level.distanceMm + 1e-6) {
+              expect(edges(rig).heap, `${name} ${controls} ${tilt}`).toBeCloseTo(low, 6)
+              expect(shakeReach(rig).top, `${name} ${controls} ${tilt}`).toBeCloseTo(room, 6)
+              stood++
+            }
+          }
+        }
+      }
+    }
+    expect(stood).toBeGreaterThan(0)
+    expect(still).toBeGreaterThan(0)
+    const p = config.formats.phone
+    const phone = roomUnder(p.height, null, p.width)
+    for (const tilt of tiltsOf(8).slice(1)) expect(liveRig(p.width / p.height, 0, tilt, phone).distanceMm).toBe(liveRig(p.width / p.height, 0, 0, phone).distanceMm)
+    const top = tiltsOf(1)[1]!
+    expect(liveRig(hd.width / hd.height, 0, top, roomUnder(hd.height, null, hd.width)).distanceMm / liveRig(hd.width / hd.height, 0, 0, roomUnder(hd.height, null, hd.width)).distanceMm).toBeLessThan(1.25)
+  })
+
+  it('never steps as the view tilts: a tenth of a degree moves the camera back by under a millimetre and its aim by under a quarter of one, or by under a millimetre and a half where a view tilted down meets the near edge of the table', () => {
+    const [lowest, highest] = tiltsOf(1) as [number, number]
+    const most = { back: 0, up: 0, down: 0 }
+    for (const [, w, h] of screens) {
+      const a = w / h
+      const under = roomUnder(h, null, w)
+      for (const at of [null, { beat: liftBeats, sinceLanding: long }]) {
+        let was = liveRig(a, 0, lowest, under, at)
+        for (let tilt = lowest + 0.1; tilt <= highest + 1e-9; tilt += 0.1) {
+          const rig = liveRig(a, 0, tilt, under, at)
+          most.back = Math.max(most.back, Math.abs(rig.distanceMm - was.distanceMm))
+          if (tilt > 1e-9) most.up = Math.max(most.up, Math.abs(rig.aimHeightMm - was.aimHeightMm))
+          else most.down = Math.max(most.down, Math.abs(rig.aimHeightMm - was.aimHeightMm))
+          was = rig
+        }
+      }
+    }
+    expect(most.back).toBeGreaterThan(0)
+    expect(most.back).toBeLessThan(1)
+    expect(most.up).toBeLessThan(0.25)
+    expect(most.down).toBeLessThan(1.5)
+  })
+})
+
+describe('the room behind the globe on a narrow upright screen', () => {
+  type Light = { at: THREE.Vector3; size: number; energy: number }
+  const lights = (new Backdrop() as unknown as { emitters: Light[] }).emitters
+  /** A light counts as bright from a tenth of full, and its disc is seen to about 1.4 times its radius: both read off the app's still of a phone. */
+  const bright = 0.1
+  const soft = 1.4
+
+  /** The bright lights of the room that an edge of the frame cuts, at rest: neither whole inside it, nor outside it, nor behind the glass. */
+  const cut = (rig: Rig, w: number, h: number): { x: number; y: number; level: number }[] => {
+    const pose = poseOfRig(rig)
+    const cam = new THREE.PerspectiveCamera(pose.fovDeg, w / h, 1, 1e5)
+    cam.position.copy(pose.position)
+    cam.lookAt(pose.aim)
+    cam.updateMatrixWorld()
+    const f = h / 2 / Math.tan((pose.fovDeg * RAD) / 2)
+    const glass = new THREE.Vector3(0, sphereCentreMm, 0).project(cam)
+    const gx = ((glass.x + 1) / 2) * w
+    const gy = ((1 - glass.y) / 2) * h
+    const gr = (f * sphereRadiusMm) / pose.position.distanceTo(new THREE.Vector3(0, sphereCentreMm, 0))
+    const out: { x: number; y: number; level: number }[] = []
+    for (const e of lights) {
+      if (e.at.y <= 0) continue
+      const depth = e.at.clone().sub(pose.position).dot(pose.aim.clone().sub(pose.position).normalize())
+      const mm = e.size + pose.apertureMm * Math.abs(depth / pose.focusMm - 1) + farApertureMm(pose) * Math.max(0, depth / farFromMm(pose) - 1)
+      const level = (e.energy * e.size * e.size) / (mm * mm)
+      if (level < bright) continue
+      const n = e.at.clone().project(cam)
+      const x = ((n.x + 1) / 2) * w
+      const y = ((1 - n.y) / 2) * h
+      const r = (soft * mm * f) / depth
+      const whole = x - r >= 0 && x + r <= w && y - r >= 0 && y + r <= h
+      const outside = x + r < 0 || x - r > w || y + r < 0 || y - r > h
+      const behind = Math.hypot(x - gx, y - gy) < gr - r
+      if (!whole && !outside && !behind) out.push({ x, y, level })
+    }
+    return out
+  }
+
+  const narrow: [number, number][] = [
+    [320, 568],
+    [360, 800],
+    [375, 667],
+    [config.formats.phone.width, config.formats.phone.height],
+    [393, 852],
+    [412, 915],
+    [430, 932],
+  ]
+
+  it('stands FRAME.narrowYawDeg round the globe at rest, where no bright light of the room is cut by an edge of the frame', () => {
+    for (const [w, h] of narrow) {
+      expect(w / h).toBeLessThan(FRAME.narrowAspect)
+      for (const controls of [null, Math.round(0.152 * h)]) {
+        const rig = liveRig(w / h, 0, 0, roomUnder(h, controls, w))
+        expect(rig.yawDeg).toBe(rigOf('hero').yawDeg + FRAME.narrowYawDeg)
+        expect(cut(rig, w, h), `${w} x ${h} ${controls}: FRAME.narrowYawDeg was chosen for the lights of the room as they are placed`).toEqual([])
+      }
+    }
+  })
+
+  it('mends what the review saw: straight on, a phone has one bright light cut in half by its left edge, over the middle of the glass', () => {
+    const p = config.formats.phone
+    const rig = { ...liveRig(p.width / p.height, 0, 0, roomUnder(p.height, null, p.width)), yawDeg: rigOf('hero').yawDeg }
+    const seen = cut(rig, p.width, p.height)
+    expect(seen).toHaveLength(1)
+    expect(Math.abs(seen[0]!.x)).toBeLessThan(0.03 * p.width)
+    expect(seen[0]!.y).toBeLessThan(p.height / 2)
+  })
+
+  it('leaves the turn alone on every other screen: the film\'s own', () => {
+    for (const [w, h] of [[1024, 1366], [1000, 1000], [1920, 1080], [844, 390], [2560, 1080]] as const) expect(liveRig(w / h, 0, 0, roomUnder(h, null, w)).yawDeg).toBe(rigOf('hero').yawDeg)
   })
 })
