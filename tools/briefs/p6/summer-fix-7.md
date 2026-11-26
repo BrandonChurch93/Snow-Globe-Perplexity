@@ -111,10 +111,46 @@ turn.
    heads on the roof, the eaves and the chimney, do it; if that needs the miniature's builder, tell /root
    what you need from it.
 
-## Glass, Miniature, Sand, Stone
+## Glass (`src/seasons/summer/glass.ts`)
 
-Your headings are written when R1, R3 part 2 and R4 are in (within the hour). Known already from R3 part 1,
-so that you can think ahead: the seat of the glass in the collar has no recess and no contact shadow (Glass
-and Stone); the teal and blue inlays read as moulded plastic with one highlight for all (Stone); the ivy's
-larger leaves at the door are flat cut card (Miniature); three jurors call the flare an artificial starburst
-(Glass).
+Written 17:10 UTC, before R1 and R4 are in; what they name for you is added below and you are told.
+Time: eighty minutes from the message, of which the checks take the last ten. Item 1 comes first and alone.
+
+1. The haze, first and alone, pushed within twenty minutes. The Air's builder is making the heads into lit
+   balls of down, white gold. They have to stand against dark, and behind them at rest lies your wall
+   layer's haze (`W.haze` 0.32, `hazeColor`, `hazeHigh`, `hazeTall`, near lines 419 to 427): in the upper
+   half of the ball, where the room shows through (pair A), ours is a khaki wash and the approved is near
+   black with soft red brown shapes. Thin the haze there. Keep the warm glow where the approved has it: low
+   at the left by the burn and round the lanterns. Push that one change, tell /root its commit, and go on;
+   the Air merges it and sets its light on what it then sees.
+2. The flare (pair G). Three jurors of the twelve who called our picture an ordinary render named it: "the
+   artificial starburst flare", "overlaid-looking starburst flare", "the artificial starburst flare on the
+   glass dome". The same jurors on the approved: "natural bokeh and light flares". What I see in pair G: ours
+   has a large white core and about ten long thick rays with hard edges, a drawn star. The approved has a
+   small hot core in a soft warm glow and many fine rays, twenty or more, faint, unequal, most of them short,
+   warm gold and not white: a lens's answer to a light. So: the core about half as large, three times the
+   rays at a third of the width, fainter, unequal, with soft ends; the glow warm. It must not read as a
+   drawn star at 400 pixels.
+3. The seat, with Stone. R3 part 1, major (`set-C-03.jpg`, crops 9 and 12, the interior camera at native
+   size): "The thin blue edge of the sphere cuts straight into a bright, uninterrupted collar. There is no
+   visible recess or narrow contact shadow to show how the glass is seated." Its fix: "Recess the glass into
+   the collar, expose a thin bevel at the seat, and add a tight contact shadow that follows the join."
+   Stone gets the same words: agree between you in one message each who draws what (the collar's groove and
+   bevel are Stone's form, the shadow in it and the glass's own dark line at the seat are light), and say it
+   in your reports.
+4. The light lines on the table at the masters' size. A farm machine drew rest and landed at 3840 x 2160 at
+   the final tier on `0e1100bb`: the light line the globe throws on the table under the left sprinkle (about
+   x 940 to 1060, y 1905 to 1935) has a red upper rim and a blue violet lower rim, 1 to 2 pixels, and beside
+   it stand three rainbow specks of 3 to 4 pixels (red top, teal middle, blue bottom) at about (1012,1923),
+   (1034,1918), (1038,1930); the other light lines left of the base show the same thin rims. Take the colour
+   off those rims or make it too small to see at 1:1.
+
+## Miniature, Sand, Stone
+
+Your headings are written when R1 and R4 are in (within the hour). Known already, so that you can think
+ahead. From R3 part 1: the seat of the glass in the collar has no recess and no contact shadow (Stone, with
+Glass); the teal and blue inlays read as moulded plastic with one highlight for all (Stone); the ivy's larger
+leaves at the door are flat cut card (Miniature). From R3 part 2 (score 7): the sand fall at the right breaks
+into vertical strips instead of grains (Sand); a black hole and a dark speck stand in the pale sand of the
+bank, seen from the base and the interior cameras (Sand or Miniature, whoever owns that face); no seed has
+come to rest on the roof, the branches or the grass (Air).
