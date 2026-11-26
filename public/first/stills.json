@@ -531,23 +531,24 @@
       "width": 1920,
       "height": 1080,
       "ratio": 1,
+      "bar": 74,
       "globe": [
-        35087,
-        30643
+        35803,
+        31294
       ],
-      "from": "d15bce09a2791dd4",
+      "from": "96b6bd48e032c308",
       "coder": 3,
       "avif": {
-        "bytes": 58808,
+        "bytes": 59214,
         "quality": 48,
         "scale": 1,
-        "sha": "9dc41b5688f410686d997be9022761c400213f3a965d9a4ec3dba5321e4b2bbc"
+        "sha": "55dd2d6e5ca83e80bd617f672898c160b715fcaef47545a2fe2ac74f5dd68743"
       },
       "webp": {
-        "bytes": 89640,
-        "quality": 59,
+        "bytes": 89356,
+        "quality": 57,
         "scale": 1,
-        "sha": "50cd9eb163a4f3db320867c99706c8798cc84b07f952a8f7fad6909e3c4227e6"
+        "sha": "ea32cbb0118413fb2d5661766ee8c5012653dc88e986689bf0e8bfbe3952d033"
       }
     },
     "winter-phone": {
@@ -556,23 +557,24 @@
       "width": 390,
       "height": 844,
       "ratio": 2,
+      "bar": 154,
       "globe": [
-        41410,
-        18435
+        37903,
+        18430
       ],
-      "from": "d15bce09a2791dd4",
+      "from": "96b6bd48e032c308",
       "coder": 3,
       "avif": {
-        "bytes": 59223,
+        "bytes": 57479,
         "quality": 55,
         "scale": 1,
-        "sha": "0d44a5536a918b16e025a244bd920f740f9517f6d9c139b46177216aaa4398c3"
+        "sha": "4aa08e3bfda7cbb5cf145a35d0260bd164303c893dc33e1da974130a3649fba4"
       },
       "webp": {
-        "bytes": 87102,
-        "quality": 76,
+        "bytes": 88922,
+        "quality": 77,
         "scale": 1,
-        "sha": "61ea56f174cd66df46d1dbf32a3bf838ff89b6cf72d1b55687c5267a8d7a0531"
+        "sha": "cb74431c2a1fd7ee45db78b633995c0b3cfc844d48f9bd4a64f8e0ccb09e3536"
       }
     },
     "winter-phone590": {
@@ -656,23 +658,24 @@
       "width": 1024,
       "height": 1366,
       "ratio": 1.5,
+      "bar": 86,
       "globe": [
-        36854,
-        30019
+        38325,
+        30024
       ],
-      "from": "d15bce09a2791dd4",
+      "from": "96b6bd48e032c308",
       "coder": 3,
       "avif": {
-        "bytes": 56414,
-        "quality": 38,
+        "bytes": 59693,
+        "quality": 39,
         "scale": 0.8,
-        "sha": "570067b131a828497721aab5026604f9bf181a1fcb254f038f714af12a756406"
+        "sha": "a2320fe34c691ac5c1364ef7567351fc0773c32b36dea708906e654e101fe276"
       },
       "webp": {
-        "bytes": 89476,
+        "bytes": 89242,
         "quality": 56,
         "scale": 0.64,
-        "sha": "de809bba71e4f99089f3d3fe07df355eb6d3ee4536bd00631fb6c30ae009ef6e"
+        "sha": "27bff928ff309f4c84b42c8e6f0e754be02fa6c50321f5c8e95f85dfb07fef3a"
       }
     },
     "winter-wide": {
@@ -700,5 +703,68 @@
         "sha": "5009399a85ac52c2ca409b5338510af9fce1e6e756b22183d2464b21e8a49ed1"
       }
     }
+  },
+  "controls": {
+    "q": [
+      "(min-width: 720px) and (max-height: 820px)",
+      "(min-width: 720px) and (max-height: 560px)",
+      "(min-width: 2200px) and (min-height: 1300px)",
+      "(min-width: 720px) and (orientation: portrait), (min-width: 720px) and (pointer: coarse)",
+      "(min-width: 720px) and (max-height: 560px) and (pointer: coarse)",
+      "(max-width: 559px), (max-width: 719px) and (min-height: 481px)",
+      "(min-width: 560px) and (max-width: 719px) and (max-height: 480px)"
+    ],
+    "m": {
+      "1000000": [
+        62,
+        10
+      ],
+      "1001000": [
+        86,
+        17
+      ],
+      "1100000": [
+        50,
+        6
+      ],
+      "1101100": [
+        54,
+        5
+      ],
+      "0000010": [
+        154,
+        34
+      ],
+      "0000001": [
+        60,
+        6
+      ],
+      "0001000": [
+        86,
+        17
+      ],
+      "0000000": [
+        74,
+        14
+      ],
+      "0010000": [
+        96,
+        19
+      ],
+      "0011000": [
+        86,
+        17
+      ]
+    },
+    "shapes": {
+      "hd": 74,
+      "wide": 74,
+      "tablet": 86,
+      "phone": 154,
+      "phone750": 154,
+      "phone667": 154,
+      "phone590": 154
+    },
+    "from": "748f51089a269cbc"
   }
 }
