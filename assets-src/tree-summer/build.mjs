@@ -11,10 +11,13 @@ const TAU = Math.PI * 2
 const LEAF_CELL = 0.85
 const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
-const SPRIGS = { share: 0.8, size: [1.8, 3.1], rise: 0.35, out: 0.34 }
-const TONE = { deep: [0.22, 0.5, 0.34], mid: [0.4, 0.76, 0.46], tip: [0.9, 1.45, 0.5] }
-// Only the top of a pad, with open air over it, takes the light. Its sides and its underside are in deep shade.
-const SHADE = { body: 0.04, clearMm: 2.4, upFrom: 0.2, upTo: 0.85, tight: 1.25 }
+const SPRIGS = { share: 1, size: [1.1, 2.1], rise: 0.35, out: 0.34 }
+const TONE = { deep: [0.6, 0.8, 0.88], mid: [0.9, 1.0, 0.8], tip: [1.25, 1.2, 0.7] }
+// The top of a pad, with open air over it, takes the most light. Its sides and its underside stand in shade, never in black.
+const SHADE = { body: 0.5, clearMm: 2.4, upFrom: 0.2, upTo: 0.85, tight: 1.25, floor: 0.45, curve: 1.3 }
+// The low sun stands at the back right (the rig's key as the glass bends it). A leaf with nothing of the crown between it and that sun is open to it.
+const SUN = [0.61, 0.61, -0.5]
+const SKY = { offMm: 0.8, reachMm: [1.6, 3.6, 7], softMm: 1.4 }
 const PAPER = { orange: [1, 0.3, 0.045], peach: [1, 0.38, 0.06], cream: [1, 0.62, 0.12] }
 const CAP = [0.035, 0.028, 0.022]
 const WIRE = [0.05, 0.04, 0.03]
@@ -185,16 +188,23 @@ function leaves() {
     const n = [s.nor[v * 3], s.nor[v * 3 + 1], s.nor[v * 3 + 2]]
     const open = 0.45 * openness(C.leafBody, x, h, z, n, 0.7) + 0.55 * openness(C.leafBody, x, h, z, n, 2.4)
     const top = smooth(SHADE.upFrom, SHADE.upTo, n[1]) * Math.pow(openness(C.leafBody, x, h, z, [0, 1, 0], SHADE.clearMm), SHADE.tight)
-    const shade = (0.1 + 0.9 * Math.pow(open, 1.7)) * (SHADE.body + (1 - SHADE.body) * top)
+    const shade = (SHADE.floor + (1 - SHADE.floor) * Math.pow(open, SHADE.curve)) * (SHADE.body + (1 - SHADE.body) * top)
     const hue = 0.5 + 0.5 * Math.sin(0.7 * x + 1.3 * h + 0.9 * z) * Math.sin(1.1 * x - 0.6 * z + 2)
     const tip = top * (0.6 + 0.4 * hue)
     const base = [lerp(TONE.deep[0], TONE.mid[0], hue), lerp(TONE.deep[1], TONE.mid[1], hue), lerp(TONE.deep[2], TONE.mid[2], hue)]
     return [shade * lerp(base[0], TONE.tip[0], tip), shade * lerp(base[1], TONE.tip[1], tip), shade * lerp(base[2], TONE.tip[2], tip)]
   }
+  const skyAt = (v) => {
+    let open = 1
+    for (const r of SKY.reachMm) open = Math.min(open, clamp01(0.5 + C.leafBody(s.pos[v * 3] + s.nor[v * 3] * SKY.offMm + SUN[0] * r, s.pos[v * 3 + 1] + s.nor[v * 3 + 1] * SKY.offMm + SUN[1] * r, s.pos[v * 3 + 2] + s.nor[v * 3 + 2] * SKY.offMm + SUN[2] * r) / SKY.softMm))
+    return Math.round(open * 32) / 32
+  }
+  const sky = new Float32Array(count)
   for (let v = 0; v < count; v++) {
     uv.push(s.pos[v * 3] / LEAF_TILE_MM, s.pos[v * 3 + 1] / LEAF_TILE_MM)
     col.push(...shadeAt(v))
-    flag.push(0, 0)
+    sky[v] = skyAt(v)
+    flag.push(0, sky[v])
   }
   const pos = [...s.pos]
   const nor = [...s.nor]
@@ -219,8 +229,7 @@ function leaves() {
     const cell = rng.int(4)
     const u0 = (cell % 2) * 0.5
     const v0 = Math.floor(cell / 2) * 0.5
-    const c = shadeAt(v).map((k) => Math.min(1.6, k * 1.12 + 0.02))
-    const id = rng.int(64)
+    const c = shadeAt(v).map((k) => Math.min(1.6, k * 1.08))
     for (const across of [t, b]) {
       const base = pos.length / 3
       const flip = rng.sign()
@@ -230,9 +239,9 @@ function leaves() {
         const m = n.clone().addScaledVector(lean, 0.4 + dv).normalize()
         nor.push(m.x, m.y, m.z)
         uv.push(u0 + (du + 0.5) * 0.5, v0 + (dv + 0.5) * 0.5)
-        const lift = 0.4 + 1.1 * (dv + 0.5)
+        const lift = 0.62 + 0.7 * (dv + 0.5)
         col.push(c[0] * lift, c[1] * lift, c[2] * lift)
-        flag.push(1, id)
+        flag.push(1, sky[v])
       }
       index.push(base, base + 1, base + 2, base, base + 2, base + 3)
     }

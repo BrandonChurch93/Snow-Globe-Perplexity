@@ -1,13 +1,8 @@
 import { stream } from '../../../core/rng'
 import { crownField, localPads, padAxes } from '../../../miniature/trunk'
 
-export const FULL = { swell: -1.5, perMm2: 0.55, radius: [0.8, 1.75] as const, dome: 0.5, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
-
-// The shared pads stand in tiers with room between them. Two more flat pads hang in that room, one over the fork and one at the right, each clear of its neighbours.
-const BETWEEN: readonly { at: readonly [number, number, number]; size: readonly [number, number, number] }[] = [
-  { at: [0.5, 30.4, 3], size: [4.6, 1.8, 3.8] },
-  { at: [12.2, 27, 2.4], size: [4.4, 1.9, 3.8] },
-]
+// Each pad is a plump cushion: lumps heap up on it and hang under it, so that the tiers stand close and only narrow air parts them.
+export const FULL = { swell: -1.5, perMm2: 0.55, radius: [0.8, 1.75] as const, dome: 0.5, plump: 1.3, under: 0.6, underReach: 0.86, hang: 0.38, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
 
 function gather(): Float64Array {
   const rng = stream('crown-summer')
@@ -22,19 +17,18 @@ function gather(): Float64Array {
       const r = rng.range(FULL.radius[0], FULL.radius[1]) * (1 - 0.3 * rr)
       const s = Math.cos(th) * rr * (a - 0.6 * r)
       const d = Math.sin(th) * rr * (c - 0.6 * r)
-      const v = b * (0.15 + FULL.dome * (1 - rr * rr)) - 0.5 * r + rng.range(-0.5, 0.4)
+      const v = b * FULL.plump * (0.15 + FULL.dome * (1 - rr * rr)) - 0.5 * r + rng.range(-0.5, 0.4)
       out.push(pad.at[0] + ax.side[0] * s + ax.up[0] * v + ax.depth[0] * d, pad.at[1] + ax.side[1] * s + ax.up[1] * v + ax.depth[1] * d, pad.at[2] + ax.side[2] * s + ax.up[2] * v + ax.depth[2] * d, r)
     }
-  }
-  for (const pad of BETWEEN) {
-    const [a, b, c] = pad.size
-    for (const s of [-0.9, 0, 0.9]) out.push(pad.at[0] + s * (a - b), pad.at[1], pad.at[2], b)
-    const n = Math.round(a * c * FULL.perMm2)
-    for (let k = 0; k < n; k++) {
-      const rr = Math.sqrt((k + 0.5) / n) * FULL.reach
-      const th = k * 2.39996 + rng.range(-0.4, 0.4)
+    const m = Math.round(n * FULL.under)
+    for (let k = 0; k < m; k++) {
+      const rr = Math.sqrt((k + 0.5) / m) * FULL.underReach
+      const th = k * 2.39996 + 1.1 + rng.range(-0.4, 0.4)
       const r = rng.range(FULL.radius[0], FULL.radius[1]) * (1 - 0.3 * rr)
-      out.push(pad.at[0] + Math.cos(th) * rr * (a - 0.6 * r), pad.at[1] + b * (0.15 + FULL.dome * (1 - rr * rr)) - 0.5 * r + rng.range(-0.5, 0.4), pad.at[2] + Math.sin(th) * rr * (c - 0.6 * r), r)
+      const s = Math.cos(th) * rr * (a - 0.6 * r)
+      const d = Math.sin(th) * rr * (c - 0.6 * r)
+      const v = -b * FULL.plump * (0.1 + FULL.hang * (1 - rr * rr)) + 0.5 * r + rng.range(-0.4, 0.4)
+      out.push(pad.at[0] + ax.side[0] * s + ax.up[0] * v + ax.depth[0] * d, pad.at[1] + ax.side[1] * s + ax.up[1] * v + ax.depth[1] * d, pad.at[2] + ax.side[2] * s + ax.up[2] * v + ax.depth[2] * d, r)
     }
   }
   return new Float64Array(out)
