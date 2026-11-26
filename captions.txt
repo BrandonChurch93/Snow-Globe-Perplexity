@@ -281,3 +281,35 @@ Eighth push (third job, the pushed head): one picture.
   card. The captions of pictures 19 to 22 say a frame every 1.5 to 3.5 s; by the runs' own clocks the medians were
   1.7 to 2.3 s, with gaps of 4 to 12 s in every run and one of about 30 s in two of them (the top rows of pictures
   19 and 20).
+
+24-phone-fall-medium-worker-kept-and-silent-worker-before-after.jpg
+  Shows: open item 234, the give up of the particle worker, on a phone, 390 x 844, touch, quality medium, fall, one
+  press of Shake, read by the standard driver. Top row BEFORE: main 9bdcb434 (the same src as f9870c3d, the run of
+  picture 23). Two frames pass the worker's answer over; the second comes 3.85 s after the asking by the page's
+  clock, the runner gives the healthy worker up and the page steps the pool itself from then on. Middle row AFTER,
+  the head of this job, the same press: two frames pass the answer over again, the second 5.66 s after the asking;
+  the runner counted 250 ms for each, 500 ms in all, and kept the worker, and the next frame shows the worker's
+  next state. Bottom row AFTER, the same build with a worker made silent (from f015, the 7th frame after the press,
+  the tool lets the page read nothing more from it): the counted wait grows by 250 ms a frame and passes 3 s at the
+  13th frame (3,250 ms), the runner asks for a turn of the page's queue, and the 14th frame gives the worker up;
+  from that frame on the page steps the pool and it moves in every frame.
+  Frames: before f020 (step 149, the answer waits), f021 (step 209, given up, fall backs 1), f022 (step 269); after
+  f025 (step 182, 250 ms counted), f026 (step 182, 500 ms counted), f027 (step 186, the worker's 40th frame);
+  silent f028 (step 212, 3,250 ms counted, the turn asked), f029 (step 272, fall backs 1), f032 (step 452).
+  What the picture read (window.liveSim under ?diag=none), in every frame. After, the press: 71 frames, 61 of them
+  after the press, 107.7 s of the page; remote true and fall backs 0 in every one, none in which the step moved and
+  the copy did not; the step went from 106 at the press to 367, still fall (the worker does one batch of 8 ms for
+  each frame the page gets to, 1 to 12 steps here, since the tool holds the page 1.6 to 5.5 s a frame). After, the
+  silent worker: 50 frames; silent from f015 (47.77 s of the page); f016 to f027 counted 250 to 3,000 ms, remote
+  true, the copy standing still; f028 3,250 ms and the turn asked; f029 (76.55 s) remote false, fall backs 1, step
+  272; f029 to f049 the copy changed in every frame, steps 272 to 1472, 60 a frame, through the change into winter
+  (f036, step 692; at f049 flake 54000, glitter 7200, of which 12031 flakes and 859 glitter at rest).
+  Cut out of the frames at full size, y 200 to 530; the first cell of the top two rows y 160 to 490, where the
+  globe stands nearest and its stand is cut.
+  Tool: the scratch page script (every frame the app draws, read off the canvas; never committed),
+  ?quality=medium&season=fall&diag=none, touch, pixel ratio 1, one press of Shake. Tier: the app's level medium.
+  Drawn by lavapipe.
+  Not seen: anything moving (a frame came every 1.6 to 2 s, with gaps of up to 11.5 s); the worker kept at medium
+  through the change of season (61 frames after the press reach step 367 only); a real graphics card; a real
+  phone's frame pace, at which a silent worker is given up 3 s and two frames after the asking (here, with 250 ms
+  counted for each slow frame, it took 28.8 s of the page's clock).

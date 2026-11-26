@@ -1444,3 +1444,53 @@ await browser.close()
   to the byte.
 - The eighth push of the looks (`2bcf3c8a`) holds picture 23 and this file; its captions also correct how often a
   frame came in the runs of pictures 19 to 22.
+
+# Fourth job: the give up of the particle worker (open item 234)
+
+- What was wrong: the runner gave the worker up when the page's own clock said 3 s had passed since it asked for a
+  frame. That clock also counts the time in which the page stood still and could not have read the answer.
+- What is built, in `src/particles/engine/remote.ts` only (the class `Patience`), commit `fe55ace2`, merged with
+  main f80dc66a as `ec88aba1` and with main 0e9dbcca as `cfabf185`, the pushed head: both ways. (b) Each call counts
+  the time since the last call, at most 250 ms of it. (a) A call that finds the count over the limit asks for one
+  turn of the page's message queue (a message to the page itself through a MessageChannel) and a later call gives up
+  only if the turn has come and the frame is still missing. The wait for the worker's start (6 s) is counted the
+  same way. A worker that throws or reports an error is given up in the same call, as before.
+- Why both: (b) is proven by arithmetic, whatever the order in which a browser reads its queue. (a) covers many
+  slow frames in a row that pass the answer over; it rests on the browser reading the worker's older answer before
+  the page's own later message, which the tool's Chromium (headless, 147) did in 280 rounds of 280 (200 from a
+  task, 60 from a frame callback with the page still for 60 ms, 20 with the page still for 1.5 s). Other browsers
+  were not tried.
+- The bound for a silent worker: the limit of 3 s and two frames wherever a frame takes no more than 250 ms (3,024
+  ms at 16 ms a frame; it was 3,008 ms). At slower frames 13 calls pass the limit and the 14th gives up.
+- Tests, in `describe('the live runner')` of `tests/sim.test.ts`, each red on the old `remote.ts` and green now:
+  "keeps the worker when the page stands still for 4 s and for 20 s while its answer waits, and then shows the
+  worker's state"; "keeps the worker through the press as it was seen: the tap and then the frame, in two idles
+  running, 3616 ms on the clock"; "keeps the worker through twenty slow frames in a row that pass its answer over";
+  "hands the simulation to the worker when the page stood still for 20 s while the worker's first answer waited";
+  "gives a silent worker up within three seconds and two frames, not before the queue has turned, a throwing one at
+  once, and shows every frame after". The last was red only because the old runner gave up in the call that found
+  the limit passed. The five tests that were there are unchanged and green.
+- Live, phone 390 x 844, touch, medium, fall, the standard driver, on the build of `fe55ace2` (engine hash
+  8e85717f9e8e414b): picture 24 and its caption. The press: 71 frames, remote true and no fall back in every one;
+  at f024 to f026 two frames passed the answer over, 5.66 s on the page's clock, 500 ms counted, kept. The silent
+  worker: given up at the 14th frame, and the copy moved in each of the 21 frames after, through the change into
+  winter.
+- `ec88aba1` adds main's change of `src/audio/index.ts`. Its build (engine hash a1e2314a240b4536) was not run in a
+  browser: its worker script is byte for byte the proven one, its main script is the proven one but for the engine
+  hash, and only the audio script differs. Checked on it: `npx tsc --noEmit` exit 0; `npx vitest run` 54 files
+  passed and 1 skipped, 721 tests passed and 8 skipped; `npm run determinism` pass (3 pictures, 4 page loads, 229
+  s); `--diag standins` on winter-rest, hero, phone, draft: largest value 0, 0 of 329160 pixels above zero. On
+  `fe55ace2` before it: the same four, vitest 709 passed and 8 skipped, determinism pass in 218 s.
+- The pushed head `cfabf185` adds what main took in after that (summer's fix pass, the fifth job of the change of
+  season, new assets); it differs from main 0e9dbcca by the two files of this job only. Engine hash
+  5563286c9019c6a6. Checked on it before the push: `npx tsc --noEmit` exit 0; `npx vitest run` 54 files passed and
+  1 skipped, 727 tests passed and 8 skipped. After the push, on its build: `npm run determinism` pass
+  (3 pictures, 4 page loads, 236 s); `--diag standins` on winter-rest, hero, phone, draft: largest value 0, 0 of
+  329160 pixels above zero; the worker script is byte for byte the proven one. Live on that build, the same press, 39
+  frames (30 after the press): remote true and no fall back in every one; at f022 to f024 two frames passed the
+  answer over, 3.46 s on the page's clock, 500 ms counted, kept, and f025 shows the worker's next step. The silent
+  worker was not run again on that build.
+- Not seen: anything moving; the worker kept at medium through a change of season (61 frames after the press reach
+  step 367 of fall only, since under the tool the worker does one batch of 8 ms for each frame the page gets to); a
+  real graphics card; a real phone's frame pace; a stream of input over slow frames; any browser but the tool's.
+- Left open: a second start of the worker after a give up.
