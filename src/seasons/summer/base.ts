@@ -141,7 +141,7 @@ const FRONT_SHADE = { deep: 0.8, left: 0.9, at: -5 }
 function shadeIn(deep: number, left: number, from: number, edge: number, tint: boolean): string {
   return `
   float baseShadeIn = vBasePos.x < ${FRONT_SHADE.at.toFixed(1)} ? mix(${deep.toFixed(3)}, ${left.toFixed(3)}, smoothstep(${FRONT_SHADE.at.toFixed(1)}, -42.0, vBasePos.x)) : mix(${deep.toFixed(3)}, ${edge.toFixed(3)}, smoothstep(${from.toFixed(1)}, 49.0, vBasePos.x));
-  vec3 baseShadeTint = ${tint ? 'mix(mix(vec3(1.0, 0.8, 0.58), vec3(0.82, 0.95, 1.18), smoothstep(-32.0, 8.0, vBasePos.x)), vec3(1.0, 0.9, 0.76), smoothstep(36.0, 49.0, vBasePos.x))' : 'vec3(1.0)'};
+  vec3 baseShadeTint = ${tint ? 'mix(mix(vec3(1.0, 0.8, 0.58), vec3(0.95, 0.98, 1.06), smoothstep(-32.0, 8.0, vBasePos.x)), vec3(1.0, 0.9, 0.76), smoothstep(36.0, 49.0, vBasePos.x))' : 'vec3(1.0)'};
   reflectedLight.indirectDiffuse *= baseShadeIn * baseShadeTint;
   reflectedLight.directDiffuse *= baseShadeIn * baseShadeTint;
   reflectedLight.indirectSpecular *= baseShadeIn;
@@ -149,7 +149,7 @@ function shadeIn(deep: number, left: number, from: number, edge: number, tint: b
 `
 }
 
-const STONE = { grain: 0.8, carve: 1.9, dust: 0.75, glint: 3.0, wrap: 0.3, card: 0.02, sun: 0.9, kick: 0.06, flare: 2.0, side: 0.06, bounce: 0.02, sheen: 0.03, top: 0.3, belly: 0.75, table: 0.5, patch: 0.5, direct: 0.12, room: 0.34, rake: 1.3 }
+const STONE = { grain: 0.8, carve: 1.9, dust: 0.75, glint: 3.0, wrap: 0.3, card: 0.02, sun: 0.9, kick: 0.06, flare: 2.0, side: 0.06, bounce: 0.02, sheen: 0.03, top: 0.3, belly: 0.75, table: 0.42, patch: 0.5, direct: 0.12, room: 0.3, rake: 1.3 }
 
 const STONE_PAINT = `
 vec4 baseDetail = texture2D(uBaseGrain, vMapUv);
@@ -191,7 +191,7 @@ roughnessFactor = mix(roughnessFactor, 0.95, baseDust);
 const STONE_AFTER = `
 {
   ${KEY}
-  reflectedLight.indirectDiffuse *= baseAo * ${STONE.room.toFixed(2)} * mix(vec3(1.0, 0.98, 0.96), vec3(0.8, 0.95, 1.22), smoothstep(-34.0, 4.0, vBasePos.x));
+  reflectedLight.indirectDiffuse *= baseAo * ${STONE.room.toFixed(2)} * vec3(1.0, 1.0, 1.05);
   reflectedLight.indirectSpecular *= baseAo * 0.3;
   reflectedLight.directDiffuse *= mix(1.0, baseAo, 0.55) * ${STONE.direct.toFixed(2)};
   reflectedLight.directSpecular *= mix(1.0, baseAo, 0.8) * 0.5;
@@ -212,7 +212,7 @@ const STONE_AFTER = `
   float stoneFl = clamp((dot(geometryNormal, stoneFlare) + 0.1) / 1.1, 0.0, 1.0);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * vec3(1.0, 0.5, 0.17) * dot(baseSunC, vec3(0.3333)) * (${STONE.flare.toFixed(2)} * stoneFl * stoneFl * smoothstep(30.0, 5.0, vBasePos.y) * smoothstep(8.0, -36.0, vBasePos.x));
   // The room's cool light comes back off the wet table onto the belly, most on the side the sun's glint does not reach.
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * vec3(0.64, 0.82, 1.0) * dot(baseSunC, vec3(0.3333)) * (${STONE.table.toFixed(2)} * mix(0.8, 1.0, smoothstep(36.0, 3.0, vBasePos.y)) * smoothstep(-30.0, 24.0, vBasePos.x));
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * vec3(0.9, 0.9, 0.96) * dot(baseSunC, vec3(0.3333)) * (${STONE.table.toFixed(2)} * mix(0.8, 1.0, smoothstep(36.0, 3.0, vBasePos.y)) * smoothstep(-30.0, 24.0, vBasePos.x));
   // The sun behind goes through the globe and comes out gathered: a warm patch on the upper band left of the middle, cut off on its right by a slanting edge.
   float stoneAz = atan(vBasePos.x, vBasePos.z);
   float stoneEdge = stoneAz + 0.016 * (vBasePos.y - 30.0) + 0.1 * (baseNoise(vBasePos * 0.3 + 19.0) - 0.5);
