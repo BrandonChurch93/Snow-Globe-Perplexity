@@ -111,3 +111,15 @@ Still short of the approved picture:
 - The purple pane's darkest fifth is lighter and its brightest fifth dimmer than the approved's (95,21,88 and 220,139,218 against 80,6,83 and 244,134,236, with the air).
 - Wall, litter and chimney now carry less fine energy than the approved's. The fence's boards read thin end on; no short pickets. The ground is darker and greyer. Door, wall stones and arch are the shared model's.
 - The two fold meshes add 6 triangles and two draws to fall at high (G15 reads 1,789,089 where main reads 1,789,083; its largest draw count over the seasons stays 71 of 140). To take them back the folds would have to live in the shared pane shader.
+
+## After the fifth list (b5f2f01f on main a7f9032b)
+
+Pictures 16 to 19. Proof run on b5f2f01f itself, which holds main a7f9032b.
+
+- Trunk: the bark's crests are narrower in the make (`RIDGE` in `assets-src/tree-fall/build.mjs`), the lamp on the wood is warmer and tighter, and a rim light fixed to the trunk's own round lifts the far edge (`RIM` in `mini/tree.ts`). With the air: flank 88,51,22, body 28,36,20, far edge 68,78,53 against the approved's 83,46,24, 25,37,24 and 74,77,58. Share of fine energy 1.09. The air of b4bc96c0 adds about 18 red and 8 green on the trunk, so the rim and the fill were cut once more after that merge.
+- Purple pane: darkest fifth 85,14,80, brightest fifth 242,135,235 (approved 80,6,83 and 244,134,236). The drape has cloud patches and a thread so the streaks do not run white.
+- Green panes: the side pane's glow on the stones reads 7.6, 5.8, 3.1, 2.1 at 3 to 6, 6 to 10, 10 to 15 and 15 to 22 px (approved 15.9, 9.5, 3.6, 1.2; before 12.3, 7.0, 5.0, 2.6). It is narrower at the far rings and now weaker than the approved's at the near ring.
+- Ground: the approved beside the path reads 88,70,45. The build read 102,46,15 by the last post, 117,63,13 behind the fence and 112,63,19 by the pond: not darker but more orange. It now reads 42,27,16, 68,46,21 and 78,52,25. The orange is gone from the soil but the ground is now under the approved's level and still low in green and blue. This is open.
+- Fence: 12 short pickets, two a gap, 44 triangles each, 528 in all, which G15 counts as 1,584 at high. Boards have a wider grain and split.
+- Wall 0.95, chimney 0.96 by a steeper curve on the stones' own map. Litter stays 0.71: its box is ruled by the decor leaves and tufts, not the ground's shader, and it needs geometry there, which the triangle room does not allow now.
+- Crown 1.30 and roof 1.03 rose with main's new air, not with this list.
