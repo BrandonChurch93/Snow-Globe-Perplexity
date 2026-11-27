@@ -21,7 +21,10 @@ export interface Params {
   simcache: boolean
 }
 
-export function readParams(search: string): Params {
+/** Where a tool serves the page it draws from: its own machine (tools/lib/server.mjs). The page reads the same names (index.html). */
+export const TOOL_HOSTS: readonly string[] = ['localhost', '127.0.0.1', '[::1]']
+
+export function readParams(search: string, host: string = typeof location === 'undefined' ? '' : location.hostname): Params {
   const q = new URLSearchParams(search)
   const asked = (MODES as string[]).includes(q.get('mode') ?? '') ? (q.get('mode') as Mode) : 'live'
   const season = q.get('season') ?? ''
@@ -29,11 +32,13 @@ export function readParams(search: string): Params {
     const v = Number(q.get(k))
     return q.has(k) && Number.isFinite(v) ? v : d
   }
-  // A capture page draws for a tool, and a tool never gets a format it did not name: where the config does not name the
-  // format the page is the live page at hd, which hands out no capture interface (src/main.ts). A visitor has the globe.
+  // A capture page draws for a tool: it shows a visitor nothing, and it can be told to read and write checkpoints on the
+  // machine that serves it. So it is one only where a tool serves it, and a tool never gets a format it did not name.
+  // On any other host, or where the config does not name the format, the address is the live page, which hands out no
+  // capture interface (src/main.ts). A visitor has the globe.
   const named = q.get('format') ?? config.formats.hd.id
   const known = formats.some((f) => f.id === named)
-  const mode: Mode = asked === 'capture' && !known ? 'live' : asked
+  const mode: Mode = asked === 'capture' && !(known && TOOL_HOSTS.includes(host)) ? 'live' : asked
   const assets = q.get('assets') ?? (mode === 'capture' ? 'full' : 'web')
   // A name the app does not know is no name: an unknown shot would play the whole film without its sound, and an
   // unknown view would flatten the picture.
@@ -53,6 +58,6 @@ export function readParams(search: string): Params {
     diag: diag === 'none' || (VIEWS as readonly string[]).includes(diag) ? diag : '',
     which: q.get('which') ?? 'b',
     deny: (q.get('noext') ?? '').split(',').filter(Boolean),
-    simcache: q.get('simcache') === '1',
+    simcache: mode === 'capture' && q.get('simcache') === '1',
   }
 }

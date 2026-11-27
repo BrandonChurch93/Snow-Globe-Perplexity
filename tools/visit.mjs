@@ -80,7 +80,15 @@ const plain = (extra = {}) => {
   return u.href
 }
 
-const browser = await launch()
+// The published site holds the page and nothing else, under a name that is not this machine's (step 10). Where the tool is
+// given this machine's own server it opens that server under such a name too: the browser alone takes the name for this
+// machine, and takes a page from it for one that came safely, as the published page does. The names are those a capture
+// page is served from (src/core/params.ts, TOOL_HOSTS).
+const ELSEWHERE = 'snow-globe.invalid'
+const here = new URL(base)
+const onThisMachine = ['localhost', '127.0.0.1', '[::1]'].includes(here.hostname)
+const there = onThisMachine ? `${here.protocol}//${ELSEWHERE}${here.port ? `:${here.port}` : ''}` : here.origin
+const browser = await launch(onThisMachine ? { extraArgs: [`--host-resolver-rules=MAP ${ELSEWHERE} ${here.hostname}`, `--unsafely-treat-insecure-origin-as-secure=${there}`] } : {})
 const context = await browser.newContext({
   viewport: { width: fmt.width, height: fmt.height },
   deviceScaleFactor: ratio,
@@ -985,6 +993,30 @@ if (want(10)) {
     const near = from !== null && rest !== null && from <= Math.max(rest * 3, rest + 1.5)
     const still = await stillOf()
     await note(10, `link-${name}`, { link: urlOf(extra), firstPictureSeconds: opened.seconds, firstStill: still, firstStillOfThePlainPage: plainStill, lit: x.lit.join(), busy: x.busy, shown: x.shown, captureInterface: face === 'undefined' ? 'absent' : face, pageErrors: errors.slice(had), restApart: rest, fromThePlainPage: from }, opened.first.ok && opened.shown.ok && x.lit.join() === opens && !x.busy && face === 'undefined' && errors.length === had && near && plainStill.first && still.first)
+  }
+
+  // A capture address on a host that is not this machine. The published site would show a capture page black, and would
+  // refuse what `simcache=1` sends it. There the address is the live page with its still, it hands out no capture
+  // interface, and it asks for no checkpoint and no file of the full set.
+  {
+    const link = urlOf({ mode: 'capture', simcache: '1' }).replace(here.origin, there)
+    await gather()
+    requests.length = 0
+    const had = errors.length
+    const t0 = Date.now()
+    await go(link, { waitUntil: 'domcontentloaded' })
+    const first = await until('the first complete picture', (s) => s.firstPicture)
+    const seconds = (Date.now() - t0) / 1000
+    const shown = await until('the controls', (s) => s.shown, 60000)
+    await sleep(1500)
+    await frames(2)
+    const x = shown.state
+    const from = await apart(plainPicture, await grab())
+    const at = await page.evaluate(() => ({ host: location.hostname, face: typeof window.showcase })).catch(() => ({ host: 'not read', face: 'not read' }))
+    const near = from !== null && rest !== null && from <= Math.max(rest * 3, rest + 1.5)
+    const still = await stillOf()
+    const outside = requests.map((r) => new URL(r.url).pathname).filter((path) => /\/(__simcache|assets-full)\//.test(path))
+    await note(10, 'link-capture-elsewhere', { link, host: at.host, firstPictureSeconds: seconds, firstStill: still, lit: x.lit.join(), busy: x.busy, shown: x.shown, captureInterface: at.face === 'undefined' ? 'absent' : at.face, askedOutsideThePage: outside, pageErrors: errors.slice(had), restApart: rest, fromThePlainPage: from }, first.ok && shown.ok && at.host === new URL(there).hostname && x.lit.join() === opens && !x.busy && at.face === 'undefined' && errors.length === had && near && still.first && outside.length === 0)
   }
 
   // The film from a shot it does not have is the whole film, and the whole film has its sound. A build without sound

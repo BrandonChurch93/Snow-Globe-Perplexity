@@ -72,8 +72,8 @@
         var box = document.getElementById('first')
         var asked = new URLSearchParams(location.search)
         var mode = asked.get('mode')
-        // A capture address that names a format the app does not have is the live page (src/core/params.ts), and has its still.
-        if (mode === 'capture' && asked.has('format') && ['uhd', 'hd', 'preview', 'phone', 'tablet'].indexOf(asked.get('format')) < 0) mode = 'live'
+        // A capture address is the live page, and has its still, unless a tool serves it from this machine in a format the app has (src/core/params.ts).
+        if (mode === 'capture' && (['localhost', '127.0.0.1', '[::1]'].indexOf(location.hostname) < 0 || (asked.has('format') && ['uhd', 'hd', 'preview', 'phone', 'tablet'].indexOf(asked.get('format')) < 0))) mode = 'live'
         if (!T || !box || ['autopilot', 'loop', 'capture'].indexOf(mode) >= 0) return
         var season = T.seasons.indexOf(asked.get('season')) < 0 ? T.season : asked.get('season')
         var SCALE = 1e5

@@ -1,6 +1,6 @@
 # The harness and the page
 
-What the tools in this folder can rely on. The page is opened through `tools/lib/page.mjs` (`Session`), and everything is asked for through `window.showcase`, the frame interface of `kit/05-ARCHITECTURE.md`. `src/capture/showcase.ts` holds its types.
+What the tools in this folder can rely on. The page is opened through `tools/lib/page.mjs` (`Session`), and everything is asked for through `window.showcase`, the frame interface of `kit/05-ARCHITECTURE.md`. `src/capture/showcase.ts` holds its types. A capture page (`mode=capture`) is one only where the page is served from this machine (`localhost`, `127.0.0.1`, `[::1]`: `TOOL_HOSTS` in `src/core/params.ts`); under any other name the address is the live page.
 
 ## Extra calls under `window.showcase.dev`
 
