@@ -377,6 +377,8 @@ const uniforms = {
   uPoolAt: { value: new THREE.Vector4(0, 0, 0, 1) },
   // xy: the globe's foot on the slab, z: how far the still water has slid
   uPoolFoot: { value: new THREE.Vector3(0, 0, 0) },
+  // 1, and 0 in the one still that leaves the air out (a measuring aid): the lit liquid on the far wall goes, the glass's own light stays
+  uSummerAir: { value: 1 },
 }
 
 const F = look.flare
@@ -448,6 +450,7 @@ const W = look.wall
 const wallText = (front: boolean, rim = false): string => `
 uniform vec4 uFlareSun;
 uniform vec4 uSummer;
+uniform float uSummerAir;
 varying vec2 vWl;
 varying vec2 vWlDir;
 // one streak of light in the glass: thin across the radius, as long as span (1 - the cosine of half its length) along the
@@ -570,6 +573,7 @@ ${W.fillBody.map((b) => `  ${b[5] ? 'veil' : 'glowing'} += ${n(b[4])} * exp(-dot
   vec2 fromCore = (vWl - vec2(${n(W.coreAt[0])}, ${n(W.coreAt[1])})) / vec2(${n(W.coreSize[0])}, ${n(W.coreSize[1])});
   air += ${vec(W.coreColor)} * (${n(W.core)} * exp(-dot(fromCore, fromCore)) * still * body);
   air *= 1.0 - ${n(W.topShade[4])} * wlArc(e, r, vec2(${n(Math.cos(W.topShade[0] * RAD))}, ${n(Math.sin(W.topShade[0] * RAD))}), ${n(1 - Math.cos(W.topShade[1] * RAD))}, vec2(${n(W.topShade[2])}, ${n(W.topShade[3])}));
+  air *= uSummerAir;
   // the glass's own reflections: broad curved bands across the top and down the right shoulder
   vec3 reflex = vec3(0.0);
 ${W.reflex.map((b) => `  reflex += ${vec(b[5] === 2 ? W.reflexDeep : b[5] ? W.reflexCool : W.reflexWarm)} * (${n(b[4])} * wlArc(e, r, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), ${n(1 - Math.cos(b[1] * RAD))}, vec2(${n(b[2])}, ${n(b[3])})));`).join('\n')}
@@ -719,7 +723,7 @@ function makeWall(front: boolean, rim = false): THREE.Mesh {
     part: PART,
     standIn: false,
     change: 'glass-dressing',
-    uniforms: { uFlareSun: uniforms.uFlareSun, uSummer: uniforms.uSummer },
+    uniforms: { uFlareSun: uniforms.uFlareSun, uSummer: uniforms.uSummer, uSummerAir: uniforms.uSummerAir },
     vertexPars: 'uniform vec4 uFlareSun;\nvarying vec2 vWl;\nvarying vec2 vWlDir;',
     vertexMain: `
 vec4 wlC = viewMatrix * vec4(uLensCentre, 1.0);
@@ -864,4 +868,5 @@ export function update(moment: KitMoment): void {
   // and it hands over with the veil: leaving, it thins as the next season's veil takes the liquid, never in a cut
   const gale = Math.max(smooth((f.turbulence - W.stormFrom) / (W.stormTo - W.stormFrom)) * (leaving ? 1 - f.mix.veil : 1), kept)
   uniforms.uSummer.value.set(moment.time, P.swing * swing + 8 * (Math.sin(g.tiltZ) - Math.sin(g.tiltX)), there, gale)
+  uniforms.uSummerAir.value = f.air ? 1 : 0
 }
