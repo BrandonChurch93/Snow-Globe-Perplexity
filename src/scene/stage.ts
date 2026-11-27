@@ -124,6 +124,8 @@ export class GlobeStage implements Stage {
   private readonly up = new THREE.Vector3()
   private readonly turn = new THREE.Quaternion()
   private readonly wish = new Wish()
+  /** There from the first press on. A still, a film and the loop are never pressed: their stage has no such member, and their governor hears every frame as it always did. */
+  awaited?: () => boolean
   /** The picture the page paints into while it draws one sample a frame; none on a page that captures. */
   private live: THREE.WebGLRenderTarget | null = null
   private handing: Promise<void> = Promise.resolve()
@@ -182,6 +184,7 @@ export class GlobeStage implements Stage {
 
   expect(season: string): void {
     this.wish.press(season)
+    this.awaited ??= () => this.wish.gave
   }
 
   /**
