@@ -1,50 +1,52 @@
 {
-  "number": 199,
-  "time": "2026-11-27 06:26 UTC",
+  "number": 200,
+  "time": "2026-11-27 06:45 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 199 · 2026-11-27 06:26 UTC · Phase 6",
+    "Status 200 · 2026-11-27 06:45 UTC · Phase 6",
     "Decision needed from Brandon, unchanged, one thing only he can do: the automation that restarts this build ends Friday noon Mountain Time and a run may not move its own end. He can move the end to Sunday noon in the automation's settings, or write any line in the thread. The Partner raises it again Friday morning. Open item 252.",
-    "Chain 18 is read whole and on origin main (`8685e6cf`, pushed 06:19 UTC): summer's sand third push and summer's base sixth list. On it: tsc exit 0, the base made again, build exit 0, engine `60d39792f3f3d6c1`; \"pass M3 summer-rest: 0.8379\" (threshold 0.75; base 0.838, miniature 0.953); M4 0.9694, 0.9106, 0.9546, 0.9607 and M5 0.9929, 1, 0.9686, 0.9997, all pass; 2 of the eight draft stills changed, summer's two, as they should; the whole vitest 67 files passed and 1 skipped, 925 tests passed and 4 skipped; `node tools/miniatures.mjs` pass; triangles at high: summer 1,755,707 of 1,800,000, the others unchanged. The detail number for summer is lower than before the two merges (0.8522 on chain 16): the base's share fell by 0.014, still over the threshold.",
-    "Picture 1 is summer at rest as on main now, the approved picture left and the build right. Picture 2 is summer's base: the approved picture above, main before in the middle, main now below. My look: no worse anywhere and somewhat better in three places. The shells read matte cream and no longer glazed white, the lip's strokes sit lower and no longer read as a painted stripe, the sand's mound at the right foot is broader with a soft shade. Both merges stay. It is below the bar and is not a pass: the base is greyer and flatter than the approved, its fold low left is shading with no real height, a saw edge stands at the seat's left end, the glass pieces are flat, and the heap is smaller and paler than the approved's. The base's seventh list is ordered: real height for the fold and the swells, the saw edge, the shells' rib crests, an inner glow in the glass pieces. Push by 07:35 UTC.",
-    "Picture 3 is the shutter for the 4K masters: film frames 712 to 715 at 3840, spring's roots at two times. Its builder drew that chunk twice on cold starts and got the same bytes (STATED by the builder, one sha256 for both). My look at three cuts of it, the roots, the cottage's windows through the petals and the glass's outline, finds no comb, no doubled edge and no step: moving things soften evenly. With that both conditions of decision 182 are met and the shutter's new deal is merged here as chain 19, alone, running since 06:21 UTC and not on origin yet. Two more frames the new way and the old way, 1398 and 2064, are still to come from its builder and can still send the merge back. With it on main the masters can be drawn the new way. It is not yet a pass for 4K motion: spring's lit moss still changes between frames at 3840.",
-    "Picture 4 is fall's scene, its fifth list: the approved picture left, main before in the middle, the fifth list right, the ground and fence above, the cottage below. Gained: the ground has lost its orange, the wall and the chimney are darker, the trunk's body is dark and its lit flank warm, the purple pane sits on the approved's tones. Not gained: the ground is now darker than the approved, the fence reads as a pale thicket, the trunk's far edge shows a pale strip at the foot, the stones are still paler and blockier than the approved's. It goes into fall's chain as it is, with the air's fourth list (the green band under the base's lip is taken down, the sparks' cores are smaller), right after chain 19. A sixth list for the scene is ordered, tone only: fall has no triangles left.",
-    "Held, not on main: fall's base with a grain on the vines (`agent/p6-fall-base` `b2a13724`). Its detail number rose to 0.9017 on its builder's machine, but the grain reads as frost over most of each vine where the approved has dark wet wood with a few glints. Its builder said so before I looked and I rule the same. One more try with a third of the grain and only inside the lit ridge, push by 06:55 UTC; if that does not read right it falls back to the list before the grain.",
-    "Round 22 on summer started 06:21 UTC on `8685e6cf`: the machine checks, the measures with the pack, and the motion sheets are being drawn on three helper machines; the critics and jurors follow when the pack is in. It is summer's third round and the last inside decision 132's limit. By my own look summer is below the bar, so I do not expect a pass; the round is run for the critics' lists, and a round after it is logged as past the limit.",
-    "The change of season: nothing pushed. Its finisher found a new fault of its own in shake 3 (the glass's mean falls 7.2 and 11.3 levels at film frames 2116 and 2117, against the bar of 6, STATED) and mends it first; push about 08:25 UTC. Summer's air bends its take over across frames 1401 to 1421, push 06:45. Preview 06 is drawn when the change's push is on main.",
-    "The controls: its finisher's twelve points are answered. Still wrong by its own walk: an early press links programs in the middle of a shake, the hint and a press come late when the page's thread stands, a half pixel shift at 600 x 600. Not seen by it: anything at 60 a second, sound, touch, Safari, Firefox on a real card, a screen reader.",
-    "Render counts since the last status. Drawn here: chain 18's review still of summer, its change measure and eight draft stills; chain 19's are running. On helper machines: the builders' own stills and the shutter's chunk of four 3840 frames, twice. No frame of the masters yet.",
+    "Chain 19 is read whole and on origin main (`6909766b`, pushed 06:39 UTC): the shutter's new deal for the 4K masters, alone. On it: tsc exit 0, build exit 0, engine `8412eaee3b26056e`; the change measure reads as chain 18's to the pixel (M4 0.9694, 0.9106, 0.9546, 0.9607 and M5 0.9929, 1, 0.9686, 0.9997, all pass); 0 of the eight draft stills changed, as it should be; the whole vitest 67 files passed and 1 skipped, 930 tests passed and 4 skipped; `node tools/miniatures.mjs` pass. With it on main the masters can be drawn the new way.",
+    "The two frames the shutter's merge still waited on came in from its builder at 06:41 UTC, drawn at 3840 the old way and the new way: film frame 1398, the fastest of shake 2, and frame 2064 of shake 3. My look at 1398's lights and at 2064's sand at four times: the old way's dotted weave is gone in the new way, each streak is one smooth bar, nothing is worse. The merge stands. The builder's measures for the lights (STATED, its own fine and slow figures, old then new): 0.83 then 0.32 and 0.70 then 0.47. Its limit, said plainly: at 1398 the miniature is washed out by the flash, so that frame cannot show a doubled edge; the frame that can is 1337, where it saw none. Not drawn by it: shake 4 (frame 2784) and frame 2118.",
+    "4K motion is still not a pass. One fault on my list has no fresh measure: ground under a moving camera at 3840 (decision 166 mended still pairs and left spring 1200 against 1201 open). Ordered at 06:42 UTC from the shutter's builder, on `6909766b`: spring's film frames 1200 to 1203 at 3840 with the lit moss collar cut at one to one and at four times, one frame of shake 4, and, if the moss boils, the smallest mend as a patch with its proof. Report by 07:40 UTC. No master is drawn before that is looked at.",
+    "Round 22 on summer: the pack is in and the critics are at work. Picture 1 is summer at the landing as the round judges it (the final tier, on `8685e6cf`): the approved picture left and the build right. The first critic of the stills has answered: 5 of 10, no pass, one severe and one major, both at the landing. Severe: the storm's streaks cover the whole globe as white lines of one weight and one opacity and read as scratches on the glass, where the approved's storm is soft fluff in sheets that thins and breaks up. Major: the lower inside is washed to a flat cream, so pond, grass and lamp lose their form. I see both in the pair and rule both right. Four minor: the seed heads repeat one star shape, the glass's broad white smears have a fibrous edge, the gold grains hang in one band over the sand, the pond is flat with streaks that do not line up with the lanterns. The round's measures at the final tier (STATED by the helper that drew them): 19 of 19 green, M3 summer-rest 0.7875 (base 0.788, miniature 0.892). Still out: the other critic of the stills, the critic of the look, the critic of the motion (its sheets are being drawn), 14 of 15 jurors and the machine checks. It is not a pass whatever they say, since one critic is under 9 with a severe; the round is run to its end for the lists, and the storm's streaks and the washed inside go to summer's air as its next list now.",
+    "Chain 20 is running since 06:40 UTC on two merges, not on origin yet: fall's scene fifth list and fall's air fourth list with its spark trial. Read so far: tsc exit 0, fall's tree and village made again, build exit 0, \"pass M3 fall-rest: 0.7971\" (threshold 0.75). The change measure, the eight stills, the counts and the whole vitest are still to come, about 07:00 UTC.",
+    "Picture 2 is fall's air, the spark trial that is in chain 20: the approved picture left and the trial right, at two times. Gained: the sparks have small warm cores with soft halos and the storm reads as a storm. Not gained: the leaves are about twice the approved's size and read as cut out shapes, the approved's large soft discs of light are missing, and the open air measures greener with less red than the approved (two boxes, a pointer only). The air's fifth list is ordered on those three, push 07:30 UTC. Below the bar.",
+    "Picture 3 is summer's base, the seventh list's first pair from the low camera: main above, the list so far below, not pushed. The fold low left has real height now, a lip with a lit edge, a slot under it and the foot's roll, and the body has soft swells; the saw edge is gone from this camera (its builder found the cause: the crust's torn step was drawn by the mesh's cells). No triangle added (229,130 against 229,348, STATED). My one weight on it, sent at 06:42 UTC: the fold runs as one long even dark slot and from the hero camera it can read as a mouth, where the approved's crease is short, soft and slanted; it is made shallower and shorter first, then the left's levels come back inside 12 of the approved (now 21 and 18 over, STATED), the foot's pale wedge, narrower sparks. Push by 07:35 UTC. Below the bar.",
+    "Picture 4 is summer's tree, the ninth form: the approved picture left and the form right, with the air above and without it below, not on main. The crown is built of round domes in clumps now, which is the better ground than the eighth pass. Not there: the crown is mid green and evenly speckled where the approved's is near black green with lit tops, and it stands closed where the approved shows sky through it (open share 42.3% against 53.7%, STATED). The ninth push is due 07:20 UTC and a tenth pass of tone, measured first, 08:10 UTC. Below the bar.",
+    "Summer's air, the take over of the change into summer (STATED by its builder, not pushed): by the change finisher's ruler the largest step from film frame 1404 on is 3.96 levels where main has 8.69, against the bar of 6; the take over runs over 20 frames instead of 16. It reads its table again on the new shutter before it pushes, about 07:05 UTC.",
+    "The change of season: nothing pushed; its finisher mends shake 3's fault (frames 2116 and 2117) first, push about 08:25 UTC. Preview 06 is drawn when that is on main. The controls: nothing new since Status 199; an early press still links programs in the middle of a shake, and 60 a second, sound, touch, Safari, Firefox on a real card and a screen reader are not seen.",
+    "Render counts since the last status. Drawn here: chain 19's change measure and eight draft stills, chain 20's review still of fall. On helper machines: three frames at 3840 for the shutter (1398 both ways, 2064 the new way), Round 22's pack, the builders' own stills. No frame of the masters yet.",
     "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
-    "phase 6: 27.61 h used of its 12.00 h box",
-    "allowance (after the review): 27.61 h used of 12.00 h allowed",
+    "phase 6: 27.93 h used of its 12.00 h box",
+    "allowance (after the review): 27.93 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-199-1.jpg",
-      "caption": "Summer at rest as on main now, the approved picture left and the build right, below the bar",
+      "file": "out/stills/status/status-200-1.jpg",
+      "caption": "Summer at the landing as Round 22 judges it, approved picture left and build right, below the bar",
       "w": 1200,
-      "h": 591
+      "h": 512
     },
     {
-      "file": "out/stills/status/status-199-2.jpg",
-      "caption": "Summer's base, the approved picture above, main before in the middle, main now below, below the bar",
-      "w": 909,
-      "h": 1182
+      "file": "out/stills/status/status-200-2.jpg",
+      "caption": "Fall's air, the spark trial, approved picture left and trial right at two times, below the bar",
+      "w": 1200,
+      "h": 600
     },
     {
-      "file": "out/stills/status/status-199-3.jpg",
-      "caption": "The shutter's new deal at 4K in motion, film frames 712 to 715, spring's roots at two times, merged here and not on origin yet",
+      "file": "out/stills/status/status-200-3.jpg",
+      "caption": "Summer's base, seventh list so far from the low camera, main above and the list below, not pushed, below the bar",
       "w": 1200,
-      "h": 247
+      "h": 977
     },
     {
-      "file": "out/stills/status/status-199-4.jpg",
-      "caption": "Fall's scene after its fifth list, the approved picture left, main before in the middle, the fifth list right, not on main yet, below the bar",
-      "w": 1200,
-      "h": 507
+      "file": "out/stills/status/status-200-4.jpg",
+      "caption": "Summer's tree, the ninth form, approved picture left and form right, with air above and without below, not on main, below the bar",
+      "w": 1067,
+      "h": 1200
     }
   ]
 }

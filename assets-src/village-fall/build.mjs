@@ -631,7 +631,7 @@ for (const r of PROPS.ROCKS) {
     Z.addScaledVector(Y, -Z.dot(Y)).normalize()
     const X = new THREE.Vector3().crossVectors(Y, Z)
     const seed = R() * 50
-    const g = slab(b.wide, len, b.thick, { round: 0.1, sx: b.post ? 8 : 5, sy: Math.max(4, Math.round(len * 0.9)), sz: 1, warp: b.post ? 0.04 : 0.07, seed })
+    const g = slab(b.wide, len, b.thick, { round: 0.1, sx: b.picket ? 2 : b.post ? 8 : 5, sy: b.picket ? 3 : Math.max(4, Math.round(len * 0.9)), sz: 1, warp: b.post ? 0.04 : 0.07, seed })
     const P = g.getAttribute('position')
     const half = b.wide / 2
     const from = len / 2 - 1.7 * half
@@ -649,18 +649,18 @@ for (const r of PROPS.ROCKS) {
       P.setXYZ(i, x + bite * (1 - smooth(from, len / 2, y)), up, P.getZ(i))
     }
     shade(g, (x, y, z) => {
-      const grain = 0.35 + 1.1 * noise(x * 6.5 + seed, y * 0.7, z * 6.5)
-      const split = 1 - 0.75 * smooth(0.55, 0.7, noise(x * 9 + 3, y * 0.35 + seed, 1.7))
+      const grain = 0.45 + 1.0 * noise(x * 6.5 + seed, y * 0.7, z * 6.5)
+      const split = 1 - 0.6 * smooth(0.55, 0.7, noise(x * 9 + 3, y * 0.35 + seed, 1.7))
       const end = b.post ? 1 : 0.7 + 0.7 * smooth(len / 2 - 0.7, len / 2, Math.abs(y))
       const foot = b.post ? 0.5 + 0.5 * smooth(-len / 2 + 0.4, -len / 2 + 2.2, y) : 1
       const side = smooth(half - 0.22, half - 0.02, Math.abs(x))
       const arch = b.post ? smooth(0.22, 0.04, crown(Math.max(-half, Math.min(half, x))) - y) : 0
-      const worn = 1 + 4.5 * Math.max(side, arch)
+      const worn = 1 + 3 * Math.max(side, arch)
       return grain * split * end * foot * worn
     })
     const mid = [(b.a[0] + b.b[0]) / 2, (b.a[1] + b.b[1]) / 2, (b.a[2] + b.b[2]) / 2]
     const M = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(mid[0], mid[1], mid[2])
-    decor.add(g, { matrix: M, color: mul3(WOOD[Math.floor(R() * WOOD.length)], between(0.5, 0.75)), surf: [surf(KIND.wood, 0.84), 0], renormal: true })
+    decor.add(g, { matrix: M, color: mul3(WOOD[Math.floor(R() * WOOD.length)], between(0.75, 1.05)), surf: [surf(KIND.wood, 0.84), 0], renormal: true })
   }
 }
 
