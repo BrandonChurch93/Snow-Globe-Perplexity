@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 188 · 2026-11-27 02:05 UTC
+Status 189 · 2026-11-27 02:35 UTC
 
-- `out/stills/status/status-188-1.jpg`: The four seasons as the app opens in the build being published
-- `out/stills/status/status-188-2.jpg`: Fall's miniature after its second list: approved left, without its air in the middle, with its air right, below the bar
-- `out/stills/status/status-188-3.jpg`: The table's petals at 3840, film frames 676 to 690, the same box in each: petals slide and turn over between frames, being mended
-- `out/stills/status/status-188-4.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-189-1.jpg`: Fall at rest after chain 9, approved picture left and build right, below the bar
+- `out/stills/status/status-189-2.jpg`: Summer's tree after its sixth pass, approved picture left and build right, not merged yet, below the bar
+- `out/stills/status/status-189-3.jpg`: Summer's base after its fourth list, approved picture above and build below, not merged yet, below the bar
+- `out/stills/status/status-189-4.jpg`: The change into summer, film frames 1405 to 1415, main above and the take over below, not merged yet
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 02:05 UTC
-clock: phase 6, tick of 27.6 minutes
-phase 6: 23.27 h used of its 12.00 h box
-allowance (after the review): 23.27 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 23.27 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 02:35 UTC
+clock: phase 6, tick of 29.8 minutes
+phase 6: 23.76 h used of its 12.00 h box
+allowance (after the review): 23.76 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 23.76 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
