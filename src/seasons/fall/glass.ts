@@ -109,7 +109,7 @@ export const look = {
     hazeTint: [0.78, 0.92, 0.76],
     hazeWarm: 0.3,
     // At rest a pale mist stands in the liquid behind the scene, from the ground to about half the height of the ball,
-    // brightest behind the right side of the trunk, and thins to a dark blue green at the top. It is laid on the back of the
+    // brightest behind the right side of the trunk, and thins to a dark blue green at the top. It is laid on the far half of the
     // wall and drawn before the air, so the bats, the leaves and the sparks stand before it at their full strength.
     mist: 0.74,
     mistAir: 0.34,
@@ -756,9 +756,10 @@ function makeMist(): THREE.Mesh {
     change: 'veil',
     uniforms: { uFog: uniforms.uFog, uFogNoise: uniforms.uFogNoise },
     fragment: MIST,
-    params: { ...blend, transparent: false, side: THREE.DoubleSide },
+    // Only the faces that look at the eye from across the ball are drawn: the far half, whichever way the ball is turned.
+    params: { ...blend, transparent: false, side: THREE.BackSide },
   })
-  const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 28, 12, Math.PI - 0.35, Math.PI + 0.7, 0, Math.acos((GROUND - 3) / r)), m)
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 40, 12, 0, Math.PI * 2, 0, Math.acos((GROUND - 3) / r)), m)
   mesh.renderOrder = 4.5
   mesh.frustumCulled = false
   return mesh
@@ -775,7 +776,7 @@ function makeCrack(): THREE.Mesh {
     fragment: CRACK,
     params: { ...blend, side: THREE.FrontSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 },
   })
-  const mesh = new THREE.Mesh(new THREE.SphereGeometry(RS + 0.06, 96, 60), m)
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(RS + 0.06, 96, 58), m)
   mesh.renderOrder = 11
   mesh.frustumCulled = false
   return mesh
