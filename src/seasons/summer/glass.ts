@@ -21,8 +21,9 @@ import { holdStorm, veil } from './veil'
 //    light, soft edged and never a net or a star. There is no pool before the landing; after it the pool swells, its bands
 //    slide into place and come to rest, and they breathe a little while the water is still.
 // 3. The wall: the sun, bent by the globe, burns on the inside of the glass low on the far side: a sheaf of hairs of
-//    light that follow the limb, one white body without a gap along their middles, which ends up the limb in pointed
-//    tongues of unequal length, thins to a round foot and dies away into the warm halo round it. The same
+//    light that follow the limb, one white body without a gap along their middles, whose core ends up the limb in
+//    soft pointed tongues of unequal length and thins past them into fibres that go out; it thins to a round foot
+//    and dies away into the warm halo round it. The same
 //    billboard carries the warm haze of the liquid at rest, which lies low and behind
 //    the miniature; above the roof line it is no more than a thin even veil, so the dark room reads through the whole
 //    upper half of the glass. And it carries the glass's own reflections: one cream ribbon in lanes under the top, one cool slab
@@ -151,12 +152,13 @@ export const look = {
     // the share of a steep side (1: its light stands across it as a flat top with steep sides, 0: as a bell), and how
     // many times longer than the others it comes in over at its foot in the storm. A thread is a spindle: it thins to
     // a needle toward its foot as toward its tip, so neither end is cut. None is drawn thinner than a pixel, only
-    // fainter. In their order: thirteen beside the outline (the knot where the lines meet below, two short spindles;
-    // the tan between the lines; a copper line and a cream streak beside it; one that rises to the mass and one that
-    // leaves it; copper and cream further up the limb, a dash at their end, and two broad faint ones under them); the
-    // cream margin of the mass toward the outline in two long ones, the tongue past its upper end and a hair before
-    // it; four hairs that leave the ragged upper edge; and three hairs inward of the mass with the faint light they
-    // stand in. The glow below the foot is the halo's (`sheaf`). A white thread's colour goes by how much white lies at the
+    // fainter. They are few, and the bright ones broad or short: the camera of the film draws back from the globe, the
+    // limb then crosses a thin line's own width between two frames, and every bright thin line along the limb
+    // flickers there. In their order: ten beside the outline (the knot where the lines meet below, two short spindles;
+    // the tan between the lines; a copper line; copper and cream further up the limb, a dash at their end, one more
+    // copper line, and two broad faint ones under them); the tongue past the upper end of the mass and a hair before
+    // it; one short hair above the ragged upper edge; and the faint light inward of the mass. The hairs that leave
+    // the mass are the sheaf's own. The glow below the foot is the halo's (`sheaf`). A white thread's colour goes by how much white lies at the
     // place: `flameWarm` where it is faint, `hotColor` where it is strong, half way between them at `flameWarmHalf`;
     // the warm ones are `threadWarm`. In the storm the liquid scatters the burn: every thread is 1 + `threadStorm`
     // times as wide and as bright at its middle as at rest, its steep sides go, and each comes in over its own longer
@@ -169,26 +171,15 @@ export const look = {
       [213.7, 212.4, 0.025, 0.025, 0.003, 0.7, 0, 0.5, 0.5, 1, 0.15, 0, 1],
       [212.5, 198, 0.016, 0.0149, 0.009, 0.12, 0, 4, 3, 0.4, 0, 0, 1],
       [211.5, 199, 0.0195, 0.0185, 0.002, 0.3, 1, 4, 3, 1, 0, 0, 1],
-      [212, 200, 0.0265, 0.0255, 0.003, 0.3, 0, 4, 4, 1, 0.2, 0, 1],
-      [212, 204, 0.0335, 0.032, 0.0024, 0.5, 0, 3, 3, 0.8, 0.2, 0, 1],
-      [204.5, 198.5, 0.0445, 0.041, 0.0025, 0.7, 0, 3, 3, 1, 0.15, 0, 1],
       [203, 190, 0.0295, 0.028, 0.002, 0.15, 1, 4, 4, 1, 0, 0, 1],
       [197.5, 186, 0.0255, 0.024, 0.0022, 0.3, 0, 4, 4, 1, 0.2, 0, 1],
       [189, 184.8, 0.0235, 0.0215, 0.0022, 0.4, 0, 1.6, 1.6, 1, 0.1, 0, 1],
       [200, 188, 0.039, 0.037, 0.002, 0.15, 1, 4, 4, 1, 0, 0, 1],
       [198, 183, 0.032, 0.04, 0.012, 0.07, 1, 4, 5, 1, 0, 0, 1],
       [200, 184, 0.0195, 0.026, 0.011, 0.034, 0, 3, 4, 1, 0, 0, 1],
-      [211.4, 198.5, 0.047, 0.046, 0.004, 0.45, 0, 4, 3, 0.9, 0.2, 0, 1],
-      [211.6, 196, 0.0565, 0.0545, 0.0045, 0.7, 0, 4, 3, 1, 0.2, 0, 1],
       [198, 185.8, 0.053, 0.044, 0.0048, 1, 0, 5, 4, 0.9, 0.15, 0, 1],
       [188.2, 186.4, 0.0612, 0.0606, 0.0018, 0.4, 0, 0.8, 0.8, 1, 0, 0, 1],
-      [195.5, 189.3, 0.0765, 0.0745, 0.0028, 0.8, 0, 3, 3, 1, 0.1, 0, 1],
-      [193, 183.8, 0.0905, 0.0845, 0.0024, 0.7, 0, 4, 4, 1.3, 0.1, 0, 1],
-      [194.2, 186, 0.096, 0.091, 0.0025, 0.15, 1, 3, 3, 1, 0.1, 0, 1],
       [194.6, 192.6, 0.1075, 0.1075, 0.002, 0.4, 0, 0.9, 0.9, 1, 0, 0, 1],
-      [200.2, 191.4, 0.1665, 0.165, 0.0028, 0.6, 0, 4, 4, 0.9, 0.3, 0, 1],
-      [200, 192, 0.1745, 0.173, 0.0028, 0.5, 0, 3.5, 3.5, 1, 0.3, 0, 1],
-      [199.5, 194, 0.184, 0.183, 0.0025, 0.3, 0, 2.5, 2.5, 1, 0.3, 0, 1],
       [201.5, 191.5, 0.171, 0.17, 0.012, 0.1, 0, 4, 4, 1, 0, 0, 1],
     ] as const,
     // the sheaf: the mass of the burn, lanes of light side by side that follow the limb, each `lane` of the radius
@@ -199,13 +190,20 @@ export const look = {
     // the wave begins), every wave a row of peaks with points, so neighbours end near one another and the edge
     // stands in pointed tongues of unequal length; each lane ends within `fray` degrees of that besides, and of the
     // lanes the share above the first of `far` runs on alone as a long hair, by up to the second in degrees, its
-    // point longer by the third and bright sooner along it by `farBright`. `lean` is how far a lane moves toward the outline to a degree up the limb, `wave`
+    // point longer by the third. The mass does not end where its lanes do. Its core ends on one line across the
+    // lanes, the two long waves alone (tongues and locks, taken at the place and not by the lane), and past that
+    // line the light falls to 0.37 of itself over every `fall` degrees, while the lanes run on `runOn` degrees
+    // further (times a share between the two in `runOnBy`, dealt by lane) and end one by one in the falling light.
+    // So the core's edge is soft pointed tongues, white in their middle and cream at their rim, and beyond them
+    // the mass thins into fibres that go out, each fainter the further it runs, and none ends bright: a bright
+    // needle that the limb carries across its own width between two frames of the film flickers there.
+    // `lean` is how far a lane moves toward the outline to a degree up the limb, `wave`
     // how the lanes swing about that, so that no two stretches run quite the same way (how far, how many radians to
     // a degree up the limb and to the radius), `warp` how far they wander from even spacing (two waves: how many
     // lanes, how many radians to the radius), `soft` the share of a lane its edge is soft over (and never less than
     // a pixel), `bright` how bright a lane is beside a white thread and `dim` what the dimmest keeps of that. `tip`
-    // and `foot` are where the lanes end and begin: the bearing by the depth inside the outline (pairs: depth,
-    // bearing). The foot is round: the lanes of the middle reach furthest down and those of both flanks begin
+    // and `foot` are where the core ends up the limb and where the lanes begin: the bearing by the depth inside the
+    // outline (pairs: depth, bearing). The foot is round: the lanes of the middle reach furthest down and those of both flanks begin
     // further up, so the body thins to its foot and no line crosses it. `side` is the share of the sheaf by the
     // depth at its two flanks. The body is many times brighter than white, so only the last twentieth of a fall
     // shows as one: the inner flank falls steeply to a quarter and runs out from a twentieth over a broad stretch,
@@ -217,7 +215,7 @@ export const look = {
     // end, `part` over how many point lengths it thins to that (a foot `footThin` times sooner, so it fades more
     // than it thins), `wander` how far a thinning hair strays from the middle of its lane. Round the body lies its
     // halo, the lens's bloom: `halo` of warm light (`haloColor`), whole inside the body (between the two depths of
-    // `haloIn`, and from `haloTip` degrees past the tips' line to `haloFoot` degrees short of the feet's) and falling
+    // `haloIn`, and from `haloTip` degrees past the core's line to `haloFoot` degrees short of the feet's) and falling
     // off outside it by the distance alone, with no edge: across the limb to a third over `haloAcross` (toward the
     // outline, inward), along it over `haloAlong` degrees (past the tips, past the feet). `haloEnd` is where it is
     // gone whatever the distance: between two depths inward, and between two pairs of bearings at its ends. So the
@@ -233,15 +231,15 @@ export const look = {
       bright: 2,
       dim: 0.85,
       tip: [
-        [0.058, 190.5],
-        [0.085, 192.2],
-        [0.105, 194],
-        [0.125, 196.5],
-        [0.145, 198.5],
-        [0.17, 199.5],
-        [0.195, 199.5],
-        [0.215, 201],
-        [0.23, 203],
+        [0.058, 193.5],
+        [0.085, 195.2],
+        [0.105, 197],
+        [0.125, 199.5],
+        [0.145, 201.5],
+        [0.17, 202.5],
+        [0.195, 202.5],
+        [0.215, 204],
+        [0.23, 206],
       ] as const,
       foot: [
         [0.054, 208.3],
@@ -270,7 +268,9 @@ export const look = {
       curl: [0.8, 1.083, 4] as const,
       fray: 0.7,
       far: [0.75, 6, 1.6] as const,
-      farBright: 0.6,
+      fall: 2,
+      runOn: 4,
+      runOnBy: [0.6, 0.8] as const,
       point: 2.5,
       pointBy: [0.6, 0.8] as const,
       come: 6,
@@ -285,7 +285,7 @@ export const look = {
       haloColor: [1, 0.6, 0.28] as const,
       haloIn: [0.075, 0.19] as const,
       haloAcross: [0.045, 0.07] as const,
-      haloTip: -3,
+      haloTip: 0,
       haloFoot: 5,
       haloAlong: [4, 3.5] as const,
       haloEnd: [0.2, 0.35, 175, 185, 222, 237] as const,
@@ -932,7 +932,8 @@ float wlThread(float a, float r, vec3 px, vec4 g, vec4 h, vec4 last) {
 // inside the outline, px as the threads take it. A pixel lies between the middles of two lanes and takes the light of
 // both. Each lane has its own numbers by its count across the sheaf: where it ends (three waves with pointed peaks
 // and its own share) and begins, how long its points are, how bright it is. No lane is drawn thinner than its soft
-// edge, only fainter. First the lanes' light, second the halo round the body
+// edge, only fainter. The core ends on one line across the lanes and the light falls off past it, the lanes run on
+// into that fall. First the lanes' light, second the halo round the body
 vec2 wlSheaf(float bear, float depth, vec3 px, float storm) {
   float dt = depth - ${n(SH.lean)} * (bear - 200.0) + ${n(SH.wave[0])} * sin((bear - 200.0) * ${n(SH.wave[1])} + depth * ${n(SH.wave[2])});
   if (dt >= ${n(SH.haloEnd[1])} || bear <= ${n(SH.haloEnd[2])} || bear >= ${n(SH.haloEnd[5])}) return vec2(0.0);
@@ -948,6 +949,12 @@ vec2 wlSheaf(float bear, float depth, vec3 px, float storm) {
   float j0 = floor(q - 0.5);
   float y = q - j0 - 0.5;
   float soft = max(${n(SH.soft)}, ${n(4 / 3)} * px.x / ${n(SH.lane)});
+  // the core's edge: the two long waves at the place itself, so it is one line across the lanes, and the fall past it
+  float grow = 1.0 + ${n(SH.storm[0])} * storm;
+  float qc = q - 0.5;
+  float edge = tipAt - (${n(SH.tongue[0])} * (1.0 - 2.0 * abs(sin(qc * ${n(SH.tongue[1])} + ${n(SH.tongue[2])}))) + ${n(SH.lock[0])} * (1.0 - 2.0 * abs(sin(qc * ${n(SH.lock[1])} + ${n(SH.lock[2])})))) * grow;
+  // (and gone where the sheaf's own reach up the limb ends, so that no hair of the storm is cut there)
+  float fall = exp(-max(edge - bear, 0.0) / (${n(SH.fall)} * px.y)) * smoothstep(${n(SH.haloEnd[2])}, ${n(SH.haloEnd[2] + 4)}, bear);
   float sum = 0.0;
   for (int i = 0; i < 2; i++) {
     float lane = j0 + float(i);
@@ -955,16 +962,16 @@ vec2 wlSheaf(float bear, float depth, vec3 px, float storm) {
     float hb = fract(64.0 * h);
     float hc = fract(4096.0 * h);
     float far = smoothstep(${n(SH.far[0])}, 1.0, hb);
-    float reach = ${n(SH.tongue[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.tongue[1])} + ${n(SH.tongue[2])}))) + ${n(SH.lock[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.lock[1])} + ${n(SH.lock[2])}))) + ${n(SH.curl[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.curl[1])} + ${n(SH.curl[2])}))) + ${n(SH.fray)} * (2.0 * h - 1.0) + ${n(SH.far[1])} * far;
-    float tip = (bear - tipAt + reach * (1.0 + ${n(SH.storm[0])} * storm)) / (${n(SH.point)} * (${n(SH.pointBy[0])} + ${n(SH.pointBy[1])} * hc) * (1.0 + ${n(SH.far[2])} * far) * px.y);
+    float reach = ${n(SH.tongue[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.tongue[1])} + ${n(SH.tongue[2])}))) + ${n(SH.lock[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.lock[1])} + ${n(SH.lock[2])}))) + ${n(SH.curl[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.curl[1])} + ${n(SH.curl[2])}))) + ${n(SH.fray)} * (2.0 * h - 1.0) + ${n(SH.far[1])} * far + ${n(SH.runOn)} * (${n(SH.runOnBy[0])} + ${n(SH.runOnBy[1])} * hc);
+    float tip = (bear - tipAt + reach * grow) / (${n(SH.point)} * (${n(SH.pointBy[0])} + ${n(SH.pointBy[1])} * hc) * (1.0 + ${n(SH.far[2])} * far) * px.y);
     float stray = ${n(SH.footTongue[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.footTongue[1])} + ${n(SH.footTongue[2])}))) + ${n(SH.footFray)} * (2.0 * hb - 1.0);
     float foot = (footAt + stray * (1.0 + ${n(SH.storm[1])} * storm) - bear) / (${n(SH.come)} * (${n(SH.comeBy[0])} + ${n(SH.comeBy[1])} * hc) * (1.0 + ${n(SH.storm[2])} * storm));
     float share = ${n(SH.needle)} + ${n(1 - SH.needle)} * smoothstep(0.0, ${n(SH.part)}, min(tip, ${n(SH.footThin)} * foot));
     float box = clamp((0.5 * share - abs(y - float(i) - ${n(SH.wander)} * (hb - 0.5) * (1.0 - share))) / soft + 0.5, 0.0, 1.0) * min(share / soft, 1.0);
-    float ends = smoothstep(0.0, 1.0 - ${n(SH.farBright)} * far, tip) * smoothstep(0.0, 1.0, foot);
+    float ends = smoothstep(0.0, 1.0, tip) * smoothstep(0.0, 1.0, foot);
     sum += box * ends * ends * (${n(SH.dim)} + ${n(1 - SH.dim)} * hc);
   }
-  return vec2(${n(SH.bright)} * sum * side, halo);
+  return vec2(${n(SH.bright)} * sum * fall * side, halo);
 }
 ` : ''}void main() {
 ${front && !rim ? `  // what one pixel spans on the sheet, read before anything is discarded
