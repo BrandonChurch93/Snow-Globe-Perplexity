@@ -1,54 +1,53 @@
 {
-  "number": 193,
-  "time": "2026-11-27 04:07 UTC",
+  "number": 195,
+  "time": "2026-11-27 04:50 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 193 · 2026-11-27 04:07 UTC · Phase 6",
+    "Status 195 · 2026-11-27 04:50 UTC · Phase 6",
     "Decision needed from Brandon, unchanged, one thing only he can do: the automation that restarts this build ends Friday noon Mountain Time and a run may not move its own end. He can move the end to Sunday noon in the automation's settings, or write any line in the thread. The Partner raises it again Friday morning. Open item 252.",
-    "Chain 13 is read whole and on origin main (`a55e7ee6`), four merges: the table's dressing anchored to the planted foot (spring's petals, fall's leaves, winter's frost hold still), the governor line of the live page's controls, fall's miniature third list, summer's base fourth list. On it: tsc exit 0, build exit 0, engine `92a0ba308c41405a`; the whole vitest 66 files passed and 1 skipped, 921 tests passed and 4 skipped; \"pass M3 summer-rest: 0.9537\"; \"pass M3 spring-rest: 0.7655\"; \"FAIL M3 fall-rest: 0.7228 (threshold 0.75, detail.minSharpnessRatio)\", still a failure; M4 0.9694, 0.9049, 0.9546, 0.9602 and M5 0.993, 1, 0.969, 0.9997 for shakes 1 to 4, all pass; winter's two draft stills the same bytes, the six others changed; triangles at high winter 1,490,555, spring 1,450,250, summer 1,759,831, fall 1,789,083 of 1,800,000; `node tools/miniatures.mjs` pass.",
-    "Chain 14 is being read on one more merge that is not on origin main yet (local `c22c92f0`, started 04:02 UTC): the glass's outline loses its pale hairline in all four seasons. Read so far: tsc exit 0, build exit 0, engine `18322b0aa01a6cca`; \"pass M3 summer-rest: 0.9528\"; \"FAIL M3 fall-rest: 0.7228 (threshold 0.75, detail.minSharpnessRatio)\"; \"pass M3 spring-rest: 0.7655\". Still to come: the change's M4 and M5, the eight stills, the counts, the whole vitest.",
-    "Picture 1 is four of chain 13's stills as on main now: summer landed, fall landed, spring at rest, spring landed.",
-    "Picture 2 is the glass's outline at 3840 by 2160 in film frames 1875 to 1878 at eight times. Before, above: a dotted pale line outside the amber, other in every frame (a hairline one pixel wide that the shutter's samples split). With the mend, below: none, the amber fades into the dark. Its builder measured the steps between frames just inside the outline at 13, 14, 12 before and 3, 3, 3 after (STATED). This closes one of the 4K motion faults when chain 14 is read.",
-    "Picture 3 is summer's base close up, a fault found and traced, not mended yet. Top: a straight warm band runs down across the sand. Middle and bottom: gone when the glass's edge pass is switched off. It is light of the glass drawn without a depth test, so it runs on below the seat and lies on the base; its builder takes it out in its next push. Seen in the same picture and below the bar: the shells are brown and glossy, the sea glass dark, a saw edge on the pale crust at the seat's left end.",
-    "Picture 4 is a leaf ornament on the base at 3840 at four times in film frames 604, 603, 602, 601, from the shutter's second list. The two left frames travel under 6 px and are drawn the old way: a weave at pixel pitch on the lit edges. The two right frames are drawn the mended way: clean. So the floor of 6 px leaves a step where the fault ends. Its builder cured the larger part (the mend's reach now rises from 6 to 18 px, fine detail lost in one frame fell from 18 to 25 percent to 5 to 10 percent, STATED); the floor itself is ordered found by trial at 1 to 5 px of travel and lowered, since no master frame is drawn yet.",
-    "Winter's pond: its mender showed by five trials that the reading of 0.604 on the pond's patch is mostly the film grain, the dither and the 8 bit steps on smooth ice, which are meant to differ from frame to frame; with the pond's own fine term at nothing the patch reads about 0.64, so 0.8 could only be had by drawing detail for the number. Decided: nothing is drawn for the number, the patch reading is retired as the pond's bar, and the pond is closed by eye on four consecutive frames of the lamp's light at eight times (ordered, due 04:45 UTC). The lamp's own boxes read 0.79 and 0.77.",
-    "Summer's base fifth list is on its builder's machine (STATED): smoother sand with a fine tooth, the low left flank from 119,80,42 to 132,90,47 against the approved's 168,115,57, the right darker and warmer; summer's M3 falls to about 0.855 with it and still passes, which is accepted, the picture is the aim. Summer's tree seventh list comes about 04:22 UTC. Fall's base third list reads M3 0.7975 on its builder's machine (STATED), push by 04:20 UTC.",
-    "The page's carried state: on plain main, film frame 685 at draft hd drawn first and drawn after frames 683 and 684 differs by 141 pixels, at most 1 level; frames drawn after their own 40 predecessors in the same season are byte equal (STATED). The cause is not named yet; no master frame is drawn before it is.",
-    "Transport of the finished films is settled (decision 181): measured, an attachment over 50 MiB is refused and one of 52,428,800 bytes arrives with the same sha256, so a finished film comes as parts of 48 MiB and is checked by its sha256 here.",
-    "The next publish of the app follows chain 14: all 40 first pictures have to be drawn again since the outline moved in every season.",
-    "16 agents were at work at 04:04 UTC with the transport test, 15 after it.",
-    "Render counts since the last status. Drawn here: chain 13's change measure and eight draft stills; chain 14's three review stills so far. On helper machines: the builders' own stills and frames. No frame of the masters yet.",
+    "Chain 15 is read whole and on origin main (`d13d29c6`, pushed 04:45 UTC), three merges: summer's base fifth list, summer's sand fifth list first push, fall's base third list, with their made files. On it: tsc exit 0, both makes exit 0, build exit 0, engine `204e27eb83ed197f`; \"pass M3 summer-rest: 0.8467 (threshold 0.75, detail.minSharpnessRatio)\"; \"pass M3 fall-rest: 0.797 (threshold 0.75, detail.minSharpnessRatio)\"; M4 0.9694, 0.9049, 0.9546, 0.9607 and M5 0.993, 1, 0.9689, 0.9997, all pass; four of the eight draft stills changed, summer's two and fall's two, winter's and spring's are the same bytes; the whole vitest 66 files passed and 1 skipped, 921 tests passed and 4 skipped; `node tools/miniatures.mjs` pass; triangles at high winter 1,490,555, spring 1,450,250, summer 1,759,825, fall 1,793,679 of 1,800,000.",
+    "Fall's M3 passes on main for the first time since its base was rebuilt. That is a number, not the bar: by eye fall's base is still below it (bare right flank, pale left vines, a purple rind on the left pumpkin, bark that reads as scales at 3840, the web), and its fourth list is being worked.",
+    "The next publish of the app is being built now. Its 40 first pictures were drawn on chain 15's tree on a helper machine in 14 minutes (\"poster: pass · 40 stills and the table agree with the framing\", engine `204e27eb83ed197f`) and are merged here as `cf309d59`. That commit is being checked in a clean copy since 04:46 UTC: the first pictures' check, tsc, the whole vitest, the build. Then the security review, the deploy and the publish, about 05:20 UTC, a quarter of an hour sooner than I said. It carries everything on main up to chain 15.",
+    "Picture 1 is main as it stands now: summer at rest and landed above, fall at rest and landed below. Summer's base is smooth sand with its shells and sea glass, the sand runs out at its right foot. Below the bar in summer: the base browner and flatter than the approved's cream, the shells grey brown, the cottage small and dark, the heap of sand a small wedge. Below the bar in fall: the base as said above, too many and too large leaves, a pale tree, and the landing's air too green.",
+    "Picture 2 is fall's three windows in pairs, the approved picture then the build: purple, side green, attic green; the top row with the air, the bottom row without it. All three built panes now have four lights with dark bars and pale folds of drape, as the approved shows. Its builder also took the pale rims off the boughs and the pale line off each course of shingles: the miniature's share of fine detail fell from 1.330 to 0.867 on its own tree (STATED), where 1.36 had been a warning. Not on main yet; it goes into chain 16. Below the bar: the purple pane is flatter than the approved's, the green glow on the stones is wider, the trunk's lit ridges are broad where the approved has thin glints and embers. Its fifth list is ordered.",
+    "Picture 3 is spring's base alone: the approved picture above, the second list in the middle, the third list below. The cobbles are darker and the roots on the lit flank thinner and paler, nearer the approved. Below the bar: the base is a drum with a level top edge where the approved is a low uneven mound, the cobbles read as smooth slabs, the roots in the middle are too pale (95th percentile of luminance 100 to 109 against 45 to 57, measured on this picture) and the darks too black, and the lit moss changes a little from frame to frame at 3840. Not on main yet; it goes into chain 16, its M3 on its builder's machine 0.8093 (STATED). The fourth list is ordered with the outline first.",
+    "Chain 16 starts right after the publish, on five things if the last one's report is in: spring's base third list, fall's windows and scene, summer's sand second push (9,298 triangles fewer at high, the picture unchanged by eye, STATED and looked at), two mends of the page's loading (a file the browser recorded as cancelled, a console warning; no pixel moves, STATED), fall's air fourth list.",
+    "The shutter for the 4K masters has its floor (STATED, proofs to come): the old way of drawing a frame is clean wherever a thing travels 1.59 pixels or less in the frame, so the new way takes over from 1.5 pixels; 987 more frames move to it, 1,785 of the film's 3,600 in all. It also mends the order in which the lens is applied.",
+    "The page's carried state: three of the thirteen proof frames (film frames 690, 678 and 1410) are byte equal drawn fresh and drawn after the thirty frames before them, zero pixels differ (STATED); the rest are running, push by 05:25 UTC. No master frame is drawn before this and the shutter's floor are on main.",
+    "Summer's tree seventh pass was looked at and is held, not merged: it closed the crown into one mass where the approved has separate masses with sky between. The eighth pass is ordered with the sky's share as its measure.",
+    "Orders out since the last status: summer's base sixth list, fall's base fourth list, summer's sand third push, summer's tree eighth pass, spring's base fourth list, fall's scene fifth list. 14 agents were at work at 04:50 UTC.",
+    "Render counts since the last status. Drawn here: chain 15's change measure, its two review stills and eight draft stills. On helper machines: the 40 first pictures, and the builders' own stills and frames. No frame of the masters yet.",
     "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
-    "phase 6: 25.30 h used of its 12.00 h box",
-    "allowance (after the review): 25.30 h used of 12.00 h allowed",
+    "phase 6: 26.01 h used of its 12.00 h box",
+    "allowance (after the review): 26.01 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-193-1.jpg",
-      "caption": "Summer landed, fall landed, spring at rest and spring landed as on main now",
+      "file": "out/stills/status/status-195-1.jpg",
+      "caption": "Main as it stands: summer at rest and landed above, fall at rest and landed below",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-193-2.jpg",
-      "caption": "The glass's outline at 4K, film frames 1875 to 1878 at eight times, dotted pale line before above and gone with the mend below, not on main yet",
+      "file": "out/stills/status/status-195-2.jpg",
+      "caption": "Fall's three windows in pairs, approved then built: purple, side green, attic green; top row with the air, bottom row without; not on main yet",
       "w": 1200,
-      "h": 598
+      "h": 400
     },
     {
-      "file": "out/stills/status/status-193-3.jpg",
-      "caption": "Summer's base close up, a straight warm band found top and gone with the glass's edge pass off middle and bottom, a test, not mended yet",
-      "w": 700,
-      "h": 1092
+      "file": "out/stills/status/status-195-3.jpg",
+      "caption": "Spring's base: approved above, second list in the middle, third list below; not on main yet, below the bar",
+      "w": 820,
+      "h": 1148
     },
     {
-      "file": "out/stills/status/status-193-4.jpg",
-      "caption": "A leaf ornament on the base at 4K at four times, film frames 604 to 601, a weave on the edges in the two left frames and clean in the two right",
+      "file": "out/stills/status/status-195-4.jpg",
+      "caption": "Still: fall landed hero, hd, draft",
       "w": 1200,
-      "h": 188
+      "h": 675
     }
   ]
 }
