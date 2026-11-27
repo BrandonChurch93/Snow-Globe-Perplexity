@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 184 · 2026-11-27 00:24 UTC
+Status 185 · 2026-11-27 00:52 UTC
 
-- `out/stills/status/status-184-1.jpg`: The outline of the glass at 4K, eight times enlarged at three heights: the dotted band before (left) and with the mend (right)
-- `out/stills/status/status-184-2.jpg`: Spring's base, first push: approved, main and the push above; spring at rest with it below; below the bar, not on main yet
-- `out/stills/status/status-184-3.jpg`: The live page on a software renderer with the miniatures made in steps: summer 25 s after its landing, with the controls; not pushed yet
-- `out/stills/status/status-184-4.jpg`: Still: fall landed hero, hd, draft
+- `out/stills/status/status-185-1.jpg`: Still: fall landed hero, hd, draft
+- `out/stills/status/status-185-2.jpg`: Still: fall rest hero, hd, draft
+- `out/stills/status/status-185-3.jpg`: Still: summer landed hero, hd, draft
+- `out/stills/status/status-185-4.jpg`: Still: summer rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 00:24 UTC
-clock: phase 6, tick of 18.3 minutes
-phase 6: 21.58 h used of its 12.00 h box
-allowance (after the review): 21.58 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 21.58 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 00:52 UTC
+clock: phase 6, tick of 28.7 minutes
+phase 6: 22.05 h used of its 12.00 h box
+allowance (after the review): 22.05 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 22.05 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
