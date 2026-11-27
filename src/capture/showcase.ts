@@ -1,5 +1,6 @@
-import { config, formatById, tierMotion, tierSamples, type FormatSpec } from '../config'
-import { framesamples, shutterTravelPx } from '../film/motion'
+import type { GlobePose } from '../shake/table'
+import { config, formatById, tierEvenFromPx, tierMotion, tierSamples, type FormatSpec } from '../config'
+import { centrePacePx, evenSet, framesamples, shutterTravelPx, spreadAt, type Timed } from '../film/motion'
 import { Accumulator, type SampleFacts, type Sanity } from '../core/accumulator'
 import type { Assets } from '../core/assets'
 import { finish, type Gfx } from '../core/gl'
@@ -91,7 +92,7 @@ export interface Dev {
   flagged(): string[]
   cut(): { list: Record<string, unknown>; shots: ShotNote[] }
   renderTestShakeFrame(frameIndex: number, tier: string): Promise<void>
-  frameSamples(kind: 'film' | 'loop', frameIndex: number, tier: string): { samples: number; travelPx: number }
+  frameSamples(kind: 'film' | 'loop', frameIndex: number, tier: string): { samples: number; travelPx: number; even: boolean }
   renderShakeMoment(shot: string, at: ShakeMoment, tier: string): Promise<void>
   appScript(name: string, ask?: AppFrameAsk): ScriptPlan
   renderAppFrame(name: string, frameIndex: number, level: string, ask?: AppFrameAsk): Promise<ScriptFrame & { camera: number[]; globe: { heightMm: number; tiltDeg: number[] }; level: string; controlsPx: number | null; under: number; framing: Framing }>
@@ -227,20 +228,27 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     counts.particles = stage.particleCount()
   }
 
-  async function picture(at: At, timeSec: number, shutterSec: number, pose: (t: number) => Pose, samples: number, salt: number): Promise<void> {
+  /** A frame in which the ball travels: where the ball is at a moment, and the pace of its centre on the picture in pixels a shutter. */
+  interface Travel {
+    globe: (sec: number) => GlobePose
+    pace: (sec: number) => [number, number]
+  }
+
+  async function picture(at: At, timeSec: number, shutterSec: number, pose: (t: number) => Pose, samples: number, salt: number, travel?: Travel): Promise<void> {
     plain()
     const flat = diag !== ''
     // One set for every picture, not one a frame: 24 places in a pixel and on the lens cannot
     // settle detail finer than a pixel (dew, tufts, twig edges), so a set chosen anew by `salt`
     // drew the same still ground differently each frame and it crawled. The grain and the
     // shader's seed below still go by the frame.
-    const set: (Sample | null)[] = flat ? [null] : sampleSet(samples, 0, 'picture').sort((a, b) => a.t - b.t)
+    const own: Sample[] = flat ? [] : sampleSet(samples, 0, 'picture').sort((a, b) => a.t - b.t)
+    const set: { sample: Sample | null; at: number }[] = flat ? [{ sample: null, at: 0 }] : travel && shutterSec > 0 ? evenSet(own, (u) => travel.pace(timeSec + u * shutterSec)) : own.map((s): Timed => ({ sample: s, at: s.t }))
     gfx.renderer.info.reset()
     acc.begin()
     let done = 0
     let hold: number | null = null
-    for (const s of set) {
-      const t = timeSec + (s && shutterSec > 0 ? s.t * shutterSec : 0)
+    for (const { sample: s, at: share } of set) {
+      const t = timeSec + (s && shutterSec > 0 ? share * shutterSec : 0)
       const t0 = now()
       const moment = await at(t, salt * 0.618 + 1)
       hold ??= moment.change
@@ -248,7 +256,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       const t1 = now()
       timing.simMs += t1 - t0
       stage.drawSample(acc.sample, pose(t), s, moment, done === 0 || shutterSec > 0)
-      acc.add()
+      acc.add(travel && s && shutterSec > 0 ? spreadAt(t, shutterSec / set.length, travel.globe, pose, format.width, format.height) : null)
       done++
       finish(gfx)
       timing.drawMs += now() - t1
@@ -288,8 +296,17 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
   }
   const filmCamera = (t: number) => filmPose(getGrid(), t - prerollSeconds)
   const hero = () => poseById('hero')
-  const filmSamples = (t: string, i: number, pose: (sec: number) => Pose) =>
-    framesamples(tierSamples(t), tierMotion(t), () => shutterTravelPx(frameTime(i), shutter, (sec) => globePoseAt(getFilm(), sec), pose, format.width, format.height))
+  type Globe = (sec: number) => GlobePose
+  /** The count of a frame whose shutter opens at `from`, and, where the tier draws a travelling frame with even times, the pace of the ball's centre. */
+  const shot = (t: string, from: number, globe: Globe, pose: (sec: number) => Pose): { samples: number; travelPx: number; travel?: Travel } => {
+    const motion = tierMotion(t)
+    const even = tierEvenFromPx(t)
+    const travelPx = motion || even !== undefined ? shutterTravelPx(from, shutter, globe, pose, format.width, format.height) : 0
+    const samples = framesamples(tierSamples(t), motion, () => travelPx)
+    return even !== undefined && travelPx >= even ? { samples, travelPx, travel: { globe, pace: (sec) => centrePacePx(sec, shutter, globe, pose, format.width, format.height) } } : { samples, travelPx }
+  }
+  const filmGlobe: Globe = (sec) => globePoseAt(getFilm(), sec)
+  const filmShot = (t: string, i: number, pose: (sec: number) => Pose) => shot(t, frameTime(i), filmGlobe, pose)
   const loopFrames = () => loopPlan().frameCount
   const wrapFrame = (i: number) => ((i % loopFrames()) + loopFrames()) % loopFrames()
 
@@ -369,7 +386,8 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         if (!span || span.shot.kind !== 'shake') throw new Error(`no such shake: ${spec.change.shot}`)
         const swap = g.swaps.find((s) => s.shot === span.shot.id)!
         const i = spec.change.at === 'swap' ? Math.round((swap.first + swap.last) / 2) : span.last + 1
-        await picture(along(getFilm()), frameTime(i), shutter, hero, filmSamples(spec.tier, i, hero), i + 1)
+        const f = filmShot(spec.tier, i, hero)
+        await picture(along(getFilm()), frameTime(i), shutter, hero, f.samples, i + 1, f.travel)
         return
       }
       const onScreen = (spec.interface || !!spec.live) && spec.camera === MOVES.wide
@@ -401,7 +419,8 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     async renderFilmFrame(i, t) {
       await ready
       tier = t
-      await picture(along(getFilm()), frameTime(i), shutter, filmCamera, filmSamples(t, i, filmCamera), i + 1)
+      const f = filmShot(t, i, filmCamera)
+      await picture(along(getFilm()), frameTime(i), shutter, filmCamera, f.samples, i + 1, f.travel)
     },
     opening() {
       return { frameCount: openingPlan().frameCount }
@@ -419,7 +438,8 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       await ready
       tier = t
       const w = wrapFrame(i)
-      await picture(around, w / fpsFilm, shutter, loopPose, framesamples(tierSamples(t), tierMotion(t), () => shutterTravelPx(w / fpsFilm, shutter, loopGlobe, loopPose, format.width, format.height)), 100000 + w)
+      const f = shot(t, w / fpsFilm, loopGlobe, loopPose)
+      await picture(around, w / fpsFilm, shutter, loopPose, f.samples, 100000 + w, f.travel)
     },
     dev: {
       caps: () => ({ ...gfx.caps, precision: acc.precision }),
@@ -553,9 +573,10 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       frameSamples(kind, i, t) {
         const travelPx =
           kind === 'film'
-            ? shutterTravelPx(frameTime(i), shutter, (sec) => globePoseAt(getFilm(), sec), filmCamera, format.width, format.height)
+            ? shutterTravelPx(frameTime(i), shutter, filmGlobe, filmCamera, format.width, format.height)
             : shutterTravelPx(wrapFrame(i) / fpsFilm, shutter, loopGlobe, loopPose, format.width, format.height)
-        return { samples: framesamples(tierSamples(t), tierMotion(t), () => travelPx), travelPx }
+        const even = tierEvenFromPx(t)
+        return { samples: framesamples(tierSamples(t), tierMotion(t), () => travelPx), travelPx, even: even !== undefined && travelPx >= even }
       },
       async renderTestShakeFrame(i, t) {
         await ready
@@ -576,7 +597,8 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         const span = getGrid().spans.find((s) => s.shot.id === shot)
         if (!span || span.shot.kind !== 'shake') throw new Error(`no such shake: ${shot}`)
         const i = span.first + Math.round(offset(span.seconds) * fpsFilm)
-        await picture(along(getFilm()), frameTime(i), shutter, hero, filmSamples(t, i, hero), i + 1)
+        const f = filmShot(t, i, hero)
+        await picture(along(getFilm()), frameTime(i), shutter, hero, f.samples, i + 1, f.travel)
       },
       async simulate(fromSeconds, seconds) {
         replay = null

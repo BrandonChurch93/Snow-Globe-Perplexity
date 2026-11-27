@@ -16,6 +16,96 @@ void main() {
 }`
 
 /**
+ * What the spread of one sample needs: the camera of the sample's moment without its place in the pixel or on the lens,
+ * the ball there, and the ball and the camera half a sample spacing before and after.
+ */
+export interface Spread {
+  /** Clip space of the sample's moment to the world. */
+  toWorld: THREE.Matrix4
+  /** The world to the ball's own space at the sample's moment. */
+  toBall: THREE.Matrix4
+  /** The ball's own space to clip space half a spacing before, and half a spacing after. */
+  before: THREE.Matrix4
+  after: THREE.Matrix4
+  /** The ball in mm of its own space: the sphere's centre height and radius; the base's radius, foot and top. */
+  ball: { sphere: [number, number]; base: [number, number, number] }
+}
+
+/**
+ * The reach of the spread in sample spacings and its weights: a tent over three spacings to either side. A streak is
+ * the sum of copies one spacing apart, and a small bright thing is met by three or four of them, so its copies beat
+ * against the pixels with a period of two or three pixels; a tent this wide lets nothing of that period through.
+ */
+export const SPREAD = { weights: [1, 2, 3, 4, 3, 2, 1], sphereMarginMm: 0.75, baseMarginMm: 4, baseBelowMm: 0.5, baseAboveMm: 1.5 }
+
+/**
+ * One sample of a frame in which the ball travels, spread along the ball's own motion on the picture before it is
+ * added. A pixel whose ray meets the ball (the sphere of the glass) or the base (an upright cylinder) is read as the
+ * mean of the sample along the path that point of the ball takes on the picture in the spacings around the sample's
+ * moment: the point is where the ray is nearest the sphere's centre, or where it enters the base. Every other pixel,
+ * the table, the backdrop and the table's image of the ball, is copied bit for bit. A value that is not a number is
+ * never mixed into its neighbours.
+ */
+const SPREAD_PASS = (sphere: [number, number], base: [number, number, number]) => `uniform sampler2D uSample;
+uniform mat4 uToWorld;
+uniform mat4 uToBall;
+uniform mat4 uBefore;
+uniform mat4 uAfter;
+uniform vec2 uSize;
+out vec4 o;
+const float W[${SPREAD.weights.length}] = float[${SPREAD.weights.length}](${SPREAD.weights.map((w) => w.toFixed(1)).join(', ')});
+bool meets(vec3 from, vec3 dir, out vec3 at) {
+  vec3 c = from - vec3(0.0, ${sphere[0].toFixed(3)}, 0.0);
+  float b = dot(c, dir);
+  float disc = b * b - dot(c, c) + ${(sphere[1] * sphere[1]).toFixed(3)};
+  bool ball = disc >= 0.0 && -b > 0.0;
+  float ballIn = -b - sqrt(max(disc, 0.0));
+  float a = dot(dir.xz, dir.xz);
+  float h = dot(from.xz, dir.xz);
+  float d2 = h * h - a * (dot(from.xz, from.xz) - ${(base[0] * base[0]).toFixed(3)});
+  bool foot = false;
+  float footIn = 0.0;
+  if (a > 1e-12 && d2 >= 0.0 && abs(dir.y) > 1e-9) {
+    float r = sqrt(d2);
+    float y0 = (${base[1].toFixed(3)} - from.y) / dir.y;
+    float y1 = (${base[2].toFixed(3)} - from.y) / dir.y;
+    footIn = max((-h - r) / a, min(y0, y1));
+    float footOut = min((-h + r) / a, max(y0, y1));
+    foot = footIn <= footOut && footIn > 0.0;
+  }
+  if (foot && (!ball || footIn < ballIn)) { at = from + dir * footIn; return true; }
+  if (ball) { at = from - dir * b; return true; }
+  return false;
+}
+bool sound(vec4 v) { return !(any(isnan(v)) || any(isinf(v))); }
+void main() {
+  ivec2 p = ivec2(gl_FragCoord.xy);
+  vec4 own = texelFetch(uSample, p, 0);
+  o = own;
+  vec2 ndc = gl_FragCoord.xy / uSize * 2.0 - 1.0;
+  vec4 n0 = uToWorld * vec4(ndc, -1.0, 1.0);
+  vec4 n1 = uToWorld * vec4(ndc, 1.0, 1.0);
+  vec3 from = (uToBall * vec4(n0.xyz / n0.w, 1.0)).xyz;
+  vec3 to = (uToBall * vec4(n1.xyz / n1.w, 1.0)).xyz;
+  vec3 at;
+  if (!meets(from, normalize(to - from), at) || !sound(own)) return;
+  vec4 a = uBefore * vec4(at, 1.0);
+  vec4 b = uAfter * vec4(at, 1.0);
+  if (!(a.w > 0.0 && b.w > 0.0)) return;
+  vec2 hop = (b.xy / b.w - a.xy / a.w) * 0.5 * uSize;
+  if (!(dot(hop, hop) > 1e-8)) return;
+  vec4 sum = vec4(0.0);
+  float n = 0.0;
+  for (int i = 0; i < ${SPREAD.weights.length}; i++) {
+    vec4 v = i == ${(SPREAD.weights.length - 1) / 2} ? own : texture(uSample, (gl_FragCoord.xy - float(i - ${(SPREAD.weights.length - 1) / 2}) * hop) / uSize);
+    if (!sound(v)) continue;
+    sum += v * W[i];
+    n += W[i];
+  }
+  o = sum / n;
+}`
+
+/**
  * The lens fill. A picture is the mean of `count` pinhole pictures, each from its own lens point,
  * so an edge whose blur circle has a radius of s px is drawn `count` times, up to 0.29 s apart,
  * and far out of focus the copies read as steps. The stage draws, once a picture, the blur radius
@@ -364,6 +454,7 @@ export class Accumulator {
   samples: SampleFacts[] = []
   private spare: Uint16Array | null = null
   private heldBefore: Uint16Array | null = null
+  private spread: { target: THREE.WebGLRenderTarget; pass: Pass } | null = null
 
   constructor(private readonly gfx: Gfx, width: number, height: number, msaa = 0) {
     const { caps } = gfx
@@ -413,18 +504,50 @@ export class Accumulator {
     if (this.fill) this.fill.drawn = false
   }
 
-  add(): void {
+  /** Adds the sample in hand to the mean; with `spread`, as it reads spread along the ball's motion (see `SPREAD_PASS`). */
+  add(spread: Spread | null = null): void {
     if (this.watch) this.samples.push(this.look())
     const from = this.mean[this.flip]
     const to = this.mean[1 - this.flip]
     const u = this.pass.material.uniforms
     u.uMean.value = from.texture
-    u.uSample.value = this.sample.texture
+    u.uSample.value = spread && this.precision !== 'byte' ? this.spreadOut(spread) : this.sample.texture
     u.uWeight.value = 1 / (this.count + 1)
     this.pass.render(this.gfx.renderer, to)
     this.flip = 1 - this.flip
     this.count++
     this.filled = false
+  }
+
+  private spreadOut(by: Spread): THREE.Texture {
+    const { width, height } = this
+    if (!this.spread) {
+      const target = new THREE.WebGLRenderTarget(width, height, {
+        type: this.sample.texture.type,
+        format: THREE.RGBAFormat,
+        minFilter: THREE.NearestFilter,
+        magFilter: THREE.NearestFilter,
+        depthBuffer: false,
+        stencilBuffer: false,
+        generateMipmaps: false,
+      })
+      const pass = new Pass(SPREAD_PASS(by.ball.sphere, by.ball.base), {
+        uSample: { value: this.sample.texture },
+        uToWorld: { value: new THREE.Matrix4() },
+        uToBall: { value: new THREE.Matrix4() },
+        uBefore: { value: new THREE.Matrix4() },
+        uAfter: { value: new THREE.Matrix4() },
+        uSize: { value: new THREE.Vector2(width, height) },
+      })
+      this.spread = { target, pass }
+    }
+    const u = this.spread.pass.material.uniforms
+    ;(u.uToWorld!.value as THREE.Matrix4).copy(by.toWorld)
+    ;(u.uToBall!.value as THREE.Matrix4).copy(by.toBall)
+    ;(u.uBefore!.value as THREE.Matrix4).copy(by.before)
+    ;(u.uAfter!.value as THREE.Matrix4).copy(by.after)
+    this.spread.pass.render(this.gfx.renderer, this.spread.target)
+    return this.spread.target.texture
   }
 
   /** The mean of the samples so far, with the lens fill where the stage drew its map for this picture. */
@@ -508,5 +631,8 @@ export class Accumulator {
     this.mean[1].dispose()
     this.pass.dispose()
     this.fill?.dispose()
+    this.spread?.target.dispose()
+    this.spread?.pass.dispose()
+    this.spread = null
   }
 }

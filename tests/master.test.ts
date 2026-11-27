@@ -318,7 +318,7 @@ describe('what the tool says', () => {
     const final = cfg.tiers.final
     expect(cfg.deliver.master.samples['film-b']).toBe(final.samplesPerFrame)
     expect(cfg.deliver.master.samples.loop).toBe(final.samplesPerFrame)
-    expect(sampleRule('film-b')).toEqual({ base: final.samplesPerFrame, motion: { spacingPx: final.motion.spacingPx, maxSamplesPerFrame: final.motion.maxSamplesPerFrame }, tier: 'final' })
+    expect(sampleRule('film-b')).toEqual({ base: final.samplesPerFrame, motion: { spacingPx: final.motion.spacingPx, maxSamplesPerFrame: final.motion.maxSamplesPerFrame, evenFromPx: final.motion.evenFromPx }, tier: 'final' })
     expect(sampleRule('loop').tier).toBe('final')
     expect(sampleRule('film-b', 1)).toEqual({ base: 1, motion: null, tier: null })
     const other = { deliver: { master: { samples: { 'film-b': 32 } } }, tiers: { final: { samplesPerFrame: 24, motion: { spacingPx: 0.75, maxSamplesPerFrame: 96 } } } }
