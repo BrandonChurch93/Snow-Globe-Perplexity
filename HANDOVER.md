@@ -2,7 +2,7 @@
 
 ## Newest: round two of the eighth job. Winter's heap of snow leaves its own light and then the table; the petals' fringe at 680 is NOT mended and its line is not pushed
 
-Written 2026-11-27 at 22:35 UTC by the clock. The section "Run again on the pushed head 361814f3 after the report" and the lines that point to it were added at 22:43 UTC. This part is newer than everything below it. Where the two differ, this part holds.
+Written 2026-11-27 at 22:35 UTC by the clock. The section "Run again on the pushed head 361814f3 after the report" and the lines that point to it were added at 22:43 UTC, its last line at 22:47 UTC. This part is newer than everything below it. Where the two differ, this part holds.
 
 Head of the code branch `agent/p6-change`: 361814f3 (engine 460fd09424bde200). It is the merge, with no conflict, of `origin/main` ed9180da (named by `/root` at 22:19 UTC: be7560a6 with the village's mend, so summer is made at quality low and medium again) over 0c2d8cfe. 0c2d8cfe (engine a16ed5196d5fc4f5) is this round's one commit, "Winter's heap of snow leaves its own light and then the table as it goes" (`src/seasons/winter/frost.ts`, `src/shake/change.ts`, `tests/shake-change.test.ts`), made on aee10e63, the merge of `main` a4faaeb0 (status 229 alone over 5b76c959, chain 38), whose tree is `main`'s. No triangle is added at any level, and no model's index or vertex order is read. `origin/main` moved to 8eb0ffcd at 22:34 UTC, after the push: status 232 alone (the kit's clock and progress and the status stills, no line of `src` or `tests`). `/root` did not name it and it is not merged.
 
@@ -62,6 +62,7 @@ The report went to `/root` at 22:36 UTC with these still running. All of them we
 - **`npm run determinism`** (22:35 to 22:38 UTC): exit 0, `determinism: pass · 3 pictures, 4 page loads, preview, draft, 175 s`.
 - **`npm run strict -- --keys winter-rest,winter-shake`** (22:38 to 22:41 UTC): exit 0, each of its 8 rows `0 pixels differ`, last line word for word: `strict: pass, 2 keys under pow, all+smooth, all+smooth+noguard, each row read against the plain picture, where that one differs by its answers (no number, 0, 0.577 and 1e30), and where those differ against its own --same picture (engine 460fd09424bde200, drawn by lavapipe): no pixel moves by more than 1 level, at most 0.01% of pixels move`
 - **M4 and M5** (`node tools/measure.mjs --unit change --tier draft --only M4,M5`; 22:41 to 22:43 UTC, 119 s, exit 0): M4 of shakes 1 to 4: 0.9694, 0.889, 0.956, 0.9599 (threshold 0.85). M5: 0.9932, 1, 0.9882, 0.9996 (threshold 0.6). All eight lines pass. Both rows equal `/root`'s list of 20:56 UTC and the rows measured on 0c2d8cfe.
+- **The film's final frames of item 1 on this head.** Pictures 89 and 90 and the table of item 1 are of 0c2d8cfe (engine a16ed5196d5fc4f5), drawn before the merge. Drawn again at hd final on 361814f3 after the report and read against those files: frame 670 (39 samples): the same file as on 0c2d8cfe (sha256 f13b6df2fad5fe24, equal pixel for pixel; 22:44 to 22:47 UTC, 172 s). Frame 671 (24 samples): not in when this line was written; it was being drawn. 668 and 669 were not drawn again on 361814f3.
 
 ### Tools of this round (in `out/work/`, not committed)
 
