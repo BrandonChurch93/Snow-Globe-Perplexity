@@ -266,17 +266,21 @@ gl_Position = projectionMatrix * stageView;
 // y is the depth the lens focuses at. Each lens sample places the vertex again from its own eye, so what is held sharp
 // follows the image of the point behind the glass and not the depth it is placed at (the door: sharp at 152 mm, placed
 // at 171). The true depth is right near the middle of the globe; the texels view takes the image itself, from the
-// parallax of an eye moved 4 mm across and 4 mm up, and of the two keeps the one further from the focus
+// parallax of an eye moved 4 mm across and 4 mm up, and of the two keeps the one further from the focus. A vertex that
+// one of the three eyes cannot see is placed on the limb, whose parallax is no image's: it keeps the depth it is placed at
 vStageAux = vec3(stagePlaced.w, -mvPosition.z, length(stageView.xyz));
 vStagePlaced = stagePlaced.xyz;
 if (uDiag == ${viewCode('texels')}) {
   vec3 stageRight = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
   vec3 stageUp = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
-  vec3 stageA = (viewMatrix * vec4(lensPlace(stageWorld.xyz, cameraPosition + 4.0 * stageRight).xyz, 1.0)).xyz;
-  vec3 stageB = (viewMatrix * vec4(lensPlace(stageWorld.xyz, cameraPosition + 4.0 * stageUp).xyz, 1.0)).xyz;
+  float stageSeenA;
+  float stageSeenB;
+  vec3 stageA = (viewMatrix * vec4(lensPlace(stageWorld.xyz, cameraPosition + 4.0 * stageRight, stageSeenA).xyz, 1.0)).xyz;
+  vec3 stageB = (viewMatrix * vec4(lensPlace(stageWorld.xyz, cameraPosition + 4.0 * stageUp, stageSeenB).xyz, 1.0)).xyz;
   float stageAcross = ((stageA.x - 4.0) / stageA.z - stageView.x / stageView.z) / 4.0;
   float stageDown = ((stageB.y - 4.0) / stageB.z - stageView.y / stageView.z) / 4.0;
   vStageAux.y = 1.0 / max(abs(stageAcross - uCoc.y) > abs(stageDown - uCoc.y) ? stageAcross : stageDown, 1e-5);
+  if (vStageSeen + stageSeenA + stageSeenB < 2.5) vStageAux.y = max(-stageView.z, 1.0);
 }
 #endif
 `
