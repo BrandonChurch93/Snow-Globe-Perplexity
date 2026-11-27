@@ -27,8 +27,8 @@ const SIDE = { power: 0.75, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.2 }
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
-const NEAR = { lamp: { power: 16, reachMm: 13 }, pane: { power: 5, reachMm: 3.2 }, greenPane: { power: 5, reachMm: 3.2 }, atticPane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 8, reachMm: 5.5, ends: 4 }, door: { power: 7, reachMm: 4.5 } }
-const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 1.4, reachMm: 2.4, ends: 3 }, greenPane: { power: 6, reachMm: 1.7, ends: 3 }, atticPane: { power: 3.6, reachMm: 4.2, ends: 3 }, pumpkin: { power: 8, reachMm: 4.5, ends: 3 }, door: { power: 6, reachMm: 5, ends: 3 } }
+const NEAR = { lamp: { power: 16, reachMm: 13 }, pane: { power: 5, reachMm: 3.2 }, greenPane: { power: 5, reachMm: 3.2 }, greenRing: { power: 0, reachMm: 1 }, atticPane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 8, reachMm: 5.5, ends: 4 }, door: { power: 7, reachMm: 4.5 } }
+const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 1.4, reachMm: 2.4, ends: 3 }, greenPane: { power: 2.2, reachMm: 1.7, ends: 3 }, greenRing: { power: 115, reachMm: 2.2, ends: 1.45 }, atticPane: { power: 4.6, reachMm: 4.2, ends: 3 }, pumpkin: { power: 4, reachMm: 4.5, ends: 3 }, door: { power: 2.5, reachMm: 5, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.16, hot: 0, bloom: 0.2 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
@@ -39,12 +39,15 @@ const LAMP_GLASS: Rgb = [3.4, 1.25, 0.24]
 const WALL_FILL = 3.8
 const GROUND_FILL = 8
 const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4 }
-const FENCE = { reachMm: 1.25, sinkMm: 5 }
+const FENCE = { reachMm: 1.25, sinkMm: 5, keep: 0.67, footMm: 0.6, nearMm: 0.9 }
 const MOSS = { low: [0.7, 0.9, 0.6] as Rgb, high: [0.88, 1.02, 0.86] as Rgb, tallMm: 9, soot: 0.8 }
 // The shared stones run from 0.03 (a joint) over 0.12 (the middle stone) to 0.9 (a few white ones). The approved wall is
-// dark grey green stones between black joints, so the tone is bent: joints stay near black, the middle stone sits at a
-// third of `top`, and only the palest stones reach it, which keeps stone from stone apart without a white one.
-const STONE = { top: 0.125, knee: 0.17, power: 2.7 }
+// dark grey green stones with joints only a little darker, so the tone is bent: joints are held at `floor` of `top` and
+// lose their hue, and only the palest stones reach `top`. The gable is cooler than the side, darker below the purple
+// window's head and lighter toward the side wall's corner, as the approved wall is.
+const STONE = { top: 0.105, knee: 0.17, power: 2.7, floor: 0.26, tone: [0.6, 0.78, 1.0] as Rgb, gable: [0.75, 0.82, 1.05] as Rgb, low: [0.9, 0.92, 0.95] as Rgb, high: [1.2, 1.3, 1.3] as Rgb, corner: [3, 2.1, 2.3] as Rgb, lowMm: 3, eaveMm: 1.2, side: [1.5, 1, 0.98] as Rgb, faceMm: 1.2 }
+const WALL_LAMP: Rgb = [0.85, 0.6, 0.5]
+const WHITE: Rgb = [1, 1, 1]
 // The shared chimney is pale brick. The approved one is the wall's dark stone, a little greyer.
 const CHIMNEY = { tone: [0.9, 0.95, 0.9] as Rgb, top: 0.28, knee: 0.5, power: 2.8, fromMm: 1.5, reachMm: 0.9 }
 // The shared slates run from 0.02 (a slate's shadowed top edge) to 0.12 (its lit lower edge). The approved roof is big warm
@@ -84,7 +87,7 @@ const CASING = { tone: [0.1, 0.085, 0.1] as Rgb, reachMm: 1.1, deepMm: 1.4 }
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 // The shared shrubs are one soft mass. Dry leaves stand apart: each takes its own tone and its own depth of shade.
 const BUSH = { gain: 5.2, cap: 2, low: 0.35 }
-const GROUND = { soil: 1, tint: [0.4, 0.6, 1] as Rgb, mossTone: [0.07, 0.115, 0.055] as Rgb, leaf: 0.95, grey: 0.25, cover: 0.85, moss: 0.12, leafScale: 0.85, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
+const GROUND = { soil: 0.3, tint: [0.8, 0.58, 0.55] as Rgb, mossTone: [0.02, 0.038, 0.034] as Rgb, leaf: 0.66, grey: 0.45, cover: 0.85, moss: 0.12, leafScale: 0.85, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
 const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 4.5, pane: 1.6, pumpkin: 4.5, tight: 0.003, wide: 0.012, wideShare: 0.03, calm: 0.3, lowMm: 3.4, fog: 0.42, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
 
 const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
@@ -145,10 +148,11 @@ const list: InnerLight[] = [
 export const innerLights = (): InnerLight[] => list
 
 const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb): GlowSource[] => [
-  ...bounce(),
+  ...bounce(on === NEAR ? BOUNCE.fence.onGround : BOUNCE.fence.power),
   { at: flame, color: lampTone, ...on.lamp },
   { at: anchors.window, color: tones.purpleLight, ...on.pane },
   { at: anchors.sideWindow, color: tones.greenLight, ...on.greenPane },
+  ...(on.greenRing.power > 0 ? [{ at: anchors.sideWindow, color: tones.greenLight, ...on.greenRing }] : []),
   { at: attic, color: tones.greenLight, ...on.atticPane },
   ...pumpkinPools.map((at): GlowSource => ({ at, color: tones.pumpkinLight, ...on.pumpkin })),
   { at: doorFoot, color: tones.pumpkinLight, ...on.door },
@@ -157,9 +161,9 @@ const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb): GlowSource[
 // Light the glass and the lit fog throw back: on the faces of the fence the viewer sees, on the cottage's side wall and
 // on the rocks of the east bank, which the key (upper right) and the lamp all miss. The approved shows them lit,
 // grey-brown, olive and pale green.
-const BOUNCE = { fence: { color: [1, 0.76, 0.52] as Rgb, power: 1.5, reachMm: 9, ends: 2.6, outMm: 5, upMm: 6.5 }, side: { color: [0.86, 0.9, 0.66] as Rgb, power: 6, reachMm: 13, ends: 2.4, outMm: 9, upMm: 7, alongMm: 2 }, bank: { color: [0.8, 0.95, 0.7] as Rgb, power: 7, reachMm: 10, ends: 2.4, outMm: 7, upMm: 5 } }
+const BOUNCE = { fence: { color: [0.78, 0.76, 0.6] as Rgb, power: 5, onGround: 0.8, reachMm: 9, ends: 2.6, outMm: 5, upMm: 6.5 }, side: { color: [0.86, 0.9, 0.66] as Rgb, power: 6, reachMm: 13, ends: 2.4, outMm: 9, upMm: 7, alongMm: 2 }, bank: { color: [0.8, 0.95, 0.7] as Rgb, power: 7, reachMm: 10, ends: 2.4, outMm: 7, upMm: 5 } }
 
-function bounce(): GlowSource[] {
+function bounce(fencePower: number): GlowSource[] {
   const dx = fence.to[0] - fence.from[0]
   const dz = fence.to[1] - fence.from[1]
   const len = Math.hypot(dx, dz)
@@ -175,7 +179,7 @@ function bounce(): GlowSource[] {
   const bz = rocks.reduce((m, c) => m + c[2], 0) / rocks.length + BOUNCE.bank.outMm
   return [
     { at: [bx, groundAt(bx, bz) + BOUNCE.bank.upMm, bz], color: BOUNCE.bank.color, power: BOUNCE.bank.power, reachMm: BOUNCE.bank.reachMm, ends: BOUNCE.bank.ends },
-    { at: [fx, groundAt(fx, fz) + BOUNCE.fence.upMm, fz], color: BOUNCE.fence.color, power: BOUNCE.fence.power, reachMm: BOUNCE.fence.reachMm, ends: BOUNCE.fence.ends },
+    { at: [fx, groundAt(fx, fz) + BOUNCE.fence.upMm, fz], color: BOUNCE.fence.color, power: fencePower, reachMm: BOUNCE.fence.reachMm, ends: BOUNCE.fence.ends },
     { at: [sx, f.floor + BOUNCE.side.upMm, sz], color: BOUNCE.side.color, power: BOUNCE.side.power, reachMm: BOUNCE.side.reachMm, ends: BOUNCE.side.ends },
   ]
 }
@@ -193,9 +197,19 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareVillage(), prepareModel(MODEL)])
 }
 
-const BOARDS = fenceBoards()
+const lowered = (p: Point): Point => {
+  const foot = groundAt(p[0], p[2]) - FENCE.footMm
+  return [p[0], foot + (p[1] - foot) * FENCE.keep, p[2]]
+}
+const MADE = fenceBoards()
+const BOARDS = MADE.filter((b) => !b.hidden).map((b) => ({ ...b, a: lowered(b.a), b: lowered(b.b) }))
 const fenceBox = BOARDS.reduce(
   (m, b) => ({ x0: Math.min(m.x0, b.a[0], b.b[0]), x1: Math.max(m.x1, b.a[0], b.b[0]), z0: Math.min(m.z0, b.a[2], b.b[2]), z1: Math.max(m.z1, b.a[2], b.b[2]) }),
+  { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity },
+)
+
+const madeBox = MADE.reduce(
+  (m, b) => ({ x0: Math.min(m.x0, b.a[0] - 3, b.b[0] - 3), x1: Math.max(m.x1, b.a[0] + 3, b.b[0] + 3), z0: Math.min(m.z0, b.a[2] - 3, b.b[2] - 3), z1: Math.max(m.z1, b.a[2] + 3, b.b[2] + 3) }),
   { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity },
 )
 
@@ -222,6 +236,25 @@ function inCasing(across: number, up: number, along: number): boolean {
   const gable = Math.abs(across - w.across) < w.width / 2 + CASING.reachMm && Math.abs(along - cottage.halfLength) < CASING.deepMm && up > w.sill - CASING.reachMm && up < w.sill + w.height + CASING.reachMm
   const side = Math.abs(along - s.along) < s.width / 2 + CASING.reachMm && Math.abs(across + cottage.halfWidth) < CASING.deepMm && up > s.sill - CASING.reachMm && up < s.sill + s.height + CASING.reachMm
   return gable || side
+}
+
+// The make marks every second picket black. Folded to one point under the ground it is not drawn, and the mesh keeps
+// its count of triangles at every level. The boards left are lowered here toward the approved fence, which tops out
+// near the pumpkin's crown and leaves the door free.
+function* thinned(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeometry> {
+  const g = source.clone()
+  const P = g.getAttribute('position')
+  const C = g.getAttribute('color')
+  const S = g.getAttribute('uv1')
+  const under: Point = [fence.from[0], groundAt(fence.from[0], fence.from[1]) - FENCE.sinkMm, fence.from[1]]
+  for (let i = 0; i < P.count; i++) {
+    if (i % ROW === 0) yield
+    if (Math.floor(S.getX(i) + 0.001) !== 1) continue
+    const at: Point = [P.getX(i), P.getY(i), P.getZ(i)]
+    if (C.getX(i) + C.getY(i) + C.getZ(i) === 0) P.setXYZ(i, under[0], under[1], under[2])
+    else if (at[0] > madeBox.x0 && at[0] < madeBox.x1 && at[2] > madeBox.z0 && at[2] < madeBox.z1 && boardDistance(at[0], at[1], at[2], MADE) < FENCE.nearMm) P.setY(i, lowered(at)[1])
+  }
+  return g
 }
 
 function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeometry> {
@@ -276,7 +309,7 @@ function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeom
         r = v * CHIMNEY.tone[0]
         gr = v * CHIMNEY.tone[1]
         b = v * CHIMNEY.tone[2]
-      } else if (near && up > cottage.wall - 1.2 && Math.abs(c.across) > 0.01 && N.getY(i) > 0.25) {
+      } else if (near && up > cottage.wall - 1.2 && Math.abs(c.across) > 0.01 && N.getY(i) > 0.25 && (c.along < cottage.halfLength - STONE.faceMm || up > cottage.wall + cottage.rise * (1 - Math.abs(c.across) / cottage.halfWidth) - STONE.eaveMm)) {
         const lum = 0.3 * r + 0.6 * gr + 0.1 * b
         r = (lum * ROOF.grey + r * (1 - ROOF.grey)) * ROOF.tone[0]
         gr = (lum * ROOF.grey + gr * (1 - ROOF.grey)) * ROOF.tone[1]
@@ -286,10 +319,16 @@ function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeom
         const k = Math.min(1, Math.max(0, m))
         const soot = near ? 1 - MOSS.soot * smooth(cottage.wall + 1, cottage.wall + 7, up) : 1
         const lum = 0.3 * r + 0.6 * gr + 0.1 * b
-        const bite = ((STONE.top * (1 - Math.exp(-Math.pow(lum / STONE.knee, STONE.power)))) / Math.max(lum, 1e-4)) * soot
-        r *= (MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k) * bite
-        gr *= (MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k) * bite
-        b *= (MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k) * bite
+        const lit = 1 - Math.exp(-Math.pow(lum / STONE.knee, STONE.power))
+        const bite = ((STONE.top * (STONE.floor + (1 - STONE.floor) * lit)) / Math.max(lum, 1e-4)) * soot
+        const onGable = near && c.along > cottage.halfLength - STONE.faceMm
+        const drop = onGable ? 1 - smooth(cottage.window.sill + cottage.window.height, cottage.window.sill + cottage.window.height + STONE.lowMm, y - frame.floor) : 0
+        const corner = 1 - smooth(-cottage.halfWidth, 0.5 * cottage.halfWidth, c.across)
+        const tint = (j: number): number => STONE.gable[j]! * (STONE.high[j]! * (1 + (STONE.corner[j]! - 1) * corner) * (1 - drop) + STONE.low[j]! * drop)
+        const face: Rgb = !near ? WHITE : onGable ? [tint(0), tint(1), tint(2)] : c.across < STONE.faceMm - cottage.halfWidth ? STONE.side : WHITE
+        r = (lum + (r - lum) * lit) * (MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k) * bite * STONE.tone[0] * face[0]
+        gr = (lum + (gr - lum) * lit) * (MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k) * bite * STONE.tone[1] * face[1]
+        b = (lum + (b - lum) * lit) * (MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k) * bite * STONE.tone[2] * face[2]
       }
     } else if (kind === 1) {
       const c = cottageLocal(x, z)
@@ -365,7 +404,7 @@ vec4 fallL = fallLeaf(vMapUv);
 float fallShow = step(0.03, fallL.a);
 float fallWide = texture2D(map, vMapUv * 0.19 + 0.37).a;
 float fallMoss = smoothstep(0.42, 0.62, vSurf.y + ${GROUND.moss.toFixed(2)} + 0.55 * (fallE.a - 0.5) + 0.3 * (fallWide - 0.5));
-vec3 fallSoil = mix(fallE.rgb * ${glsl(scaled(GROUND.tint, GROUND.soil))}, ${glsl(GROUND.mossTone)} * (0.3 + 0.7 * fallE.a), fallMoss);
+vec3 fallSoil = mix(sqrt(max(fallE.rgb, vec3(1e-4))) * ${glsl(scaled(GROUND.tint, GROUND.soil))}, ${glsl(GROUND.mossTone)} * (0.3 + 0.7 * fallE.a), fallMoss);
 diffuseColor.rgb *= mix(fallSoil, mix(fallL.rgb, vec3(0.9, 0.82, 0.62) * dot(fallL.rgb, vec3(0.4, 0.45, 0.15)), ${GROUND.grey.toFixed(2)}) * ${GROUND.leaf.toFixed(2)}, fallShow);
 fallRough = mix(0.96, 0.8, fallShow);
 `,
@@ -468,9 +507,9 @@ export function* making(): Generator<void, THREE.Object3D> {
   const stone = surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: chipped, key: 'village-solid-fall', fill: WALL_FILL })
   const turned = yield* autumn(villageGeometry('solid'))
   yield
-  const walls = shadowed(new THREE.Mesh(yield* surfacing(turned, sources(NEAR_WALL, tones.lampLight)), stone))
+  const walls = shadowed(new THREE.Mesh(yield* surfacing(turned, sources(NEAR_WALL, WALL_LAMP)), stone))
   yield
-  const decor = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'decor').clone(), sources(NEAR_WALL, tones.lampLight)), stone))
+  const decor = shadowed(new THREE.Mesh(yield* surfacing(yield* thinned(geometry(MODEL, 'decor')), sources(NEAR_WALL, tones.lampLight)), stone))
   yield
   const earth = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'ground').clone(), sources(NEAR, tones.lampLight)), groundMaterial()), false)
   yield

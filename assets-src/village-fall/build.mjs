@@ -622,7 +622,7 @@ for (const r of PROPS.ROCKS) {
 }
 
 {
-  const WOOD = ['#6f5c48', '#5c4c3d', '#7b6650', '#4f4337'].map(lin)
+  const WOOD = ['#6b5e4c', '#5a4f41', '#766855', '#4e463b'].map(lin)
   for (const b of PROPS.fenceBoards()) {
     const e = [b.b[0] - b.a[0], b.b[1] - b.a[1], b.b[2] - b.a[2]]
     const len = Math.hypot(e[0], e[1], e[2])
@@ -649,18 +649,18 @@ for (const r of PROPS.ROCKS) {
       P.setXYZ(i, x + bite * (1 - smooth(from, len / 2, y)), up, P.getZ(i))
     }
     shade(g, (x, y, z) => {
-      const grain = 0.45 + 1.0 * noise(x * 6.5 + seed, y * 0.7, z * 6.5)
+      const grain = 0.2 + 0.4 * noise(x * 6.5 + seed, y * 0.7, z * 6.5)
       const split = 1 - 0.6 * smooth(0.55, 0.7, noise(x * 9 + 3, y * 0.35 + seed, 1.7))
       const end = b.post ? 1 : 0.7 + 0.7 * smooth(len / 2 - 0.7, len / 2, Math.abs(y))
       const foot = b.post ? 0.5 + 0.5 * smooth(-len / 2 + 0.4, -len / 2 + 2.2, y) : 1
-      const side = smooth(half - 0.22, half - 0.02, Math.abs(x))
+      const side = b.picket ? 0 : smooth(half - 0.22, half - 0.02, Math.abs(x))
       const arch = b.post ? smooth(0.22, 0.04, crown(Math.max(-half, Math.min(half, x))) - y) : 0
-      const worn = 1 + 3 * Math.max(side, arch)
+      const worn = 1 + 7 * Math.max(side, arch)
       return grain * split * end * foot * worn
     })
     const mid = [(b.a[0] + b.b[0]) / 2, (b.a[1] + b.b[1]) / 2, (b.a[2] + b.b[2]) / 2]
     const M = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(mid[0], mid[1], mid[2])
-    decor.add(g, { matrix: M, color: mul3(WOOD[Math.floor(R() * WOOD.length)], between(0.75, 1.05)), surf: [surf(KIND.wood, 0.84), 0], renormal: true })
+    decor.add(g, { matrix: M, color: mul3(WOOD[Math.floor(R() * WOOD.length)], between(0.75, 1.05) * (b.hidden ? 0 : 1)), surf: [surf(KIND.wood, 0.84), 0], renormal: true })
   }
 }
 
