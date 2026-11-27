@@ -418,7 +418,75 @@ describe('how the storm is drawn', () => {
     // the look is whole in the calm and gone at the storm's full level, where a head is drawn as it was
     expect(clock.stormOff[0]).toBeLessThan(clock.stormOff[1])
     expect(clock.stormOff[1]).toBeLessThanOrEqual(0.99)
-    expect(CARD_VERT).toContain('if (uStorm.x < 0.99) denseC = mix(denseC,')
+    expect(CARD_VERT).toContain('float offC = 0.0;\n      if (uStorm.x < 0.99) offC = 1.0 - smoothstep(')
+    expect(CARD_VERT).toContain('denseC = mix(denseC, 1.0 - min(')
+    expect(CARD_VERT).toContain('float edgeC = 0.1;\n      if (uStorm.x < 0.99) {')
+  })
+
+  it("in the calm no head is let in or taken out at a line as it drifts: the count is gentle over the whole picture, a head on its way in is a small one that grows, and it is whole to see after twelve frames and more at the seed's fastest", () => {
+    const clock = CARD.clock
+    const smooth = (e0: number, e1: number, x: number) => {
+      const t = Math.min(Math.max((x - e0) / (e1 - e0), 0), 1)
+      return t * t * (3 - 2 * t)
+    }
+    // the fastest a seed afloat drifts in a frame, in millimetres
+    const fastMm = BEHAVIOUR.seed!.restSpeedMmS / config.film.fps
+    // how much larger than life the ball shows a point on its axis, d radii toward the eye from its middle: by the liquid's index at the middle, about twice at the back wall, life size at the front
+    const lens = (d: number) => lensIor / (lensIor - (lensIor - 1) * (1 - d))
+    expect(lens(0)).toBeCloseTo(lensIor, 9)
+    expect(lens(1)).toBeCloseTo(1, 9)
+    expect(lens(-1)).toBeGreaterThan(1.9)
+    // the share of the count as the shader reckons it: by the depth class (0 far, 1 near) and the height on the picture, in radii of the ball
+    const keep = (deep: number, y: number) =>
+      Math.min(clock.even * (clock.farMore + (clock.nearLess - clock.farMore) * deep), 1) * (1 - clock.lowOut * (1 - smooth(clock.lowY[0], clock.lowY[1], y))) * (1 - clock.bandOut * Math.exp((-0.5 * (y - clock.bandY[0]) * (y - clock.bandY[0])) / (clock.bandY[1] * clock.bandY[1])))
+    // a head is whole to see where the step over the edge has reached goSeen: that share of the edge
+    let share = 0
+    for (let lo = 0, hi = 1, i = 0; i < 50; i++) {
+      share = (lo + hi) / 2
+      if (smooth(0, 1, share) < clock.goSeen) lo = share
+      else hi = share
+    }
+    // by the height: the steepest the count is anywhere on the picture, for the far heads (seen largest, at the back wall) and for the others (seen no larger than at the middle)
+    for (const [deep, seenLarger] of [
+      [0, lens(-1)],
+      [0.5, lens(0)],
+      [1, lens(0)],
+    ] as const) {
+      let steepest = 0
+      for (let y = -1; y < 1; y += 0.001) steepest = Math.max(steepest, Math.abs(keep(deep, y + 0.001) - keep(deep, y)) / 0.001)
+      const framesToWhole = ((clock.edge / steepest) * lensRadiusMm * share) / (fastMm * seenLarger)
+      expect(framesToWhole).toBeGreaterThanOrEqual(12)
+    }
+    // by the depth, where the picture does not swell the way
+    const byDepth = (clock.even * Math.abs(clock.farMore - clock.nearLess) * 1.5) / (clock.keepAt[1] - clock.keepAt[0])
+    expect(((clock.edge / byDepth) * lensRadiusMm * share) / fastMm).toBeGreaterThanOrEqual(12)
+    // before the cottage and the lanterns a head fades over the whole edge, at the narrower of the two outlines' half heights
+    expect(clock.sceneEdge[0]).toBeLessThan(clock.sceneEdge[1])
+    const ringMm = (clock.sceneEdge[1] - clock.sceneEdge[0]) * Math.min(CARD.hair.cottageWide[0], CARD.hair.cottageWide[1], CARD.glow.bandWide[0], CARD.glow.bandWide[1]) * lensRadiusMm
+    expect(ringMm / (fastMm * lens(-1))).toBeGreaterThanOrEqual(12)
+    // a stalk goes over the share of that edge at which the edge is stalkScene deep, before the cottage and before the crown
+    let stalkShare = 0
+    for (let lo = 0, hi = 1, i = 0; i < 50; i++) {
+      stalkShare = (lo + hi) / 2
+      if (smooth(0, 1, stalkShare) < Math.min(clock.stalkScene, 1)) lo = stalkShare
+      else hi = stalkShare
+    }
+    const stalkMm = stalkShare * (clock.sceneEdge[1] - clock.sceneEdge[0]) * Math.min(CARD.hair.cottageWide[0], CARD.hair.cottageWide[1], CARD.hair.crownWide[0], CARD.hair.crownWide[1]) * lensRadiusMm
+    expect(stalkMm / (fastMm * lens(-1))).toBeGreaterThanOrEqual(12)
+    // and at the limb
+    expect(clock.rimFrom).toBeLessThan(CARD.hair.rimFrom[0])
+    expect(((CARD.hair.rimFrom[1] - clock.rimFrom) * lensRadiusMm) / fastMm).toBeGreaterThanOrEqual(12)
+    // a head on its way is small, never a ghost of a large one, and whole to see before it is full grown
+    expect(clock.goSize).toBeGreaterThan(0)
+    expect(clock.goSize).toBeLessThan(0.5)
+    expect(clock.goSeen).toBeGreaterThan(0.5)
+    expect(clock.goSeen).toBeLessThanOrEqual(1)
+    expect(clock.edge).toBeGreaterThan(0.1)
+    // the shader: the step by the head's own number has the calm's own wide edge, the miniature's cut is a fade for all but the few that stay, and neither stands at the storm's full level
+    expect(CARD_VERT).toContain('float wholeC = smoothstep(denseC - edgeC, denseC, fract(own * 211.0));')
+    expect(CARD_VERT).toContain('keepC *= mix(1.0, mix(wholeC, smoothstep(0.0, ')
+    expect(CARD_VERT).toContain('keepC *= 1.0 - calmC * offC * max(max(cotQ, bandQ) * (1.0 - smoothstep(')
+    expect(CARD_VERT).not.toContain('pow(max(1.0 - dot(atC, atC), 0.04)')
   })
 
   it("a seed or a light at the back of the ball comes in over twelve frames and more: where the lens puts it at once well inside the outline, it rises with its millimetres past the ray through the limb, and only summer's two shapes take that", () => {

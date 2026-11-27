@@ -114,8 +114,11 @@ export const CARD_VERT = `
     if (${at(SHAPE.seed)}) {
       nearC = 0.0;
       float calmC = whole * afloat * (1.0 - gustC);
-      // a head's tuft is wider than the glass's own fade at its edge: one that floats at the limb would stand half outside the ball
-      if (on > 0.5) keepC *= 1.0 - calmC * smoothstep(${n(CARD.hair.rimFrom[0])}, ${n(CARD.hair.rimFrom[1])}, length(rimAxis) / max(R, 1e-4));
+      // how much of the calm's own laws stands (looks.ts, CARD.clock): all of them under the lower of the two levels, none at the storm's full level
+      float offC = 0.0;
+      if (uStorm.x < 0.99) offC = 1.0 - smoothstep(${n(CARD.clock.stormOff[0])}, ${n(CARD.clock.stormOff[1])}, uStorm.x);
+      // a head's tuft is wider than the glass's own fade at its edge: one that floats at the limb would stand half outside the ball. In the calm the fade is wider, so a head that drifts to the limb goes over twelve frames and more
+      if (on > 0.5) keepC *= 1.0 - calmC * smoothstep(mix(${n(CARD.hair.rimFrom[0])}, ${n(CARD.clock.rimFrom)}, offC), ${n(CARD.hair.rimFrom[1])}, length(rimAxis) / max(R, 1e-4));
       // the ball is deepest at its middle on the picture and holds the most heads there: a share of them is not drawn, the larger the longer the way through the ball is, so that the crowd is even on the picture from the middle to the limb. The heads hang thickest in the lower half of the liquid, and more still are left out there
       vec2 atC = (view.xy * (centreV.z / view.z) - centreV.xy) / max(uLens.x, 1e-4);
       float denseC = 1.0 - min(${n(CARD.hair.even)} / sqrt(max(1.0 - dot(atC, atC), 0.04)), 1.0) * (1.0 - ${n(CARD.hair.lowOut)} * (1.0 - smoothstep(${n(CARD.hair.lowY[0])}, ${n(CARD.hair.lowY[1])}, atC.y)));
@@ -141,11 +144,27 @@ export const CARD_VERT = `
       keepC *= 1.0 - (lineC > 0.5 ? ${n(CARD.line.stormRimOut)} : ${n(CARD.hair.stormRimOut)}) * smoothstep(${n(CARD.line.stormRim[0])}, ${n(CARD.line.stormRim[1])}, length(atC)) * gustC;
       if (mistC > 0.5) keepC *= 1.0 - smoothstep(${n(CARD.line.stormMistRim[0])}, ${n(CARD.line.stormMistRim[1])}, length(atC)) * gustC;
       denseC = max(denseC, max(${n(CARD.hair.sceneOut[0])} * max(cotC, bandC), ${n(CARD.hair.sceneOut[1])} * crownC));
-      // in the calm the count is the clocks' own (looks.ts, CARD.clock), and goes over to it as the storm goes
-      if (uStorm.x < 0.99) denseC = mix(denseC, max(1.0 - min(${n(CARD.clock.even)} * mix(${n(CARD.clock.farMore)}, 1.0, smoothstep(${n(CARD.clock.farAt[0])}, ${n(CARD.clock.farAt[1])}, depth + ${n(CARD.clock.depthVary)} * (fract(h.w * 113.0) * 2.0 - 1.0))) / pow(max(1.0 - dot(atC, atC), 0.04), ${n(CARD.clock.evenPow)}), 1.0) * (1.0 - ${n(CARD.clock.lowOut)} * (1.0 - smoothstep(${n(CARD.clock.lowY[0])}, ${n(CARD.clock.lowY[1])}, atC.y))), max(${n(CARD.clock.sceneOut[0])} * max(cotC, bandC), ${n(CARD.clock.sceneOut[1])} * crownC)), 1.0 - smoothstep(${n(CARD.clock.stormOff[0])}, ${n(CARD.clock.stormOff[1])}, uStorm.x));
-      keepC *= mix(1.0, smoothstep(denseC - 0.1, denseC, fract(own * 211.0)), calmC);
-      // a head on a stalk that drifts before the cottage or the crown would lay a line across the face or end one among the branches: it fades as it comes there, and the heads without a stalk stay
-      if (!laidB) keepC *= 1.0 - calmC * step(fract(h2.x * 47.0), ${n(CARD.hair.stalks)}) * smoothstep(0.0, ${n(CARD.hair.stalkScene)}, max(cotC, crownC));
+      // in the calm the count is the clocks' own (looks.ts, CARD.clock), and goes over to it as the storm goes. That law is gentle over the whole picture, so a head that drifts is not let in or taken out at a line: where it changes (with the depth, low in the ball, at the height where the heads hang thickest) it changes slowly, and the step's edge is so wide that a head comes or goes over twelve frames and more
+      float edgeC = 0.1;
+      if (uStorm.x < 0.99) {
+        float depthQ = depth + ${n(CARD.clock.depthVary)} * (fract(h.w * 113.0) * 2.0 - 1.0);
+        denseC = mix(denseC, 1.0 - min(${n(CARD.clock.even)} * mix(${n(CARD.clock.farMore)}, ${n(CARD.clock.nearLess)}, smoothstep(${n(CARD.clock.keepAt[0])}, ${n(CARD.clock.keepAt[1])}, depthQ)), 1.0) * (1.0 - ${n(CARD.clock.lowOut)} * (1.0 - smoothstep(${n(CARD.clock.lowY[0])}, ${n(CARD.clock.lowY[1])}, atC.y))) * (1.0 - ${n(CARD.clock.bandOut)} * exp(-0.5 * (atC.y - ${n(CARD.clock.bandY[0])}) * (atC.y - ${n(CARD.clock.bandY[0])}) / ${n(CARD.clock.bandY[1] * CARD.clock.bandY[1])})), offC);
+        edgeC = mix(0.1, ${n(CARD.clock.edge)}, offC);
+      }
+      // how much of this head the count lets stand. A clock that the count takes out or lets in as it drifts does not stand there as a ghost of itself: it is small while it comes and grows to its size, as a head does that floats up out of the deep of the ball (rC below), and is whole to see well before it is full grown
+      float wholeC = smoothstep(denseC - edgeC, denseC, fract(own * 211.0));
+      keepC *= mix(1.0, mix(wholeC, smoothstep(0.0, ${n(CARD.clock.goSeen)}, wholeC), offC), calmC);
+      // before the cottage and the lanterns all but a few of the clocks are not drawn: each of the others fades as it drifts there, over the whole width of a wide edge round the miniature, and the few stay whole, so none is taken out at a line. Before the crown every clock is a little fainter
+      float stalkQ = 0.0;
+      if (uStorm.x < 0.99) {
+        float cotQ = 1.0 - smoothstep(${n(CARD.clock.sceneEdge[0])}, ${n(CARD.clock.sceneEdge[1])}, length((atC - vec2(${n(CARD.hair.cottageAt[0])}, ${n(CARD.hair.cottageAt[1])})) / vec2(${n(CARD.hair.cottageWide[0])}, ${n(CARD.hair.cottageWide[1])})));
+        float bandQ = 1.0 - smoothstep(${n(CARD.clock.sceneEdge[0])}, ${n(CARD.clock.sceneEdge[1])}, length((atC - vec2(${n(CARD.glow.bandAt[0])}, ${n(CARD.glow.bandAt[1])})) / vec2(${n(CARD.glow.bandWide[0])}, ${n(CARD.glow.bandWide[1])})));
+        float crownQ = 1.0 - smoothstep(${n(CARD.clock.sceneEdge[0])}, ${n(CARD.clock.sceneEdge[1])}, length((atC - vec2(${n(CARD.hair.crownAt[0])}, ${n(CARD.hair.crownAt[1])})) / vec2(${n(CARD.hair.crownWide[0])}, ${n(CARD.hair.crownWide[1])})));
+        keepC *= 1.0 - calmC * offC * max(max(cotQ, bandQ) * (1.0 - smoothstep(${n(CARD.clock.sceneOut[0] - 0.03)}, ${n(CARD.clock.sceneOut[0])}, fract(own * 211.0))), ${n(CARD.clock.sceneOut[1])} * crownQ);
+        stalkQ = max(cotQ, crownQ);
+      }
+      // a head on a stalk that drifts before the cottage or the crown would lay a line across the face or end one among the branches: it fades as it comes there, and the heads without a stalk stay. A clock shows no stalk there (stalkOutC below), so the rule goes as the clocks come
+      if (!laidB) keepC *= 1.0 - calmC * (1.0 - offC) * step(fract(h2.x * 47.0), ${n(CARD.hair.stalks)}) * smoothstep(0.0, ${n(CARD.hair.stalkScene)}, max(cotC, crownC));
       // depth and light: about one head in five is near and sharp and lit; the others are dimmer and a little soft; the far ones are small soft puffs
       seedNear = calmC * step(fract(h2.x * 47.0), ${n(CARD.down.star.share)}) * smoothstep(${n(CARD.hair.nearFrom[0])}, ${n(CARD.hair.nearFrom[1])}, depth) * (1.0 - sceneC) * step(${n(CARD.hair.nearDense)} * denseC, fract(h.z * 157.0)) * smoothstep(${n(CARD.hair.nearLow[0])}, ${n(CARD.hair.nearLow[1])}, atC.y);
       // the crowd changes as a head drifts: under the storm's full level the edge of that step is wide, so no head's light steps between two frames; at the full storm the line above stands as it is
@@ -185,13 +204,13 @@ export const CARD_VERT = `
           float atK = depth + ${n(CARD.clock.depthVary)} * (fract(h.w * 113.0) * 2.0 - 1.0);
           float midK = smoothstep(${n(CARD.clock.farAt[0])}, ${n(CARD.clock.farAt[1])}, atK);
           float nearK = smoothstep(${n(CARD.clock.nearAt[0])}, ${n(CARD.clock.nearAt[1])}, atK) * (1.0 - sceneC);
-          rC = mix(rC, look.y * uPoint.y * mag / zImg * shrink * mix(mix(${n(CARD.clock.mm[0])}, ${n(CARD.clock.mm[1])}, midK), ${n(CARD.clock.mm[2])}, nearK) * mix(${n(CARD.clock.vary[0])}, ${n(CARD.clock.vary[1])}, fract(vary * 7.0)), clockC);
+          rC = mix(rC, look.y * uPoint.y * mag / zImg * shrink * mix(mix(${n(CARD.clock.mm[0])}, ${n(CARD.clock.mm[1])}, midK), ${n(CARD.clock.mm[2])}, nearK) * mix(${n(CARD.clock.vary[0])}, ${n(CARD.clock.vary[1])}, fract(vary * 7.0)) * mix(${n(CARD.clock.goSize)}, 1.0, wholeC), clockC);
           seedSoft = mix(seedSoft, closeC * mix(mix(${n(CARD.clock.softPx[0])}, ${n(CARD.clock.softPx[1])}, midK), ${n(CARD.clock.softPx[2])}, nearK), clockC);
           keepC *= mix(1.0, mix(mix(${n(CARD.clock.classSeen[0])}, ${n(CARD.clock.classSeen[1])}, midK), ${n(CARD.clock.classSeen[2])}, nearK), clockC);
           seedNear = mix(seedNear, nearK, clockC);
           seedFar = (1.0 - midK) * clockC;
           // a stalk would lay a line across the cottage's face or end one among the branches: before the two a clock shows none
-          stalkOutC = smoothstep(0.0, ${n(CARD.hair.stalkScene)}, max(cotC, crownC));
+          stalkOutC = smoothstep(0.0, ${n(CARD.clock.stalkScene)}, stalkQ);
         }
       }
     }
@@ -1055,7 +1074,7 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
       // the hub is a small bright heart, where every hair begins
       float heartW = ${n(CARD.clock.heartWide)} * RK * mix(1.0, ${n(CARD.clock.stoutHeartWide)}, warmK);
       hotK = heartW * heartW / (heartW * heartW + s2) * exp(-0.5 * rK * rK / (s2 + heartW * heartW));
-      float heartK = mix(${n(CARD.clock.heart)}, ${n(CARD.clock.stoutHeart)}, warmK) * hotK;
+      float heartK = mix(mix(${n(CARD.clock.heart)}, ${n(CARD.clock.heart * CARD.clock.farHeart)}, farS), ${n(CARD.clock.stoutHeart)}, warmK) * hotK;
       gauzeK = (mix(${n(CARD.clock.seen)}, ${n(CARD.clock.stoutSeen)}, warmK) * (strongK + mix(1.0, ${n(CARD.clock.stoutDown)}, warmK) * downK) + heartK) * mix(${n(CARD.hair.faint)}, 1.0, fract(vL3.y * 53.0));
     }
   }
