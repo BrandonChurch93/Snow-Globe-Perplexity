@@ -26,6 +26,7 @@ import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, out
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { CHANGE_BLOOM, Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
+import { fitIn, FramePace, SOON_MS, stepsOf, Wish, workIn, type Step, type Turn } from './steps'
 import { makeSlab, ReflectMix, updateSurface } from './surface'
 
 interface SeasonSet {
@@ -49,21 +50,16 @@ interface Linked {
 
 /** A season's set while it is built: what is still to do, in the order it is done. The last step puts the set in the scene. */
 interface Making {
-  steps: (() => void)[]
+  steps: Step[]
 }
 
-/** How long a step waits for a frame before it goes without one, on a page that draws slowly or not at all. */
-const SOON_MS = 50
-/** How long a press holds other seasons' work back while no frame of its shake has been drawn. */
-const PRESS_MS = 3000
-/** How long after a landing the picture is still watched as a shake: until the storm has cleared and the liquid stands. */
-const SETTLE_S = Math.max(config.shake.settleCheckSeconds, config.shake.spinDownSeconds)
 /** What one frame spends on handing a season that is not on show to the GPU: the step that passes it is the frame's last. */
 const HAND_MS = 4
 /** A layer nothing is on but the lights, which every program counts, and for one draw the mesh that is handed over. */
 const HAND_LAYER = 31
 
 const NOTHING = (): void => undefined
+const NOW = (): number => performance.now()
 
 const materialsOf = (d: Drawn): THREE.Material[] => (Array.isArray(d.material) ? d.material : [d.material])
 
@@ -77,18 +73,6 @@ function picturesOf(m: THREE.Material, linked: Linked['uniforms']): THREE.Textur
   for (const u of Object.values({ ...(m as THREE.ShaderMaterial).uniforms, ...linked })) take(u?.value)
   return out
 }
-
-const frameOrSoon = (): Promise<void> =>
-  new Promise((resolve) => {
-    let waiting = true
-    const go = (): void => {
-      if (!waiting) return
-      waiting = false
-      resolve()
-    }
-    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go)
-    setTimeout(go, SOON_MS)
-  })
 
 const BLUR_CLEAR = new THREE.Color(0, 1, 0.5)
 
@@ -139,13 +123,11 @@ export class GlobeStage implements Stage {
   private readonly pass: PassContext
   private readonly up = new THREE.Vector3()
   private readonly turn = new THREE.Quaternion()
-  private drawn = false
-  private inAir = false
-  private into: string | null = null
-  private intoAt = 0
+  private readonly wish = new Wish()
   /** The picture the page paints into while it draws one sample a frame; none on a page that captures. */
   private live: THREE.WebGLRenderTarget | null = null
   private handing: Promise<void> = Promise.resolve()
+  private readonly pace = new FramePace()
   private readonly scratch = new Map<string, THREE.WebGLRenderTarget>()
   private stale = false
 
@@ -199,28 +181,22 @@ export class GlobeStage implements Stage {
   }
 
   expect(season: string): void {
-    this.into = season
-    this.intoAt = performance.now()
+    this.wish.press(season)
   }
 
   /**
-   * Whether a shake is in the air, or has landed and not yet settled, that does not go into `season`: nothing is made for a
-   * season the shake does not need.
-   */
-  private held(season: string): boolean {
-    if (this.into !== null && !this.inAir && performance.now() - this.intoAt > PRESS_MS) this.into = null
-    return (this.inAir || this.into !== null) && this.into !== season
-  }
-
-  /**
-   * Builds a season's set. Before the first picture, and on a page that only captures, in one piece. Once the page draws, one
-   * step a frame: built in one piece each season held the page's thread for 0.4 to 2 s, and the picture stood still for as long.
+   * Builds a season's set. Before the first picture, and on a page that only captures, in one piece. Once the page draws, a
+   * few steps a frame: built in one piece each season held the page's thread for 0.4 to 2 s, and the picture stood still for
+   * as long.
    */
   private async make(season: string): Promise<void> {
     const m = this.making(season)
     while (m.steps.length) {
-      if (this.drawn) await this.turnFor(season)
-      m.steps.shift()?.()
+      if (!this.live) {
+        m.steps.shift()?.()
+        continue
+      }
+      workIn(m.steps, season, await this.turnFor(season), this.wish, this.pace, NOW)
     }
     // Not waited for: the season can be shown from here on, and a frame that shows it before this is done makes the rest
     // itself, as it always did.
@@ -228,9 +204,29 @@ export class GlobeStage implements Stage {
   }
 
   /** The next frame in which something may be done for `season`: none while a shake is in the air that does not go into it. */
-  private async turnFor(season: string): Promise<void> {
-    do await frameOrSoon()
-    while (this.held(season))
+  private async turnFor(season: string): Promise<Turn> {
+    let from: number
+    let frame: number | null
+    do {
+      from = performance.now()
+      frame = await this.frameOrSoon()
+    } while (this.wish.holds(season))
+    return { waited: performance.now() - from, frame }
+  }
+
+  /** The next frame, by the time it began, or nothing after `SOON_MS` on a page that draws slowly or not at all. */
+  private frameOrSoon(): Promise<number | null> {
+    return new Promise((resolve) => {
+      let waiting = true
+      const go = (frame: number | null): void => {
+        if (frame !== null) this.pace.frame(frame)
+        if (!waiting) return
+        waiting = false
+        resolve(frame)
+      }
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go)
+      setTimeout(go, SOON_MS, null)
+    })
   }
 
   /** Resolves when every season asked for so far is built and, on a page that paints, in the GPU's hands. */
@@ -277,9 +273,11 @@ export class GlobeStage implements Stage {
     }
     const run = async (steps: (() => void)[]): Promise<void> => {
       for (let i = 0; i < steps.length && go(); ) {
-        await this.turnFor(season)
+        const { frame } = await this.turnFor(season)
         const from = performance.now()
-        while (i < steps.length && go() && performance.now() - from < HAND_MS) steps[i++]!()
+        const ms = frame === null ? HAND_MS : fitIn(HAND_MS, from - frame, this.pace.every, this.pace.taken)
+        while (i < steps.length && go() && performance.now() - from < ms) steps[i++]!()
+        this.pace.taken += performance.now() - from
       }
     }
     const like = this.scratchOf(live.texture.type, live.samples)
@@ -378,10 +376,17 @@ export class GlobeStage implements Stage {
       })
       return out
     }
+    const pieces = stepsOf(kit.miniature)
+    const piece = (): boolean => {
+      const p = pieces.next()
+      if (p.done) miniature = p.value
+      else m.steps.unshift(piece)
+      return !p.done
+    }
     const m: Making = {
       steps: [
         () => void (base = kit.base()),
-        () => void (miniature = kit.miniature()),
+        piece,
         () => void (arrival = kit.arrival()),
         () => void (lights = kit.lights()),
         () => void (own = kit.dressing()),
@@ -474,17 +479,11 @@ export class GlobeStage implements Stage {
     const beauty = view === '' || view === 'refraction'
     const sliceOnly = view === 'flow' || view === 'lightgrid'
     const single = moment.from === moment.to || !(moment.change > 0) || moment.change >= 1
-    this.drawn = true
     this.live = sample === null ? target : null
     // A mesh handed to the GPU since the last frame left the shadow map with nothing else in it.
     const cast = shadows || this.stale
     this.stale = false
-    // A landing is no rest: what arrived is still coming down, and a stop there is seen.
-    if (moment.beat !== null) this.inAir = true
-    else if (this.inAir && !(moment.sinceLanding < SETTLE_S)) {
-      this.inAir = false
-      this.into = null
-    }
+    this.wish.drawn(moment)
     const a = this.set(single ? moment.season : moment.from)
     const b = single ? a : this.set(moment.to)
     const change = single ? 0 : moment.change
