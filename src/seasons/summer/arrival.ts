@@ -484,7 +484,7 @@ void main() {
     col *= mix(1.0, ${LOOK.loose.glint.lit.toFixed(2)}, step(1.5, kind));
   }
   // Light that has come through sand is the redder the less of it is left.
-  if (falls > 0.5 && flies < 0.5) col *= pow(vec3(max(vGrainLit, 1e-3)), ${vec(LOOK.fall.redder)}) * ${vec(LOOK.fall.warm)};
+  if (falls > 0.5 && flies < 0.5) col *= pow(max(vec3(vGrainLit), 1e-3), ${vec(LOOK.fall.redder)}) * ${vec(LOOK.fall.warm)};
   vec3 cover = vGrainCover * disc;
   if (falls > 0.5) cover *= vGrainRun * share;
   gl_FragColor = vec4(col * cover, cover.g);
