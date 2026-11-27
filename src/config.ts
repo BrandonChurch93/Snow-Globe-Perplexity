@@ -57,6 +57,10 @@ export interface TierMotion {
   maxSamplesPerFrame: number
   /** The travel, in px a shutter, from which a frame is drawn with even sample times (film/motion.ts, `evenSet`). */
   evenFromPx: number
+  /** The travel, in px a shutter, under which a sample is not spread at all (film/motion.ts, `spreadReach`). */
+  spreadFromPx: number
+  /** The travel, in px a shutter, from which the spread of a sample has its full reach; it grows from none at `spreadFromPx`. */
+  spreadFullPx: number
 }
 export const tiers = raw.tiers as Record<string, { samplesPerFrame: number; motion?: TierMotion }>
 export const pictures: PictureSpec[] = [...raw.keys, ...raw.stills]
@@ -95,6 +99,9 @@ export const tierMotion = (id: string): TierMotion | undefined => own(tiers, id)
  * they have read from the page beforehand. `samples-N` is N samples and nothing else.
  */
 export const tierEvenFromPx = (id: string): number | undefined => (/^final-/.test(id) && COUNTED_TIER.test(id) ? tiers.final?.motion?.evenFromPx : own(tiers, id)?.motion?.evenFromPx)
+
+/** The motion rule a tier draws a travelling frame by: the final tier's for `final` and `final-N`, a tier's own otherwise, or none. */
+export const tierTravelRule = (id: string): TierMotion | undefined => (/^final-/.test(id) && COUNTED_TIER.test(id) ? tiers.final?.motion : tiers[id]?.motion)
 
 export function particleKinds(season: string): ParticleKind[] {
   const list = own(raw.particles as unknown as Record<string, ParticleKind[]>, season)

@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { config, tierEvenFromPx, tierMotion, tierSamples } from '../src/config'
 import { sampleSet } from '../src/core/sampler'
-import { SPREAD_BALL, TRAVEL_MARKS, centrePacePx, evenSet, framesamples, shutterTravelPx, spreadAt } from '../src/film/motion'
+import { SPREAD_BALL, TRAVEL_MARKS, centrePacePx, evenSet, framesamples, lensOrder, shutterTravelPx, spreadAt, spreadReach } from '../src/film/motion'
 import { SPREAD } from '../src/core/accumulator'
 import { applyPose, poseById } from '../src/scene/cameras'
 import { REST_POSE } from '../src/shake/table'
@@ -58,18 +58,79 @@ describe('the samples of a frame that travels', () => {
     expect(moved[1]! - plain[1]!).toBeCloseTo(0.2, 6)
   })
 
-  it('have even times, each the middle of its part, and keep the lens points and numbers of the set', () => {
+  it('have even times, each the middle of its part, and keep the numbers of the set and its lens points as a set', () => {
     for (const n of [24, 60, 91, 128]) {
       const own = ordered(n)
       const set = evenSet(own, () => [0, 0])
+      const order = lensOrder(own)
+      expect([...order].sort((a, b) => a - b)).toEqual(own.map((_, k) => k))
+      expect(lensOrder(own)).toEqual(order)
       set.forEach((s, k) => {
         expect(s.at).toBeCloseTo((k + 0.5) / n, 12)
         expect(s.sample.t).toBe(s.at)
         expect(s.sample.index).toBe(own[k]!.index)
-        expect(s.sample.lu).toBe(own[k]!.lu)
+        expect(s.sample.lu).toBe(own[order[k]!]!.lu)
+        expect(s.sample.lv).toBe(own[order[k]!]!.lv)
         expect(s.sample.of).toBe(n)
         expect(Math.floor(s.sample.t * n)).toBe(k)
       })
+    }
+  })
+
+  it('deal the lens points so that they lean with the place in the pixel and the moment as in the set as it stands, whatever the travel', () => {
+    const lean = (a: number[], b: number[]) => {
+      const ma = a.reduce((x, y) => x + y, 0) / a.length
+      const mb = b.reduce((x, y) => x + y, 0) / b.length
+      const c = (p: number[], q: number[], mp: number, mq: number) => p.reduce((x, y, i) => x + (y - mp) * (q[i]! - mq), 0)
+      return c(a, b, ma, mb) / Math.sqrt(c(a, a, ma, ma) * c(b, b, mb, mb))
+    }
+    const leans = (set: { px: number; py: number; t: number; lu: number; lv: number }[]) =>
+      [set.map((s) => s.px), set.map((s) => s.py), set.map((s) => s.t)].flatMap((place) => [lean(place, set.map((s) => s.lu)), lean(place, set.map((s) => s.lv))])
+    for (const n of [24, 33, 51, 99, 128]) {
+      const was = leans(ordered(n))
+      for (const [vx, vy] of [[0.5, 0], [-3, 0], [2, 2], [0, -40], [-20, 30]] as const) {
+        const now = leans(evenSet(ordered(n), () => [vx, vy]).map((s) => s.sample))
+        now.forEach((v, i) => expect(Math.abs(v - was[i]!)).toBeLessThan(0.05))
+      }
+    }
+  })
+
+  it('deal the lens points so that their mean under the spread stays near nothing all through the shutter', () => {
+    // Measured with this sum (white noise gives 0.344), five travels each: the set's own order 0.09 to 0.30; the deal at
+    // 24 samples 0.017 to 0.043, 26: 0.011 to 0.023, 33: 0.009 to 0.018, 51: 0.006 to 0.009, 96 to 128: 0.005 to 0.007.
+    // Under one even stride the lens point along the travel swung at 51 samples with a period of 12.8 samples holding
+    // 0.26 of its variance (9.4 px on the picture, the beads of a small light's streak); under the deal the periods over
+    // 6 samples hold 0.02 to 0.07 together.
+    const tent = [1, 2, 3, 4, 3, 2, 1].map((w) => w / 16)
+    const unit = (v: number[]) => {
+      const m = v.reduce((x, y) => x + y, 0) / v.length
+      const w = v.map((x) => x - m)
+      const norm = Math.sqrt(w.reduce((x, y) => x + y * y, 0))
+      return w.map((x) => x / norm)
+    }
+    const swing = (lens: number[], moments: number[]) => {
+      const rank = unit(lens.map((_, k) => k))
+      const own = unit(lens)
+      const trend = unit(moments).reduce((x, v, k) => x + v * own[k]!, 0)
+      const left = own.map((v, k) => v - trend * rank[k]!)
+      let sum = 0
+      for (let i = 0; i < left.length; i++) {
+        let mean = 0
+        for (let k = -3; k <= 3; k++) if (i + k >= 0 && i + k < left.length) mean += tent[k + 3]! * left[i + k]!
+        sum += mean * mean
+      }
+      return sum
+    }
+    for (const n of [24, 26, 33, 51, 96, 100, 128]) {
+      const own = ordered(n)
+      const moments = own.map((s) => s.t)
+      const rest = swing(own.map((s) => s.lu), moments) + swing(own.map((s) => s.lv), moments)
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0.6, 0.8], [0, -1], [-0.8, 0.6]] as const) {
+        const set = evenSet(own, () => [dx * n * 0.74, dy * n * 0.74]).map((s) => s.sample).sort((a, b) => a.t - b.t)
+        const now = swing(set.map((s) => s.lu), moments) + swing(set.map((s) => s.lv), moments)
+        expect(now).toBeLessThan(0.05)
+        expect(now).toBeLessThan(rest * 0.5)
+      }
     }
   })
 
@@ -154,6 +215,36 @@ describe('the spread of a sample along the ball\'s motion', () => {
   })
 })
 
+describe('the reach of the spread by the travel', () => {
+  const { evenFromPx: even, spreadFromPx: from, spreadFullPx: full, spacingPx } = config.tiers.final.motion
+
+  it('is none up to the travel the spread starts from, which is not under the travel of the even times', () => {
+    expect(from).toBeGreaterThanOrEqual(even)
+    expect(spreadReach(even, from, full)).toBe(0)
+    expect(spreadReach(from, from, full)).toBe(0)
+    expect(spreadReach(from - 1, from, full)).toBe(0)
+    expect(spreadReach(from + 0.03, from, full)).toBeLessThan(0.01)
+  })
+
+  it('is whole, and exactly one, from the travel at which the count begins to follow it', () => {
+    expect(full).toBe(tierSamples('final') * spacingPx)
+    expect(spreadReach(full, from, full)).toBe(1)
+    expect(spreadReach(47.24, from, full)).toBe(1)
+    expect(spreadReach((from + full) / 2, from, full)).toBeCloseTo(0.5, 12)
+  })
+
+  it('grows in step with the travel in between and is carried to the pass', () => {
+    let last = -1
+    for (let px = from; px <= full; px += 0.5) {
+      const r = spreadReach(px, from, full)
+      expect(r).toBeGreaterThan(last)
+      last = r
+    }
+    expect(spreadAt(shutter / 2, shutter / 24, () => REST_POSE, pose, W, H, 0.25).reach).toBe(0.25)
+    expect(spreadAt(shutter / 2, shutter / 24, () => REST_POSE, pose, W, H).reach).toBe(1)
+  })
+})
+
 describe('the weights of the spread', () => {
   const through = (period: number) => {
     const mid = (SPREAD.weights.length - 1) / 2
@@ -199,14 +290,14 @@ describe('which tier draws with even times', () => {
 
   it('the masters name the rule in full and draw a counted frame at the final tier', () => {
     const rule = sampleRule('film-b') as { base: number; motion: { spacingPx: number; maxSamplesPerFrame: number; evenFromPx: number }; tier: string }
-    expect(rule.motion).toEqual({ spacingPx: 0.75, maxSamplesPerFrame: config.tiers.final.motion.maxSamplesPerFrame, evenFromPx: config.tiers.final.motion.evenFromPx })
+    expect(rule.motion).toEqual({ spacingPx: 0.75, maxSamplesPerFrame: config.tiers.final.motion.maxSamplesPerFrame, evenFromPx: config.tiers.final.motion.evenFromPx, spreadFromPx: config.tiers.final.motion.spreadFromPx, spreadFullPx: config.tiers.final.motion.spreadFullPx })
     expect(tierOf(60, rule)).toBe('final-60')
     expect(tierOf(60, sampleRule('film-b', 60))).toBe('samples-60')
     expect(tierOf(60, { base: 24, motion: { spacingPx: 0.75, maxSamplesPerFrame: 96 }, tier: 'final' })).toBe('samples-60')
     expect(ruleCount(rule, 678, { samples: 100, travelPx: 74.3 })).toBe(100)
     expect(() => ruleCount(rule, 678, { samples: rule.motion.maxSamplesPerFrame + 1 })).toThrow(/whole count/)
     expect(countsLine(rule, countFacts([24, 100], 24, 677))).toBe(
-      `the count of a frame follows its motion (tiers.final.motion: a sample every 0.75 px of travel, at most ${rule.motion.maxSamplesPerFrame}, even sample times from ${rule.motion.evenFromPx} px of travel): 1 of these 2 frames draws more than the base of 24 samples, the most is 100 (frame 678); 124 samples in all, 2.58 times the base`,
+      `the count of a frame follows its motion (tiers.final.motion: a sample every 0.75 px of travel, at most ${rule.motion.maxSamplesPerFrame}, even sample times from ${rule.motion.evenFromPx} px of travel, a spread from ${config.tiers.final.motion.spreadFromPx} px, the full spread from ${config.tiers.final.motion.spreadFullPx} px): 1 of these 2 frames draws more than the base of 24 samples, the most is 100 (frame 678); 124 samples in all, 2.58 times the base`,
     )
   })
 
@@ -219,5 +310,6 @@ describe('which tier draws with even times', () => {
     expect(recordMatchesRun({ ...record, motion: old }, want)).toBe(false)
     expect(recordMatchesRun({ ...record, motion: { ...old, maxSamplesPerFrame: rule.motion.maxSamplesPerFrame } }, want)).toBe(false)
     expect(now).toBe(recordMatchesRun({ ...record, motion: JSON.parse(JSON.stringify(rule.motion)) }, want))
+    expect(recordMatchesRun({ ...record, motion: { spacingPx: 0.75, maxSamplesPerFrame: rule.motion.maxSamplesPerFrame, evenFromPx: rule.motion.evenFromPx } }, want)).toBe(false)
   })
 })
