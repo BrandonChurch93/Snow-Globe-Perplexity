@@ -85,12 +85,13 @@ describe('a name from outside finds only what a table holds itself', () => {
     }
   })
 
-  // These two stand where no test can call them (a capture page, the sound engine's own lines): held by their text.
-  it('asks the asset sets and the landing bars by their own names', () => {
+  // These stand where no test can call them (a capture page, the sound engine's own lines): held by their text.
+  it('asks the asset sets and the landing bars by their own names, and takes a view only if the app has it', () => {
     const read = (file: string): string => readFileSync(new URL(`../src/${file}`, import.meta.url), 'utf8')
     const capture = read('capture/showcase.ts')
     expect(capture.includes('if (!Object.hasOwn(config.assetSets, id)) throw new Error(`no such asset set: ${id}`)'), 'the asset sets').toBe(true)
     expect(/\bin config\.assetSets\b/.test(capture), 'the asset sets, by `in`').toBe(false)
+    expect(capture.includes("if (view !== 'none' && view !== '' && !(VIEWS as readonly string[]).includes(view)) throw new Error(`no such view: ${view}`)"), 'the views').toBe(true)
     const sound = read('audio/index.ts')
     expect(sound.includes('Object.hasOwn(LANDING_BAR, season)'), 'the landing bars').toBe(true)
     expect(/\bin LANDING_BAR\b/.test(sound), 'the landing bars, by `in`').toBe(false)

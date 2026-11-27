@@ -72,7 +72,7 @@ export async function carveMap(dir, f) {
       // In the ball's shade the sand over an edge is a lit facet like any other, not a bright rim.
       const face = (turned > 0 ? mix(1, FACE.rim, shady) : 1) * turned + FACE.form * Math.tanh(-(soft[t] - soft[d]) / run / FACE.broad)
       const hollow = Math.tanh((far[o] - near[o]) / FACE.hollow)
-      out[o * 3 + 2] = Math.round(clamp(0.5 + 0.5 * clamp(face - FACE.deep * hollow - FACE.cast * clamp(cast[o] / FACE.over) * shady + f.roll[o] + f.lip[o] + FACE.grain * flat * f.grain[o], -1, 1) * (1 - f.halo[o]) ** 2) * 255)
+      out[o * 3 + 2] = Math.round(clamp(0.5 + 0.5 * clamp(mix(face - FACE.deep * hollow - FACE.cast * clamp(cast[o] / FACE.over) * shady + f.roll[o] + f.lip[o], f.laidAt[o], f.laid[o]) + FACE.grain * flat * f.grain[o], -1, 1) * (1 - f.halo[o]) ** 2) * 255)
     }
   }
   return [await writePng(`${dir}/base-carve.lin.w2048.png`, W, H, 3, up(out, W, H, 3))]
@@ -88,6 +88,8 @@ export async function toneMap(dir, f) {
   const rust = [0.56, 0.38, 0.24]
   const pale = [0.96, 0.93, 0.86]
   const loose = [0.97, 0.94, 0.87]
+  // Read on the approved: the bottom of a groove on the combed wall is rust, and so is the shade under the ledge's edge.
+  const rut = [1.04, 0.75, 0.4]
   for (let j = 0; j < H; j++) {
     for (let i = 0; i < W; i++) {
       const o = j * W + i
@@ -105,10 +107,10 @@ export async function toneMap(dir, f) {
       let c = [0, 1, 2].map((q) => mix(cream[q], ochre[q], clamp(low + 0.5 * (blotch - 0.5))))
       c = c.map((v, q) => mix(v, pale[q], top))
       c = c.map((v, q) => mix(v, rust[q], clamp(mix(0.35, 0.6, more) * stain)))
-      c = c.map((v, q) => mix(v, loose[q], 0.75 * f.drift[o]))
+      c = c.map((v, q) => mix(v, loose[q], 0.75 * f.drift[o]) * mix(1, rut[q], f.rut[o]))
       const speck = 0.94 + 0.12 * hashInt(i, j, 311) * hashInt(i >> 1, j >> 1, 313) + 0.05 * (fbm(A * 400, h * 2.2, 400, 512, 315, 2) - 0.5)
       // Round each thing set into the sand the sand is in its shade.
-      const dark = (1 - 0.14 * f.halo[o] ** 2 - 0.3 * f.halo[o] ** 4) * (1 - 0.42 * f.under[o] ** 2)
+      const dark = (1 - 0.14 * f.halo[o] ** 2 - 0.3 * f.halo[o] ** 4) * (1 - 0.42 * f.under[o] ** 2) * (1 - f.laidTone[o])
       for (let q = 0; q < 3; q++) out[o * 3 + q] = Math.round(clamp(c[q] * speck * dark) * 255)
     }
   }

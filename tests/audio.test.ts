@@ -430,6 +430,16 @@ describe('a loop and its seam', () => {
     expect((second!.at - first!.at) / BAR).toBeCloseTo(config.audio.appLoopBars - 1, 6)
   })
 
+  // The pack writes the music one bar longer than it is heard: its bars and the bar two passes share.
+  it('comes round every eight bars as the pack writes the music: a loop of 21.6 s with a seam of 2.4 s, every 19.2 s', async () => {
+    await running(lengths([['music-winter', 21.6, BAR]]))
+    const [first, second] = find('music-winter')
+    expect(first!.span).toEqual([0.2, 21.6])
+    expect(second!.at - first!.at).toBeCloseTo(19.2, 6)
+    expect((second!.at - first!.at) / BAR).toBeCloseTo(config.audio.appLoopBars, 6)
+    expect(first!.fades.map((f) => [f.at - first!.at, f.seconds])).toEqual([[expect.closeTo(19.2, 6), expect.closeTo(2.4, 6)]])
+  })
+
   it('schedules the pass after next when a pass ends, on the audio clock, and never in the past', async () => {
     await running(lengths(seams))
     for (const [id, length, seam] of seams) {
