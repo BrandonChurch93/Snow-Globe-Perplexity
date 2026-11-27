@@ -126,6 +126,14 @@ export const TWIGS = [
 
 // The thorns a viewer can count, read from the approved image by eye: where each stands on the ring, the way it points
 // (along the ring to the right, up, outward) and its length and root radius in mm.
+// Long thorns that stand up over the lip in front of the green glass, as the approved image has them.
+export const LIP_THORNS = [
+  { az: -40, h: 37.2, dir: [0.8, 0.5, 0.4], len: 12, rad: 1.1 },
+  { az: -14, h: 37.3, dir: [0.75, 0.6, 0.4], len: 14, rad: 1.25 },
+  { az: 4, h: 37.0, dir: [-0.7, 0.55, 0.4], len: 10, rad: 1.0 },
+  { az: 30, h: 37.3, dir: [0.6, 0.75, 0.42], len: 13, rad: 1.15 },
+  { az: 46, h: 37.0, dir: [-0.4, 0.85, 0.45], len: 9, rad: 0.95 },
+]
 export const HERO_THORNS = [
   { az: 19, h: 37.2, dir: [0.82, 0.5, 0.3], len: 12.5, rad: 1.55 },
   { az: 30, h: 36.4, dir: [-0.9, 0.28, 0.32], len: 9.5, rad: 0.95 },
