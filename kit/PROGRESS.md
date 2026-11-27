@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 224 · 2026-11-27 19:03 UTC
+Status 225 · 2026-11-27 19:24 UTC
 
-- `out/stills/status/status-224-1.jpg`: Fall at rest on chain 37, approved picture left and build right, on origin now, below the bar
-- `out/stills/status/status-224-2.jpg`: Fall after its landing on chain 37, on origin now, below the bar
-- `out/stills/status/status-224-3.jpg`: The change of season, summer's heap leaving over film frames 2107 to 2111 at the final tier, in its builder's tree, not pushed, not judged in motion
-- `out/stills/status/status-224-4.jpg`: Summer's falling sand at 4K at four times, film frames 1754 to 1757, the rate chosen, drawn without the smear, in its builder's tree, below the bar
+- `out/stills/status/status-225-1.jpg`: The four seasons at rest on main now, each pair the approved picture left and the build right, below the bar
+- `out/stills/status/status-225-2.jpg`: The four seasons after a shake on main now, each pair the approved shake picture left and the build right, below the bar
+- `out/stills/status/status-225-3.jpg`: The four seasons as the page opens in the ninth publish, being checked, not live yet
+- `out/stills/status/status-225-4.jpg`: Still: fall landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 19:03 UTC
-clock: phase 6, tick of 22.4 minutes
-phase 6: 40.23 h used of its 12.00 h box
-allowance (after the review): 40.23 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 40.23 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 19:24 UTC
+clock: phase 6, tick of 21.3 minutes
+phase 6: 40.59 h used of its 12.00 h box
+allowance (after the review): 40.59 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 40.59 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
@@ -2961,3 +2961,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 19:11 UTC. DECISION 211 (Brandon's words, through Partner's mail of 12:10 PM MT, 19:10 UTC, with the Partner chat linked; decision 173 applies): "The snow globe is pretty refined too, maybe just a one or two more rounds of iteration?" Reading: he sees the build as close, his eye outranks the critics' scores and mine, and the open loop on the seasons ends. Plan. Round one is the lists the builders have in hand: each pushes what is proven by 20:30 UTC, begins no new item after 20:00 UTC and holds back the rest, named in one line; chain 38 reads the parts; a publish follows. Round two: one judged look by fresh critics at what shows most on that head (the four seasons at rest and landed against the approved pictures, the change of season, the 4K motion faults still open), at most one short list a builder, one chain, one publish. Then a status with the live address and stills, where each season stands in plain words, and the question whether to move on to the film and the 4K masters. No round after that without his word; what is below the bar then is shown and named, not hidden. The bar for a merge does not change (guards, floors, proofs). Open item 252 is closed: Partner set the follow through running again at 12:09 PM MT and it now ends on Nov 29 at noon MT (stated by Partner, not read by me).
 
 - 19:19 UTC. The host check's wait merged (`8c115344`, a true merge of `agent/p6-master-wait` `d934ea31`, head checked equal to the one reported). Two files: `tools/hostcheck.mjs` (its import and line 83: it now waits through `waitForLock`, with a line at once and one a minute on stderr, where it polled in silence) and `tests/master.test.ts` (five lines: the host check's source holds the wait right before it writes its lock, and no tool loops on `renderBusy()` by itself). Checks: by its builder the whole vitest on `9ca10015`, which is this head's tree but for two lines of the log, 966 passed, 9 skipped, 68 files passed and 1 skipped, 301 s, 19:09:50 to 19:14:51 UTC, tsc clean, and on `d934ea31` the two test files that read the log 88 passed, 4 skipped; here on the merged tree `tests/master.test.ts` 87 passed, 58.07 s, ended 19:19 UTC, and the diff read. Not seen, by its builder's word: the host check itself was not run, so its wait on a held lock has not been seen from that tool. The shutter's builder has nothing else in hand; chunk 78 held, no master frame drawn.
+
+- 19:24 UTC. DECISION 212 and open item 262: the first shake after a load links a program inside the change. Found by the controls' builder and sent with exact lines for a file that is not its own (mail of 19:21 UTC, `post-level.patch` attached). The fault: since the change of season's rework reached main (`c755fcba`, 16:58 UTC, its commit `a7d6f7d2`) the LEVEL pass of `src/post/post.ts` is drawn only while `lensFall.heartShare > 0` (`Post.resolve`, line 525), so its program is first linked in the frame the cover comes up. STATED by the builder from its walks on the built page (320 x 320, `?quality=low`, Space once the page says ready, software graphics): on main `6922e017` the first shake linked 2 programs (this one and spring's soft pass, which its job 3 mends) and the thread stood 10,100 ms in all, 5,090 ms at most, shakes 2 to 4 none; on its head `2071f160` 1 program, the thread stood 5,765 ms; on main `06954500` (chain 31) nothing was linked in a shake of a handed season. On a real graphics card UNKNOWN: one link in the frame the cover first comes up. The eighth publish carries it. The mend, two places: a field `levelled` after line 352 and the condition `lensFall.heartShare > 0 || !this.levelled` at line 525, so the level is read in the first picture as well and its program is linked there, under the first still. STATED proof on its tree `8c77b169` with these lines alone: the round of four 4 of 4 presses taken and 0 with a program linked in the shake or not landed, 110 programs linked before the seasons are made where 109 were, the first shake landed 11,886 ms after the press where it took 16,169; tsc clean; the whole vitest 1,025 passed and 8 skipped; all eight guards equal the list for `bd0b2fcb`; determinism a pass; film frames 660 and 690 at draft the same bytes with and without the lines. Rulings: (1) the builder has leave for `src/post/post.ts` for exactly these two places, as their own commit in its push of jobs 3 and 5, after a merge of origin main and with tsc, the whole vitest, the round of four, determinism, the eight guards against the list for main now and the two frames proven on the merged head; by 20:30 UTC, and if jobs 3 and 5 are not proven by then the lines alone. The file's last author does not touch it in its push in hand (its head `56460c42` read here: five files, none of them `post.ts`). (2) The ninth publish goes out as built: it carries the fault as the eighth does and changes nothing in it; the mend goes in the publish after chain 38. Not seen here: the walks themselves; a file with the numbers is asked with the push. Next decision 213, next open item 263.
