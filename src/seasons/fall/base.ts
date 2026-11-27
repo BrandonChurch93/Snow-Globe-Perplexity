@@ -66,9 +66,9 @@ const FLOOR_SHARE = 0.1
 // The brambles' tones, measured against the approved image in boxes at the review tier.
 const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, KEY_EAST: 44, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 170, CARD_WEST: 100, TOP: 0, BARK: 0.7, LIFT: 0.005, LIFT_WEST: 75, FILL: 0.08, LINE: 1.6, LINE_POW: 320, LINE_WIDE: 0.5, KNOB: 9, FISSURE: 1.8, BODY: 12, LINE_EAST: 20, THORN: 0.5 }
 const DRUM_SHEEN = 2.8
-const DRUM_FOLD = 6
+const DRUM_FOLD = 9
 const DRUM_CRINKLE = 0.8
-const DRUM_GRAIN = 2
+const DRUM_GRAIN = 3.4
 const PUMPKIN_BODY = 0.042
 const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}\n#define DRUM_FOLD ${DRUM_FOLD.toFixed(3)}\n#define DRUM_CRINKLE ${DRUM_CRINKLE.toFixed(3)}\n#define DRUM_GRAIN ${DRUM_GRAIN.toFixed(3)}`
 const flicker: { a: number; b: number; c: number }[] = []
@@ -131,7 +131,7 @@ varying vec2 vBaseUv1;
 ${ROOM_GLSL}
 ${NOISE}
 float baseFold(vec3 p) {
-  vec3 q = vec3(p.x, p.y * 0.3, p.z);
+  vec3 q = vec3(p.x, p.y * 1.0, p.z);
   float w = baseNoise(q * 0.09 + 13.0);
   float a = baseNoise(q * 0.21 + vec3(w, w * 0.7, w) * 2.2 + 7.0);
   float b = baseNoise(q * 0.47 + vec3(w, 0.0, -w) * 0.9 + 29.0);
@@ -267,8 +267,10 @@ vec2 barkAt = vec2(vBaseUv1.x * 3.0, vBaseUv1.y * 26.0 + vBaseUv1.x * 5.0);
 float barkHere = baseNoise(vec3(barkAt, 61.0)) * 0.65 + baseNoise(vec3(barkAt * vec2(1.3, 2.1), 83.0)) * 0.35;
 float barkNext = baseNoise(vec3(barkAt + vec2(0.0, 0.2), 61.0)) * 0.65 + baseNoise(vec3((barkAt + vec2(0.0, 0.2)) * vec2(1.3, 2.1), 83.0)) * 0.35;
 float barkCut = smoothstep(0.36, 0.58, barkHere);
-float barkLine = smoothstep(0.5, 0.62, barkHere);
-diffuseColor.rgb *= mix(1.0, (0.8 + 0.4 * fibreHere) * (0.7 + 0.6 * knobHere) * mix(1.0, 0.5 + 0.8 * barkCut, smoothstep(-8.0, -36.0, vBasePos.x)), baseStrand);
+float barkRun = smoothstep(0.38, 0.5, baseNoise(vec3(vBaseUv1.x * 22.0, vBaseUv1.y * 26.0 + vBaseUv1.x * 9.0, 97.0)) * 0.6 + baseNoise(vec3(vBaseUv1.x * 47.0, vBaseUv1.y * 11.0, 113.0)) * 0.4);
+float barkHold = smoothstep(-28.0, -50.0, vBasePos.x);
+float barkLine = smoothstep(0.44, 0.56, barkHere) * barkRun * 1.5;
+diffuseColor.rgb *= mix(1.0, (0.8 + 0.4 * fibreHere) * (0.7 + 0.6 * knobHere) * mix(1.0, 0.5 + 0.8 * barkCut, barkHold), baseStrand);
 // The candles spill on the wood that stands beside a face.
 baseCandle = mix(baseCandle, mix(BRAMBLE_SPILL, 0.6 * BRAMBLE_SPILL, baseThorn), 1.0 - baseDrum);
 `
@@ -277,7 +279,7 @@ roughnessFactor = clamp(mix(0.38 + 0.22 * fibreHere - 0.06 * baseThorn * vBasePa
 metalnessFactor = mix(0.2, mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust), baseDrum);
 `
 const IRON_TILT = `
-vec2 baseTilt = (vec2(baseNoise(vBasePos * 0.3 + 3.0), baseNoise(vBasePos * 0.3 + 31.0)) - 0.5) * 0.5 * baseDrum + vec2(foldHere - foldOn, foldHere - foldUp) * (DRUM_FOLD * baseDrum) + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * (DRUM_CRINKLE * baseDrum) + vec2(grainHere - grainOn, grainHere - grainUp) * (DRUM_GRAIN * baseDrum) + vec2(knobHere - knobOn, knobHere - knobUp) * (BRAMBLE_KNOB * baseStrand * mix(0.5, 1.0, smoothstep(-18.0, -44.0, vBasePos.x))) + vec2(0.0, barkNext - barkHere) * (BRAMBLE_FISSURE * baseStrand * smoothstep(-8.0, -36.0, vBasePos.x)) + vec2(fibreOn - fibreHere, fibreNext - fibreHere) * (BRAMBLE_BARK * baseStrand * mix(1.0, 0.25, smoothstep(-22.0, -47.0, vBasePos.x)));
+vec2 baseTilt = (vec2(baseNoise(vBasePos * 0.3 + 3.0), baseNoise(vBasePos * 0.3 + 31.0)) - 0.5) * 0.5 * baseDrum + vec2(foldHere - foldOn, foldHere - foldUp) * (DRUM_FOLD * baseDrum) + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * (DRUM_CRINKLE * baseDrum) + vec2(grainHere - grainOn, grainHere - grainUp) * (DRUM_GRAIN * baseDrum) + vec2(knobHere - knobOn, knobHere - knobUp) * (BRAMBLE_KNOB * baseStrand * mix(0.5, 1.0, smoothstep(-18.0, -44.0, vBasePos.x))) + vec2(0.0, barkNext - barkHere) * (BRAMBLE_FISSURE * baseStrand * barkHold) + vec2(fibreOn - fibreHere, fibreNext - fibreHere) * (BRAMBLE_BARK * baseStrand * mix(1.0, 0.25, smoothstep(-22.0, -47.0, vBasePos.x)));
 `
 const IRON_AFTER = `
 {
@@ -313,20 +315,20 @@ const IRON_AFTER = `
   float ironWest = smoothstep(-18.0, -44.0, vBasePos.x);
   float ironEast = smoothstep(20.0, 46.0, vBasePos.x);
   vec3 ironRimC = mix(vec3(dot(uBaseRimCol, vec3(0.3, 0.5, 0.2))), uBaseRimCol, mix(0.35, 1.0, ironWest));
-  reflectedLight.directSpecular += ironRimC * (0.03 * pow(abs(ironRh), 7.0) + mix(0.1 * pow(abs(ironRh), 40.0), BRAMBLE_RIM * mix(BRAMBLE_RIM_FRONT, 1.0, ironWest) * pow(abs(ironRh), 16.0), baseStrand) * (1.0 - baseDrum)) * ironRl * ironSheen;
+  reflectedLight.directSpecular += ironRimC * (0.03 * pow(abs(ironRh), 7.0) + mix(0.1 * pow(abs(ironRh), 40.0), BRAMBLE_RIM * mix(BRAMBLE_RIM_FRONT, 1.0, ironWest) * (0.15 + 2.0 * barkLine) * pow(abs(ironRh), 16.0), baseStrand) * (1.0 - baseDrum)) * ironRl * ironSheen;
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65 * (1.0 - ironWest)) * mix(vec3(1.0), vec3(1.0, 0.86, 1.0), ironWest);
-  reflectedLight.directSpecular += (mix(ironKeyC, ironKeyOpen * baseAo, baseDrum) * vec3(0.8, 0.9, 1.0) * (mix(0.03, 0.4 * baseDim, baseDrum) * pow(abs(ironKh), mix(8.0, 9.0, baseDrum)) + mix(0.15 * pow(abs(ironKh), 40.0) * baseThorn, BRAMBLE_KEY * (1.0 + BRAMBLE_KEY_EAST * ironEast) * pow(abs(ironKh), mix(14.0, 140.0, ironEast)) * ironGrain, baseStrand)) * ironKl + ironCardC * (0.03 * pow(abs(ironCh), 10.0) + mix(0.08 * pow(abs(ironCh), 40.0) * baseThorn, BRAMBLE_CARD * (BRAMBLE_CARD_FRONT + BRAMBLE_CARD_WEST * ironWest * mix(1.0, 0.4, smoothstep(20.0, 34.0, vBasePos.y))) * pow(abs(ironCh), mix(16.0, 70.0, ironWest)) * mix(1.0, pow(abs(max(dot(ironRound, normalize(ironCard + geometryViewDir)), 0.0)), 10.0), ironWest) * (0.05 + 2.4 * barkLine), baseStrand)) * ironCl) * ironSheen;
+  reflectedLight.directSpecular += (mix(ironKeyC, ironKeyOpen * baseAo, baseDrum) * vec3(0.8, 0.9, 1.0) * (mix(0.03, 0.4 * baseDim, baseDrum) * pow(abs(ironKh), mix(8.0, 9.0, baseDrum)) + mix(0.15 * pow(abs(ironKh), 40.0) * baseThorn, BRAMBLE_KEY * (1.0 + BRAMBLE_KEY_EAST * ironEast) * pow(abs(ironKh), mix(14.0, 140.0, ironEast)) * ironGrain, baseStrand)) * ironKl + ironCardC * (0.03 * pow(abs(ironCh), 10.0) + mix(0.08 * pow(abs(ironCh), 40.0) * baseThorn, BRAMBLE_CARD * (BRAMBLE_CARD_FRONT + BRAMBLE_CARD_WEST * ironWest * barkHold * mix(1.0, 0.4, smoothstep(20.0, 34.0, vBasePos.y))) * pow(abs(ironCh), mix(16.0, 70.0, ironWest)) * mix(1.0, pow(abs(max(dot(ironRound, normalize(ironCard + geometryViewDir)), 0.0)), 10.0), ironWest) * (0.05 + 2.4 * barkLine), baseStrand)) * ironCl) * ironSheen;
   // The key rakes the bare leather of the right flank: a broad grey sheen, grained by the hide.
-  reflectedLight.directSpecular += ironKeyOpen * vec3(0.72, 0.92, 1.3) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * mix(ironKl, smoothstep(0.0, 0.2, dot(ironRound, ironKey)), 0.75) * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.2 + 1.1 * smoothstep(0.05, 0.55, foldHere)) * (0.85 + 0.3 * smoothstep(0.05, 0.6, crinkleHere)) * baseAo;
+  reflectedLight.directSpecular += ironKeyOpen * vec3(0.72, 0.92, 1.3) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * mix(ironKl, smoothstep(0.0, 0.2, dot(ironRound, ironKey)), 0.4) * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.03 + 1.3 * smoothstep(0.08, 0.5, foldHere)) * (0.85 + 0.3 * smoothstep(0.05, 0.6, crinkleHere)) * baseAo;
   float ironEdge = pow(abs(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
   float ironLeft = clamp(dot(ironUp, normalize(vec3(-0.8, 0.25, 0.55))), 0.0, 1.0);
   // Only the ridge of a vine that faces the lamps is lit, a third of its width; the knobs break it there.
   float ironRidge = mix(1.0, 0.05 + 2.4 * barkLine, baseStrand) * mix(1.0, pow(abs(clamp(dot(inverseTransformDirection(ironRound, viewMatrix), normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0)), 28.0), baseStrand * ironWest);
-  reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.72, 0.5), mix(vec3(1.0, 0.6, 0.36), vec3(1.0, 0.86, 1.0), ironWest), baseStrand) * (mix(0.45 * baseDrum, BRAMBLE_WARM, baseStrand) * pow(abs(ironWarm), mix(5.0, mix(26.0, 110.0, ironWest), baseStrand)) + mix(0.1 * baseDrum, 0.05 * BRAMBLE_WARM, baseStrand) * pow(abs(ironLeft), mix(5.0, 20.0, baseStrand))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch) * mix(1.0, ironGrain, baseStrand * (1.0 - ironWest)) * mix(1.0, BRAMBLE_WARM_FRONT + BRAMBLE_WARM_WEST * ironWest * mix(1.0, 0.4, smoothstep(20.0, 34.0, vBasePos.y)), baseStrand) * ironRidge;
+  reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.72, 0.5), mix(vec3(1.0, 0.6, 0.36), vec3(1.0, 0.94, 1.6), ironWest), baseStrand) * (mix(0.45 * baseDrum, BRAMBLE_WARM, baseStrand) * pow(abs(ironWarm), mix(5.0, mix(26.0, 110.0, ironWest), baseStrand)) + mix(0.1 * baseDrum, 0.05 * BRAMBLE_WARM, baseStrand) * pow(abs(ironLeft), mix(5.0, 20.0, baseStrand))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch) * mix(1.0, ironGrain, baseStrand * (1.0 - ironWest)) * mix(1.0, BRAMBLE_WARM_FRONT + BRAMBLE_WARM_WEST * ironWest * barkHold * mix(1.0, 0.4, smoothstep(20.0, 34.0, vBasePos.y)), baseStrand) * ironRidge;
   float ironLit = clamp(dot(inverseTransformDirection(ironRound, viewMatrix), normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
-  reflectedLight.directSpecular += uBaseRimCol * vec3(1.0, 0.62, 0.4) * (BRAMBLE_BODY * pow(abs(ironLit), 1.5) * smoothstep(0.7, 0.95, clamp(dot(ironRound, geometryViewDir), 0.0, 1.0)) * (2.6 * barkLine) * (0.6 + 0.8 * knobHere) * mix(0.75, 1.0, baseAo) * baseStrand * (1.0 - baseThorn) * smoothstep(-8.0, -36.0, vBasePos.x) * mix(1.0, 0.4, smoothstep(20.0, 34.0, vBasePos.y)));
+  reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.8, 0.62), vec3(1.0, 0.68, 0.56), barkHold) * (BRAMBLE_BODY * pow(abs(ironLit), 1.5) * smoothstep(0.7, 0.95, clamp(dot(ironRound, geometryViewDir), 0.0, 1.0)) * (0.0 + 2.6 * barkLine) * (0.6 + 0.8 * knobHere) * mix(0.75, 1.0, baseAo) * baseStrand * (1.0 - baseThorn) * mix(0.45, 1.0, barkHold) * smoothstep(-8.0, -36.0, vBasePos.x) * mix(1.0, 0.4, smoothstep(20.0, 34.0, vBasePos.y)));
   vec3 ironTop = normalize(mat3(viewMatrix) * vec3(0.0, 1.0, 0.0));
   float ironTh = max(dot(geometryNormal, normalize(ironTop + geometryViewDir)), 0.0);
   reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.92, 0.98, 1.1) * BRAMBLE_TOP + ironKeyC * 0.03) * pow(abs(ironTh), mix(9.0, 7.0, baseStrand)) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * ironGrain * ironSheen * (1.0 - baseDrum);
@@ -341,9 +343,10 @@ const IRON_AFTER = `
   float lineTight = mix(BRAMBLE_LINE_POW, 220.0, ironEast);
   float linePow = lineTight / (1.0 + lineTight * BRAMBLE_LINE_WIDE * min(lineTurn, 1.0));
   float lineH = max(dot(lineN, normalize(lineL + geometryViewDir)), 0.0);
-  float lineRun = (0.55 + 0.7 * baseNoise(vec3(vBaseUv1.x * 1.6, 3.0, 17.0)));
+  float lineRun = (0.55 + 0.7 * baseNoise(vec3(vBaseUv1.x * 1.6, 3.0, 17.0))) * mix(1.0, 1.5 * smoothstep(0.36, 0.5, baseNoise(vec3(vBaseUv1.x * 7.0, 3.0, 41.0)) * 0.6 + baseNoise(vec3(vBaseUv1.x * 17.0, 3.0, 59.0)) * 0.4), 0.8);
   reflectedLight.directSpecular += vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.84, 0.95, 1.18) * (BRAMBLE_LINE * sqrt(linePow / lineTight) * pow(abs(lineH), linePow) * smoothstep(0.0, 0.3, dot(lineN, lineL)) * lineRun * smoothstep(0.15, 0.6, baseAo) * mix(baseStrand, 0.6, baseThorn) * (1.0 - 0.5 * ironWest) * (1.0 + BRAMBLE_LINE_EAST * ironEast) * mix(1.0, 0.45, smoothstep(-8.0, 2.0, vBasePos.x) * (1.0 - ironEast)));
   float lineFace = clamp(dot(lineRound, geometryViewDir), 0.0, 1.0);
+  reflectedLight.indirectDiffuse += vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(1.15, 1.05, 0.95) * (0.36 * baseDrum * mix(0.35, 1.0, baseAo) * mix(0.45, 1.0, smoothstep(-10.0, 30.0, vBasePos.x)) * mix(0.35, 1.0, smoothstep(-52.0, -24.0, vBasePos.x)));
   // The wood is never quite black: the sky lifts it, and at the left the lamps behind fill it warm.
   reflectedLight.indirectDiffuse += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.9, 0.96, 1.15) * BRAMBLE_LIFT * (1.0 + BRAMBLE_LIFT_WEST * ironWest) + uBaseRimCol * vec3(1.0, 0.45, 0.4) * BRAMBLE_FILL * ironWest * (0.4 + 0.6 * ironLeft)) * mix(0.35, 1.0, baseAo) * mix(1.0, 0.8, baseDrum) * mix(1.0, 0.15, baseThorn) * mix(1.0, lineFace * lineFace, baseStrand);
   reflectedLight.directSpecular = ironBefore + (reflectedLight.directSpecular - ironBefore) * baseDim;
