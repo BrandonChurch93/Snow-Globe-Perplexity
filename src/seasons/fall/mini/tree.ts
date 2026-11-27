@@ -21,13 +21,13 @@ const TWIG_TINT: [number, number, number] = [0.05, 0.047, 0.045]
 const BARK_RELIEF = 1.7
 const EMBER_GAIN = 6.5
 const EMBER_ON_WOOD = { power: 14, reachMm: 0.9 }
-const LAMP_ON_WOOD = { power: 56, reachMm: 15, wrap: 0 }
-const LAMP_SHIFT: Vec3 = [-3, 0, 2]
-const PUMPKIN_ON_WOOD = { power: 12, reachMm: 6, wrap: 0.1 }
+const LAMP_ON_WOOD = { power: 44, reachMm: 15, wrap: 0 }
+const LAMP_SHIFT: Vec3 = [-4, 0, -8]
+const PUMPKIN_ON_WOOD = { power: 8, reachMm: 6, wrap: 0.1 }
 const POND_ON_WOOD = { power: 2, reachMm: 22, wrap: 0.2 }
-const FILL_ON_WOOD = { power: 1.0, reachMm: 1000, wrap: 0.4 }
-const FILL_FROM: Vec3 = [40, 20, 60]
-const SKY: [number, number, number] = [0.62, 0.8, 0.85]
+const FILL_ON_WOOD = { power: 32, reachMm: 16, wrap: 0.5 }
+const FILL_FROM: Vec3 = [14, 7, 16]
+const SKY: [number, number, number] = [0.03, 0.8, 1.2]
 const GROUP = { power: 0.06, reachMm: 5.5, along: 0.72 }
 const HALO = { radiusMm: 0.4, strength: 1.0, hot: 3.2, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
 const POOL = { radiusMm: 1.0, strength: 0.04, hot: 0, pullMm: 0.9, flicker: FLICKER, cycles: CYCLES }
@@ -39,10 +39,12 @@ const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
 // Wet black bark: the lamp, the pumpkin at the foot and the green of the pond glance off the ridges as small sharp lights
 // and leave the grooves black. `shine` is the lobe's exponent, `ridge` how far a groove (dark vertex colour) is kept out.
 const GLINT = { shine: 80, ridge: [0.3, 0.8] as [number, number], rough: 0.86 }
-const GLINT_LAMP = { lift: 3.6, power: 1.6, reachMm: 11 }
+const GLINT_LAMP = { lift: 3.6, power: 1.15, reachMm: 11 }
 const GLINT_TONE: [number, number, number] = [1, 0.46, 0.14]
 const GLINT_PUMPKIN = { power: 0.9, reachMm: 8 }
 const GLINT_POND = { power: 0.05, reachMm: 24 }
+// The approved bark is black and wet: on the side turned from the lamp its edge takes a cool grey green line from the air.
+const RIM = { tone: [0.52, 0.7, 0.6] as [number, number, number], power: 4.6, sharp: 3.5, far: [0, 0.6] as [number, number], reachMm: 12 }
 
 const clock = { value: 0 }
 const emberGain = { value: EMBER_GAIN }
@@ -112,6 +114,10 @@ ${lit
   )
   .join('\n')}
   reflectedLight.directSpecular += glintSum * uTwinkle.z * smoothstep(${GLINT.ridge[0].toFixed(2)}, ${GLINT.ridge[1].toFixed(2)}, dot(vColor.rgb, vec3(0.3333)));
+  vec3 rimTo = vGlint0 + vViewPosition;
+  vec3 rimL = rimTo * inversesqrt(max(dot(rimTo, rimTo), 1e-6));
+  float rimEdge = pow(clamp(1.0 - dot(normal, glintV), 0.0, 1.0), ${RIM.sharp.toFixed(1)}) * smoothstep(${RIM.far[0].toFixed(2)}, ${RIM.far[1].toFixed(2)}, -dot(normal, rimL));
+  reflectedLight.directSpecular += ${vec3(RIM.tone)} * (${RIM.power.toFixed(3)} * rimEdge * uTwinkle.z / (1.0 + dot(rimTo, rimTo) / ${(RIM.reachMm * RIM.reachMm).toFixed(1)}));
 }`,
     )
 }
