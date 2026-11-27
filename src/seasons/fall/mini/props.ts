@@ -46,19 +46,18 @@ export interface Board {
 
 const RAIL = { from: [-39.2, 10.6] as [number, number], to: [-16.4, 32.6] as [number, number], bow: 1.6 }
 const POSTS = [
-  { t: 0.0, tall: 9.6, along: 0.09, out: 0.08, wide: 2.2 },
-  { t: 0.17, tall: 11.9, along: -0.05, out: 0.14, wide: 1.95 },
-  { t: 0.335, tall: 9.2, along: 0.12, out: 0.05, wide: 2.25 },
-  { t: 0.5, tall: 11.3, along: 0.03, out: 0.16, wide: 2.0 },
-  { t: 0.665, tall: 10.0, along: -0.08, out: 0.1, wide: 2.15 },
-  { t: 0.835, tall: 12.1, along: -0.02, out: 0.18, wide: 1.95 },
-  { t: 1.0, tall: 9.3, along: 0.11, out: 0.12, wide: 2.25 },
+  { t: 0.0, tall: 9.6, along: 0.03, out: 0.03, wide: 2.2 },
+  { t: 0.17, tall: 11.9, along: -0.015, out: 0.04, wide: 1.95 },
+  { t: 0.335, tall: 9.2, along: 0.035, out: 0.02, wide: 2.25 },
+  { t: 0.5, tall: 11.3, along: 0.01, out: 0.05, wide: 2.0 },
+  { t: 0.665, tall: 10.0, along: -0.025, out: 0.03, wide: 2.15 },
+  { t: 0.835, tall: 12.1, along: -0.005, out: 0.05, wide: 1.95 },
+  { t: 1.0, tall: 9.3, along: 0.03, out: 0.04, wide: 2.25 },
 ]
-// The approved fence has one short thin picket between each pair of tall boards, none of them plumb. The second one of
-// each gap stays in the mesh, so the counts of triangles stay at every level; the make marks it black and the village
-// folds it away under the ground.
+// The approved fence is stout posts and two rails. The pickets between the posts stay in the mesh, so the counts of
+// triangles stay at every level; the make marks them black and the village folds them away under the ground.
 const PICKETS = [
-  { at: 0.3, tall: 6.3, along: 0.07, wide: 0.85, shown: true },
+  { at: 0.3, tall: 6.3, along: 0.07, wide: 0.85, shown: false },
   { at: 0.66, tall: 8.1, along: -0.06, wide: 0.75, shown: false },
 ]
 const RAILS = [
