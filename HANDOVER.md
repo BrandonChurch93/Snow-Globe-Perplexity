@@ -123,3 +123,24 @@ Pictures 16 to 19. Proof run on b5f2f01f itself, which holds main a7f9032b.
 - Fence: 12 short pickets, two a gap, 44 triangles each, 528 in all, which G15 counts as 1,584 at high. Boards have a wider grain and split.
 - Wall 0.95, chimney 0.96 by a steeper curve on the stones' own map. Litter stays 0.71: its box is ruled by the decor leaves and tufts, not the ground's shader, and it needs geometry there, which the triangle room does not allow now.
 - Crown 1.30 and roof 1.03 rose with main's new air, not with this list.
+
+## After the sixth list (c90d6ed2 on main 35d00e1b)
+
+Pictures 20 to 25 (20 and 21 were work in progress). Tone and shading only; the made village and tree keep their counts at every level. Proof run on c90d6ed2 itself.
+
+- Trunk: `RIM.fade` in `mini/tree.ts` ends the rim at the first fork (trunk heights 10 to 13), so the foot's far side is as dark as the body. The edge light sits higher and is tighter (`EDGE_ON_WOOD`, `EDGE_FROM`).
+- Fence: the make marks every second picket black (`PICKETS[1].shown` in `mini/props.ts`, colour only in `build.mjs`), and `thinned()` in `mini/village.ts` folds black wood to one point under the ground at load. Hiding them in the make changed the medium and low counts, so it is done at load. The boards left are lowered by a third at load (`FENCE.keep`), and the landing field uses the lowered boards. Wood is grey and dark with a pale worn edge.
+- Wall: `STONE` holds joints at `floor` of `top` and takes their hue away; the gable has its own tint, darker below the purple window's head and lighter toward the side wall's corner. Gable stones above the wall's top used to fall into the roof's tone branch by their upward normals; they are now stones.
+- Ground: the soil's map is read through a square root so the pale specks do not stand out, and its level is down (`GROUND.soil`, `GROUND.tint`, `leaf`, `grey`). The fifth list's ground boxes sat on a fence board and on pond rocks, not on ground; the honest boxes are in the report and below.
+- Green ring: a second small source at the side window (`NEAR_WALL.greenRing`) lifts the near ring only.
+
+Measures with the air, review tier, hd (approved against build): ground 79,62,38 and 86,53,31 against 104,60,31 and 75,40,18 (build boxes 783,641 to 797,649 and 742,655 to 756,665); by the pond 28,39,27 against 31,34,19. Fence bodies 31,32,23 against 34,27,16. Gable left of the attic pane stone 52,61,48 and joint 16,24,17 against 45,65,50 and 19,23,19; right of it 46,60,41 and 16,28,11 against 51,58,39 and 30,27,18; beside the purple window 33,31,29 and 22,22,19 against 39,34,35 and 22,13,13. Side pane's rings 14.0, 5.3, 3.0, 2.3 (approved 15.9, 9.5, 3.6, 1.2).
+
+M3 at review: miniature 0.754 (0.875 on main 35d00e1b), base 0.797. Parts: crown 1.31, trunk 1.15, roof 0.81, wall 0.56, fence 0.73, litter 0.54, chimney 0.83, the rest 0.55.
+
+Still short of the approved picture:
+- M3's miniature share is 0.004 over the bar. The wall lost almost half of its fine energy with the quieter joints and the ground a quarter with the darker soil. The next gain has to come from fine relief in the stones' own map and from the litter, not from contrast between stone and joint.
+- The ground behind the fence is still 25 red over at one box and 11 to 13 under in green and blue at the other; a warm halo from the air sits on the first box.
+- The upper gable reads cooler (more teal) than the approved's grey green, and its joints right of the attic pane are 14 red over.
+- The fence's rails are thinner than the approved's after the lowering, and the boards' worn edge is paler and less warm (164,116,70 against 145,115,95 for the brightest tenth).
+- The trunk's lit flank is 10 red over; the body under the fork is a little darker than the approved's.
