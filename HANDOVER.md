@@ -105,3 +105,20 @@ Proved at draft, hero, hd. Fall on the merged tree equals fall on main 3170155e 
 Summer's air owes one more commit on its branch, a single number `glow.lensFilm` in `looks.ts`: that line is to stay as its branch has it.
 
 The eighth list is given (09:34 and 09:47 UTC): a soft orange glow for each point on a measure of the approved's glow width over point width for ten points; the upper air in patches on a count; the leaves lobed, in three sizes, at every angle, on counts by size and hue; the large discs soft with no edge, on a measure of the edge's width. Measure before dealing; a pair when the glow and the leaves stand.
+
+## Eighth list: a glow for each point, the upper air in patches, the leaves, the soft discs (f20f99c3, 57d80a27, pushed as fa2ea2e2 with main 9e7b660e)
+
+Files: `src/particles/draw/cards.ts`, `src/particles/draw/looks.ts`, `src/seasons/fall/glass.ts`. Nothing else differs from main.
+
+a. The glow. At rest each spark draws a halo whose reach is set in the fragment stage from the spark's own radius (`restHaloReach`, `restHalo`, `restHaloShare`, `restHaloTo`); about one in six is the wide class (`restBigFrom`). A fault found on the way and never pushed: the halo's limit read `vCore.y`, which in a quad is the pixel's own offset and not the card's reach, so halos were drawn as fans cut flat.
+b. The patches. `glass.ts` MIST: a tile of 8 mm laid along a lean and bent by the mist's own noise, two lookups, one darkening (`mistDealDark`, `mistDealDarkBy`) and one greening (`mistDealGreen`, `mistDealGreenBy`); only the upper mist is dealt, the low standing mist is left.
+c. The leaves. Size by the outline's own number (`leafRestMm` [0.7, 4.2, 2.6], `leafRestPx` 24), maple share at rest `leafRestMaple` 0.1, a roll at rest so the angles are dealt, hues dealt gold, orange, red (`leafGold`, `leafOrange`, `leafRed` and their `From` pairs). The storm keeps its own hues (`leafStorm...`) and `maple.share`.
+d. The discs. `restDiscSoft` 0.5 over `restDiscSoftPx`, tint `restDiscTint`.
+
+Measures at hd, review tier, on fa2ea2e2, the approved then mine. Points in the left air: 90, 97; point width 25/50/75 1.3 1.7 2.3, 1.3 1.6 2.2 px; glow width 3.2 3.9 10.9, 3.4 4.0 9.5 px; glow over point 1.9 2.5 4.3, 2.2 2.6 3.7. Small orange class 206, 414. Upper boxes: left 49, 54; middle 48, 46; right 57, 50. Green patches 14, 15. Leaves found in the upper left quarter of mine 19: under 12 px 10, 12 to 20 px 7, over 30 px 2, largest 34; gold 4, orange 9, red 6; level 42 percent, upright 31. Disc edges mine 3.1 px (0.20 of the radius) and 8.7 px (0.36), the approved's 5.2 and 6.1 (0.21, 0.27).
+
+Proofs on fa2ea2e2: six guard stills equal main's list, fall-rest f2d573d57dfed682, fall-landed 34b0a09a08f4aff6; strict pass; M4 0.9694, 0.8951, 0.9571, 0.9594; M5 0.993, 1, 0.9666, 0.9997; M3 fall-rest 0.9129 at review with the miniature's share 0.943 (main 0.957); triangles 1,765,827; tsc 0; vitest 68 files passed, 948 tests passed, 8 skipped (four mix tests skip here for want of the film's tracks).
+
+Still short, worst first: the leaves are larger and more crowded at the upper middle left than the approved's, and fewer are gold or lobed; the small orange class is twice the approved's; the patches are blotches, not thin streaks; no dim glow without a centre is made; M5 of shake-3 is 0.008 under main's.
+
+Not seen: the film played; anything above hd; the lip and the air with the ball turned.
