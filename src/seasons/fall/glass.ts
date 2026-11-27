@@ -82,6 +82,8 @@ export const look = {
     dustStirred: 1.5,
     dustTint: [1.0, 0.72, 0.42],
     flood: 0.1,
+    // Only at the full flood, where one season is changed for the next: it is gone long before the landing.
+    floodPeak: 0.6,
     floodFrom: 0.64,
     floodTo: 0.99,
     floodHeld: 0.015,
@@ -348,7 +350,8 @@ void main() {
   if (r > ${f(RI - 0.25)}) discard;
   float lift = uFog.y;
   float deepMm = mix(${f(F.restMm)}, mix(${f(F.liftMm)}, ${f(F.floodMm)}, uFogTurn.y), lift);
-  float amp = mix(${f(F.rest)}, mix(${f(F.lifted)}, ${f(F.flood)}, uFogTurn.y), lift);
+  float full = uFogTurn.y * uFogTurn.y;
+  float amp = mix(${f(F.rest)}, mix(${f(F.lifted)}, ${f(F.flood)}, uFogTurn.y) + ${f(F.floodPeak)} * full * full, lift);
   float base = fogFloor(p);
   float ground = fogMound(p.z);
   float under = ground - 0.4;
