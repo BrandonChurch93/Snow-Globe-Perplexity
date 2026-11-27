@@ -1,5 +1,24 @@
-1-whole-400px-approved-left.jpg: The whole at 400 px, the approved on the left, the sixth pass on the right. Hero camera, review tier, hd. The crown now reads as one broad dark dome over a slim trunk, with gold points on its outline toward the low sun. The approved's dome is still a little darker, leans more to the left and hangs lower there.
-2-tree-pair-rest-approved-left.jpg: The tree at one scale at rest, the approved on the left. The masses overlap from the top clump to both shoulders in one bulging curve with shallow scallops. The level gaps of sky are closed, the undersides are rounded, the mass low at the left hangs lowest, and small windows stay at each side of the stem with lit arms in them. The light is off the broad tops and sits as a string of gold points on each outline toward the sun. Against the approved: the leaf covers more of its box, the points are fewer and yellower, and the arms are thicker and straighter. The seed heads and fireflies in front are the air's.
-3-tree-pair-landed-approved-left.jpg: The landing at one scale, the approved on the left. The crown is whole behind the storm: the same masses and the same gaps as at rest, no torn outline, no leaves let go.
-4-macro-pair-approved-left.jpg: The macro camera on the right, beside the approved's hero picture enlarged to about the same trunk width. The right limb carries one more small spray between the fork and the spray set before. The trunk is slim under the large lantern and its foot goes into the grass.
-5-wood-no-air-approved-left.jpg: The wood without the air, a measuring aid and not a judged picture, the approved on the left at the same scale with a ruler in millimetres. The trunk is as wide as the approved's from the lantern down, flares at the foot behind the grass, and carries an orange gold rim on its right edge where the approved's is white gold. The slow S is weaker than the approved's and the arms keep the shared path and width.
+Summer tree, seventh pass. In every picture the approved is on the left and ours on the right.
+Drawn on the branch head with main a55e7ee6 merged, review tier, hd, hero camera unless named.
+
+1-whole-400px-approved-left.jpg
+The whole at 400 px, with the air. One small dark green tree over the row of lanterns in both. Ours stands fuller and rounder in the crown; the approved shows more sky between its masses.
+
+2-whole-400px-no-air-approved-left.jpg
+The same without the air on ours. A measuring aid, not a judged picture.
+
+3-tree-pair-rest-approved-left.jpg
+The tree at one scale, at rest, with the air. Ours: a dark crown in soft lobes with a lobed outline, no level band of sky, one notch at the upper left and one small hole by the fork; gold points in unequal groups on the outlines toward the sun; winding boughs that end in leaf; a stem in a slow S that flares into the grass, warm on its left face beside the large lantern.
+Not met: the approved keeps several small holes by the fork and shows its boughs through them; ours shows one. Ours is the fuller crown.
+
+4-tree-pair-rest-no-air-approved-left.jpg
+The same pair without the air on ours. The leaf reads as rounded lobes, pale green on top and dark underneath. The lit tops are dimmer than the approved's and the leaf reads more as leaves than as the approved's velvet masses.
+
+5-tree-pair-landed-approved-left.jpg
+At the landing. The crown stays whole behind the storm: the same masses as at rest, no torn outline, no leaf let go.
+
+6-trunk-no-air-approved-left.jpg
+The trunk at five times, without the air on ours, with a grid in millimetres (heights marked at the left). The stem winds, widens into the grass and carries a warm rim on its left face under the lantern. The grass, which is not this part's, hides the foot below a height of about 3.5 mm, so the flare is seen about 1.5 mm higher than the approved's.
+
+7-macro-pair-approved-left.jpg
+The macro camera, with the air. Several winding boughs leave the fork and end in leaf; the long thin one at the right carries two lanterns and ends in the low right lobe. The approved has two heavy boughs and rounded holes of sky between them.
