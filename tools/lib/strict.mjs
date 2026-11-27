@@ -15,7 +15,7 @@
 //   smooth   smoothstep with both edges equal
 //   noguard  isnan() and isinf() always answer false, as a compiler with fast maths may make them
 //   dry      the same wrappers, each answering what the plain function answers: it shows what the wrappers alone change
-//   as0, asbig   an open case answers 0 or 1e30 instead of no number
+//   as0, asunit, asbig   an open case answers 0, 0.577 or 1e30 instead of no number
 // Narrowing, for finding a call: `pow~text` (only calls whose text holds `text`), `pow#a-b` (only the calls numbered
 // a up to b, not b itself, counted through every shader in the order handed over), `pow#a-b!k,m` (leaving out k and m).
 export const STRICT_INIT = (mode) => {
@@ -94,9 +94,10 @@ bvec4 sm_never(vec4 x) { return bvec4(false); }
     if (!m) throw new Error('dry: cannot read ' + l)
     return m[1] + (m[3].includes('sm_nan()') ? m[4] : m[3]) + m[5]
   }).join('\n')
-  // 'as0' and 'asbig': what a strict function answers in a case GLSL leaves open is 0 or 1e30 instead of no number.
-  // The proof that a picture does not rest on such a case: it is the same picture with all three answers.
-  const answer = parts.includes('as0') ? 'return 0.0;' : parts.includes('asbig') ? 'return 1.0e30;' : 'return intBitsToFloat(2143289344);'
+  // 'as0', 'asunit' and 'asbig': what a strict function answers in a case GLSL leaves open is 0, 0.577 or 1e30 instead
+  // of no number. 0.577 is there because 0 and 1e30 may both fall to no number further on, where a plain number does not.
+  // The proof that a picture does not rest on such a case: it is the same picture with every one of the answers.
+  const answer = parts.includes('as0') ? 'return 0.0;' : parts.includes('asbig') ? 'return 1.0e30;' : parts.includes('asunit') ? 'return 0.57735027;' : 'return intBitsToFloat(2143289344);'
   let body = POW.replace('return intBitsToFloat(2143289344);', answer), defs = ''
   if ((parts.includes('pow') || parts.includes('all')) && !narrowed) defs += DEF_POW
   if (parts.includes('all')) { body += ALL; defs += DEF_ALL }

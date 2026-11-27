@@ -11,6 +11,19 @@
 // picture leaves that out. Which of the two pictures the wrappers' form moves depends on the renderer: lavapipe draws
 // the mode of winter at rest as the plain picture to the byte and moves the --same picture; SwiftShader does the
 // reverse. So each row says what it was read against. The limits are the same for both readings.
+// Between the two, a row over the limits against the plain picture is read by its answers: the mode is drawn three
+// times more, with every open case answering 0 (`as0`), 0.577 (`asunit`, a number of ordinary size, and a vector of
+// length one where the answer is a vector) and 1e30 (`asbig`) instead of no number. The four builds have the same
+// wrappers, the same tests and the same choices and differ in that one answer alone, so a picture that is the same
+// under all four, within the limits, holds no pixel the answer of an open case reaches, whatever a graphics card
+// answers there, and what it differs from the plain picture by is the wrappers' form. Such a row passes and says the
+// counts. Only a row whose four pictures are not the same goes on to its --same picture. This reading was put in
+// because under lavapipe the --same picture is no sound measure where the mode's is: winter in its shake through the
+// app's own path at high is one picture to the byte under the answers of all+smooth, two pixels from the plain
+// picture, and 754 pixels from its --same picture (the tree), each of them the same picture on every render; three
+// calls of normalize alone, where no answer moves a pixel, move 117 pixels of the --same picture.
+// A row that passes by its answers says only that no answer reaches the picture as the mode stands. With the guards
+// on, a guard may be what holds an answer back: the noguard row of the same mode says so, read the same way.
 // --against plain reads against the plain picture alone, --against same against the --same picture alone.
 // In the --same picture of a noguard mode isnan() and isinf() answer false as they do in the mode itself, so that row
 // says whether an open case reaches the picture once the guards are gone. Whether a guard holds back a number that
@@ -55,6 +68,9 @@ import sharp from 'sharp'
 // there without any open case being met. An answer of no number is never that small: it blanks a part or the picture.
 const MAX_STEP = 1
 const MAX_SHARE = 1e-4
+// The other answers an open case is given when a row is read by its answers (tools/lib/strict.mjs), and their names.
+const ANSWERS = ['as0', 'asunit', 'asbig']
+const SAYS = { as0: '0', asunit: '0.577', asbig: '1e30' }
 
 const args = parseArgs(process.argv.slice(2))
 const text = (k, d) => (args[k] && args[k] !== true ? String(args[k]) : d)
@@ -307,7 +323,26 @@ try {
           console.log(`  ${tag(m)} against plain${pic.taken === undefined ? '' : ` (${pic.taken} calls)`}: ${c.count} pixels differ${c.count ? `, largest step ${c.step}, box ${c.box.join(',')}` : ''}; ${pic.shaders} shaders rewritten${pic.missed ? `, ${pic.missed} not` : ''}  pass`)
           continue
         }
-        const note = `${c.count} pixels differ from the plain picture (largest step ${c.step}), so read against same: `
+        let note = `${c.count} pixels differ from the plain picture (largest step ${c.step})`
+        // By its answers: the same mode with an open case answering 0, 0.577 and 1e30. Not for a mode that names its answer
+        // or is narrowed in its own name.
+        if (!/[~#]/.test(m) && !m.split('+').some((p) => p === 'dry' || ANSWERS.includes(p))) {
+          const others = []
+          for (const answer of ANSWERS) {
+            const other = await picture(spec, key, `${m}+${answer}`, same)
+            others.push({ answer, ...other, ...(await differ(pic.file, other.file)) })
+          }
+          const said = others.map((o) => `${o.count} pixels differ with ${SAYS[o.answer]}${o.count ? ` (largest step ${o.step})` : ''}`).join(', ')
+          const sound = [pic, ...others].every((p) => p.shaders > 0 && !p.messages.length)
+          if (sound && others.every(within)) {
+            report.rows[`${key} ${tag(m)}`] = { key, mode: tag(m), against: 'answers', taken: pic.taken, shaders: pic.shaders, missed: pic.missed, ...c, answers: Object.fromEntries(others.map((o) => [o.answer, { count: o.count, step: o.step, box: o.box, share: o.share }])), messages: [], seconds: pic.seconds + others.reduce((n, o) => n + o.seconds, 0) }
+            writeJson(reportFile, report)
+            console.log(`  ${tag(m)} by its answers${pic.taken === undefined ? '' : ` (${pic.taken} calls)`}: ${note}, box ${c.box.join(',')}, so read by its answers: against the picture with no number ${said}: no answer of an open case reaches the picture, the wrappers' form alone moves it; ${pic.shaders} shaders rewritten${pic.missed ? `, ${pic.missed} not` : ''}  pass`)
+            continue
+          }
+          note += `, and by its answers ${said}`
+        }
+        note += ', so read against same: '
         if (!(await read(key, `${tag(m)} against same`, tag(m), get, sameOf(m), note))) failed++
         continue
       }
@@ -346,7 +381,7 @@ try {
   await session.close()
 }
 const through = `${live ? ` through the app's own path at ${live}` : ''}${assets ? ` with the ${assets} set` : ''}`
-const reading = against === 'same' ? 'each row read against its own --same picture' : against === 'plain' ? 'each row read against the plain picture' : 'each row read against the plain picture, and against its own --same picture where that one differs'
+const reading = against === 'same' ? 'each row read against its own --same picture' : against === 'plain' ? 'each row read against the plain picture' : 'each row read against the plain picture, where that one differs by its answers (no number, 0, 0.577 and 1e30), and where those differ against its own --same picture'
 const drawn = `engine ${engine}, drawn by ${renderer}`
 if (repeat) {
   console.log(failed ? `strict: ${failed} of ${rows} renders are not the picture of the first render${through} (${drawn})` : `strict: the same, ${keys.length} keys${through} under ${modes.map((m) => tag(m, true)).join(', ')}, each rendered ${repeat} times (${drawn}): every render is the same picture, pixel for pixel`)
