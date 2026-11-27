@@ -35,7 +35,7 @@ const LOOK = {
   sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 1.0, round: [1.6, 4.0], clear: 6 },
   slope: { clearMm: 0.25, keeps: 0.75, roll: 0.5, bulge: 0.0038, crestMm: [60.6, 66], crestLean: 1.6, offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
-  flow: { stand: 0.8, seconds: 1.6, gapMm: [0.3, 2.5], shadeMm: [0.5, 60] },
+  flow: { stand: 0.8, seconds: 1.6, gapMm: [0.3, 2.5], shadeMm: [0.5, 60], pick: [61.3, 17.7], slack: 0.001 },
   exposure: 0.15,
   gold: [1, 0.8, 0.66],
   backlit: 2.6,
@@ -153,7 +153,7 @@ if (aSeed.y < -0.5) {
   fallLife = life;
   float spare = max(min(${LOOK.fall.mist.seconds.toFixed(3)}, uGrainLoop.y / cycles - life), 0.0);
   tau = fract(uGrainLoop.x * cycles + aSeed.z) * (uGrainLoop.y / cycles);
-  if (grainT < 0.0 || tau > grainT || tau >= life + spare || fract(aSeed.z * 61.3 + aSeed.x * 17.7) > uGrain.z || fract(aSeed.z * 23.9 + 0.37) > uGrainLevel) alive = 0.0;
+  if (grainT < 0.0 || tau > grainT || tau >= life + spare || fract(aSeed.z * ${LOOK.flow.pick[0]!.toFixed(1)} + aSeed.x * ${LOOK.flow.pick[1]!.toFixed(1)}) > uGrain.z || fract(aSeed.z * 23.9 + 0.37) > uGrainLevel) alive = 0.0;
   if (tau > life) puff = (tau - life) / max(spare, 1e-4);
 } else {
   tau = 0.0;
@@ -447,7 +447,7 @@ export const sandGrow = grainUniforms.uSandGrow
 export const sandLift = grainUniforms.uSandLift
 export const sandFoot = grainUniforms.uSandFoot
 
-export const FALL = { gravity: LOOK.fall.gravity, count: LOOK.fall.count, stand: LOOK.flow.stand }
+export const FALL = { gravity: LOOK.fall.gravity, count: LOOK.fall.count, stand: LOOK.flow.stand, gone: LOOK.gone[1]!, pick: LOOK.flow.pick }
 
 // The stone's flank below the lip, radius at height (assets-src/base-summer/profile.mjs, BODY).
 const stoneAt = (h: number): number => {
@@ -579,8 +579,13 @@ export function grainRows(): Rows {
     made++
   }
 
+  // The grains of the fall that only the landing's surge sets falling come before the mark: once the jumping grains are
+  // gone none of them is in the air, and the rest draw begins after them.
+  const fall = fallPaths()
+  const surge = restShare()
+  for (const g of fall) if (fallPick(g.phase, g.id) > surge) put(g.to, g.from, [g.rate, g.seconds, g.vy, g.radius], [g.id, 1, g.phase, g.slide])
   const firstFall = n
-  for (const g of fallPaths()) put(g.to, g.from, [g.rate, g.seconds, g.vy, g.radius], [g.id, 1, g.phase, g.slide])
+  for (const g of fall) if (!(fallPick(g.phase, g.id) > surge)) put(g.to, g.from, [g.rate, g.seconds, g.vy, g.radius], [g.id, 1, g.phase, g.slide])
 
   // The grains that lie where they are for good. Those that stand proud of the heap's skin, half sunk in it, so that
   // its outline is grains; and those strewn round it: dust close in, grains, and a few coarse crumbs, fewer with the distance.
@@ -667,17 +672,22 @@ function grainGeometry(): THREE.BufferGeometry {
       corner[o * 2 + 1] = k < 2 ? -1 : 1
     }
   }
+  let firstSurge = firstFall
+  while (firstSurge > 0 && data[(firstSurge - 1) * GRAIN_ROW + 11] === 1) firstSurge--
   still = n - firstFall
+  aloft = n - firstSurge
 
-  // The fall and the loose grains are first in the list, so that at rest they alone are drawn; within each kind the order is shuffled.
-  const order = (first: number, count: number, at: number): void => {
+  // The fall and the loose grains are first in the list, so that at rest they alone are drawn; then the surge's own
+  // grains of the fall, then the jumping grains. Within each kind the order is shuffled.
+  const order = (first: number, count: number, at: number, stride: number): void => {
     for (let k = 0; k < count; k++) {
-      const q = first + ((k * LOOK.stride) % count)
+      const q = first + ((k * stride) % count)
       index.set([q * 4, q * 4 + 1, q * 4 + 2, q * 4 + 2, q * 4 + 1, q * 4 + 3], (at + k) * 6)
     }
   }
-  order(firstFall, n - firstFall, 0)
-  order(0, firstFall, n - firstFall)
+  order(firstFall, n - firstFall, 0, LOOK.stride)
+  order(firstSurge, firstFall - firstSurge, n - firstFall, 1)
+  order(0, firstSurge, n - firstSurge, LOOK.stride)
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.BufferAttribute(to, 3))
   g.setAttribute('aFrom', new THREE.BufferAttribute(from, 3))
@@ -689,6 +699,15 @@ function grainGeometry(): THREE.BufferGeometry {
 }
 
 let still = 0
+let aloft = 0
+
+// Which share of the fall a grain belongs to, as the shader reads it, and the largest share that is still falling when
+// the jumping grains are gone and the rest draw begins. The shader reads it in single precision, hence the slack.
+export const fallPick = (phase: number, id: number): number => {
+  const v = phase * LOOK.flow.pick[0]! + id * LOOK.flow.pick[1]!
+  return v - Math.floor(v)
+}
+export const restShare = (): number => fallShare(LOOK.gone[1]!) + LOOK.flow.slack
 
 export function fallShare(sinceLoose: number): number {
   const F = LOOK.flow
@@ -721,10 +740,11 @@ export function grains(): THREE.Mesh {
   mesh.frustumCulled = false
   const whole = mesh.geometry.index!.count / 6
   const fall = still
+  const flying = aloft
   mesh.onBeforeRender = () => {
     const share = LOOK.share[meshLevel()] ?? 1
     grainUniforms.uGrainLevel.value = share
-    const drawn = mesh.matrixWorld.determinant() < 0 ? 0 : grainUniforms.uGrain.value.y < 1 ? fall + Math.floor((whole - fall) * share) : fall
+    const drawn = mesh.matrixWorld.determinant() < 0 ? 0 : grainUniforms.uGrain.value.y < 1 ? flying + Math.floor((whole - flying) * share) : fall
     mesh.geometry.setDrawRange(0, 6 * drawn)
   }
   mesh.onAfterRender = () => {

@@ -21,7 +21,7 @@ import { AirHold, clearVeil } from './air'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
 import { newFrame, type StageFrame } from './frame'
-import { gridAddress, readGrid } from './gridfile'
+import { fetchGrid } from './gridfile'
 import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, outerRadiusMm } from './layout'
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { CHANGE_BLOOM, Lighting } from './lighting'
@@ -285,13 +285,16 @@ export class GlobeStage implements Stage {
     }
     const like = this.scratchOf(live.texture.type, live.samples)
     const linked: Promise<unknown>[] = []
+    // A browser that cannot link aside is not asked to: three writes a warning to the console of one that is.
+    const linksAside = renderer.extensions.has('KHR_parallel_shader_compile')
     await run(
       meshes.map((d) => () =>
         aside(like, () => {
           const below = d.children
           d.children = []
           try {
-            linked.push(renderer.compileAsync(d, this.camera, this.scene))
+            if (linksAside) linked.push(renderer.compileAsync(d, this.camera, this.scene))
+            else renderer.compile(d, this.camera, this.scene)
           } finally {
             d.children = below
           }
@@ -347,9 +350,7 @@ export class GlobeStage implements Stage {
    */
   private async fetchCollider(season: string): Promise<void> {
     const version = `${__ENGINE_HASH__}${this.assets.index.seasonHashes[season] ?? ''}`
-    const r = await fetch(new URL(gridAddress(season, version), document.baseURI))
-    if (!r.ok || !r.body) throw new Error(`collider did not load: ${season}`)
-    this.colliders.set(season, await readGrid(r.body))
+    this.colliders.set(season, await fetchGrid(season, version, document.baseURI))
   }
 
   /** The season's set, whole: whatever of it is still to be built is built now, because a frame that needs it is being drawn. */

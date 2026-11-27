@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { config } from '../src/config'
 import * as assets from '../src/core/assets'
 import * as models from '../src/core/models'
@@ -92,4 +92,39 @@ describe('the colliders the build makes', () => {
     },
     180000,
   )
+})
+
+// The browser's own record of the page's requests called a grid's file cancelled when the page inflated it as it came,
+// though the grid was whole: the page takes the file whole and inflates it after.
+describe('a grid the page fetches', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('is taken whole before it is inflated, and is the grid of its file to the bit', async () => {
+    const n = 6
+    const data = new Float32Array(n * n * n)
+    for (let i = 0; i < data.length; i++) data[i] = Math.sin(i * 78.233) * 43758.5453
+    const grid = { n, sizeMm: 113.99999999999999, data }
+    const packed = gridFile({ file }, grid)
+    const asked: string[] = []
+    vi.stubGlobal('fetch', async (address: URL) => {
+      asked.push(address.href)
+      return {
+        ok: true,
+        get body(): never {
+          throw new Error('the file was read as it came')
+        },
+        arrayBuffer: async () => new Uint8Array(packed).buffer,
+      }
+    })
+    const read = await file.fetchGrid('summer', 'abc', 'https://host.example/globe/')
+    expect(asked).toEqual(['https://host.example/globe/assets/grids/summer.bin?v=abc'])
+    expect(read.n).toBe(n)
+    expect(read.sizeMm).toBe(grid.sizeMm)
+    expect(bytes(read).equals(bytes(grid))).toBe(true)
+  })
+
+  it('names the season whose file the host does not give', async () => {
+    vi.stubGlobal('fetch', async () => ({ ok: false, arrayBuffer: async () => new ArrayBuffer(0) }))
+    await expect(file.fetchGrid('fall', 'abc', 'https://host.example/')).rejects.toThrow('collider did not load: fall')
+  })
 })
