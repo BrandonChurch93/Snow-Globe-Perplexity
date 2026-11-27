@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 196 · 2026-11-27 05:12 UTC
+Status 197 · 2026-11-27 05:33 UTC
 
-- `out/stills/status/status-196-1.jpg`: The four seasons as the published app opens, the fifth publish
-- `out/stills/status/status-196-2.jpg`: Summer's base under the glass's edge, the warm band before left and gone with the mend right, at rest above and landed below, not on origin yet
-- `out/stills/status/status-196-3.jpg`: Fall's air third list, approved picture left, main before in the middle, third list right, below the bar
-- `out/stills/status/status-196-4.jpg`: Fall's storm, approved picture left and build right, below the bar
+- `out/stills/status/status-197-1.jpg`: Spring at rest and landed above, fall at rest and landed below, as on main now
+- `out/stills/status/status-197-2.jpg`: Spring at rest with the base's third list, approved picture left and build right, below the bar
+- `out/stills/status/status-197-3.jpg`: Fall at rest with the scene's fourth pass and the air's third list, approved picture left and build right, below the bar
+- `out/stills/status/status-197-4.jpg`: The shutter's mend at 4K in motion, film frame 1337, the glass at two times, the old way left and the mend right, soft teeth remain, not a pass
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 05:12 UTC
-clock: phase 6, tick of 21.9 minutes
-phase 6: 26.38 h used of its 12.00 h box
-allowance (after the review): 26.38 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 26.38 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 05:33 UTC
+clock: phase 6, tick of 21.3 minutes
+phase 6: 26.73 h used of its 12.00 h box
+allowance (after the review): 26.73 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 26.73 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
