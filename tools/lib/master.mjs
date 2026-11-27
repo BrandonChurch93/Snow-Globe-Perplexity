@@ -425,6 +425,102 @@ export function procsGainLine(procs, limits) {
   return `--procs ${procs} on ${limits.cpus} ${limits.cpus === 1 ? 'CPU' : 'CPUs'}: the best count depends on the machine. Measure it with --procs 1, 2 and 3 on three chunks before a long run, and keep the count that gives the most frames an hour.`
 }
 
+/** The memory the kernel holds free for new work, in bytes, from the text of /proc/meminfo, or null where it does not say. */
+export function availableBytes(meminfo) {
+  const m = /^MemAvailable:\s+(\d+) kB$/m.exec(meminfo ?? '')
+  return m ? Number(m[1]) * 1024 : null
+}
+
+/**
+ * What is left under the cgroup's limit: memory.max less memory.current, with the file pages the kernel can drop
+ * given back, the least over the path in /proc/self/cgroup and every folder above it. Null where no folder holds
+ * a limit. The v1 names where a machine still has those.
+ * @param {{ cgroup?: string, read?: (file: string) => string | null }} facts
+ */
+export function cgroupAvailable({ cgroup = '', read = () => null }) {
+  const above = (p) => {
+    const parts = p.split('/').filter(Boolean)
+    return parts.map((_, i) => `/${parts.slice(0, parts.length - i).join('/')}`).concat('')
+  }
+  const lines = cgroup.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => l.split(':')).filter((l) => l.length >= 3).map((l) => ({ controllers: l[1].split(','), path: l.slice(2).join(':') }))
+  const number = (file) => {
+    const t = (read(file) ?? '').trim()
+    return /^\d+$/.test(t) ? Number(t) : null
+  }
+  const stat = (file, names) => {
+    const t = read(file) ?? ''
+    return names.reduce((n, name) => n + Number(new RegExp(`^${name} (\\d+)$`, 'm').exec(t)?.[1] ?? 0), 0)
+  }
+  let least = Infinity
+  const take = (dir, max, current, names) => {
+    const limit = number(`${dir}/${max}`)
+    const used = number(`${dir}/${current}`)
+    if (limit === null || used === null) return
+    least = Math.min(least, Math.max(0, limit - used + stat(`${dir}/memory.stat`, names)))
+  }
+  const v2 = lines.find((l) => l.controllers.join('') === '')
+  const v1 = lines.find((l) => l.controllers.includes('memory'))
+  if (v2) for (const p of above(v2.path)) take(`/sys/fs/cgroup${p}`, 'memory.max', 'memory.current', ['inactive_file', 'active_file'])
+  if (v1) for (const p of above(v1.path)) take(`/sys/fs/cgroup/memory${p}`, 'memory.limit_in_bytes', 'memory.usage_in_bytes', ['total_inactive_file', 'total_active_file'])
+  return least === Infinity ? null : least
+}
+
+/** The memory free for new work here: the kernel's own number and the cgroup's, the least of them, or null where neither says. */
+export function memoryAvailable() {
+  const read = (p) => {
+    try {
+      return fs.readFileSync(p, 'utf8')
+    } catch {
+      return null
+    }
+  }
+  const both = [availableBytes(read('/proc/meminfo')), cgroupAvailable({ cgroup: read('/proc/self/cgroup') ?? '', read })].filter((n) => n !== null)
+  return both.length ? Math.min(...both) : null
+}
+
+export function memoryShortLine(procs, format, available) {
+  if (available === null || format !== M.format) return null
+  const need = Math.round((procs * UHD_PROC_GB + UHD_SPARE_GB) * 10) / 10
+  if (available / GIB >= need) return null
+  return `SHORT OF MEMORY: ${gib(available)} GiB are free on this machine now, and ${procs === 1 ? `one ${format} render holds` : `${procs} ${format} renders hold`} about ${need} GB with the encoder. A machine short of memory does not fail, it crawls. Look at what else runs here (ps -eo rss,etime,args --sort=-rss | head).`
+}
+
+export const SHORT_FLAG = 'start-short-of-memory'
+
+/** Whether a run at the master's size may start with the memory that is free: null when it fits, else the line and whether it is refused. */
+export function memoryStart(procs, format, available, allowed) {
+  const line = memoryShortLine(procs, format, available)
+  if (line === null) return null
+  if (allowed) return { refuse: false, line: `${line} Started all the same, by --${SHORT_FLAG}.` }
+  return { refuse: true, line: `${line} Nothing was drawn. Free the memory and start again. --${SHORT_FLAG} starts all the same, and is only for a run that somebody watches.` }
+}
+
+export const OVERDUE = { times: 3, leastSeconds: 300, everySeconds: 60 }
+
+export function overdueLine({ frame, seconds, expected, available }) {
+  const free = available === null ? '' : ` ${gib(available)} GiB of memory are free now.`
+  return `OVERDUE: frame ${frame} has been drawing for ${hours(seconds)}, ${(seconds / expected).toFixed(1)} times the ${expected.toFixed(1)} s the frames so far give it. Nothing has failed and nothing was given up.${free} A machine short of memory crawls without an error: look at free -m and at what else runs here.`
+}
+
+/**
+ * Says a line when a frame takes far longer than the frames before it give it, and again each time that doubles. It ends nothing.
+ * Gives back the function that ends the watch. Without an expectation (the first frame of a run) it watches nothing.
+ * @param {{ frame: number, expected: number | null, say: (line: string) => void, available?: () => number | null, now?: () => number }} o
+ */
+export function watchFrame({ frame, expected, say, available = memoryAvailable, now = Date.now }) {
+  if (!(expected !== null && expected > 0)) return () => {}
+  const t0 = now()
+  let due = Math.max(OVERDUE.times * expected, OVERDUE.leastSeconds)
+  const timer = setInterval(() => {
+    const seconds = (now() - t0) / 1000
+    if (seconds < due) return
+    say(overdueLine({ frame, seconds, expected, available: available() }))
+    due = seconds * 2
+  }, OVERDUE.everySeconds * 1000)
+  timer.unref?.()
+  return () => clearInterval(timer)
+}
+
 export const NOT_A_NUMBER = 'NOT A NUMBER'
 export const NAN_MEASURE = "window.showcase.dev.sanity(): the values in the picture's mean that are no number, counted before the lens and the grade"
 

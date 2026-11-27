@@ -5,6 +5,7 @@ import { stageShader } from '../../core/materials'
 import { leanGlsl, loadLean } from '../../core/chunks/veil'
 import { ROLL_AXIS } from '../../globe/liquid'
 import { setGlass, shellUniforms } from '../../globe/shell'
+import { lensUniforms } from '../../scene/cameras'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { moundAt } from '../../scene/layout'
 import { surfaceUniforms } from '../../scene/surface'
@@ -143,6 +144,31 @@ export const look = {
     mistLeftMm: [-24, 4] as const,
     mistEven: [0.5, 2.4] as const,
     mistHighMm: [44, 78] as const,
+    // The approved's upper air is a dark, finely grained ground with a few short soft green dabs on it, wide apart and each with
+    // its own lean; right of the tree the green is the soft cloud of the patches and no dab. The liquid shows the far wall much
+    // enlarged and sheared, and differently in each face of the mist's mesh, so a dab is written as it lies on the wall and not
+    // as it is seen: where (mm right of the ball's middle and above it), its length in mm, how many times longer it is than wide,
+    // its lean up from level in degrees and its share of `mistDab`, the light a dab adds at its middle. From the hero camera
+    // each is seen two to three times longer than wide, at the approved picture's places, and each lies inside one face.
+    // The grain is dealt cell by cell on the wall. A cell is `mistGrainPx` wide and high as seen, in pixels of a picture 1080
+    // high through the hero lens, at any size of picture and in any face: along each of the wall's two ways the cells halve or
+    // double with what the liquid makes of that way, one size fading into the next. By its number a cell adds up to half of
+    // `mistGrain` to the mist's light or takes as much from it, the same on dark ground and on light; not near the limb
+    // (`mistGrainLimb`, in radii of the wall), where the room's warm band would turn the grains orange.
+    mistDabs: [
+      [-12.51, 11.27, 1.34, 4.76, 44, 1.4],
+      [-7.43, 11.58, 1.65, 3.44, 22, 0.85],
+      [-4.93, 12.87, 0.83, 1.61, 128, 0.7],
+      [-13.38, 8.16, 0.65, 1.93, 82, 0.75],
+      [-14.93, 6.55, 1.21, 3.33, 70, 1.1],
+      [-9.65, 9.29, 1.6, 3.94, 61, 1.15],
+      [-3.34, 8.81, 2.39, 4.72, 174, 2.2],
+      [-14.1, 4.01, 0.68, 3.0, 81, 0.6],
+    ] as const,
+    mistDab: [0.0085, 0.044, 0.01],
+    mistGrainPx: 1.4,
+    mistGrain: [0.0286, 0.034, 0.031],
+    mistGrainLimb: [0.7, 0.86] as const,
     hazeFrontMm: -9,
     hazeBackMm: -24,
     pour: 0.006,
@@ -654,8 +680,25 @@ void main() {
 }
 `
 
+// The grain's cells are counted in sixty-fourths of a mm, and its size as seen is told by the hero camera's focal length.
+const GRAIN_PER_MM = 64
+const HERO_FOCAL_PX = 540 / Math.tan((config.cameras.hero.fovDeg * Math.PI) / 360)
+
+const DABS = F.mistDabs.map(([x, y, long, slim, lean, seen]) => {
+  const a = (lean * Math.PI) / 180
+  return { at: [x, y, Math.cos(a), Math.sin(a)], size: [2 / long, (2 * slim) / long, seen] }
+})
+
 const MIST = `
 ${FOG_HEAD}
+uniform float uFocal;
+const int DAB_N = ${DABS.length};
+const vec4 DAB_AT[DAB_N] = vec4[DAB_N](
+  ${DABS.map((d) => `vec4(${d.at.map(f).join(', ')})`).join(',\n  ')}
+);
+const vec3 DAB_SIZE[DAB_N] = vec3[DAB_N](
+  ${DABS.map((d) => vec(d.size)).join(',\n  ')}
+);
 void main() {
   float c = stageChange();
   float seen = (uState.w > 1.5 ? 1.0 - c : uState.w > 0.5 ? c : 1.0) * uFlags.w * (1.0 - uFog.y);
@@ -679,7 +722,29 @@ void main() {
   float a = (1.0 - exp(-rho)) * seen;
   vec3 east = mix(vec3(1.0), ${vec(F.mistEast)}, smoothstep(${f(F.mistEastMm[0])}, ${f(F.mistEastMm[1])}, p.x));
   vec3 col = mix(mix(${vec(F.mistTop)} * east, ${vec(F.mistLow)}, smoothstep(${f(F.mistLowFrom[0])}, ${f(F.mistLowFrom[1])}, stand)), ${vec(F.mistHigh)} * east, smoothstep(${f(F.mistHighMm[0])}, ${f(F.mistHighMm[1])}, h));
-  gl_FragColor = vec4(col * a, a);
+  // The low mist that stands behind the scene keeps its even glow: the grain and the dabs are the upper air's alone.
+  float upper = 1.0 - smoothstep(${f(F.mistLowFrom[0] * 0.5)}, ${f(F.mistLowFrom[1])}, stand);
+  vec2 gx = dFdx(p.xy);
+  vec2 gy = dFdy(p.xy);
+  // A cell is sized along each of the wall's two ways by what the liquid makes of that way, or the grain is drawn out into a weave where the wall is seen sheared.
+  vec2 size = log2(max(abs(gx.x * gy.y - gx.y * gy.x) / max(vec2(length(vec2(gx.y, gy.y)), length(vec2(gx.x, gy.x))), 1e-6) * uFocal * ${f((F.mistGrainPx * GRAIN_PER_MM) / HERO_FOCAL_PX)}, 1e-3));
+  vec2 step0 = floor(size);
+  vec2 fade = size - step0;
+  vec2 cell = (p.xy + ${f(RS)}) * ${f(GRAIN_PER_MM)};
+  vec2 per = exp2(-step0);
+  float deal = 0.5 + 0.01 * step0.x + 0.0037 * step0.y;
+  float g0 = mix(stageHash(vec3(floor(cell * per), deal)), stageHash(vec3(floor(cell * per * vec2(0.5, 1.0)), deal + 0.01)), fade.x);
+  float g1 = mix(stageHash(vec3(floor(cell * per * vec2(1.0, 0.5)), deal + 0.0037)), stageHash(vec3(floor(cell * per * 0.5), deal + 0.0137)), fade.x);
+  vec2 even = fade * fade + (1.0 - fade) * (1.0 - fade);
+  float grain = clamp(0.5 + (mix(g0, g1, fade.y) - 0.5) / sqrt(even.x * even.y), 0.0, 1.0);
+  float grainy = (1.0 - smoothstep(${f(F.mistGrainLimb[0])}, ${f(F.mistGrainLimb[1])}, length(p.xy) / ${f(RI - 0.6)}));
+  float dab = 0.0;
+  for (int i = 0; i < DAB_N; i++) {
+    vec2 e = p.xy - DAB_AT[i].xy;
+    vec2 uv = vec2(DAB_AT[i].z * e.x + DAB_AT[i].w * e.y, DAB_AT[i].z * e.y - DAB_AT[i].w * e.x) * DAB_SIZE[i].xy;
+    dab += DAB_SIZE[i].z * exp(-dot(uv, uv));
+  }
+  gl_FragColor = vec4(max(col * a + (${vec(F.mistDab)} * dab + ${vec(F.mistGrain)} * ((grain - 0.5) * grainy)) * (upper * seen), 0.0), a);
 }
 `
 
@@ -773,7 +838,7 @@ function makeMist(): THREE.Mesh {
     standIn: false,
     inside: true,
     change: 'veil',
-    uniforms: { uFog: uniforms.uFog, uFogNoise: uniforms.uFogNoise },
+    uniforms: { uFog: uniforms.uFog, uFogNoise: uniforms.uFogNoise, uFocal: lensUniforms.uFocal },
     fragment: MIST,
     // Only the faces that look at the eye from across the ball are drawn: the far half, whichever way the ball is turned.
     params: { ...blend, transparent: false, side: THREE.BackSide },
