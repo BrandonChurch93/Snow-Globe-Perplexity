@@ -166,8 +166,8 @@ function scallop(soup, fr, it, rnd, opt) {
   surf(
     soup,
     fr,
-    opt.ears ? 83 : 89,
-    34,
+    it.cols ?? (opt.ears ? 83 : 89),
+    it.rows ?? 34,
     (u, v) => {
       const th = (u * 2 - 1) * spread
       const sx = Math.sin(th)
