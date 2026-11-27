@@ -63,6 +63,13 @@ const baseUniforms = {
   uBaseSky: { value: new THREE.Color() },
 }
 const FLOOR_SHARE = 0.1
+// The brambles' tones, measured against the approved image in boxes at the review tier.
+const BRAMBLE = { ALBEDO: 0.5, SPILL: 22, RIM: 0.1, RIM_FRONT: 0, KEY: 0, KEY_EAST: 4.5, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 11, CARD_WEST: 12, TOP: 0, BARK: 1.8, LIFT: 0.008, LIFT_WEST: 14, FILL: 0.03, LINE: 1.2, LINE_POW: 160, LINE_WIDE: 1, STREAK: 3, LINE_EAST: 12, THORN: 0.5 }
+const DRUM_SHEEN = 1.8
+const DRUM_FOLD = 2
+const DRUM_CRINKLE = 4
+const PUMPKIN_BODY = 0.042
+const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}\n#define DRUM_FOLD ${DRUM_FOLD.toFixed(3)}\n#define DRUM_CRINKLE ${DRUM_CRINKLE.toFixed(3)}`
 const flicker: { a: number; b: number; c: number }[] = []
 let faceList: Face[] = []
 export const faces = (): Face[] => faceList
@@ -122,6 +129,20 @@ varying vec3 vBasePaint;
 varying vec2 vBaseUv1;
 ${ROOM_GLSL}
 ${NOISE}
+float baseFold(vec3 p) {
+  vec3 q = vec3(p.x, p.y * 0.3, p.z);
+  float w = baseNoise(q * 0.09 + 13.0);
+  float a = baseNoise(q * 0.21 + vec3(w, w * 0.7, w) * 2.2 + 7.0);
+  float b = baseNoise(q * 0.47 + vec3(w, 0.0, -w) * 0.9 + 29.0);
+  return abs(2.0 * a - 1.0) * 0.72 + abs(2.0 * b - 1.0) * 0.28;
+}
+float baseCrinkle(vec3 p) {
+  vec3 q = vec3(p.x, p.y * 0.8, p.z);
+  float w = baseNoise(q * 0.3 + 51.0);
+  float a = baseNoise(q * 0.75 + vec3(w, -w, w) * 1.3 + 3.0);
+  float b = baseNoise(q.zxy * 1.35 + vec3(-w, w, w) * 0.8 + 43.0);
+  return abs(2.0 * a - 1.0) * 0.65 + abs(2.0 * b - 1.0) * 0.35;
+}
 vec2 baseSlope(vec2 rg) {
   vec2 n = rg * 2.0 - 1.0;
   return n / sqrt(max(1.0 - dot(n, n), 0.05));
@@ -168,7 +189,7 @@ const SHADE = `
     vec3 candleL = candleTo / max(candleFar, 0.01);
     vec3 candleOut = vec3(uFaceOut[i].x, 0.0, uFaceOut[i].y);
     float candleCone = smoothstep(-0.25, 0.5, dot(-candleL, candleOut));
-    float candleFall = uFaceGlow[i] * candleCone * uFaceOut[i].z * uFaceOut[i].z / (candleFar * candleFar + 0.35 * uFaceOut[i].z * uFaceOut[i].z);
+    float candleFall = uFaceGlow[i] * candleCone * uFaceOut[i].z * uFaceOut[i].z / (candleFar * candleFar + 0.35 * uFaceOut[i].z * uFaceOut[i].z) * mix(1.0, exp(-max(candleFar - uFaceOut[i].z, 0.0) / (0.8 * uFaceOut[i].z)), baseNear);
     vec3 candleV = normalize(normalMatrix * candleL);
     float candleN = dot(geometryNormal, candleV);
     candleLit += candleFall * clamp(candleN * (1.0 - baseWrap) + baseWrap, 0.0, 1.0);
@@ -203,41 +224,55 @@ function hookOf(uniforms: Record<string, THREE.IUniform>, at: Stages): (shader: 
   }
 }
 
-// Wrought iron, blackened: the drum, the strands and the thorns. The paint of a vertex is its shade, its kind (0 the drum,
-// a half the strands, 1 the thorns) and how far along a thorn it is.
+// The ring of thorns: the drum under it, the vines and the thorns. The paint of a vertex is its shade, its kind (0 the
+// drum, a half the vines, 1 the thorns) and how far along a thorn it is. Vines and thorns are near black and wet:
+// one long cool highlight along a vine, warm glints at the left. The drum is blue grey leather in long creases.
 const IRON_PAINT = `
-vec4 baseDetail = texture2D(uBaseDetail, vBaseUv1);
-float baseAo = vBasePaint.x * mix(0.2, 1.0, smoothstep(39.6, 38.9, vBasePos.y));
+float baseAo = vBasePaint.x * mix(0.2, 1.0, smoothstep(39.6, 38.9, vBasePos.y)) * mix(0.42, 1.0, smoothstep(1.0, 20.0, vBasePos.y));
 float baseKind = vBasePaint.y;
 float baseThorn = step(0.75, baseKind);
 float baseDrum = 1.0 - step(0.25, baseKind);
+float baseStrand = (1.0 - baseThorn) * (1.0 - baseDrum);
 float baseBlotch = baseNoise(vBasePos * 0.35) * 0.6 + baseNoise(vBasePos * 1.3) * 0.4;
-float baseScale = smoothstep(0.52, 0.8, baseNoise(vBasePos * 2.6) * 0.6 + baseDetail.b * 0.4);
-diffuseColor.rgb = mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch) * mix(1.0, 0.72, baseScale) * mix(1.0, 0.6, baseDrum);
-float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * (1.0 - baseThorn) * 0.35;
+vec3 foldT = normalize(vec3(vBasePos.z, 0.0, -vBasePos.x) + vec3(1e-5, 0.0, 0.0));
+float foldHere = baseFold(vBasePos);
+float foldOn = baseFold(vBasePos + foldT * 0.4);
+float foldUp = baseFold(vBasePos + vec3(0.0, 0.4, 0.0));
+float crinkleHere = baseCrinkle(vBasePos);
+float crinkleOn = baseCrinkle(vBasePos + foldT * 0.16);
+float crinkleUp = baseCrinkle(vBasePos + vec3(0.0, 0.16, 0.0));
+// The crease of a fold is dark and dull, its back takes the sheen.
+float baseScale = max(1.0 - smoothstep(0.0, 0.22, foldHere), 0.8 * (1.0 - smoothstep(0.0, 0.16, crinkleHere))) * baseDrum;
+diffuseColor.rgb = mix(mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch), mix(vec3(0.022, 0.031, 0.046), vec3(0.036, 0.05, 0.074), baseBlotch), baseDrum) * mix(1.0, 0.55, baseScale) * mix(BRAMBLE_ALBEDO * mix(1.0, 0.5, baseThorn), 0.6, baseDrum);
+float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * baseDrum * 0.1;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
 // The leather of the drum is black where the key from the right does not reach it.
 float baseDim = mix(1.0, mix(0.32, 1.0, smoothstep(-16.0, 42.0, vBasePos.x)), baseDrum);
 diffuseColor.rgb *= baseDim;
 float baseWrap = 0.1;
-float baseCandle = 3.6 / baseDim;
-// Bark on the vines: near black, a faint grain that runs along them and a fine pebbled skin that glints.
-float baseStrand = (1.0 - baseThorn) * (1.0 - baseDrum);
-vec2 fibreAt = vec2(vBaseUv1.x * 1.3, vBaseUv1.y * 7.0);
-float fibreHere = baseNoise(vec3(fibreAt, 5.0)) * 0.42 + baseNoise(vec3(fibreAt * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3(fibreAt * vec2(4.1, 6.3), 3.0)) * 0.28;
-float fibreNext = baseNoise(vec3(fibreAt + vec2(0.0, 0.3), 5.0)) * 0.42 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(4.1, 6.3), 3.0)) * 0.28;
-diffuseColor.rgb *= mix(1.0, 0.45 + 0.6 * fibreHere, baseStrand);
-baseCandle = mix(baseCandle, 13.0, baseStrand);
+float baseNear = 1.0 - baseDrum;
+float baseCandle = 1.0 / baseDim;
+vec2 fibreAt = vec2(vBaseUv1.x * 8.0, vBaseUv1.y * 12.0);
+float fibreHere = baseNoise(vec3(fibreAt, 5.0)) * 0.55 + baseNoise(vec3(fibreAt * vec2(2.3, 3.1), 9.0)) * 0.45;
+float fibreNext = baseNoise(vec3(fibreAt + vec2(0.0, 0.25), 5.0)) * 0.55 + baseNoise(vec3((fibreAt + vec2(0.0, 0.25)) * vec2(2.3, 3.1), 9.0)) * 0.45;
+float fibreOn = baseNoise(vec3(fibreAt + vec2(0.25, 0.0), 5.0)) * 0.55 + baseNoise(vec3((fibreAt + vec2(0.25, 0.0)) * vec2(2.3, 3.1), 9.0)) * 0.45;
+// The fibres of a vine run along it and wind round it: long streaks, each wider than a pixel and a half at any size.
+vec2 streakAt = vec2(vBaseUv1.x * 2.6, vBaseUv1.y * 19.0 + vBaseUv1.x * 6.0);
+float streakHere = baseNoise(vec3(streakAt, 21.0)) * 0.7 + baseNoise(vec3(streakAt * vec2(1.7, 1.5), 37.0)) * 0.3;
+float streakNext = baseNoise(vec3(streakAt + vec2(0.0, 0.18), 21.0)) * 0.7 + baseNoise(vec3((streakAt + vec2(0.0, 0.18)) * vec2(1.7, 1.5), 37.0)) * 0.3;
+float baseFibre = smoothstep(0.47, 0.6, streakHere);
+diffuseColor.rgb *= mix(1.0, (0.8 + 0.4 * fibreHere) * (0.7 + 0.6 * baseFibre), baseStrand);
+// The candles spill on the wood that stands beside a face.
+baseCandle = mix(baseCandle, mix(BRAMBLE_SPILL, 0.6 * BRAMBLE_SPILL, baseThorn), 1.0 - baseDrum);
 `
 const IRON_ROUGH = `
-roughnessFactor = clamp(mix(0.44, 0.62, baseDetail.b) + 0.04 * baseStrand + 0.14 * baseScale + 0.2 * baseRust - 0.08 * baseThorn * vBasePaint.z + 0.12 * baseDrum, 0.18, 1.0);
-metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust) * (1.0 - 0.35 * baseStrand);
+roughnessFactor = clamp(mix(0.38 + 0.22 * fibreHere - 0.06 * baseThorn * vBasePaint.z, 0.74 + 0.14 * baseScale + 0.2 * baseRust, baseDrum), 0.18, 1.0);
+metalnessFactor = mix(0.2, mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust), baseDrum);
 `
 const IRON_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12 + 0.42 * baseStrand, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.6, baseDrum) + (vec2(baseNoise(vBasePos * 0.42 + 3.0), baseNoise(vBasePos * 0.42 + 31.0)) - 0.5) * 0.9 * baseDrum + vec2(0.0, (fibreNext - fibreHere) * 1.1 * baseStrand);
+vec2 baseTilt = (vec2(baseNoise(vBasePos * 0.3 + 3.0), baseNoise(vBasePos * 0.3 + 31.0)) - 0.5) * 0.5 * baseDrum + vec2(foldHere - foldOn, foldHere - foldUp) * (DRUM_FOLD * baseDrum) + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * (DRUM_CRINKLE * baseDrum) + vec2(fibreOn - fibreHere, fibreNext - fibreHere) * (BRAMBLE_BARK * baseStrand * mix(1.0, 0.25, smoothstep(-22.0, -47.0, vBasePos.x))) + vec2(0.0, streakNext - streakHere) * (BRAMBLE_STREAK * baseStrand);
 `
 const IRON_AFTER = `
-#define IRON_WARM 1.5
 {
   vec3 ironKey = vec3(0.0, 1.0, 0.0);
   vec3 ironKeyC = vec3(0.0);
@@ -248,6 +283,12 @@ const IRON_AFTER = `
   ironKey = directionalLights[0].direction;
   ironKeyC = directionalLights[0].color;
   #endif
+  // The drum's sheen takes the key without its shadow: at this grazing angle the shadow map's own grid lay on the
+  // leather as a weave. The vines' shade on the drum is in its paint.
+  vec3 ironKeyOpen = ironKeyC;
+  #ifdef STAGE_LIGHT_DONE
+  ironKeyOpen = stageKeyC;
+  #endif
   vec3 ironBefore = reflectedLight.directSpecular;
   vec3 ironCard = normalize(mat3(viewMatrix) * uRigCardDir);
   float ironKh = max(dot(geometryNormal, normalize(ironKey + geometryViewDir)), 0.0);
@@ -255,25 +296,43 @@ const IRON_AFTER = `
   float ironKl = smoothstep(0.0, 0.2, dot(geometryNormal, ironKey));
   float ironCl = smoothstep(0.0, 0.25, dot(geometryNormal, ironCard));
   float ironSheen = (1.0 - 0.45 * baseScale) * baseAo * (1.0 - 0.4 * baseDrum);
-  float ironGlint = 0.45 + 3.0 * pow(abs(baseDetail.b), 3.0);
+  float ironGrain = 0.82 + 0.36 * fibreHere;
   vec3 ironRim = normalize(mat3(viewMatrix) * uBaseRimDir);
   float ironRh = max(dot(geometryNormal, normalize(ironRim + geometryViewDir)), 0.0);
   float ironRl = smoothstep(0.0, 0.25, dot(geometryNormal, ironRim));
-  reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(abs(ironRh), 7.0) + mix(0.4 * pow(abs(ironRh), 50.0), 0.3 * pow(abs(ironRh), 36.0), baseStrand)) * ironRl * ironSheen;
-  vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
-  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (mix(0.05, 0.4 * baseDim, baseDrum) * pow(abs(ironKh), mix(8.0, 9.0, baseDrum)) + mix((0.14 * pow(abs(ironKh), 10.0) + 1.3 * pow(abs(ironKh), 50.0)) * (0.55 + 0.7 * fibreHere) * ironGlint, 0.6 * pow(abs(ironKh), 44.0) * (0.35 + 0.65 * baseDetail.b), 1.0 - baseStrand)) * ironKl + ironCardC * (0.05 * pow(abs(ironCh), 10.0) + mix(0.26 * pow(abs(ironCh), 50.0), 0.45 * pow(abs(ironCh), 40.0) * ironGlint, baseStrand)) * ironCl) * ironSheen;
+  // How far to the left a place is: the warm light of the card and of the lamps behind reaches the tangle there and
+  // leaves the front of the ring cold.
+  float ironWest = smoothstep(-22.0, -47.0, vBasePos.x);
+  float ironEast = smoothstep(14.0, 44.0, vBasePos.x);
+  vec3 ironRimC = mix(vec3(dot(uBaseRimCol, vec3(0.3, 0.5, 0.2))), uBaseRimCol, mix(0.35, 1.0, ironWest));
+  reflectedLight.directSpecular += ironRimC * (0.03 * pow(abs(ironRh), 7.0) + mix(0.1 * pow(abs(ironRh), 40.0), BRAMBLE_RIM * mix(BRAMBLE_RIM_FRONT, 1.0, ironWest) * pow(abs(ironRh), 16.0), baseStrand) * (1.0 - baseDrum)) * ironRl * ironSheen;
+  vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65 * (1.0 - ironWest)) * mix(vec3(1.0), vec3(1.0, 0.62, 0.4), ironWest);
+  reflectedLight.directSpecular += (mix(ironKeyC, ironKeyOpen * baseAo, baseDrum) * vec3(0.8, 0.9, 1.0) * (mix(0.03, 0.4 * baseDim, baseDrum) * pow(abs(ironKh), mix(8.0, 9.0, baseDrum)) + mix(0.15 * pow(abs(ironKh), 40.0) * baseThorn, BRAMBLE_KEY * (1.0 + BRAMBLE_KEY_EAST * ironEast) * pow(abs(ironKh), 14.0) * ironGrain, baseStrand)) * ironKl + ironCardC * (0.03 * pow(abs(ironCh), 10.0) + mix(0.08 * pow(abs(ironCh), 40.0) * baseThorn, BRAMBLE_CARD * (BRAMBLE_CARD_FRONT + BRAMBLE_CARD_WEST * ironWest * (0.04 + 2.9 * baseFibre)) * pow(abs(ironCh), mix(16.0, 36.0, ironWest)), baseStrand)) * ironCl) * ironSheen;
   // The key rakes the bare leather of the right flank: a broad grey sheen, grained by the hide.
-  reflectedLight.directSpecular += ironKeyC * vec3(0.8, 0.9, 1.0) * 0.7 * pow(abs(ironKh), 3.0) * ironKl * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.2 + 1.7 * baseDetail.b * baseDetail.b) * (0.6 + 0.8 * (baseNoise(vBasePos * 2.3) * 0.55 + baseNoise(vBasePos * 5.1 + 17.0) * 0.45)) * baseAo;
+  reflectedLight.directSpecular += ironKeyOpen * vec3(0.62, 0.86, 1.22) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * ironKl * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.4 + 0.8 * smoothstep(0.0, 0.5, foldHere)) * (0.55 + 0.75 * smoothstep(0.05, 0.6, crinkleHere)) * baseAo;
   float ironEdge = pow(abs(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
   float ironLeft = clamp(dot(ironUp, normalize(vec3(-0.8, 0.25, 0.55))), 0.0, 1.0);
-  reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.72, 0.5), vec3(1.0, 0.6, 0.36), baseStrand) * (IRON_WARM * (mix(0.3, 0.9 * ironGlint, baseStrand) * pow(abs(ironWarm), mix(5.0, 16.0, baseStrand)) + mix(0.07, 0.22 * ironGlint, baseStrand) * pow(abs(ironLeft), mix(5.0, 14.0, baseStrand)))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch) * mix(1.0, 0.3 + 1.7 * fibreHere, baseStrand) * (1.0 + 4.0 * smoothstep(-8.0, -46.0, vBasePos.x) * baseStrand);
+  reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.72, 0.5), mix(vec3(1.0, 0.6, 0.36), vec3(1.0, 0.74, 0.42), ironWest), baseStrand) * (mix(0.45, BRAMBLE_WARM, baseStrand) * pow(abs(ironWarm), mix(5.0, mix(26.0, 70.0, ironWest), baseStrand)) + mix(0.1, 0.05 * BRAMBLE_WARM, baseStrand) * pow(abs(ironLeft), mix(5.0, 20.0, baseStrand))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch) * mix(1.0, ironGrain, baseStrand * (1.0 - ironWest)) * mix(1.0, BRAMBLE_WARM_FRONT + BRAMBLE_WARM_WEST * ironWest * (0.04 + 2.9 * baseFibre), baseStrand);
   vec3 ironTop = normalize(mat3(viewMatrix) * vec3(0.0, 1.0, 0.0));
   float ironTh = max(dot(geometryNormal, normalize(ironTop + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (uRigSky * 1.1 + ironKeyC * 0.03) * pow(abs(ironTh), mix(9.0, 18.0, baseStrand)) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * (0.5 + 0.7 * fibreHere) * ironSheen * (1.0 - baseDrum);
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.92, 0.98, 1.1) * BRAMBLE_TOP + ironKeyC * 0.03) * pow(abs(ironTh), mix(9.0, 7.0, baseStrand)) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * ironGrain * ironSheen * (1.0 - baseDrum);
+  // A thorn is black with one soft cool face turned up, so its edge is drawn against what stands behind it.
+  reflectedLight.directSpecular += vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.84, 0.95, 1.18) * (BRAMBLE_THORN * (1.0 + 6.0 * ironEast) * pow(abs(ironTh), 10.0) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * baseThorn * smoothstep(0.2, 0.7, baseAo));
+  // One long narrow highlight along the upper edge of a vine, read from the tube's own round and not from its bark,
+  // and never narrower than a pixel and a half: the lobe widens by what the normal turns across a pixel.
+  vec3 lineN = normalize(nonPerturbedNormal);
+  vec3 lineL = normalize(mat3(viewMatrix) * vec3(0.2, 1.0, 0.3));
+  float lineTurn = dot(dFdx(lineN), dFdx(lineN)) + dot(dFdy(lineN), dFdy(lineN));
+  float linePow = BRAMBLE_LINE_POW / (1.0 + BRAMBLE_LINE_POW * BRAMBLE_LINE_WIDE * min(lineTurn, 1.0));
+  float lineH = max(dot(lineN, normalize(lineL + geometryViewDir)), 0.0);
+  float lineRun = (0.35 + 0.9 * baseNoise(vec3(vBaseUv1.x * 2.6, 3.0, 17.0))) * (0.55 + 0.9 * fibreHere);
+  reflectedLight.directSpecular += vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.84, 0.95, 1.18) * (BRAMBLE_LINE * sqrt(linePow / BRAMBLE_LINE_POW) * pow(abs(lineH), linePow) * smoothstep(0.0, 0.3, dot(lineN, lineL)) * lineRun * smoothstep(0.15, 0.6, baseAo) * mix(baseStrand, 0.6, baseThorn) * (1.0 - 0.5 * ironWest) * (1.0 + BRAMBLE_LINE_EAST * ironEast));
+  // The wood is never quite black: the sky lifts it, and at the left the lamps behind fill it warm.
+  reflectedLight.indirectDiffuse += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.9, 0.96, 1.15) * BRAMBLE_LIFT * (1.0 + BRAMBLE_LIFT_WEST * ironWest) + uBaseRimCol * vec3(1.0, 0.45, 0.4) * BRAMBLE_FILL * ironWest * (0.4 + 0.6 * ironLeft)) * mix(0.35, 1.0, baseAo) * mix(1.0, 0.8, baseDrum);
   reflectedLight.directSpecular = ironBefore + (reflectedLight.directSpecular - ironBefore) * baseDim;
-  ironEdge *= (1.0 + 3.0 * baseThorn) * baseDim;
+  ironEdge *= baseDim;
   reflectedLight.indirectSpecular += (uRigSky * 0.35 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen;
 }
 `
@@ -301,9 +360,10 @@ float faceThrough = smoothstep(-faceAa, faceAa, faceD2) * faceInside;
 float faceGlowing = uFaceGlow[faceId];
 float baseAo = vBasePaint.x;
 float faceRib = baseNoise(vBasePos * 1.7) * 0.6 + baseNoise(vBasePos * 5.0) * 0.4;
-diffuseColor.rgb = mix(vec3(0.03, 0.012, 0.005), vec3(0.075, 0.03, 0.009), faceRib) * mix(0.35, 1.0, smoothstep(0.1, 0.8, baseAo)) * mix(1.0, 0.5, faceStem);
+float faceShade = smoothstep(15.0, 21.0, vBasePos.x) * step(0.0, vBasePos.z);
+diffuseColor.rgb = mix(mix(vec3(0.07, 0.026, 0.01), vec3(0.16, 0.06, 0.022), faceRib), mix(vec3(0.02, 0.022, 0.028), vec3(0.05, 0.054, 0.066), faceRib), 0.8 * faceShade) * mix(0.35, 1.0, smoothstep(0.1, 0.8, baseAo)) * mix(1.0, 0.5, faceStem);
 float faceNear = exp(-max(-faceD, 0.0) / 0.03);
-float faceSoft = exp(-max(-faceD, 0.0) / 0.2);
+float faceSoft = exp(-max(-faceD, 0.0) / 0.13);
 vec3 faceCandle = uFaceCol * faceGlowing;
 float faceLow = smoothstep(0.75, 0.2, faceUv.y);
 // Each candle stands where it was set down: the hot place of a face is its own.
@@ -314,10 +374,15 @@ vec3 faceWall = vec3(1.0, 0.24, 0.02) * (0.5 + 0.6 * baseNoise(vec3(faceUv * 40.
 float faceBevel = smoothstep(0.0, 0.03, faceD);
 vec3 faceLight = mix(faceWall * mix(0.3, 1.0, faceBevel), faceCave, faceThrough * smoothstep(0.0, 0.018, faceD)) * faceGlowing * uFacePower;
 float faceRidge = smoothstep(0.25, 0.85, baseAo);
-vec3 faceSkin = faceGlowing * (vec3(1.0, 0.3, 0.04) * 0.2 * faceNear + vec3(1.0, 0.13, 0.012) * (0.055 * faceSoft * faceSoft + 0.007) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib)) * (1.0 - faceStem);
+// The rind is thin enough to carry the candle: the skin glows round the openings and holds a low ember all over,
+// deeper in the ribs' ridges than in their grooves.
+float faceStreak = baseNoise(vec3(faceUv.x * 30.0 + 3.0 * faceRib, faceUv.y * 2.2, float(faceId) * 5.0));
+float faceBody = exp(-dot(faceUv - vec2(0.5, 0.45), faceUv - vec2(0.5, 0.45)) / 0.26);
+vec3 faceSkin = faceGlowing * (vec3(1.0, 0.3, 0.04) * 0.2 * faceNear + vec3(1.0, 0.2, 0.02) * (0.06 * faceSoft * faceSoft + 0.008 * faceSoft + 0.002) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib) + vec3(1.0, 0.28, 0.09) * (PUMPKIN_BODY * faceBody * (1.0 - 0.8 * faceShade) * (1.0 - 0.3 * smoothstep(-15.0, -21.0, vBasePos.x) * step(0.0, vBasePos.z))) * (0.35 + 0.65 * faceRidge) * (0.3 + 0.5 * faceRib + 0.9 * faceStreak)) * (1.0 - faceStem);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.006, 0.002), faceOpen);
 totalEmissiveRadiance += mix(faceSkin, faceLight, faceOpen);
 float baseWrap = 0.3;
+float baseNear = 0.0;
 float baseCandle = 0.0;
 `
 const PUMPKIN_ROUGH = `
@@ -325,7 +390,7 @@ roughnessFactor = mix(0.42 + 0.2 * faceRib, 0.9, faceOpen);
 metalnessFactor = 0.0;
 `
 const PUMPKIN_TILT = `
-vec2 baseTilt = (vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.3 + 47.0)) - 0.5) * 0.5 * (1.0 - faceOpen);
+vec2 baseTilt = ((vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.3 + 47.0)) - 0.5) * 0.7 + (vec2(baseNoise(vBasePos.yzx * 6.1 + 23.0), baseNoise(vBasePos.zxy * 6.1 + 59.0)) - 0.5) * 0.5) * (1.0 - faceOpen);
 `
 
 // The wax: pale, soft, thick where it has gathered. Light enters it and comes out again round the edges.
@@ -333,10 +398,11 @@ const WAX_PAINT = `
 float baseAo = vBasePaint.x * mix(0.25, 1.0, smoothstep(39.7, 39.25, vBasePos.y));
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
-diffuseColor.rgb = mix(vec3(0.9, 0.83, 0.6), vec3(0.78, 0.6, 0.32), smoothstep(0.15, 0.8, waxDeep) * (0.5 + 0.5 * waxMottle)) * mix(0.9, 1.06, waxMottle);
+diffuseColor.rgb = mix(vec3(0.95, 0.88, 0.66), vec3(0.88, 0.72, 0.42), smoothstep(0.15, 0.8, waxDeep) * (0.5 + 0.5 * waxMottle)) * mix(0.92, 1.06, waxMottle);
 // A run thins toward its tip, and the thin wax is the warmer for the light in it.
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.97, 0.76, 0.46), 0.55 * smoothstep(0.5, 1.0, vBasePaint.z));
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.98, 0.82, 0.54), 0.55 * smoothstep(0.5, 1.0, vBasePaint.z));
 float baseWrap = 0.55;
+float baseNear = 0.0;
 float baseCandle = 0.5;
 `
 const WAX_ROUGH = `
@@ -409,11 +475,11 @@ void main() {
   if (stageGone(c)) discard;
   float sheet = floor(vWebPaint.y * 4.0);
   float big = 1.0 - step(0.5, sheet);
-  float spokes = mix(5.0, 11.0, big);
+  float spokes = mix(4.0, 6.0, big);
   float u = vWebUv.x * spokes + 0.42 * sin(vWebUv.x * 17.0 + sheet) + 0.12 * sin(vWebUv.y * 6.0 + vWebUv.x * 31.0);
   float cell = floor(u);
   float between = sin(fract(u) * 3.14159265);
-  float rings = mix(7.0, 6.0, big);
+  float rings = mix(5.0, 4.0, big);
   float v = pow(abs(vWebUv.y), 0.8) * rings - 1.1 * between * between + 1.0 * webHash(cell + sheet * 17.0) + 0.5 * fract(u) * (webHash(cell * 3.0 + sheet) - 0.5);
   float gapped = step(0.5, webHash(floor(v) * 13.0 + cell * 7.0 + sheet * 3.0));
   // No two threads alike: each its own weight, a third of them broken part of the way down, the loose end gone.
@@ -426,16 +492,17 @@ void main() {
   float ring = webLine(v, 0.0) * gapped * smoothstep(0.06, 0.16, vWebUv.y);
   float edge = max(webLine(vWebUv.x * 0.999 + 0.0005, 0.3), 0.0);
   float glint = 0.45 + 1.3 * pow(abs(sin(vWebUv.y * 8.0 + cell * 2.1 + vWebUv.x * 5.0)), 5.0);
-  float thread = max(max(spoke, ring * 0.7), edge * 0.6) * glint;
+  float thread = max(max(spoke, ring * 0.25), edge * 0.6) * glint;
   float dew = max(smoothstep(0.8, 1.0, webHash(floor(v * 3.0) + cell * 5.0)) * ring, bead * 0.9);
   vec3 view = normalize(cameraPosition - vStageWorld);
   float back = pow(max(dot(-view, uBaseRimDir) * 0.5 + 0.5, 0.0), 2.0);
   float fore = pow(max(dot(view, uBaseKeyDir) * 0.5 + 0.5, 0.0), 2.0);
   vec3 lit = uBaseKeyCol * (0.35 + 0.5 * fore) + uBaseRimCol * (0.1 + 0.5 * back) + uBaseSky * 0.8;
+  lit = mix(lit, vec3(dot(lit, vec3(0.3, 0.5, 0.2))), 0.7);
   float tear = smoothstep(0.25, 0.6, webHash(floor(u * 0.5) + sheet * 9.0) + 0.5 * sin(vWebUv.y * 7.0 + cell));
   float veil = (0.03 + 0.045 * pow(abs(sin(u * 9.0 + 3.0 * sin(vWebUv.y * 5.0 + sheet))), 6.0) * webHash(floor(u * 2.87) + sheet)) * smoothstep(0.0, 0.3, vWebUv.y) * tear;
-  float a = clamp(thread * 0.26 + veil * 1.1 + dew * 0.2, 0.0, 1.0) * smoothstep(0.0, 0.03, vWebUv.y);
-  gl_FragColor = vec4(lit * vec3(0.85, 0.9, 0.95) * (0.7 + 1.3 * dew) * a, a);
+  float a = clamp(thread * 0.6 + veil * 0.6 + dew * 0.15, 0.0, 1.0) * smoothstep(0.0, 0.03, vWebUv.y);
+  gl_FragColor = vec4(lit * vec3(0.9, 0.94, 1.0) * (1.5 + 1.3 * dew) * a, a);
   if (uDiag != 0) {
     if (a < 0.2) discard;
     gl_FragColor = stageDiag(vec3(0.8, 0.82, 0.85), normalize(vWebNormal), 0.0, c, 0.0);
@@ -474,7 +541,7 @@ export function base(): THREE.Object3D {
     key: `${PART}-iron`,
     physical: true,
     metalness: 0.8,
-    hook: hookOf(detail, { paint: IRON_PAINT, rough: IRON_ROUGH, tilt: IRON_TILT, after: SHADE + IRON_AFTER }),
+    hook: hookOf(detail, { pars: IRON_PARS, paint: IRON_PAINT, rough: IRON_ROUGH, tilt: IRON_TILT, after: SHADE + IRON_AFTER }),
   })
   const pumpkin = stageMaterial({
     ...lit,
@@ -482,7 +549,7 @@ export function base(): THREE.Object3D {
     physical: true,
     hook: hookOf(
       { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.2 }, uFacePower: { value: 3.1 } },
-      { pars: 'uniform sampler2D uFaceMap;\nuniform float uFaceRange;\nuniform float uFaceRind;\nuniform float uFacePower;', paint: PUMPKIN_PAINT, rough: PUMPKIN_ROUGH, tilt: PUMPKIN_TILT, after: SHADE },
+      { pars: `uniform sampler2D uFaceMap;\nuniform float uFaceRange;\nuniform float uFaceRind;\nuniform float uFacePower;\n#define PUMPKIN_BODY ${PUMPKIN_BODY.toFixed(4)}`, paint: PUMPKIN_PAINT, rough: PUMPKIN_ROUGH, tilt: PUMPKIN_TILT, after: SHADE },
     ),
   })
   const wax = stageMaterial({
