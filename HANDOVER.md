@@ -64,7 +64,7 @@ Drawn on one machine with lavapipe, one render at a time. "Before" for the trave
 
 A 3840 x 2160 final frame takes most of an 8 GB machine's memory. Two renders at once hung this machine for twelve minutes. One render at a time.
 
-## Second round, 03:16 to 06:45 UTC Nov 27
+## Second round, 03:16 to 06:41 UTC Nov 27
 
 This part is newer than everything above it. Where the two disagree, this part holds.
 
