@@ -4,7 +4,7 @@ import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
-import { chainSolid, glow, glowHook, glowing, limbs, placeGeometry, placePoint, placing, prepareTrunk, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { chainSolid, glowHook, glowing, limbs, placeGeometry, placePoint, placing, prepareTrunk, treeTwinkle, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { season, tones } from './palette'
 import { PUMPKINS, pumpkinFace } from './props'
@@ -53,6 +53,7 @@ const RIM = { tone: [0.6, 0.66, 0.48] as [number, number, number], power: 0.4, s
 
 const clock = { value: 0 }
 const emberGain = { value: EMBER_GAIN }
+const twinkle = treeTwinkle()
 
 const list: InnerLight[] = limbs
   .filter((l) => l.kind === 'limb')
@@ -95,7 +96,7 @@ function glints(): { at: Vec3; color: readonly number[]; power: number; reachMm:
 }
 
 function barkHook(shader: Shader): void {
-  glowHook(shader, undefined, BARK_RELIEF)
+  glowHook(shader, twinkle, undefined, BARK_RELIEF)
   const lit = glints()
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
@@ -133,7 +134,7 @@ ${lit
 }
 
 function lightHook(shader: Shader): void {
-  Object.assign(shader.uniforms, { uTwinkle: glow.uTwinkle, uBulb: emberGain })
+  Object.assign(shader.uniforms, { uTwinkle: twinkle, uBulb: emberGain })
   shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vBulb;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvBulb = uv;')
   shader.fragmentShader = shader.fragmentShader
     .replace('#include <common>', '#include <common>\nuniform vec4 uTwinkle;\nuniform float uBulb;\nvarying vec2 vBulb;')
@@ -176,7 +177,7 @@ export function* making(): Generator<void, THREE.Object3D> {
   twigs.castShadow = true
   twigs.receiveShadow = true
   yield
-  return new THREE.Group().add(yield* trunkMaking(part, lit, BARK_TINT), twigs)
+  return new THREE.Group().add(yield* trunkMaking(part, twinkle, lit, BARK_TINT), twigs)
 }
 
 export function lights(): THREE.Object3D {
@@ -219,6 +220,6 @@ export function solid(x: number, y: number, z: number): number {
 }
 
 export function update(moment: KitMoment): void {
-  glow.uTwinkle.value.set((CYCLES * moment.time) / moment.period, FLICKER, 1, 0)
+  twinkle.value.set((CYCLES * moment.time) / moment.period, FLICKER, 1, 0)
   clock.value = (((moment.time / moment.period) % 1) + 1) % 1
 }
