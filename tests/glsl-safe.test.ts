@@ -105,4 +105,55 @@ describe('shader arithmetic', () => {
     expect(calls).toBeGreaterThan(200)
     expect(open).toEqual([])
   })
+
+  /**
+   * The glass's ring at the limb: the third face's branch is not taken there (s3 is 1 or more), yet its asin and its
+   * sqrt stood in the shader with that input, outside -1 to 1 and below zero. With those two calls answered as a card
+   * may answer them, 10881 pixels of the winter's shaken picture moved at the limb; with the inputs held, 2 (the snow).
+   * So in the glass every asin and acos takes an input held inside -1 to 1, and every sine made from a cosine takes
+   * the root of a number held at zero. Two inputs are left bare because they cannot leave the domain: inGlass is
+   * si / glassIor with si a length of at most 1, and s2 is inGlass / second.face, at most 1 / (glassIor * second.face),
+   * which the test holds below 1 from the numbers themselves.
+   */
+  it('holds the glass\'s asin, acos and roots inside their domains', () => {
+    const file = join('src', 'globe', 'shell.ts')
+    const text = readFileSync(file, 'utf8')
+    const open: string[] = []
+    const at = (i: number): number => text.slice(0, i).split('\n').length
+    let arcs = 0
+    for (const m of text.matchAll(/(?<![\w.])(asin|acos)\(/g)) {
+      const got = splitArgs(text, m.index + m[0].length)
+      const arg = got && got.args.length === 1 ? got.args[0]!.trim() : ''
+      arcs++
+      if (m[1] === 'asin' && (arg === 'inGlass' || arg === 's2')) continue
+      const held = wholeCall(arg, 'clamp(')
+      const lo = held && held.length === 3 ? Number(held[1]) : NaN
+      const hi = held && held.length === 3 ? Number(held[2]) : NaN
+      if (!(lo >= -1 && hi <= 1 && lo < hi)) open.push(`${file}:${at(m.index)}: ${m[1]}(${arg.slice(0, 60)})`)
+    }
+    let roots = 0
+    for (const m of text.matchAll(/(?<![\w.])sqrt\(/g)) {
+      const got = splitArgs(text, m.index + m[0].length)
+      const arg = got && got.args.length === 1 ? got.args[0]!.trim() : ''
+      if (!/1\.0 - (\w+) \* \1\b/.test(arg)) continue
+      roots++
+      if (/\bs2 \* s2\b/.test(arg)) continue
+      if (!cannotBeNegative(arg)) open.push(`${file}:${at(m.index)}: sqrt(${arg.slice(0, 60)})`)
+    }
+    const ior = Number(/"glassIor": ([\d.]+)/.exec(readFileSync(join('config', 'showcase.json'), 'utf8'))?.[1])
+    const face = Number(/second: \{ face: ([\d.]+)/.exec(text)?.[1])
+    expect(ior).toBeGreaterThan(1)
+    expect(1 / (ior * face)).toBeLessThan(1)
+    expect(text).toContain('float inGlass = si / GLASS_IOR;')
+    expect(text).toContain('float s2 = inGlass / ${num(glassLook.second.face)};')
+    expect(arcs).toBeGreaterThanOrEqual(6)
+    expect(roots).toBeGreaterThanOrEqual(4)
+    expect(open).toEqual([])
+  })
+
+  it('tells a held input of asin from an open one', () => {
+    expect(cannotBeNegative('max(1.0 - s3 * s3, 0.0)')).toBe(true)
+    expect(cannotBeNegative('1.0 - s3 * s3')).toBe(false)
+    expect(cannotBeNegative('max(1.0 - s3 * s3, -1.0)')).toBe(false)
+  })
 })
