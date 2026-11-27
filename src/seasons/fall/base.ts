@@ -521,7 +521,9 @@ vWebUv = uv;
 vWebPaint = color;
 vWebNormal = normalize(mat3(modelMatrix) * normal);
 `
+const WEB = { RIM_IN: 0.35, RIM_OUT: 1.25, RIM: 1.15, LONG: 0.12, LONG_MORE: 0.4, CROSS: 0.22, CROSS_MORE: 0.5, HAZE: 0.05 }
 const WEB_FRAG = `
+${Object.entries(WEB).map(([k, v]) => `#define WEB_${k} ${v.toFixed(3)}`).join('\n')}
 uniform vec3 uBaseKeyDir;
 uniform vec3 uBaseKeyCol;
 uniform vec3 uBaseRimDir;
@@ -548,10 +550,10 @@ void main() {
   float du = max(fwidth(vWebUv.x), 1e-4);
   float dv = max(fwidth(vWebUv.y), 1e-4);
   float hang = sin(3.14159265 * pow(clamp(vWebUv.y, 0.0, 1.0), 0.85));
-  // The outer thread sags inward and the sheet ends at it.
+  // The outer thread sags inward and the sheet ends at it. It is the one strong thread, wider than a pixel and a half.
   float rim = 1.0 - 0.09 * hang;
-  float inside = 1.0 - smoothstep(0.0, 1.0, (vWebUv.x - rim) / du);
-  float thread = (1.0 - smoothstep(0.1, 0.9, abs(vWebUv.x - rim) / du)) * (0.12 + 0.88 * smoothstep(0.25, 0.55, vWebUv.y) * (0.55 + 0.45 * webNoise(vWebUv.y * 5.0 + sheet)));
+  float inside = 1.0 - smoothstep(0.4, 1.4, (vWebUv.x - rim) / du);
+  float thread = (1.0 - smoothstep(WEB_RIM_IN, WEB_RIM_OUT, abs(vWebUv.x - rim) / du)) * (0.2 + 0.8 * smoothstep(0.05, 0.25, vWebUv.y)) * (0.8 + 0.2 * webNoise(vWebUv.y * 5.0 + sheet)) * WEB_RIM;
   thread = max(thread, (1.0 - smoothstep(0.0, 1.3, vWebUv.x / du)) * 0.25);
   float dew = 0.0;
   // No two threads alike: each hangs in its own bow and so crosses its neighbours, each is pale only where it
@@ -560,21 +562,24 @@ void main() {
     float id = float(k) + sheet * 9.0;
     float at = (float(k) + 0.25 + 0.5 * webHash(id * 3.3)) / 7.0 * rim + (webHash(id * 5.9) - 0.5) * 0.3 * hang;
     float caught = 0.06 + 0.94 * smoothstep(0.45, 0.8, webNoise(vWebUv.y * 3.0 + id * 7.7));
-    float whole = 1.0 - smoothstep(0.0, 0.04, vWebUv.y - 0.6 - 0.75 * webHash(id * 4.7));
+    float whole = 1.0 - smoothstep(0.0, 0.04, vWebUv.y - 0.45 - 0.75 * webHash(id * 4.7));
     float off = abs(vWebUv.x - at) / du;
-    thread = max(thread, (1.0 - smoothstep(0.0, 0.7, off)) * caught * (0.3 + 0.7 * webHash(id * 2.1)) * whole);
+    thread = max(thread, (1.0 - smoothstep(0.0, 0.7, off)) * caught * (WEB_LONG + WEB_LONG_MORE * webHash(id * 2.1)) * whole);
     float beadAt = vWebUv.y * 23.0 + 9.0 * webHash(id * 4.3);
     dew = max(dew, step(0.9, webHash(floor(beadAt) + id * 13.0)) * (1.0 - smoothstep(0.7, 1.8, length(vec2(abs(fract(beadAt) - 0.5) / max(fwidth(beadAt), 1e-4), off)))) * whole * smoothstep(0.4, 0.6, vWebUv.y));
   }
-  // Many threads cross the others at a slant and sag between them, down to the foot.
+  // Fine threads cross the others where they will: each at its own height and slant, over its own stretch, sagging
+  // between the long ones and pale only in places.
   for (int k = 0; k < 16; k++) {
     float id = float(k) + sheet * 5.0 + 40.0;
-    float from = 0.6 * webHash(id * 6.1);
-    float till = from + 0.3 + 0.5 * webHash(id * 8.3);
-    float at = 0.16 + 0.05 * float(k) + 0.05 * webHash(id * 3.1) + (webHash(id * 1.7) - 0.5) * 0.3 * (vWebUv.x - 0.5) + 0.04 * (0.5 + webHash(id * 2.9)) * sin(3.14159265 * clamp((vWebUv.x - from) / (till - from), 0.0, 1.0));
-    float caught = 0.2 + (1.0 - 0.2) * smoothstep(0.35, 0.75, webNoise(vWebUv.x * 4.0 + id * 3.7));
-    thread = max(thread, (1.0 - smoothstep(0.0, 0.7, abs(vWebUv.y - at) / dv)) * caught * (0.45 + 0.3 * webHash(id * 4.9)) * smoothstep(from, from + 0.03, vWebUv.x) * (1.0 - smoothstep(till - 0.03, till, vWebUv.x)));
+    float from = 0.7 * webHash(id * 6.1);
+    float till = from + 0.2 + 0.6 * webHash(id * 8.3);
+    float at = 0.12 + 0.85 * webHash(id * 3.1) + (webHash(id * 1.7) - 0.5) * 0.5 * (vWebUv.x - 0.5) + 0.05 * (0.3 + webHash(id * 2.9)) * sin(3.14159265 * clamp((vWebUv.x - from) / (till - from), 0.0, 1.0));
+    float caught = 0.15 + 0.85 * smoothstep(0.35, 0.75, webNoise(vWebUv.x * 5.0 + id * 3.7));
+    thread = max(thread, (1.0 - smoothstep(0.0, 0.7, abs(vWebUv.y - at) / dv)) * caught * (WEB_CROSS + WEB_CROSS_MORE * webHash(id * 4.9)) * smoothstep(from, from + 0.03, vWebUv.x) * (1.0 - smoothstep(till - 0.03, till, vWebUv.x)));
   }
+  // A faint haze of the finest threads lies between them, in patches.
+  float haze = WEB_HAZE * (0.35 + 0.65 * webNoise(vWebUv.x * 3.0 + 5.0 * webNoise(vWebUv.y * 2.5 + sheet))) * smoothstep(0.03, 0.25, vWebUv.y);
   float u = vWebUv.x * 7.0;
   float cell = floor(u);
   vec3 view = normalize(cameraPosition - vStageWorld);
@@ -584,7 +589,7 @@ void main() {
   lit = mix(lit, vec3(dot(lit, vec3(0.3, 0.5, 0.2))), 0.7);
   float tear = smoothstep(0.25, 0.6, webHash(floor(u * 0.5) + sheet * 9.0) + 0.5 * sin(vWebUv.y * 7.0 + cell));
   float veil = (0.02 + 0.03 * pow(abs(sin(vWebUv.x * 60.0 + 6.0 * webNoise(vWebUv.y * 4.0 + sheet))), 10.0) * (1.0 - smoothstep(0.3, 0.8, vWebUv.y)) + 0.015 * pow(abs(sin(u * 9.0 + 3.0 * sin(vWebUv.y * 5.0 + sheet))), 6.0) * webHash(floor(u * 2.87) + sheet)) * smoothstep(0.0, 0.3, vWebUv.y) * tear;
-  float a = clamp(thread * 0.5 + veil * 0.8 + dew * 0.3, 0.0, 1.0) * smoothstep(0.0, 0.03, vWebUv.y) * inside;
+  float a = clamp(thread * 0.5 + veil * 0.8 + haze + dew * 0.3, 0.0, 1.0) * smoothstep(0.0, 0.03, vWebUv.y) * inside;
   gl_FragColor = vec4(lit * vec3(0.9, 0.94, 1.0) * (1.5 + 1.3 * dew) * a, a);
   if (uDiag != 0) {
     if (a < 0.2) discard;
