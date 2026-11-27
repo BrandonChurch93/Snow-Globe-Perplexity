@@ -260,7 +260,7 @@ export const look = {
     // Under it the glass holds the room's warm dark as one thin brown arc (`under`: how far below the ribbon's
     // lower edge its middle lies, half its thickness, how strong; `underEnds`: it comes in between the first two
     // bearings and is gone between the last two, radians)
-    ribbon: 0.27,
+    ribbon: 0.16,
     ribbonColor: [1, 0.64, 0.43] as const,
     ribbonPeak: [0.65, 1.6, 0.28] as const,
     ribbonElbow: [1.536, 0.9, 0.058] as const,
@@ -345,7 +345,7 @@ export const look = {
     rimInnerColor: [1, 0.8, 0.62] as const,
     rimInside: 0.84,
     rimUpLeft: [147.5, 45] as const,
-    satin: [0.3, 0.895, 0.045, 0.012] as const,
+    satin: [0.08, 0.895, 0.045, 0.012] as const,
     satinEnds: [1.885, 2.09, 2.36, 2.46] as const,
     satinOuter: 0.3,
     satinLanes: [30, 0.35] as const,
@@ -366,6 +366,24 @@ export const look = {
     ] as const,
     strokeCream: [1, 0.86, 0.7] as const,
     strokeAmber: [1, 0.62, 0.36] as const,
+    // inside the outline the glass mirrors the lit wall a second time, and over the top the sky: thin arcs that hug the
+    // rim, no two alike in length or in depth, with clear glass between them (`arcs`, each: its bearing and half its
+    // length in degrees, where in the radius, half its width, how far it leans across the arc, how strong, and 1 if it
+    // is the sky's blue white, 0 if the wall's cream). They waver along their length as the rim's own lines do, twice
+    // as far. Above the flare the sky lies against the outline as one band that fades inward (`rimSky`: the bearing in
+    // degrees about which it lies and the cosines between which it comes in, the shares of the radius between which
+    // it comes in, and how strong)
+    arcs: [
+      [132, 15, 0.948, 0.0035, -0.058, 0.4, 0],
+      [127, 24, 0.934, 0.0042, -0.02, 0.4, 0],
+      [127, 14, 0.92, 0.0036, -0.04, 0.25, 0],
+      [130, 6, 0.906, 0.005, 0, 0.2, 0],
+      [80, 13, 0.984, 0.003, 0, 0.14, 1],
+    ] as const,
+    arcCream: [1, 0.64, 0.43] as const,
+    arcCool: [0.74, 0.86, 1] as const,
+    rimSky: [54, 0.961, 0.99, 0.92, 0.98, 0.2] as const,
+    rimSkyColor: [0.9, 0.95, 1] as const,
     reflexStorm: 0.6,
     hazeBanks: 0.35,
     hazeBankSize: 0.42,
@@ -492,6 +510,10 @@ void main() {
 }`
 
 const W = look.wall
+// an arc that lies wholly in the upper left is drawn with the rest of the upper left, any other for the whole rim
+const arcUpLeft = (b: readonly number[]): boolean => Math.abs(b[0] - W.rimUpLeft[0]) + b[1] <= W.rimUpLeft[1]
+const arcLine = (b: readonly number[]): string =>
+  `  rimGlow += ${vec(b[6] ? W.arcCool : W.arcCream)} * (${n(b[5])} * mirrored * wlStroke(e, arcAt, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), ${(1 - Math.cos(b[1] * RAD)).toFixed(6)}, vec3(${n(b[2])}, ${n(b[3])}, ${n(b[4])})));`
 // The wall's light is drawn three times: behind the miniature all of it but the glare, in front of the miniature the
 // glare alone (`front`), so the burn low on the far side lies over the turf and the fence as light on glass does, and
 // last, over the shell, the band of fine lines inside the outline and the light and the dark of the upper left alone (`rim`). The
@@ -598,6 +620,11 @@ ${front ? `  // light on the glass: the depth of the glass's own front along thi
   float rimLight = rimBand * mix(fine, 1.0, rimBare) * rimWide + ${n(W.rimLine[2])} * exp(-rimOff * rimOff) * rimThin;
   vec3 rimGlow = rimHue * rimLight + ${vec(W.rimInnerColor)} * (${n(W.rimInner[2])} * exp(-rimIn * rimIn) * rimLeft * (0.15 + 0.85 * fine));
   rimGlow *= ${n(W.rim)} * rimFoot;
+  // the sky against the outline above the flare, one band that fades inward, and the thin arcs inside the outline
+  float mirrored = (1.0 - ${n(W.stormClears - W.reflexStorm)} * storm) * rimFoot;
+  float arcAt = 2.0 * rimWaver - r;
+  rimGlow += ${vec(W.rimSkyColor)} * (${n(W.rimSky[5])} * smoothstep(${n(W.rimSky[3])}, ${n(W.rimSky[4])}, r) * smoothstep(${n(W.rimSky[1])}, ${n(W.rimSky[2])}, dot(e, vec2(${n(Math.cos(W.rimSky[0] * RAD))}, ${n(Math.sin(W.rimSky[0] * RAD))}))) * mirrored);
+${W.arcs.filter((b) => !arcUpLeft(b)).map(arcLine).join('\n')}
   // the upper left: the end of the ribbon as one broad band in soft lanes, the dash and the strokes, and between them
   // the clear dark, which the pass takes out of what lies behind it. The still air's light gives way to the storm, and
   // the reflection less than the glints
@@ -615,6 +642,7 @@ ${W.shade.map((b) => `    rimShade += ${n(b[0])} * exp(-(turn - ${n(b[1] * RAD)}
     vec3 strokes = ${vec(W.dashColor)} * sharp;
 ${W.strokes.map((b) => `    strokes += ${vec(b[6] ? W.strokeAmber : W.strokeCream)} * (${n(b[5])} * wlStroke(e, r, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), ${(1 - Math.cos(b[1] * RAD)).toFixed(6)}, vec3(${n(b[2])}, ${n(b[3])}, ${n(b[4])})));`).join('\n')}
     rimGlow += strokes * calm;
+${W.arcs.filter(arcUpLeft).map(arcLine).join('\n')}
   }
   // the landing: against the storm's light the glass's edge is a thin dark line down the left, from the upper left to
   // the foot of the band. It takes a share of what lies behind it, and of the rim's own light there
