@@ -260,7 +260,7 @@ async function source(ctx, lock) {
       counts,
       picture: async (index) => {
         const [samples] = await counts([index])
-        const png = await run.frame({ ...track, tier: tierOf(samples) }, page, index)
+        const png = await run.frame({ ...track, tier: tierOf(samples, ctx.rule) }, page, index)
         const s0 = Date.now()
         const sane = await page.evaluate(() => window.showcase.dev.sanity())
         const sanityMs = Date.now() - s0
