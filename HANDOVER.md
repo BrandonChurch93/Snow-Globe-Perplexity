@@ -133,3 +133,18 @@ Below the bar, by what shows most:
 - The petals on the roll read as dark mauve wedges at 3840 and are hard to see at hd; the approved's are pale grey pink, 6 to 10 px.
 - M4 of shake 2 at 0.889.
 Not seen: the film at speed; any camera but the hero; the low and medium tiers of the base's mesh.
+
+## Round two (pushed as e020f831 = 4f917bac with main ed9180da merged; the numbers were read on 4f917bac, main 5b76c959 merged)
+The report with every number is `report-round-two.txt` on this branch. Pictures 45 to 48.
+What was built, in `src/seasons/spring/base.ts` and by grant in `src/seasons/spring/mini/village.ts`; no asset script changed and no make target:
+- The critic's items of 21:32 first. The caps, stems, flowers and the petals on the roll take a warm light from above in the shade of the front (GROWTH_AFTER, the one fill line; cut where the low sun reaches, halved on pale paint). The roots in the shade of the front take the room's fill at 1.6, falling back to 0.55 from x 22 to 36 mm so the sunlit right keeps the roots' dark sides. The stones are unchanged.
+- The roll's fill is lower and pulled part way to a warm grey olive (`liveRoll`, `liveOlive` in ROCK_AFTER).
+- The bank through the glass: `BANK_TINT` (0.55, 0.62, 0.6); `turfRoom` greener with 0.22 of the moss's hue, lower on the mounds; the lip's sun takes 0.6 of the moss's hue at gain 760 with the catch squared.
+- `MOUND.lipMm` 3.0 gives the lawn's edge its mounds but M4 of shake 2 reads 0.8847 under the floor 0.889, so it is 1.25 as on main (picture 46, bottom row).
+
+What the measures taught:
+- M3's base part is a plain ratio of fine energy, build over approved, and the build is under 1: anything that fills the dark sides of the sunlit roots on the right loses energy (fill of 1.6 on all bark read 0.905; with the fall from x 22 to 36 mm it reads 0.925).
+- Matching the bank's box means to the approved made a flat pale band that read worse beside the approved: the approved's rows hold pale petals and lit lawn. Look, then measure.
+
+Below the bar, by what shows most: the front's stones have no warm wrap and no lit bottom edge; the bank is scaly with flat lit facets and a straight top line; the roll is too grey by the median (green over red 1.19 against the approved's 1.48), has no beads on its lit line and a dark right shoulder face; the right flank's caps are dark; the petals on the roll read as pale domes at 3840; M4 of shake 2 stands at the floor.
+Not seen: the film at speed, any camera but the hero, the low and medium tiers beyond their first picture.

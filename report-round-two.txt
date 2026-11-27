@@ -1,0 +1,79 @@
+Spring base, round two. Report of spring_base_builder to /root.
+
+HEAD
+agent/p6-spring-base at e020f831 = 4f917bac with origin/main ed9180da merged (clean, no conflict), pushed at your word of 22:19. An earlier merge, af3d3682, took main 5b76c959.
+On e020f831 itself: npx tsc --noEmit 0; the whole vitest 70 files passed, 1 skipped; 1035 tests passed, 9 skipped; 301 s; tests/steps.test.ts passed in 136 s and did not stop at its limit. The ninth skip, against your builder's 1036 and 8, is the one test of tests/first-frame.test.ts that reads the built page: my dist/ was still the build of 4f917bac. After npm run build on e020f831 that file alone reads 25 of 25 passed, so the count is 1036 and 8 in two runs, not in one. ed9180da adds over 5b76c959 only src/seasons/summer/mini/village.ts, one test, the page's first pictures, status pictures, kit and index.html, so by your word the guards and numbers of 4f917bac stand; they were not run again on e020f831.
+Every number below was read on the tree of 4f917bac (main 5b76c959 merged) unless a line names another head.
+Commits over main: d57b07c4 (roll olive, bank green), d0599c54 (MOUND.lipMm back to 1.25), 09f08ecb (bank body darker), af3d3682 (merge of main), b4816c9e (bank's light greener, the lip's sun takes the moss's green), 4f917bac (the front's caps and roots).
+Files that differ from main (5b76c959 and ed9180da alike): src/seasons/spring/base.ts (3 lines for 1 in ROCK_AFTER, and 3 for 1 in GROWTH_AFTER, two of those a comment) and src/seasons/spring/mini/village.ts (5 lines for 5). Nothing else.
+Make targets changed in round two: none. assets-src/village-spring/build.mjs is byte for byte main's again (the lipMm trial went back), no mesh changed, no triangle added at high, medium or low. The tracked assets on my tree are main's.
+The dew's 20 lines in base.ts: equal to main's (block hash 930af563191fe40e on both).
+
+WHAT WAS DONE, IN THE ORDER YOU SET
+
+A. The critic's two items (21:32), done first once they came.
+The critic is right on both, and the front's light is drawn by my file (GROWTH_AFTER in src/seasons/spring/base.ts). One thing to set beside its words: by level the front's stones are not darker than the approved's. Box x 780 to 1120, y 800 to 1000, hd review, mean / brightest tenth / brightest hundredth: approved (13,16,14) / (37,39,35) / (81,74,70); round one (16,21,16) / (42,43,34) / (93,82,71); round two (19,23,18) / (59,54,41) / (125,110,95). What was missing was relief: the caps and the roots got no fill at all in the shade (the skin had no part of the room's light, the bark 0.55 of it), so they sat at the stones' level.
+1. Front face: the roots in the shade of the front take the room's fill at 1.6 (was 0.55) with a neutral tint, falling back to 0.55 from x 22 to 36 mm so the sunlit right keeps the roots' dark sides. The roots across the front now read grey brown against the stones. NOT done of this item: the stones themselves and the bottom stone edge are as they were; there is no warm wrap on the stones.
+2. Mushrooms: the caps and stems on the front take a warm light from above (tint 1.0, 0.88, 0.7; three times the room's level on faces that look up, a third of that on faces that look sideways; cut where the low sun already reaches). Large cap at (905,798), brightest quarter: round one (74,55,52), round two (99,72,60); the approved's cap at (915,798) reads (72,61,56). The stems went from near black to pale. The same light falls on the white flowers and on the petals that lie on the roll's shoulder (held to half by their pale paint), so both now show: six flowers on the front, and the petals on the roll are pale where they were dark mauve.
+Below the bar here: the caps on the right flank are still dark brown tops against lit moss (the fill is cut there on purpose: lifting them cost 2.3 percent of the base's detail energy at the right edge); the caps read tan, not the cream of the approved's small ones; at 3840 the petals on the roll's shoulder read as a row of pale domes, evenly spaced, more like pebbles than petals.
+
+B. Your round two item 1, the roll's green.
+The roll's fill is taken down (6.5 and 3.0 for 7.0 and 4.4) and pulled part way to a warm grey olive (liveOlive, liveRoll in ROCK_AFTER). Rows 753, 756, 759, x 850 to 1070, three rows each, hd review, median then mean:
+ approved  (38,49,24) (52,60,37) | (25,37,18) (34,44,28) | (19,32,16) (27,37,25)
+ round one (53,60,31) (59,67,36) | (42,54,24) (47,60,27) | (30,44,19) (36,49,21)
+ round two (50,54,33) (64,66,44) | (37,44,26) (43,50,30) | (26,34,20) (31,38,22)
+(The numbers of my round one report, 42,56,25 against 30,41,26, came from another window of the same rows; these three lines are one method and stand together.)
+Honest reading: darker and less yellow green than round one, and by the mean it is now near the approved. By the median the approved is a darker and MORE saturated green than mine (green over red 1.48 against 1.19): I took out too much colour. That is below the bar and I saw it only at 21:30, after the chain of this part; I left it for the critic's items.
+
+C. Your round two item 2, the bank through the glass.
+village.ts, by grant: BANK_TINT (0.55, 0.62, 0.6) for (0.74, 0.52, 0.52); the room's light on the bank is greener, takes 0.22 of the moss's hue, and is lower on the mounds below the lip; the lip's sun takes 0.6 of the moss's hue at gain 760 with the catch squared (was 420, cubed, no hue). The bank now reads as green mounds with a yellow green sunlit lip in place of the olive brown band with cream caps.
+Rows 705, 715, 725, x 800 to 1100, six rows each, brightest quarter then median:
+ approved  (225,188,164) (165,141,124) | (169,134,102) (81,68,38) | (76,67,50) (48,47,32)
+ round one (124,113,77) (39,49,9)      | (113,100,67) (50,47,24)  | (48,47,27) (31,33,18)
+ round two (151,142,88) (39,50,9)      | (160,156,80) (51,61,27)  | (46,58,27) (28,40,20)
+(The approved's rows 705 and 715 hold its pale petals and the lit lawn, so its numbers there are not the bank alone.)
+MOUND.lipMm: tried at 3.0 (village make, 190,314 triangles, unchanged). It gave the lawn's edge the wavy mounds of the approved (picture 46, bottom row), but M4 of shake 2 read 0.8847 (130,660 of 147,690), under your floor 0.889, because the mounds show more miniature that the storm does not hide at the swap. Your word was not to thin or lift the storm and not to go under the floor, so lipMm is 1.25 again and the bank's top line stays nearly straight. If you want the mounds, the price is 0.0043 of M4 at shake 2; the kit's line is 0.85.
+Below the bar here: the bank is a scaly green with flat lit facets (hard edged at 3840, picture 47), not the approved's deep dark soft mounds with a fuzzy lip; a lighter trial that matched the box means read worse beside the approved (a flat pale band) and was dropped; the lawn's dark rim line, which is not mine, lies over the lit lip.
+
+D. Your round two item 3, the lit line's beads and the right shoulder.
+One trial (a bead pattern on the rim's lit line and a light on the right shoulder's face): no visible change beside the approved, not kept. Not done. The right shoulder at x 1100 to 1220, rows 755 to 765, still reads in the mean, row 755: (23,27,15) against the approved's (81,74,41); row 765: (28,30,16) against (65,59,38).
+
+PROOFS, all on 4f917bac (main 5b76c959 merged)
+- npx tsc --noEmit: 0.
+- Whole npx vitest run: 69 files passed, 1 skipped; 1035 tests passed, 8 skipped; 297 s; tests/steps.test.ts passed in 133 s and did not stop at its limit.
+- npm run strict -- --keys spring-rest,spring-shake: "strict: pass, 2 keys"; 0 pixels differ in both rows.
+- Guards, draft hd hero, first 16 hex of the sha256:
+  winter-rest 0cab5cd137ba09d9, winter-landed a7ab4af383606ed0 (equal to your 20:56 list)
+  summer-rest 17a943f21ee9c1cc, summer-landed 682537c019d386eb (equal)
+  fall-rest 2d560947ef218eb4, fall-landed d6cc4fb84a82a611 (equal)
+  spring-rest e4fc69143cfbec0c, spring-landed 1f27410401d70b17 (mine, moved; your list has c5cd17d91bc346bc and 066fa33e081d9d26)
+- M3 at review, word for word: "pass M3 spring-rest: 0.9247 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 0.925 over 171751 pixels of the part in the ids view; miniature 0.972 over 110773 pixels of the part in the ids view". Floors 0.9022 and miniature 0.902: met. Your list: 0.9022 (0.934, 0.902). The base's part fell from 0.934 to 0.925: the duller roll and the lifted roots carry a little less fine contrast.
+- M4 of shakes 1 to 4: 0.9694, 0.889 (131,292 of 147,678), 0.956, 0.9599. M5: 0.9932, 1, 0.9882, 0.9996. All eight equal your 20:56 list; floor 0.889 of shake 2 met exactly. I did not touch the air or the change.
+- G15: "G15 pass": high 1,773,508 of 1,800,000 triangles and 72 of 140 draw calls, medium 1,035,999 of 1,100,000, low 480,855 of 600,000 (the gate prints the fullest season; equal to your list).
+  Spring's own count by sum I did not count again in round two: no mesh and no asset changed since e6eed734, where spring read 1,493,434 of 1,800,000 by sum (base 127,661).
+- 3840 by 2160, final tier, film frames 1250 to 1253 (no geometry changed, done all the same for the lip's light): one frame events (a pixel at least T over its eight neighbours in one channel, absent within 6 px in the frame before and after), at frames 1251 and 1252:
+  rim whole (1240,1400, 1400 by 160): 0 and 0 at T 32, 0 and 0 at T 64
+  rim middle (1770,1440, 300 by 70): 0 and 0, 0 and 0
+  right shoulder (2240,1395, 300 by 100): 0 and 0, 0 and 0
+  bank through the glass (1400,1380, 1040 by 90): 0 and 0, 0 and 0
+  whole base region (1100,1280, 1660 by 800): T 32: 2 and 2; T 64: 1 and 0. The same counts as before the critic's items (b4816c9e), where I looked up the four places: three are white glints of the pond inside the glass at (1965,1347), (1920,1361), (1902,1370), above the base; one is a dim grain at (2523,1803) on the right flank (63,57,22).
+- Spring landed at review: looked at beside the approved spring-shake; the caps, roots and flowers read the same way as at rest, nothing blown.
+- Quality low and medium, the built page of 4f917bac: ?quality=low&season=spring: first picture after 7.6 s, controls shown, spring lit, 0 errors, nothing said on the console. ?quality=medium&season=spring: first picture after 9.2 s, controls shown, spring lit, 0 errors, nothing said. I looked at the low page's picture: whole, base and miniature in place. My round two work reads no model's index or vertex order.
+
+WHAT I HAVE NOT SEEN
+- The film at speed; any camera but the hero (the close camera the critic used: not seen by me with these changes); the two shake stills other than spring landed at review.
+- The low and medium tiers beyond the first picture named above.
+- The six stills of the other seasons I know by hash only, not by eye.
+
+PICTURES (looks branch agent/p6-spring-base-looks, 45 to 48, attached)
+45: the base one to one: approved, round one, round two.
+46: bank and roll at 2 times: approved, round one, round two, and the lipMm 3.0 trial.
+47: 3840, frames 1250 and 1253, the bank and the rim's middle at 4 times.
+48: the whole rest still at 1200.
+
+BELOW THE BAR, BY WHAT SHOWS MOST
+1. The front's stones: unchanged, no warm wrap, no lit bottom edge (critic's item 1, half done: roots yes, stones no).
+2. The bank: scaly, faceted, straight topped; the mounds cost M4 (see C).
+3. The roll: too grey by the median; no beads on the lit line; the right shoulder's face is dark.
+4. The right flank's caps are dark; the petals on the roll read as pale domes at 3840.
+5. M4 of shake 2 stands at the floor, 0.889.
