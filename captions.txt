@@ -1,4 +1,6 @@
-fall-rest-trio.jpg: fall at rest, hero, hd, review tier, the glass cut out and shown at 400 px each. Left the approved picture, middle before (main c1423ee5), right after (this branch with main f4df90d1 merged).
-fall-rest-crop.jpg: fall at rest, hero, hd, review tier, the same 600 px cut at full size. Left the approved picture, right after (with main 13e1a911 merged, before the hand's inertia).
-fall-peak-before.jpg: film frames at draft tier, before. Top left 2110, top right 2116, bottom left 2122 (summer into fall, the tree and the cottage show pale through the fog), bottom right 676 (winter leaving, nothing shows).
-fall-peak-trial.jpg: film frames 2116, 2120 and 2124 at draft tier, a trial that is NOT in the branch: the fog thicker at the full flood (0.6 times the fourth power of the flood). The miniature does not show, but as fall leaves the same fog lay green over winter's frame 2840 and winter's miniature showed through, so it was taken out again.
+fall-rest-trio.jpg: fall at rest, hero, hd, review tier, one to one, the left of the glass (x 640 to 1040, y 110 to 710 of the hd picture). Left the approved picture, middle before (main 99712bfc), right after (this branch, 71340c5b on main fe0f0202).
+fall-rest-trio-right.jpg: the same, the right of the glass (x 1000 to 1400, y 110 to 710).
+fall-rest-after.jpg: fall at rest after, hero, hd, review tier, the glass at one to one (x 560 to 1360, y 40 to 840).
+fall-shake-pair.jpg: left references/approved/fall-shake.png cut to the glass, right fall just landed (hero, hd, review tier) on this branch, both shown at 600 px.
+fall-peak-before.jpg: film frames at draft tier, from the first list. Top left 2110, top right 2116, bottom left 2122 (summer into fall, the tree and the cottage show pale through the fog), bottom right 676 (winter leaving, nothing shows).
+fall-peak-trial.jpg: film frames 2116, 2120 and 2124 at draft tier, a trial of the first list that is NOT in the branch: the fog thicker at the full flood. Taken out again; the item went to the change's finisher.
