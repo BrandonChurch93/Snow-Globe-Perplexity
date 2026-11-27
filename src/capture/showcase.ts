@@ -36,6 +36,8 @@ export interface StillSpec {
   interface?: boolean
   live?: string
   rig?: { fovDeg: number; distanceMm: number; yawDeg: number; pitchDeg: number; aimHeightMm: number }
+  /** A measuring aid: the same still with the air left out (no particle, no veil, bank or storm haze, no mist or fog of a season). Never a judged picture. */
+  noAir?: boolean
 }
 
 export interface Showcase {
@@ -308,6 +310,18 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
   const fpsFilm = config.film.fps
   const perBeat = beatSeconds * fpsFilm
 
+  /** The still that is a measuring aid: the plain still's own path with the stage's air off, and the air on again whatever became of the picture. */
+  const withoutAir = async (spec: StillSpec): Promise<void> => {
+    if (spec.change) throw new Error('a still without the air is a measuring aid of the plain stills: none is drawn of a change')
+    if (!stage.setAir) throw new Error('this stage cannot leave the air out: no still was drawn')
+    stage.setAir(false)
+    try {
+      await api.renderStill({ ...spec, noAir: false })
+    } finally {
+      stage.setAir(true)
+    }
+  }
+
   const api: Showcase = {
     ready,
     info() {
@@ -345,6 +359,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     async renderStill(spec) {
       await ready
       if (!config.seasons.includes(spec.season)) throw new Error(`no such season: ${spec.season}`)
+      if (spec.noAir) return withoutAir(spec)
       tier = spec.tier
       drawn = framingOf(spec.change ? MOVES.wide : spec.camera, format.width, format.height)
       const samples = tierSamples(spec.tier)
