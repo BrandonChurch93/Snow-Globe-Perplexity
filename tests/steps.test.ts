@@ -393,7 +393,8 @@ const PRESS_FRAME = 40
  * ready once its making is through. Each frame the page's script ticks the session and tells the wish of the moment it
  * draws, then every making that is not held takes its turn as the stage gives it. Gives the season the press landed in,
  * the ms worked for other seasons before the one pressed for was made (`early`), while a shake was in the air or its
- * landing settled (`storm`) and after that (`late`), and whether every season was made in the end.
+ * landing settled (`storm`) and after that (`late`), how many frames after the first one that showed the season pressed
+ * for at rest the others were worked on again (`resumed`), and whether every season was made in the end.
  */
 function visit({ every, script, work, to, piece = 1, small = true, reduced = false, wish = new Wish(), through = false }: Visit) {
   const made = new Set([first])
@@ -415,6 +416,8 @@ function visit({ every, script, work, to, piece = 1, small = true, reduced = fal
   begin(others[0]!, 0)
   let asked: string | null = null
   let landed: string | null = null
+  let shown: number | null = null
+  let resumed: number | null = null
   let shaken = false
   let begun = 0
   let free = 0
@@ -436,12 +439,14 @@ function visit({ every, script, work, to, piece = 1, small = true, reduced = fal
     shaken ||= moment.beat !== null
     const storm = moment.beat !== null || (shaken && moment.sinceLanding < SETTLE_S)
     if (n > PRESS_FRAME && landed === null && !session.busy) landed = session.season
+    if (n > PRESS_FRAME && shown === null && moment.beat === null && moment.season === to) shown = n
     pace.frame(at)
     for (const m of [...making]) {
       const from = clock
       if (!wish.holds(m.season)) workIn(m.steps, m.season, { waited: clock - m.idle, frame: at }, wish, pace, () => clock)
       m.idle = clock
       if (n >= PRESS_FRAME && m.season !== to) aside[!made.has(to) ? 'early' : storm ? 'storm' : 'late'] += clock - from
+      if (shown !== null && resumed === null && m.season !== to && clock > from) resumed = n - shown
       if (m.steps.length) continue
       made.add(m.season)
       making.splice(making.indexOf(m), 1)
@@ -451,7 +456,7 @@ function visit({ every, script, work, to, piece = 1, small = true, reduced = fal
     free = clock + browser
     if (landed !== null && !storm && (!through || made.size === seasons.length)) break
   }
-  return { asked, landed, aside, all: made.size === seasons.length }
+  return { asked, landed, aside, resumed, all: made.size === seasons.length }
 }
 
 describe('a press for a season that is still in the making', () => {
@@ -493,6 +498,14 @@ describe('a press for a season that is still in the making', () => {
         }
   })
 
+  it('goes on with them in the frame that shows the season pressed for where no shake brought it, however slowly the page draws', () => {
+    for (const to of [others[0]!, others[1]!])
+      for (const script of [2, 14, 300, 2000]) {
+        const where = `reduced motion, ${to}, ${script} ms script`
+        expect(visit({ every: 16.67, script, work: 1500, to, reduced: true, through: true }).resumed, where).toBe(0)
+      }
+  })
+
   it('would land in the season it left by the steps alone where more is left than the wait holds: what the last piece is for', () => {
     for (const work of [4000, 5000])
       for (const reduced of [false, true]) {
@@ -505,8 +518,8 @@ describe('a press for a season that is still in the making', () => {
 
 describe('a wish', () => {
   const [to, other] = others as [string, string]
-  const air = (time: number) => ({ beat: 1, sinceLanding: 0, time })
-  const rest = (time: number, sinceLanding = 100) => ({ beat: null, sinceLanding, time })
+  const air = (time: number) => ({ beat: 1, season: first, sinceLanding: 0, time })
+  const rest = (time: number, sinceLanding = 100, season = first) => ({ beat: null, season, sinceLanding, time })
   const held = (w: Wish): string[] => seasons.filter((s) => w.holds(s))
   const but = (season: string): string[] => seasons.filter((s) => s !== season)
 
@@ -583,6 +596,29 @@ describe('a wish', () => {
     w.drawn(rest(6 + PRESS_S, SETTLE_S + PRESS_S))
     expect(held(w)).toEqual([])
     expect(w.awaits(other)).toBe(false)
+  })
+
+  it('holds through the settle of a landing though no frame of its shake was drawn', () => {
+    const w = new Wish()
+    w.drawn(rest(5, 0))
+    expect(held(w)).toEqual(seasons)
+    w.press(to)
+    w.drawn(rest(6, 1, to))
+    expect(held(w)).toEqual(but(to))
+    w.drawn(rest(8.5, SETTLE_S, to))
+    expect(held(w)).toEqual([])
+    expect(w.awaits(to)).toBe(false)
+  })
+
+  it('goes as soon as the season pressed for is on show where no shake brought it', () => {
+    const w = new Wish()
+    w.drawn(rest(10))
+    w.press(to)
+    w.drawn(rest(10.25))
+    expect(held(w)).toEqual(but(to))
+    w.drawn(rest(10.5, 100, to))
+    expect(held(w)).toEqual([])
+    expect(w.awaits(to)).toBe(false)
   })
 
   it('goes at the settle of the shake that answered it, however young it is', () => {
