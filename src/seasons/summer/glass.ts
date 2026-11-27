@@ -12,8 +12,8 @@ import { holdStorm, veil } from './veil'
 // 1. The flare: the reflection of the one strong warm light (the rig's key) on the outside of the glass. It sits where a sphere
 //    mirrors that light toward the eye (the half vector between the eye and the light), which from the hero camera is the upper
 //    right shoulder, at the limb. It is a white patch on the outline, drawn out along it, with the soft bloom and the
-//    warm glow a lens draws round it, and a star of thin rays that stand out from it into the room: seven wedges and
-//    a needle along each, four needles more between them. The rays lift what lies behind them, so they stand on the
+//    warm glow a lens draws round it, and in that bloom seven soft rays that stand out from it into the room: wedges
+//    without a bright root and without an end one could point at. The rays lift what lies behind them, so they stand on the
 //    room's pale lights as on its dark. All of that is the lens's and is drawn last of all; the hot line the sun leaves
 //    down the limb is the glass's and is drawn with the globe. It kindles on the landing.
 // 2. The pool: the same light focused by the globe onto the slab, in front of the globe and to its left, inside the globe's own
@@ -56,15 +56,17 @@ export const look = {
     halfMm: 30,
     // the core: white hot, a patch on the outline, drawn out along it and bent with it; how strong, and its size across
     // the outline and along it (in the quad's half width, as every length of the flare is, which is half the ball's
-    // radius). On the approved picture what is white (a level of 250 and over) lies 0.065 of the radius along the rim
-    // and 0.035 of it across
-    core: 12,
-    coreAcross: 0.035,
-    coreAlong: 0.07,
+    // radius). On the approved picture what is white (a level of 250 and over) lies 0.069 of the radius along the rim
+    // and 0.033 of it across. Here it is held under that, 0.047 by 0.026 on the drawn still: where a light of the room
+    // lies behind the star, as it does in the film, the room's light is added and the white spreads, there to 0.065
+    // by 0.031
+    core: 10,
+    coreAcross: 0.03,
+    coreAlong: 0.06,
     // the mirror's own place for the sun lies a hair inside the outline: the glint is pushed out along the radius by this
     // share of it, so that its middle lies on the outline and the bloom sits on the rim
     rimOut: 0.012,
-    // the bloom of the lens round the patch: soft, nearly white, brightest on the rim, and a little longer along the
+    // the bloom of the lens round the patch: soft, cream, brightest on the rim, and a little longer along the
     // outline than across it, since the patch it blooms from is long (`bloom`, and the lengths it falls to a third in,
     // across the outline and along it); round it the warm glow, its tail, which falls off slower and has no edge
     // (`glow`, and its lengths)
@@ -74,52 +76,38 @@ export const look = {
     glow: 1.83,
     glowAcross: 0.12,
     glowAlong: 0.164,
-    hot: [1, 0.92, 0.72] as const,
+    hot: [1, 0.88, 0.64] as const,
     amber: [1, 0.51, 0.27] as const,
-    // the star: seven thin rays stand out from the middle of the patch into the dark of the room, counted on the
-    // approved picture, and none into the ball. Each: its angle from the outline's outward normal (degrees, counter
-    // clockwise), how far it reaches (in the quad's half width), the tangent of half the angle it opens by, how bright
-    // beside the longest, and how strong its lift is beside the strongest. A ray is a wedge of light: brightest and
-    // thinnest where it leaves the patch, and it falls off along its reach as the approved's do, by `rayFall` to the
-    // reach (the power of e) over its growing width, which `rayRoot` keeps from nothing at the root. `ray` is how
-    // bright the longest is, `rayThin` half the width a ray has at its root, `rayHue` its colour, copper as the
-    // approved's are. That light is dealt to the approved picture, where the room behind the star is dark. Where a
-    // pale light of the room lies behind the star, light of that strength is lost on it, so a ray besides lifts what
-    // lies behind it: `lift` is by how many times its own strength the strongest lifts it at its root, falling along
-    // the reach half as fast as the light does and over `liftRoot`. On a dark room that is next to nothing, on a
-    // pale light it is the ray. The flare's own light is not lifted: it is added after the lift, in the one pass.
-    // The lift has the wedge's shape by the share `liftWedge` and, whole, the shape of a
-    // needle along the ray's middle: `needle` is half its width at the root and what it gains to one half width of
-    // the quad along the ray; it is never drawn thinner than `needleLeast` pixels, only fainter, so it melts into
-    // its wedge in a small picture and stands in a large one. The needle adds a little light of its own too
-    // (`needleAdd`, `needleHue`). `needles` are four more that have no wedge, between the seven: angle, reach, lift
+    // the star is a bloom with rays in it, not a drawn star: seven soft rays, measured on the approved picture (six
+    // that stand out into the room and the one that lies down the limb), and none into the ball. Each: its angle from
+    // the outline's outward normal (degrees, counter clockwise), how far it reaches (in the quad's half width), the
+    // tangent of half the angle it opens by, how bright beside the longest, and how strong its lift is beside the
+    // strongest. A ray is a soft wedge of light. It has no bright root: it rises out of the bloom over `rayRise`, runs
+    // on falling to a third in every `rayLen`, and from the share `rayEnd` of its reach it fades to nothing at its
+    // reach, so it has no end one could point at. `ray` is how bright the longest is, `rayThin` half the width a ray
+    // has at its root, `rayHue` its colour, copper as the approved's are. On the approved picture a ray stands 4 to 20
+    // levels over what lies beside it, and is 7 to 15 degrees wide: the numbers are dealt to that. That light is
+    // dealt to the approved picture, where the room behind the star is dark. Where a pale light of the room lies
+    // behind the star, light of that strength is lost on it, so a ray besides lifts what lies behind it: `lift` is by
+    // how many times its own strength the strongest lifts it, in the ray's own shape and falling along it half as fast
+    // as the light does. On a dark room that is next to nothing, on a pale light it is the ray. The flare's own light
+    // is not lifted: it is added after the lift, in the one pass
     rays: [
-      [-65.8, 0.9, 0.065, 1, 1],
-      [-83.8, 0.85, 0.035, 0.84, 0.6],
-      [-27.3, 0.9, 0.07, 0.3, 0.5],
-      [-8.8, 1.6, 0.07, 0.042, 0.14],
-      [13.7, 0.35, 0.07, 0.3, 0.3],
-      [39.2, 0.6, 0.12, 1, 0.5],
-      [68.2, 0.9, 0.06, 0.5, 0.6],
+      [-69, 0.9, 0.06, 1, 1],
+      [-83.8, 0.6, 0.035, 0.4, 0.4],
+      [64, 0.75, 0.08, 0.6, 0.7],
+      [34, 0.55, 0.09, 0.24, 0.4],
+      [4, 0.5, 0.1, 0.2, 0.35],
+      [-16, 0.7, 0.08, 0.15, 0.35],
+      [-41, 0.7, 0.075, 0.27, 0.45],
     ] as const,
-    needles: [
-      [-46, 0.7, 0.35],
-      [2, 0.75, 0.35],
-      [26, 0.55, 0.3],
-      [52, 0.8, 0.4],
-    ] as const,
-    ray: 0.33,
-    rayFall: 5.5,
-    rayRoot: 0.05,
-    rayThin: 0.005,
-    rayHue: [1, 0.72, 0.42] as const,
-    lift: 2.5,
-    liftRoot: 0.15,
-    liftWedge: 0.6,
-    needle: [0.0012, 0.008] as const,
-    needleLeast: 1,
-    needleAdd: 0.04,
-    needleHue: [1, 0.9, 0.75] as const,
+    ray: 0.5,
+    rayRise: 0.06,
+    rayLen: 0.2,
+    rayEnd: 0.35,
+    rayThin: 0.012,
+    rayHue: [1, 0.68, 0.38] as const,
+    lift: 0.7,
     // down the limb from the patch the outline itself is hot: one thin line just inside it (`line`: how strong, how far
     // inside the outline it lies and half its width, how far down the limb its middle lies and half its length there,
     // all in the quad's half width)
@@ -198,7 +186,9 @@ export const look = {
     // how the lanes swing about that, so that no two stretches run quite the same way (how far, how many radians to
     // a degree up the limb and to the radius), `warp` how far they wander from even spacing (two waves: how many
     // lanes, how many radians to the radius), `soft` the share of a lane its edge is soft over (and never less than
-    // a pixel), `bright` how bright a lane is beside a white thread and `dim` what the dimmest keeps of that. `tip`
+    // a pixel), `bright` how bright a lane is beside a white thread and `dim` what the dimmest keeps of that. At this
+    // `bright` the body is white in its heart alone and warm white round it, as the approved's is: there what is
+    // white lies in the lower middle only, and the body round it has the mean colour 250 240 225. `tip`
     // and `foot` are where the core ends up the limb and where the lanes begin: the bearing by the depth inside the
     // outline (pairs: depth, bearing). The foot is round: the lanes of the middle reach furthest down and those of both flanks begin
     // further up, so the body thins to its foot and no line crosses it. `side` is the share of the sheaf by the
@@ -225,15 +215,15 @@ export const look = {
       wave: [0.003, 0.45, 40] as const,
       warp: [0.3, 190, 0.2, 73] as const,
       soft: 0.4,
-      bright: 2,
+      bright: 1.7,
       dim: 0.85,
       tip: [
-        [0.058, 193.5],
-        [0.085, 195.2],
-        [0.105, 197],
-        [0.125, 199.5],
-        [0.145, 201.5],
-        [0.17, 202.5],
+        [0.058, 192.3],
+        [0.085, 192.3],
+        [0.105, 195.8],
+        [0.125, 196.2],
+        [0.145, 198.2],
+        [0.17, 201.2],
         [0.195, 202.5],
         [0.215, 204],
         [0.23, 206],
@@ -279,7 +269,7 @@ export const look = {
       part: 1.3,
       wander: 0.3,
       halo: 0.36,
-      haloColor: [1, 0.6, 0.28] as const,
+      haloColor: [1, 0.5, 0.15] as const,
       haloIn: [0.075, 0.19] as const,
       haloAcross: [0.045, 0.07] as const,
       haloTip: 0,
@@ -292,8 +282,8 @@ export const look = {
     // the share of its width a thread keeps at its very tip and at its very foot: it draws to a needle at both
     threadPoint: 0.2,
     hotColor: [1, 0.94, 0.8] as const,
-    flameWarm: [1, 0.6, 0.33] as const,
-    flameWarmHalf: 0.4,
+    flameWarm: [1, 0.5, 0.18] as const,
+    flameWarmHalf: 1,
     threadWarm: [1, 0.42, 0.16] as const,
     // the amber glow of the liquid round the patch: thin and close, so the turf and the fence beside the flame stay
     // clear (`glowSize`: how far it reaches across the limb, down the limb and up it)
@@ -754,48 +744,23 @@ void main() {${FLARE_AT}
   gl_FragColor = vec4(${vec(F.hot)} * (${n(F.line[0])} * line * lit * edge), 0.0);
 }`
 const FLARE_RAYS = `
-// a ray's needle: the thin line along its middle. ax: how far along the ray, cr: how far off it, squared, px: the
-// least half width, f: the reach and how strong the lift is. One exponential along the ray serves the light (its
-// square) and the lift. First what the lift has of the needle, second how wide the needle is drawn, squared, third
-// the lift's strength along the ray, fourth the light's fall along it
-vec4 flNeedle(float ax, float cr, float px, vec2 f) {
-  float t = ax / f.x;
-  float w = ${n(F.needle[0])} + ${n(F.needle[1])} * ax;
-  float wd = max(w, px);
-  float fall = exp(${n(-F.rayFall / 2)} * t);
-  float end = 1.0 - smoothstep(0.6, 1.0, t);
-  float g = f.y * fall * end / (t + ${n(F.liftRoot)});
-  return vec4(g * (w / wd) * exp(-cr / (wd * wd)), wd * wd, g, fall * fall * end / (t + ${n(F.rayRoot)}));
-}
-// one ray of the star: a thin wedge that stands out from the middle of the patch, brightest where it leaves it and gone
-// at its reach, with its needle. u: its direction, f: how far it reaches, the tangent of half the angle it opens by,
-// how bright, how strong its lift. First the light its wedge adds, second its lift, third its needle alone
-vec3 flRay(vec2 q, float px, vec2 u, vec4 f) {
-  float ax = dot(q, u);
-  if (ax <= 0.0 || ax >= f.x) return vec3(0.0);
-  float cr = q.x * u.y - q.y * u.x;
-  cr *= cr;
-  float wide = f.y * f.y * ax * ax + ${(F.rayThin * F.rayThin).toFixed(6)};
-  // nothing of it this far off its middle
-  if (cr > 12.0 * max(wide, px * px)) return vec3(0.0);
-  vec4 nd = flNeedle(ax, cr, px, f.xw);
-  float wedge = exp(-cr / wide);
-  return vec3(f.z * nd.w * wedge, nd.z * ${n(F.liftWedge)} * wedge + nd.x, nd.x);
-}
-// a needle without a wedge. f: how far it reaches and how strong its lift. Its lift, and the same again
-vec2 flPin(vec2 q, float px, vec2 u, vec2 f) {
+// one ray of the star: a soft wedge that rises out of the bloom, runs on with it and fades to nothing before its reach.
+// u: its direction, f: how far it reaches, the tangent of half the angle it opens by, how bright, how strong its lift.
+// First the light it adds, second its lift. One exponential along the ray serves the lift and the light (its square)
+vec2 flRay(vec2 q, vec2 u, vec4 f) {
   float ax = dot(q, u);
   if (ax <= 0.0 || ax >= f.x) return vec2(0.0);
   float cr = q.x * u.y - q.y * u.x;
   cr *= cr;
-  float w = max(${n(F.needle[0])} + ${n(F.needle[1])} * ax, px);
-  if (cr > 12.0 * w * w) return vec2(0.0);
-  return flNeedle(ax, cr, px, f).xx;
+  float wide = f.y * f.y * ax * ax + ${(F.rayThin * F.rayThin).toFixed(6)};
+  // nothing of it this far off its middle
+  if (cr > 12.0 * wide) return vec2(0.0);
+  float body = exp(-cr / wide) * smoothstep(0.0, ${n(F.rayRise)}, ax) * (1.0 - smoothstep(${n(F.rayEnd)}, 1.0, ax / f.x));
+  float fall = exp(${n(-0.5 / F.rayLen)} * ax);
+  return body * fall * vec2(f.z * fall, f.w);
 }`
 const FLARE_LENS = `${FLARE_VARY}${FLARE_RAYS}
-void main() {
-  // the least half width of a needle: what that many pixels span on the quad, read before anything is discarded
-  float px = ${n(F.needleLeast)} * max(abs(dFdx(vFl.x)), abs(dFdy(vFl.y)));${FLARE_AT}
+void main() {${FLARE_AT}
   // across the outline and along it: both squared
   off *= off;
   float along = q.y * q.y;
@@ -804,12 +769,10 @@ void main() {
   // the lens's bloom round it, brightest on the rim, and the warm glow round that as its tail: no edge
   float bloom = exp(-(off / ${n(F.bloomAcross * F.bloomAcross)} + along / ${n(F.bloomAlong * F.bloomAlong)}));
   float glow = exp(-sqrt(off / ${n(F.glowAcross * F.glowAcross)} + along / ${n(F.glowAlong * F.glowAlong)}));
-  // the star: the rays stand out from the patch on the side away from the ball. x: the light the wedges add, y: the
-  // lift, z: the needles alone
-  vec3 star = vec3(0.0);
-${F.rays.map((b) => `  star += flRay(q, px, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), vec4(${n(b[1])}, ${n(b[2])}, ${n(b[3])}, ${n(b[4])}));`).join('\n')}
-${F.needles.map((b) => `  star.yz += flPin(q, px, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), vec2(${n(b[1])}, ${n(b[2])}));`).join('\n')}
-  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom) + ${vec(F.amber)} * (${n(F.glow)} * glow) + ${vec(F.rayHue)} * (${n(F.ray)} * star.x) + ${vec(F.needleHue)} * (${n(F.needleAdd)} * star.z);
+  // the star: the rays stand out from the patch on the side away from the ball. x: the light they add, y: the lift
+  vec2 star = vec2(0.0);
+${F.rays.map((b) => `  star += flRay(q, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), vec4(${n(b[1])}, ${n(b[2])}, ${n(b[3])}, ${n(b[4])}));`).join('\n')}
+  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom) + ${vec(F.amber)} * (${n(F.glow)} * glow) + ${vec(F.rayHue)} * (${n(F.ray)} * star.x);
   // what is there is kept and lifted along the rays (the fourth number is what it is kept by, 1 and more), and the
   // lens's own light is added to that, itself not lifted
   gl_FragColor = vec4(col * (lit * edge), 1.0 + ${n(F.lift)} * star.y * lit * edge);
