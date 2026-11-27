@@ -7,9 +7,10 @@ import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial
 import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, villageGeometry, villageGrain } from '../../../miniature/model'
 import { isIvy, lampFlame, lampFoot, shrubs } from '../../../miniature/roof'
-import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
+import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, surfacing, type Cover, type GlowSource } from '../../../miniature/surface'
 import { anchors, cottage, cottageFrame, cottagePoint, fence, groundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
+import { ROW } from '../../../scene/steps'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
 import { PUMPKINS, ROCKS, STONES, atticAt, boardDistance, fenceBoards, pumpkinCentre, pumpkinFace, pumpkinTall, rockCentre, stoneBase, type Point } from './props'
@@ -212,13 +213,14 @@ function cottageLocal(x: number, z: number): { across: number; along: number } {
   return { across: dx * frame.v[0] + dz * frame.v[1], along: dx * frame.u[0] + dz * frame.u[1] }
 }
 
-function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
+function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeometry> {
   const g = source.clone()
   const P = g.getAttribute('position')
   const N = g.getAttribute('normal')
   const C = g.getAttribute('color')
   const S = g.getAttribute('uv1')
   for (let i = 0; i < P.count; i++) {
+    if (i % ROW === 0) yield
     const x = P.getX(i)
     const y = P.getY(i)
     const z = P.getZ(i)
@@ -446,12 +448,17 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
   return m
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const stone = surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: chipped, key: 'village-solid-fall', fill: WALL_FILL })
-  const walls = shadowed(new THREE.Mesh(withSurface(autumn(villageGeometry('solid')), sources(NEAR_WALL, tones.lampLight)), stone))
-  const decor = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'decor').clone(), sources(NEAR_WALL, tones.lampLight)), stone))
-  const earth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ground').clone(), sources(NEAR, tones.lampLight)), groundMaterial()), false)
-  const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water').clone(), sources(NEAR, tones.lampLight)), waterMaterial()), false)
+  const turned = yield* autumn(villageGeometry('solid'))
+  yield
+  const walls = shadowed(new THREE.Mesh(yield* surfacing(turned, sources(NEAR_WALL, tones.lampLight)), stone))
+  yield
+  const decor = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'decor').clone(), sources(NEAR_WALL, tones.lampLight)), stone))
+  yield
+  const earth = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'ground').clone(), sources(NEAR, tones.lampLight)), groundMaterial()), false)
+  yield
+  const water = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'water').clone(), sources(NEAR, tones.lampLight)), waterMaterial()), false)
   return new THREE.Group().add(walls, decor, earth, water)
 }
 

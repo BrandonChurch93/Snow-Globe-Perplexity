@@ -4,7 +4,7 @@ import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
-import { bakeGlow, buildTrunk, chainSolid, glow, glowHook, limbs, placeGeometry, placePoint, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { chainSolid, glow, glowHook, glowing, limbs, placeGeometry, placePoint, placing, prepareTrunk, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { season, tones } from './palette'
 import { PUMPKINS, pumpkinFace } from './props'
@@ -142,11 +142,12 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareTrunk(), prepareModel(MODEL)])
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const part = `miniature-${season}`
   const lit = onWood()
-  const g = placeGeometry(geometry(MODEL, 'twigs'))
-  bakeGlow(g, lit)
+  const g = yield* placing(geometry(MODEL, 'twigs'))
+  yield* glowing(g, lit)
+  yield
   const bark = stageMaterial({
     part,
     standIn: false,
@@ -164,7 +165,8 @@ export function build(): THREE.Object3D {
   const twigs = new THREE.Mesh(g, bark)
   twigs.castShadow = true
   twigs.receiveShadow = true
-  return new THREE.Group().add(buildTrunk(part, lit, BARK_TINT), twigs)
+  yield
+  return new THREE.Group().add(yield* trunkMaking(part, lit, BARK_TINT), twigs)
 }
 
 export function lights(): THREE.Object3D {
