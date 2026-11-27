@@ -75,3 +75,11 @@ Eleventh pass, first pair (trial 163, the lace). Stills drawn on the tree merged
 11b3-pads-measured-approved-left-eleventh-right.jpg: The six strips the pads are measured on (luma of the top third against the bottom third; the yellow line is where the lit part ends). Approved left, ours right.
 11b4-crop-upper-left-approved-left-ours-right.jpg: The 1:1 crop of the upper left, approved left, ours right at three times its pixels: the slit under the upper left pad and the lit top of the large left pad under it.
 11b5-crop-right-approved-left-ours-right.jpg: The 1:1 crop of the right side, approved left, ours right at three times its pixels.
+
+11c1-whole-400px-approved-left.jpg: Eleventh pass, third pair drawn on main e5671c9c merged (head eb0b36da). The whole at 400 px, approved left, ours right. The crown is set apart into pads with air cut in from the outline.
+11c2-tree-pair-rest-approved-left.jpg: The tree at one scale, approved left, ours right. The left arm, the large left pad and the low left pad stand apart, their bands of air open to the outline; the bay at the fork runs up between the limbs; a notch from the right parts the right dome from the low right pad.
+11c3-pads-measured-approved-left-eleventh-right.jpg: The six strips the pads are measured on (luma of the top third against the bottom third; the yellow line is where the lit part ends). Approved left, ours right.
+11c4-crop-upper-left-approved-left-ours-right.jpg: The 1:1 crop of the upper left, approved left, ours right at three times its pixels. The pale leaf line on the pad tops is single leaves and still far thinner than the approved's beaded rim.
+11c5-crop-right-approved-left-ours-right.jpg: The 1:1 crop of the right side, approved left, ours right at three times its pixels. A limb shows in the slit between the right dome and the low right pad.
+11c6-notches-measuring-aid-approved-left-ours-no-air-right.jpg: A measuring aid, not a judged picture (ours is drawn without the air). The crown's leaf outlined, its convex hull in red, the notches numbered by depth. Deeper than a fifth of the width: approved 3, ours 3. Deeper than a tenth: 4 and 3. Deeper than 2 mm: 8 and 5.
+11c7-tree-pair-landed-approved-left.jpg: The landed still at one scale, approved left, ours right. The crown is whole at the landing.
