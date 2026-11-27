@@ -1,0 +1,148 @@
+{
+  "phase": 6,
+  "time": "2026-11-27T06:51:36.043Z",
+  "engineHash": "60d39792f3f3d6c1",
+  "commit": "8685e6cf",
+  "results": [
+    {
+      "id": "G1",
+      "name": "the build is clean",
+      "pass": true,
+      "detail": "npm run build exited 0 in 21.5 s, no type errors",
+      "seconds": 21.545
+    },
+    {
+      "id": "G2",
+      "name": "unit tests",
+      "pass": true,
+      "detail": "921 of 929 tests pass in 68 files",
+      "seconds": 130.66
+    },
+    {
+      "id": "G3",
+      "name": "determinism",
+      "pass": true,
+      "detail": "5 pictures pixel-identical across 4 fresh page loads in 4 orders (preview, draft, with a late film frame and a loop frame)",
+      "seconds": 346.222
+    },
+    {
+      "id": "G4",
+      "name": "sizes and counts",
+      "pass": true,
+      "detail": "a still in every format has its exact size (uhd 3840 x 2160, hd 1920 x 1080, preview 960 x 540, phone 390 x 844, tablet 1024 x 1366), 5 stills on disk agree with their records, loop().frameCount is 480, film().frameCount 3600 matches frameCount in cut/CUTLIST.json",
+      "seconds": 67.708
+    },
+    {
+      "id": "G5",
+      "name": "no interface pixel where none belongs",
+      "pass": true,
+      "detail": "in 25 stills without interface, film B frames 0, 666, 720, 3598 and loop frames 0, 120, 478 the stage is pixel-identical to the canvas and #ui is empty or hidden; 4 screen stills (screen-wide, screen-wide-fall, screen-phone, screen-tablet) show the Shake control, 4 season marks and the sound control, and their stage differs from the canvas in 27783 to 87224 pixels",
+      "seconds": 292.216
+    },
+    {
+      "id": "G6",
+      "name": "startup validation and the judged list",
+      "pass": true,
+      "detail": "the page starts in capture mode with no error, so the config passes startup validation; all 69 ids of dev.judged() are in the Judged list of kit/PROGRESS.md (69 rows), each under its unit",
+      "seconds": 5.764
+    },
+    {
+      "id": "G7",
+      "name": "lengths",
+      "pass": true,
+      "detail": "film B is 3600 frames, 60.00 s: at most film.maxSeconds 80 and at least film.minSeconds 45; the opening is 867 frames, 14.45 s of at most 16; film A is 74.45 s of at most 140; at 20 Mbit/s of picture and 256 kbit/s of sound film A is 189 MB (152 MB for film B), under platform.maxFileMb 512",
+      "seconds": 5.779
+    },
+    {
+      "id": "G8",
+      "name": "sources and recipes",
+      "pass": true,
+      "detail": "242 shipped files checked: 6 third-party with rows, 235 made with recipes, 1 written by the build; 24 recipe files well formed; 9 sound files and 16 kept sound records in order",
+      "seconds": 0.009
+    },
+    {
+      "id": "G9",
+      "name": "the repo",
+      "pass": true,
+      "detail": "1794 tracked files, 814 MB in all, the largest 20.2 MB (out/review-four-tracks.mp4); no secret found; references/cache/ and out/work/ untracked; 9 of 9 approved files hold their hashes",
+      "seconds": 0.207
+    },
+    {
+      "id": "G10",
+      "name": "portable WebGL2",
+      "pass": true,
+      "detail": "src asks for EXT_color_buffer_float, EXT_color_buffer_half_float, EXT_texture_filter_anisotropic, WEBGL_debug_renderer_info; with all 24 extensions that are not portable denied the still is pixel-identical; without EXT_color_buffer_float it renders on the half float path at 70.4 dB from the float path; with no float target it still renders (41.0 dB)",
+      "seconds": 58.673
+    },
+    {
+      "id": "G11",
+      "name": "the change stays in its window",
+      "pass": true,
+      "detail": "film: 7 seasonal parts read on all 3600 frames, every value 0 or 1 on the 3456 frames outside the 4 swap windows (648 to 683, 1368 to 1403, 2088 to 2123, 2808 to 2843), a part mid change on 140 frames inside them; test shake: the same on 828 of 864 frames outside 72 to 107; loop: no value changes across 480 frames and the frame one past the last",
+      "seconds": 5.674
+    },
+    {
+      "id": "G12",
+      "name": "landings",
+      "pass": true,
+      "detail": "4 shakes of the cut list: globe.heightMm is above zero on all 432 frames from each liftEnd to the frame before each landing (the lowest is 0.44 mm); every landing frame (720, 1440, 2160, 2880) is one of the 25 bar lines of the cut list and of film().landings; the camera on each first frame (576, 1296, 2016, 2736) equals dev.pose('hero') within 0.001 mm and degrees (the largest difference is 0.0e+0)",
+      "seconds": 5.745
+    },
+    {
+      "id": "G13",
+      "name": "stand-ins",
+      "pass": true,
+      "detail": "covers 52 of 54 parts: the units marked finished in kit/PROGRESS.md (winter, spring, summer, fall, change, globe); every part outside film, from the first round on globe. None is stand-in in the register, the files of each differ from its stand-in hash, the standins view of 69 of 69 judged stills and frames shows no pixel within 2 of a covered part's colour, and dev.flagged() names none of them",
+      "seconds": 172.603
+    },
+    {
+      "id": "G14",
+      "name": "the loop's seam",
+      "pass": true,
+      "detail": "renderLoopFrame(480), one past the last, is pixel-identical to frame 0 (hd, draft)",
+      "seconds": 27.046
+    },
+    {
+      "id": "G15",
+      "name": "memory and counts",
+      "pass": true,
+      "detail": "info().textureMb in uhd, the largest format, after all 4 seasons were drawn on one page: web 241.4 of 500 MB (most in winter), full 687.4 of 2000 MB (most in winter); the most info().counts gives in any season through the app's path in hd: high 1793685 of 1800000 triangles and 71 of 140 draw calls with 102000 particles, medium 999606 of 1100000 triangles and 71 of 140 draw calls with 61200 particles, low 474599 of 600000 triangles and 55 of 140 draw calls with 30600 particles",
+      "seconds": 98.434
+    },
+    {
+      "id": "G16",
+      "name": "hosting",
+      "pass": true,
+      "detail": "npm run hostcheck on this build: dist/ is 73.11 of 95 MB in 191 files, the largest 6.40 of 20 MB (assets/fall/village-fall.glb); 14.66 of 16 MB in 41 requests before the first complete picture of winter; the clean install and build took 0.4 of 20 minutes; the built site opens in live mode and reaches its first picture in 22.3 s",
+      "seconds": 0.095
+    },
+    {
+      "id": "D2",
+      "name": "the preview of film B",
+      "pass": false,
+      "detail": "out/preview-b.mp4: its record names build b98352868abb52c6, the current build is 60d39792f3f3d6c1",
+      "seconds": 3.539
+    },
+    {
+      "id": "D3",
+      "name": "the local render proof",
+      "pass": false,
+      "detail": "out/work/local/proof.json does not exist. Run npm run render:local -- --proof",
+      "seconds": 0
+    },
+    {
+      "id": "D5",
+      "name": "the preview of film A",
+      "pass": false,
+      "detail": "out/preview-a.mp4 does not exist. Render film A in preview, then npm run keep -- --film",
+      "seconds": 0.001
+    },
+    {
+      "id": "D6",
+      "name": "the card",
+      "pass": false,
+      "detail": "deliver/card-loop.mp4 does not exist; deliver/card-loop-web.mp4 does not exist; deliver/card-still.jpg does not exist",
+      "seconds": 0
+    }
+  ]
+}
