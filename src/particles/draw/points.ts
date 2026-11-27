@@ -8,9 +8,9 @@ import type { ParticleSource, SdfGrid } from '../../core/stage'
 import { texture } from '../../core/textures'
 import { partBytes } from '../../diagnostics/views'
 import type { StageFrame } from '../../scene/frame'
-import { flickerOf } from '../../scene/lightgrid'
+import { flickerOf, gridInfo } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
-import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SEED_RESTS, SETTLE_SHOWN, SHAPE, STORM_BLOOM, lookOf } from './looks'
+import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SEED_RESTS, SETTLE_SHOWN, SHAPE, STORM_BLOOM, lookOf, SEED_NEAR } from './looks'
 import { BEHAVIOUR } from '../engine/kinds'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
 import { downAtlas } from './down'
@@ -128,6 +128,7 @@ export class ParticleDraw {
   private afloat = 0
   private seats: readonly Seat[] = SEED_RESTS.at
   private glows: readonly InnerLight[] = NO_LIGHTS
+  private solid: SdfGrid | null = null
   private glowAt: readonly [number, number] = [0, 1]
   drawn = 0
   maxPointPx = 256
@@ -232,6 +233,7 @@ export class ParticleDraw {
     this.storm = stormy ? gate * gate * (3 - 2 * gate) : 0
     this.seats = this.seatsFor(source, f)
     this.glows = this.glowsFor(source, f)
+    this.solid = this.solidFor(source, f)
     this.glowAt = [f.time, f.period]
     this.fill(source, f.quality.particleFraction, mesh.quads, f.moment.mix)
     this.shown = stormy ? Math.min(1, SETTLE_SHOWN / Math.max(this.afloat, 1e-3)) : 1
@@ -270,6 +272,14 @@ export class ParticleDraw {
     return (seed in f.to.particles ? f.to : f.from).innerLights
   }
 
+  /** What the seeds can snag on: the scene of the season whose kind they are, as the stage has it made. None in the storm at its full, where no seed is asked how near it is (looks.ts, SEED_NEAR). */
+  private solidFor(source: ParticleSource, f: StageFrame): SdfGrid | null {
+    if (this.storm >= SEED_NEAR.stormOff[1]) return null
+    const seed = source.kinds.find((kind) => lookOf(kind).shape === SHAPE.seed)
+    if (seed === undefined) return null
+    return gridInfo(f.grids[seed in f.to.particles ? 1 : 0])?.solid ?? null
+  }
+
   private fill(source: ParticleSource, fraction: number, quads: boolean, mix: number): void {
     const n = source.count
     if (n !== this.capacity) this.allocate(Math.max(1, n))
@@ -284,6 +294,11 @@ export class ParticleDraw {
     const phase = source.phase ?? this.phaseOf(n)
     let up = 0
     let down = 0
+    const solid = this.solid
+    const nearKind = solid ? source.kinds.findIndex((kind) => lookOf(kind).shape === SHAPE.seed) : -1
+    const gone = Math.min(1, Math.max(0, (this.storm - SEED_NEAR.stormOff[0]) / (SEED_NEAR.stormOff[1] - SEED_NEAR.stormOff[0])))
+    const calm = 1 - gone * gone * (3 - 2 * gone)
+    const pos = source.pos
     for (let i = 0, o = 0; i < n; i++, o += 4) {
       d[o] = sizes[i]! * SIZE_TO_RADIUS
       d[o + 1] = kindOf[i]!
@@ -291,8 +306,18 @@ export class ParticleDraw {
       d[o + 3] = phase[i]!
       const s = state[i]!
       st[i] = s
-      if (s < 0.5) up++
-      else if (s < 2.5) down++
+      if (s < 0.5) {
+        up++
+        // a seed in the liquid tells the shader how near it is to what it can snag on (looks.ts, SEED_NEAR): nothing in the open air and in the storm at its full
+        if (solid && kindOf[i] === nearKind) {
+          const o3 = i * 3
+          const far = (sampleSdf(solid, pos[o3]!, pos[o3 + 1]!, pos[o3 + 2]!) - SEED_NEAR.fromMm) / (SEED_NEAR.toMm - SEED_NEAR.fromMm)
+          if (far < 1) {
+            const t = Math.max(0, far)
+            st[i] = SEED_NEAR.state * calm * (1 - t * t * (3 - 2 * t))
+          }
+        }
+      } else if (s < 2.5) down++
     }
     this.afloat = up + down > 0 ? up / (up + down) : 0
     // a few seeds lie where the scene has a place for them while the liquid is calm (looks.ts, SEED_RESTS): the first seeds of the list, so the same ones at every size of the film

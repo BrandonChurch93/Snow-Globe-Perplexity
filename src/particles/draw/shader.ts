@@ -4,7 +4,7 @@ import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
 import { CARD_FRAG_PARS, CARD_VERT, CARD_VERT_PARS } from './cards'
-import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_MOST, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, GLINT_SOFT_PX, LAMPS, LENS_LOOK, LIT_MOST, LIGHT_LOOK, LOBE_CORE, LOBE_GIRTH, LOBE_REACH, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, REST_CLEAR, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_CROSS, STORM_ALIGN, STORM_BEND, STORM_BIG, STORM_DAB_LIGHT, STORM_DAB_REACH, STORM_DAB_SLOW, STORM_DAB_TIGHT, STORM_FAR, STORM_OFF_DISC, STORM_PACE, STORM_PALE, STORM_PALE_TO, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_FLOOD, STORM_GLINT, STORM_GLINT_KEEP, STORM_GLINT_REACH, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_GLOW, STORM_GOLD, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_REACH, STORM_SHARP_SHARE, STORM_SHARP_SOFT, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_POCKET_SMEARS, STORM_SHUTTER, STORM_SHUTTER_TURNED, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SMEAR_SKEW, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_TOP, STORM_VEILED, STORM_WALL, STORM_WARM, STORM_WINDOW, STREAK_ARC, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW, THIN_FROM, THIN_LOW, THIN_TO, CARD, SHAPE } from './looks'
+import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_MOST, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, GLINT_SOFT_PX, LAMPS, LENS_LOOK, LIT_MOST, LIGHT_LOOK, LOBE_CORE, LOBE_GIRTH, LOBE_REACH, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, REST_CLEAR, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_CROSS, STORM_ALIGN, STORM_BEND, STORM_BIG, STORM_DAB_LIGHT, STORM_DAB_REACH, STORM_DAB_SLOW, STORM_DAB_TIGHT, STORM_FAR, STORM_OFF_DISC, STORM_PACE, STORM_PALE, STORM_PALE_TO, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_FLOOD, STORM_GLINT, STORM_GLINT_KEEP, STORM_GLINT_REACH, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_GLOW, STORM_GOLD, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_REACH, STORM_SHARP_SHARE, STORM_SHARP_SOFT, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_POCKET_SMEARS, STORM_SHUTTER, STORM_SHUTTER_TURNED, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SMEAR_SKEW, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_TOP, STORM_VEILED, STORM_WALL, STORM_WARM, STORM_WINDOW, STREAK_ARC, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW, THIN_FROM, THIN_LOW, THIN_TO, CARD, SHAPE, SUMMER_PACE, SEED_NEAR, SUMMER_EDGE } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -114,6 +114,8 @@ export const VERT_MAIN = `
   vec3 nowW = (modelMatrix * vec4(nowL, 1.0)).xyz;
   // a seed's down is finer than the film's lens can hold out of focus: a head takes a share only of the lens's spread, so its hairs stay hairs
   float lensShare = abs(shape - ${n(SHAPE.seed)}) < 0.5 ? ${n(CARD.hair.lensFilm)} : (abs(shape - ${n(SHAPE.light)}) < 0.5 ? ${n(CARD.glow.lensFilm)} : 1.0);
+  // under the storm's full level a seed goes over to the calm's share (looks.ts, CARD.clock.lensFilm): a clock stands at one place in every sample of the lens, so each of its hairs is one line and not as many lines as there are samples
+  if (abs(shape - ${n(SHAPE.seed)}) < 0.5 && uStorm.x < ${n(CARD.clock.stormOff[1])}) lensShare = mix(${n(CARD.clock.lensFilm)}, lensShare, smoothstep(${n(CARD.clock.stormOff[0])}, ${n(CARD.clock.stormOff[1])}, uStorm.x));
   float lensC = afloat * lensShare;
   vec3 eye = cameraPosition - uEyeShift * lensC;
   vec4 placed = lensPlace(nowW, eye);
@@ -148,6 +150,14 @@ export const VERT_MAIN = `
   float shown = clamp((uStorm.z * ${n(1 + SETTLE_FADE)} - fract(h.z * 61.0)) / ${n(SETTLE_FADE)}, 0.0, 1.0);
   float pace = length((mat3(modelViewMatrix) * (aNow - aPrev)).xy) * uPoint.y * mag / (zImg * uPoint.w);
   float gust = uStorm.w * smoothstep(${n(STORM_PACE.fromPx)}, ${n(STORM_PACE.toPx)}, pace);
+  // Summer's seeds and lights (looks.ts, SUMMER_PACE, SEED_NEAR): their pace is the wide camera's, so the calm stays calm at a close camera. And a seed that lands goes out of the storm as it comes near what it can snag on: nearS is 0 in the open air and 1 at the touch
+  float nearS = 0.0;
+  if (shape > ${n(SHAPE.seed - 0.5)} && shape < ${n(SHAPE.light + 0.5)}) {
+    pace /= max(1.0, uPoint.y / (dist * uPoint.w * ${n(SUMMER_PACE.mmPx)}));
+    vec4 wayS = uKindWay[kind];
+    if (shape < ${n(SHAPE.seed + 0.5)} && aState < ${n(SEED_NEAR.state * 1.25)} && wayS.z > 0.5 && float(cardHash2(pid, 191u + uint(kind)) >> 8u) / 16777216.0 >= max(wayS.x, wayS.y)) nearS = min(aState * ${n(1 / SEED_NEAR.state)}, 1.0);
+    gust = uStorm.w * smoothstep(${n(STORM_PACE.fromPx)}, ${n(STORM_PACE.toPx)}, pace) * (1.0 - nearS);
+  }
   float classed = 1.0 - (1.0 - smears) * (1.0 - sharps) * (1.0 - fines);
   float gusty = afloat * max(gust, (1.0 - glints) * (1.0 - classed) * (1.0 - shown));
   float soft = gusty * (smears + ${n(STORM_FINE_SOFT)} * fines + (storming ? ${n(STORM_SHARP_SOFT.soft)} * sharps : 0.0));
@@ -163,6 +173,12 @@ export const VERT_MAIN = `
   float blur = uBlur.z * (1.0 - exp(-((coc > 0.0 ? coc * uBlur.x * mix(1.0, ${n(REST_CLEAR.near)}, over) : -coc * uBlur.y) + uTone.w * mix(${n(LENS_LOOK.glassDiscLow)}, ${n(LENS_LOOK.glassDiscHigh)}, fract(h.y * 173.0)) * byGlass * byGlass) / uBlur.z)) * afloat;
   vec3 rimAxis = cross(normalize(placed.xyz - eye), uLensCentre - eye);
   float rim = on > 0.5 ? 1.0 - smoothstep(0.9, 0.985, length(rimAxis) / R) : 1.0;
+  // Summer's seeds and lights (looks.ts, SUMMER_EDGE): at the back of the ball the lens puts a point at once well inside the outline when the ray through the limb comes to reach it. pastS is its distance past that ray in millimetres; it comes in over the first of them and goes out the same way
+  if (on > 0.5 && shape > ${n(SHAPE.seed - 0.5)} && shape < ${n(SHAPE.light + 0.5)} && uStorm.x < ${n(SUMMER_EDGE.stormOff[1])}) {
+    float clS = R / dist;
+    float pastS = lensMiss(1.0, vec2(dist, 0.0), vec2(clS, sqrt(max(1.0 - clS * clS, 0.0))), vec2(a, length(nowW - uLensCentre - a * (oe / dist))), R, 1.0 / uLens.y);
+    rim = min(rim, mix(smoothstep(0.0, ${n(SUMMER_EDGE.mm)}, pastS), 1.0, smoothstep(${n(SUMMER_EDGE.stormOff[0])}, ${n(SUMMER_EDGE.stormOff[1])}, uStorm.x)));
+  }
 
   vec2 streak = vec2(0.0);
   float held0 = 1.0;
