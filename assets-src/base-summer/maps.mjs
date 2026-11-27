@@ -5,7 +5,7 @@ import { FIELD } from './field.mjs'
 export const GRAIN = { px: 512 }
 export const SAND = { px: 512, grains: 2600 }
 // A slope of the relief of FACE.slope (mm out per mm up) reads as fully turned up or down; a crumb that stands out takes the light as well.
-const FACE = { slope: 0.24, gain: 0.8, broad: 0.5, form: 0.4, grain: 0.45, wide: 2.4, hollow: 0.25, deep: 0.35 }
+const FACE = { slope: 0.24, gain: 0.8, broad: 0.5, form: 0.4, grain: 0.25, wide: 2.4, hollow: 0.25, deep: 0.35, steep: 0.6 }
 
 // Row 0 of a picture is its top; the maps are worked out from the foot up.
 const up = (bytes, w, h, ch) => {
@@ -44,13 +44,15 @@ export async function carveMap(dir, f) {
       const d = Math.max(j - 1, 0) * W + i
       const t = Math.min(j + 1, H - 1) * W + i
       const hp = (k) => f.d[k] - fine[k] + f.fine[k]
-      const [rb, gb] = slopeByte((hp(r) - hp(l)) / (2 * stepU), (hp(t) - hp(d)) / (2 * stepV))
+      const run = ((t - d) / W) * stepV
+      // On a wall of the fold the map is drawn out along the wall: there its grain is held back, or every crumb shows as a streak.
+      const flat = 1 / (1 + 4 * Math.max(Math.abs(fine[t] - fine[d]) / run - FACE.steep, 0) ** 2)
+      const [rb, gb] = slopeByte(((hp(r) - hp(l)) / (2 * stepU)) * flat, ((hp(t) - hp(d)) / (2 * stepV)) * flat)
       out[o * 3] = rb
       out[o * 3 + 1] = gb
-      const run = ((t - d) / W) * stepV
       const face = FACE.gain * Math.tanh(-(f.rel[t] - soft[t] - f.rel[d] + soft[d]) / run / FACE.slope) + FACE.form * Math.tanh(-(soft[t] - soft[d]) / run / FACE.broad)
       const hollow = Math.tanh((far[o] - near[o]) / FACE.hollow)
-      out[o * 3 + 2] = Math.round(clamp(0.5 + 0.5 * clamp(face - FACE.deep * hollow + f.lip[o] + FACE.grain * f.grain[o], -1, 1) * (1 - f.halo[o]) ** 2) * 255)
+      out[o * 3 + 2] = Math.round(clamp(0.5 + 0.5 * clamp(face - FACE.deep * hollow + f.lip[o] + FACE.grain * flat * f.grain[o], -1, 1) * (1 - f.halo[o]) ** 2) * 255)
     }
   }
   return [await writePng(`${dir}/base-carve.lin.w2048.png`, W, H, 3, up(out, W, H, 3))]
@@ -82,7 +84,7 @@ export async function toneMap(dir, f) {
       c = c.map((v, q) => mix(v, loose[q], 0.75 * f.drift[o]))
       const speck = 0.94 + 0.12 * hashInt(i, j, 311) * hashInt(i >> 1, j >> 1, 313) + 0.05 * (fbm(A * 400, h * 2.2, 400, 512, 315, 2) - 0.5)
       // Round each thing set into the sand the sand is in its shade.
-      const dark = 1 - 0.14 * f.halo[o] * f.halo[o]
+      const dark = (1 - 0.14 * f.halo[o] ** 2 - 0.3 * f.halo[o] ** 4) * (1 - 0.42 * f.under[o] ** 2)
       for (let q = 0; q < 3; q++) out[o * 3 + q] = Math.round(clamp(c[q] * speck * dark) * 255)
     }
   }
