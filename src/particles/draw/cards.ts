@@ -46,6 +46,7 @@ export const CARD_VERT = `
     float keepC = mix(afloat * max(gustC, ${n(CARD.dabCalm)} * uStorm.x * uStorm.w) * mix(${n(CARD.dabKeep[0])}, ${n(CARD.dabKeep[1])}, smoothstep(1.0 - chosen - dabShare - 0.02, 1.0 - chosen - dabShare, own)), 1.0, whole);
     if (${at(SHAPE.seed)} && whole > 0.5 && way.z > 0.5 && u5 >= max(way.x, way.y)) keepC *= max(max(afloat * gustC, uStorm.x * uStorm.w), lying * step(fract(own * 977.0), ${n(CARD.clear.snagSeen)}));
     if (${at(SHAPE.spark)}) keepC = max(mix(${n(CARD.sparkKeep[0])}, ${n(CARD.sparkKeep[1])}, pow(abs(own), mix(${n(CARD.sparkRestSkew)}, ${n(CARD.sparkSkew)}, gust))), smoothstep(mix(${n(CARD.sparkRestClear[0])}, ${n(CARD.sparkClear[0])}, gust), mix(${n(CARD.sparkRestClear[1])}, ${n(CARD.sparkClear[1])}, gust), own));
+    if (${at(SHAPE.spark)}) keepC = max(keepC, ${n(CARD.sparkRestFine[0])} * smoothstep(${n(CARD.sparkRestFine[1])}, ${n(CARD.sparkRestFine[1] + 0.05)}, own) * (1.0 - gust));
     if (${at(SHAPE.fleck)}) keepC = mix(${n(CARD.fleckKeep[0])}, ${n(CARD.fleckKeep[1])}, pow(abs(own), mix(${n(CARD.fleckSkew)}, ${n(CARD.fleckStorm)}, gustC)));
     float stormSize = ${at(SHAPE.petal)} ? ${n(CARD.stormSize[0])} : (${at(SHAPE.leaf)} ? ${n(CARD.stormSize[1])} : 1.0);
     rC *= mix(${at(SHAPE.leaf)} ? ${n(CARD.leafDab)} : ${n(CARD.dabSize)}, mix(1.0, stormSize, gustC * (own > 1.0 - chosen ? 0.0 : 1.0)), whole);
@@ -828,6 +829,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     float sharp = 1.0 - smoothstep(${n(CARD.spark.hotFrom[0])}, ${n(CARD.spark.hotFrom[1])}, sg / max(rc, 0.6));
     tint = mix(mix(vec3(${CARD.spark.restEmber.map(n).join(', ')}), k.rgb, vL2.w), vec3(${CARD.spark.dying.map(n).join(', ')}), smoothstep(0.55, 1.0, part));
     tint = mix(tint, mix(vec3(${CARD.spark.restHot.map(n).join(', ')}), vec3(${CARD.spark.hot.map(n).join(', ')}), vL2.w), mix(${n(CARD.spark.restHotCore)}, ${n(CARD.spark.hotCore)}, vL2.w) * sharp * (1.0 - disc) * exp(-0.5 * d2 / (mix(${n(CARD.spark.restHotWide)}, ${n(CARD.spark.hotWide)}, vL2.w) * vc)) * (1.0 - 0.7 * part * vL2.w));
+    tint = mix(tint, vec3(${CARD.spark.restFineHot.map(n).join(', ')}), ${n(CARD.spark.restFineSeen[2])} * (1.0 - vL2.w) * (1.0 - smoothstep(${n(CARD.spark.restFineSeen[0])}, ${n(CARD.spark.restFineSeen[1])}, vCore.w)) * (1.0 - smoothstep(0.55, 1.0, part)));
   }
   vec3 col = tint * (k.a * lum) * (1.0 - vFog.a * uTone.z);
   gl_FragColor = vec4(col, cover);
