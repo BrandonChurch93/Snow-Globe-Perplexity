@@ -1,3 +1,6 @@
+0-ninth-form-pair-with-air-above-pair-without-air.jpg
+The ninth pass, form only, before the proofs (trial 141, built on the eighth 16a4287c, not yet merged with main). Above: the approved beside ours with the air. Below: the approved beside ours without the air, a measuring aid and not a judged picture. Six domes that overlap, the largest at the top and at the left; the two left bands narrowed to slits that are half sky and half dark leaf seen through; the fork closed to three holes with boughs across them. Not met: the upper slit is short (it closes 4 mm in from the outline, the approved's runs 9 mm), the lower slit reaches 2.3 mm at its inner half, the low left pad's underside is still close to level. No tone, gold or leaf value was touched.
+
 Summer tree, eighth pass. Head agent/p6-summer-tree 16a4287c (e3b7e889 on main b4bc96c0). All pictures drawn on the builder's machine at review, hd, hero camera unless said. The approved is always at the left.
 
 1-whole-400px-approved-left.jpg
