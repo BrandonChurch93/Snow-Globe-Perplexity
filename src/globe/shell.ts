@@ -262,6 +262,16 @@ float glassShareRaw(vec3 v) {
 float glassLimb(float s) {
   return 1.0 - smoothstep(1.0 - max(${num(glassLook.limbPx)} * fwidth(glassShareRaw(normalize(vStageLocal - vEye))), 1e-4), 1.0, s);
 }
+// How much of the inside the ring at the outline hides at the share s of the radius, where the glass faces nWorld: the ring's own
+// cover, as its pass makes it from the same numbers. The main pass asks it under the outline's ramp only.
+float glassRingCover(float s, vec3 nWorld) {
+  float ringTop = (1.0 - smoothstep(${num(glassLook.ring.side[1])}, ${num(glassLook.ring.side[0])}, nWorld.x)) * smoothstep(${num(glassLook.ring.low[0])}, ${num(glassLook.ring.low[1])}, nWorld.y);
+  float ringUnder = 1.0 - smoothstep(${num(glassLook.ring.low[0])}, ${num(glassLook.ring.low[1])}, nWorld.y);
+  float ringEdge = smoothstep(${num(glassLook.ring.edge[0])}, ${num(glassLook.ring.edge[1])}, s);
+  float ringIn = uRingAmt.w * ${num(glassLook.ring.thin)};
+  float ring = smoothstep(mix(${num(glassLook.ring.from)} + ringIn - ${num(glassLook.ring.soft)} * ringTop, ${num(glassLook.ring.lowFrom)}, ringUnder), mix(${num(glassLook.ring.to)} + ringIn, ${num(glassLook.ring.lowTo)}, ringUnder), s);
+  return ring * mix(1.0, mix(${num(glassLook.ring.cover)}, 1.0, ringTop * ringEdge), ringTop) * (uRingAmt.x + (1.0 - uRingAmt.x) * ringEdge);
+}
 float glassFresnel(float c, float n) {
   float g2 = n * n - 1.0 + c * c;
   if (g2 <= 0.0) return 1.0;
@@ -737,6 +747,16 @@ void main() {
       foot += max(tap, 0.0);
     }
     lit += min(foot / ${num(glassLook.seat.mirrorTaps)}, vec3(${num(glassLook.seat.mirrorCap)})) * (${num(glassLook.seat.mirror)} * 6.75 * footU * (1.0 - footU) * (1.0 - footU) * footLimb * limb * (1.0 - ${num(glassLook.seat.lineDepth)} * line));
+  }
+  // The ring is drawn over this pass by its cover times the outline's ramp. Under the ramp that left this pass's light showing by
+  // the share of the pixel that lies outside the ball as well as by what the ring leaves open: a pale hairline on the outline,
+  // one pixel wide, which the shutter's samples broke into two dotted lines when the globe moved. The light is cut here to
+  // what the ring leaves open of the ball alone, which is nothing under the ring's outermost line. Inside the ramp nothing changes.
+  float ringLimb = glassLimb(clamp(bendRaw, 0.0, 1.0));
+  if (ringLimb < 1.0) {
+    float ringOver = glassRingCover(clamp(bendRaw, 0.0, 1.0), nWorld);
+    float ringOpen = (1.0 - ringOver) / max(1.0 - ringOver * ringLimb, 1e-4);
+    lit *= ringOpen;
   }
   gl_FragColor = vec4(lit, keep);
 #endif
