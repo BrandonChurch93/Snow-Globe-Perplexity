@@ -154,7 +154,16 @@ const isSoft = (img: El): boolean => img.src.startsWith('data:')
 /** The stills in the page, lowest first, without the soft picture that came with the page. */
 const stillsIn = (box: El): El[] => box.all('img').filter((img) => !isSoft(img))
 const softIn = (box: El): El[] => box.all('img').filter(isSoft)
-const boxOf = (img: El): { x: number; y: number; right: number; bottom: number } => ({ x: px(img.style.left), y: px(img.style.top), right: px(img.style.left) + px(img.style.width), bottom: px(img.style.top) + px(img.style.height) })
+/** Where the page has put a picture: it lays it in the corner, whole pixels wide and high, and moves and sizes it from there. */
+const placeOf = (img: El): { x: number; y: number; w: number; h: number } => {
+  const m = /^matrix\((.+)\)$/.exec(img.style.transform ?? '')
+  const [a = 1, , , d = 1, e = 0, f = 0] = m ? m[1]!.split(',').map(Number) : []
+  return { x: px(img.style.left) + e, y: px(img.style.top) + f, w: px(img.style.width) * a, h: px(img.style.height) * d }
+}
+const boxOf = (img: El): { x: number; y: number; right: number; bottom: number } => {
+  const p = placeOf(img)
+  return { x: p.x, y: p.y, right: p.x + p.w, bottom: p.y + p.h }
+}
 const judged = [config.formats.phone, config.formats.tablet, config.formats.hd]
 
 /** A still or a copy of it as the page laid it: its box, the globe in it (the glass and the row its foot ends at) and how far
@@ -384,8 +393,9 @@ describe('the still stands where the globe stays once the controls are measured'
     const { box } = open(width, height, '', screen)
     const img = stillsIn(box)[stillsIn(box).length - 1]!
     const s = table.stills.find((x) => img.src.includes(`-${x[0]}.`))!
-    const k = px(img.style.height) / s[2]
-    return { y: px(img.style.top) + (s[3] / 1e5) * s[2] * k, r: (s[4] / 1e5) * s[2] * k }
+    const at = placeOf(img)
+    const k = at.h / s[2]
+    return { y: at.y + (s[3] / 1e5) * s[2] * k, r: (s[4] / 1e5) * s[2] * k }
   }
 
   it('holds the height of the controls for every way the media rules of the interface hold together', () => {
