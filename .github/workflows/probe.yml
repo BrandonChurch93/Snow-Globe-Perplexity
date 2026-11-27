@@ -1,0 +1,34 @@
+name: handoff probe
+on:
+  push:
+    branches: [agent/p6-handoff-ci-probe]
+permissions:
+  contents: read
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - name: machine
+        shell: bash
+        run: |
+          node -v; npm -v; git --version; (ffmpeg -version | head -1) || echo "no ffmpeg"; uname -a
+          df -h . | tail -1 || true
+      - name: windows hardware
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors | Format-List
+          Get-CimInstance Win32_VideoController | Select-Object Name, DriverVersion, AdapterRAM | Format-List
+          (Get-Item "C:\Program Files\Google\Chrome\Application\chrome.exe").VersionInfo.ProductVersion
+          [Environment]::GetFolderPath('Desktop')
+      - name: mac hardware
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sysctl -n machdep.cpu.brand_string; system_profiler SPDisplaysDataType | head -20
+          "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version || echo "no chrome"
