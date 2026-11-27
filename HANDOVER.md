@@ -144,3 +144,39 @@ Still short of the approved picture:
 - The upper gable reads cooler (more teal) than the approved's grey green, and its joints right of the attic pane are 14 red over.
 - The fence's rails are thinner than the approved's after the lowering, and the boards' worn edge is paler and less warm (164,116,70 against 145,115,95 for the brightest tenth).
 - The trunk's lit flank is 10 red over; the body under the fork is a little darker than the approved's.
+
+## After the seventh list (671968d3 on main 7cd99d2b)
+
+Pictures 26 to 31 (26 and 27 were work in progress). The detail is won back by form, not by contrast. No triangle is added: the made village and tree keep their counts at every level and G15 reads 1,799,613 at high as on main. Proof run on the pushed commit itself.
+
+- Wall: the shared stones are real pillow meshes, so their size cannot change without triangles. At load the normals of each stone's face are turned to the wall's plane with a small lean to the nearer flank (`FACE` in `mini/village.ts`, in `autumn()`); the shader then reads the pillow's own normal for a thin lit upper edge, a shade under, darker flanks, a crack where the lean changes sign, and a rough face from the grain map. The cracks part some of the wide stones in two.
+- Roof: in the make's colour only (`SHINGLE` in `assets-src/village-fall/build.mjs`): a dark gap under each row, a dark gap at each shingle's sides so a row reads as single shingles, and a worn lower edge of its own strength on every shingle. No new random draw, so the geometry does not move.
+- Litter: a map of 760 small leaves in twelve tones; the ground's cover weight (`COVER`, `coverAt`) is separate from the leaf props' field so the props stay where they were. The open soil between fence and path now has the fence strip's density.
+- Path: the path stones are part of the made decor (cobbles and three door flags), flattened at load by vertex to 0.36 of their height (`PATH`, `flattened()`), cooled toward the approved's grey brown, with dark sides. The leaves' landing field never held these stones; leaves land on the shared layout's path boxes, and the flattened tops now sit at that level.
+- Fence: the posts keep 0.62 of their width at load and run to a point (`POST`, `narrowed()` in `thinned()`); their landing boards narrow with them. The pale crown is taken down in the make's colour.
+- Gable: `STONE.high`, `corner`, `low`, a raised dark floor on the upper gable (`gableFloor`) and a green lift in the lower gable's joints only (`mossed`).
+
+Counts on the approved against the build (hd):
+- Courses between the purple window's sill and the eave: 7 to 8 against 7 to 8 (8.5 to 9 px each against 8 to 10).
+- Side wall, joints between eave and ground: 8 to 10 in 74 px against 8 to 10 in 76 px when every dark minimum is counted; with a threshold of 2 levels the approved gives only 3 to 7, because its side wall is nearly black there. The count is not sure on the approved.
+- Stones across the gable at the attic pane's height, right of the pane: 5 in 45 px against 4 to 5 in 47 px where a crack parts one (3 to 4 on the sixth list).
+- Roof rows on the near slope: about 6 against 8. Shingles: about 35 px wide against 12 to 20. Both are the make's geometry and stay.
+- Fence posts between the corner and the gate: 4 with one thin picket between each pair, on both. Post width 8 to 9 px against 7 to 8 (12 to 14 before).
+
+Measures with the air, review tier, hd (approved against build):
+- Gable left of the attic pane: stone 52,61,48 against 56,70,51, joint 16,24,17 against 20,19,16. Right of the pane: stone 46,60,41 against 54,56,41, joint 16,28,11 against 31,26,18 (13,16,15 without the air). Beside the purple window: stone 33,31,29 against 40,38,36, joint 22,22,19 against 22,14,13.
+- Six stones of the upper gable: mean 68,78,58 against 67,76,56. Three pairs: 52,69,49 against 50,73,46; 72,76,51 against 76,72,48; 70,83,67 against 76,89,66.
+- Path slabs, four boxes each: mean 134,104,85 against 135,106,86.
+- Fence post tops against bodies: approved 44,22,16 over 29,29,22 and 36,29,21 over 25,28,24; build 21,17,13 over 35,28,17 and 14,12,9 over 57,34,16.
+- Ground: 86,53,31 and 79,62,38 against 112,58,31 and 101,61,20. The air's halo adds 0,1,1 at the first box; the red is the litter's own.
+
+M3 at review: miniature 0.890 (0.754 on the sixth list, 0.868 on main), base 0.805. Parts: crown 1.29, trunk 1.13, roof 0.93, wall 0.84, fence 0.99, litter 0.79, chimney 0.68, the rest 0.62. Draft stills: fall-rest 1c2ab6d89fd700c9, fall-landed b9cd8afbd474c7b7; the other six are main 82d0b882's. G15 high 1,799,613.
+
+Still short of the approved picture:
+- The wall reads 0.84 against the 0.85 aimed and the roof 0.93 against 0.95. The stones are still about 1.3 times as wide as the approved's on the gable: they are shared pillow meshes and only the cracks part them. The roof has 8 rows of narrow shingles where the approved has about 6 rows of wide ones.
+- The chimney fell from 0.83 to 0.68: the flat face shading takes the pale brick faces down with the wall's. It needs its own exemption in `autumn()`.
+- The ground is 22 to 26 red over at both boxes: the litter is more orange and brighter than the approved's brown leaf mould.
+- Right of the attic pane the joints are 15 red over with the air and inside 10 without it; a warm glow of the air sits there.
+- A band of stones over the door still reads teal against the approved's warm lit arch.
+- The corner post is seen from its thin side, which is all worn edge and reads pale. The posts are pointed by a slant; at 7 times the approved's tops look rounded with a pale rim to me, so the point may be more than the picture asks.
+- Fall's two draft stills on main before this change were not drawn again here; the guard list's two are taken from the root's note.
