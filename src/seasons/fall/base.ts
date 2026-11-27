@@ -65,8 +65,8 @@ const baseUniforms = {
 const FLOOR_SHARE = 0.1
 // The brambles' tones, measured against the approved image in boxes at the review tier (the band of brambles under the
 // lip is 18, 18, 18 there; the tangle at the left 61, 37, 27).
-const BRAMBLE = { ALBEDO: 0.5, SPILL: 24, RIM: 0.1, KEY: 0.55, CARD: 0.2, WARM: 0.3, WARM_FRONT: 0.25, WARM_WEST: 13, TOP: 0.6, BARK: 1.1 }
-const DRUM_SHEEN = 0.42
+const BRAMBLE = { ALBEDO: 0.5, SPILL: 24, RIM: 0.1, KEY: 0.16, KEY_EAST: 3, CARD: 0.2, WARM: 0.3, WARM_FRONT: 0.4, WARM_WEST: 14, CARD_WEST: 5, TOP: 0.26, BARK: 0.8, LIFT: 0.03, FILL: 0.03 }
+const DRUM_SHEEN = 0.75
 const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}`
 const flicker: { a: number; b: number; c: number }[] = []
 let faceList: Face[] = []
@@ -246,7 +246,7 @@ roughnessFactor = clamp(mix(0.38 + 0.22 * fibreHere - 0.06 * baseThorn * vBasePa
 metalnessFactor = mix(0.2, mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust), baseDrum);
 `
 const IRON_TILT = `
-vec2 baseTilt = (vec2(baseNoise(vBasePos * 0.42 + 3.0), baseNoise(vBasePos * 0.42 + 31.0)) - 0.5) * 0.9 * baseDrum + (vec2(baseNoise(pebbleA * 1.3 + 41.0), baseNoise(pebbleB * 1.3 + 67.0)) - 0.5) * 0.4 * baseDrum + vec2(fibreOn - fibreHere, fibreNext - fibreHere) * (BRAMBLE_BARK * baseStrand);
+vec2 baseTilt = (vec2(baseNoise(vBasePos * 0.42 + 3.0), baseNoise(vBasePos * 0.42 + 31.0)) - 0.5) * 0.7 * baseDrum + (vec2(baseNoise(pebbleA * 1.1 + 41.0), baseNoise(pebbleB * 1.1 + 67.0)) - 0.5) * 0.75 * baseDrum + (vec2(baseNoise(pebbleB * 2.3 + 11.0), baseNoise(pebbleA * 2.3 + 53.0)) - 0.5) * 0.2 * baseDrum + vec2(fibreOn - fibreHere, fibreNext - fibreHere) * (BRAMBLE_BARK * baseStrand * mix(1.0, 0.25, smoothstep(-22.0, -47.0, vBasePos.x)));
 `
 const IRON_AFTER = `
 {
@@ -279,20 +279,23 @@ const IRON_AFTER = `
   // How far to the left a place is: the warm light of the card and of the lamps behind reaches the tangle there and
   // leaves the front of the ring cold.
   float ironWest = smoothstep(-22.0, -47.0, vBasePos.x);
+  float ironEast = smoothstep(14.0, 44.0, vBasePos.x);
   vec3 ironRimC = mix(vec3(dot(uBaseRimCol, vec3(0.3, 0.5, 0.2))), uBaseRimCol, mix(0.35, 1.0, ironWest));
-  reflectedLight.directSpecular += ironRimC * (0.03 * pow(abs(ironRh), 7.0) + mix(0.3 * pow(abs(ironRh), 40.0), BRAMBLE_RIM * pow(abs(ironRh), 30.0), baseStrand) * (1.0 - baseDrum)) * ironRl * ironSheen;
-  vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
-  reflectedLight.directSpecular += (mix(ironKeyC, ironKeyOpen * baseAo, baseDrum) * vec3(0.8, 0.9, 1.0) * (mix(0.03, 0.4 * baseDim, baseDrum) * pow(abs(ironKh), mix(8.0, 9.0, baseDrum)) + mix(0.5 * pow(abs(ironKh), 40.0) * baseThorn, BRAMBLE_KEY * pow(abs(ironKh), 40.0) * ironGrain, baseStrand)) * ironKl + ironCardC * (0.03 * pow(abs(ironCh), 10.0) + mix(0.2 * pow(abs(ironCh), 40.0) * baseThorn, BRAMBLE_CARD * pow(abs(ironCh), 36.0), baseStrand)) * ironCl) * ironSheen;
+  reflectedLight.directSpecular += ironRimC * (0.03 * pow(abs(ironRh), 7.0) + mix(0.3 * pow(abs(ironRh), 40.0), BRAMBLE_RIM * pow(abs(ironRh), 16.0), baseStrand) * (1.0 - baseDrum)) * ironRl * ironSheen;
+  vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65 * (1.0 - ironWest)) * mix(vec3(1.0), vec3(1.0, 0.72, 0.5), ironWest);
+  reflectedLight.directSpecular += (mix(ironKeyC, ironKeyOpen * baseAo, baseDrum) * vec3(0.8, 0.9, 1.0) * (mix(0.03, 0.4 * baseDim, baseDrum) * pow(abs(ironKh), mix(8.0, 9.0, baseDrum)) + mix(0.5 * pow(abs(ironKh), 40.0) * baseThorn, BRAMBLE_KEY * (1.0 + BRAMBLE_KEY_EAST * ironEast) * pow(abs(ironKh), 14.0) * ironGrain, baseStrand)) * ironKl + ironCardC * (0.03 * pow(abs(ironCh), 10.0) + mix(0.2 * pow(abs(ironCh), 40.0) * baseThorn, BRAMBLE_CARD * (1.0 + BRAMBLE_CARD_WEST * ironWest) * pow(abs(ironCh), mix(16.0, 36.0, ironWest)), baseStrand)) * ironCl) * ironSheen;
   // The key rakes the bare leather of the right flank: a broad grey sheen, grained by the hide.
-  reflectedLight.directSpecular += ironKeyOpen * vec3(0.8, 0.9, 1.0) * DRUM_SHEEN * pow(abs(ironKh), 3.0) * ironKl * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.6 + 0.6 * basePebble) * (0.7 + 0.6 * baseNoise(pebbleA * 0.45 + 17.0)) * baseAo;
+  reflectedLight.directSpecular += ironKeyOpen * vec3(0.8, 0.9, 1.0) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * ironKl * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.7 + 0.45 * basePebble) * baseAo;
   float ironEdge = pow(abs(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
   float ironLeft = clamp(dot(ironUp, normalize(vec3(-0.8, 0.25, 0.55))), 0.0, 1.0);
-  reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.72, 0.5), vec3(1.0, 0.6, 0.36), baseStrand) * (mix(0.45, BRAMBLE_WARM, baseStrand) * pow(abs(ironWarm), mix(5.0, 26.0, baseStrand)) + mix(0.1, 0.25 * BRAMBLE_WARM, baseStrand) * pow(abs(ironLeft), mix(5.0, 20.0, baseStrand))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch) * mix(1.0, ironGrain, baseStrand) * mix(1.0, BRAMBLE_WARM_FRONT + BRAMBLE_WARM_WEST * ironWest, baseStrand);
+  reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.72, 0.5), mix(vec3(1.0, 0.6, 0.36), vec3(1.0, 0.6, 0.36), ironWest), baseStrand) * (mix(0.45, BRAMBLE_WARM, baseStrand) * pow(abs(ironWarm), mix(5.0, mix(26.0, 70.0, ironWest), baseStrand)) + mix(0.1, 0.05 * BRAMBLE_WARM, baseStrand) * pow(abs(ironLeft), mix(5.0, 20.0, baseStrand))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch) * mix(1.0, ironGrain, baseStrand * (1.0 - ironWest)) * mix(1.0, BRAMBLE_WARM_FRONT + BRAMBLE_WARM_WEST * ironWest, baseStrand);
   vec3 ironTop = normalize(mat3(viewMatrix) * vec3(0.0, 1.0, 0.0));
   float ironTh = max(dot(geometryNormal, normalize(ironTop + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.92, 0.98, 1.1) * BRAMBLE_TOP + ironKeyC * 0.03) * pow(abs(ironTh), mix(9.0, 18.0, baseStrand)) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * ironGrain * ironSheen * (1.0 - baseDrum);
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.92, 0.98, 1.1) * BRAMBLE_TOP + ironKeyC * 0.03) * pow(abs(ironTh), mix(9.0, 7.0, baseStrand)) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * ironGrain * ironSheen * (1.0 - baseDrum);
+  // The wood is never quite black: the sky lifts it, and at the left the lamps behind fill it warm.
+  reflectedLight.indirectDiffuse += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.9, 0.96, 1.15) * BRAMBLE_LIFT + uBaseRimCol * vec3(1.0, 0.45, 0.4) * BRAMBLE_FILL * ironWest * (0.4 + 0.6 * ironLeft)) * mix(0.35, 1.0, baseAo) * mix(1.0, 0.8, baseDrum);
   reflectedLight.directSpecular = ironBefore + (reflectedLight.directSpecular - ironBefore) * baseDim;
   ironEdge *= (1.0 + 3.0 * baseThorn) * baseDim;
   reflectedLight.indirectSpecular += (uRigSky * 0.35 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen;
@@ -324,7 +327,7 @@ float baseAo = vBasePaint.x;
 float faceRib = baseNoise(vBasePos * 1.7) * 0.6 + baseNoise(vBasePos * 5.0) * 0.4;
 diffuseColor.rgb = mix(vec3(0.045, 0.015, 0.005), vec3(0.11, 0.038, 0.01), faceRib) * mix(0.35, 1.0, smoothstep(0.1, 0.8, baseAo)) * mix(1.0, 0.5, faceStem);
 float faceNear = exp(-max(-faceD, 0.0) / 0.03);
-float faceSoft = exp(-max(-faceD, 0.0) / 0.2);
+float faceSoft = exp(-max(-faceD, 0.0) / 0.13);
 vec3 faceCandle = uFaceCol * faceGlowing;
 float faceLow = smoothstep(0.75, 0.2, faceUv.y);
 // Each candle stands where it was set down: the hot place of a face is its own.
@@ -337,7 +340,7 @@ vec3 faceLight = mix(faceWall * mix(0.3, 1.0, faceBevel), faceCave, faceThrough 
 float faceRidge = smoothstep(0.25, 0.85, baseAo);
 // The rind is thin enough to carry the candle: the skin glows round the openings and holds a low ember all over,
 // deeper in the ribs' ridges than in their grooves.
-vec3 faceSkin = faceGlowing * (vec3(1.0, 0.3, 0.04) * 0.2 * faceNear + vec3(1.0, 0.2, 0.02) * (0.1 * faceSoft * faceSoft + 0.02 * faceSoft + 0.006) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib)) * (1.0 - faceStem);
+vec3 faceSkin = faceGlowing * (vec3(1.0, 0.3, 0.04) * 0.2 * faceNear + vec3(1.0, 0.2, 0.02) * (0.1 * faceSoft * faceSoft + 0.012 * faceSoft + 0.004) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib)) * (1.0 - faceStem);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.006, 0.002), faceOpen);
 totalEmissiveRadiance += mix(faceSkin, faceLight, faceOpen);
 float baseWrap = 0.3;
@@ -449,7 +452,7 @@ void main() {
   float ring = webLine(v, 0.0) * gapped * smoothstep(0.06, 0.16, vWebUv.y);
   float edge = max(webLine(vWebUv.x * 0.999 + 0.0005, 0.3), 0.0);
   float glint = 0.45 + 1.3 * pow(abs(sin(vWebUv.y * 8.0 + cell * 2.1 + vWebUv.x * 5.0)), 5.0);
-  float thread = max(max(spoke, ring * 0.3), edge * 0.6) * glint;
+  float thread = max(max(spoke, ring * 0.25), edge * 0.6) * glint;
   float dew = max(smoothstep(0.8, 1.0, webHash(floor(v * 3.0) + cell * 5.0)) * ring, bead * 0.9);
   vec3 view = normalize(cameraPosition - vStageWorld);
   float back = pow(max(dot(-view, uBaseRimDir) * 0.5 + 0.5, 0.0), 2.0);
@@ -458,8 +461,8 @@ void main() {
   lit = mix(lit, vec3(dot(lit, vec3(0.3, 0.5, 0.2))), 0.7);
   float tear = smoothstep(0.25, 0.6, webHash(floor(u * 0.5) + sheet * 9.0) + 0.5 * sin(vWebUv.y * 7.0 + cell));
   float veil = (0.03 + 0.045 * pow(abs(sin(u * 9.0 + 3.0 * sin(vWebUv.y * 5.0 + sheet))), 6.0) * webHash(floor(u * 2.87) + sheet)) * smoothstep(0.0, 0.3, vWebUv.y) * tear;
-  float a = clamp(thread * 0.2 + veil * 0.45 + dew * 0.12, 0.0, 1.0) * smoothstep(0.0, 0.03, vWebUv.y);
-  gl_FragColor = vec4(lit * vec3(0.85, 0.9, 0.95) * (0.7 + 1.3 * dew) * a, a);
+  float a = clamp(thread * 0.6 + veil * 0.6 + dew * 0.15, 0.0, 1.0) * smoothstep(0.0, 0.03, vWebUv.y);
+  gl_FragColor = vec4(lit * vec3(0.9, 0.94, 1.0) * (1.5 + 1.3 * dew) * a, a);
   if (uDiag != 0) {
     if (a < 0.2) discard;
     gl_FragColor = stageDiag(vec3(0.8, 0.82, 0.85), normalize(vWebNormal), 0.0, c, 0.0);

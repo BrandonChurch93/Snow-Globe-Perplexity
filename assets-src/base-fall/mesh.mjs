@@ -141,6 +141,12 @@ function addStrands() {
     const span = r(40, 100)
     push({ a0, span, h0: r(4, 32), slope: Math.tan((rng() < 0.5 ? -1 : 1) * r(4, 30) * RAD) * span * RAD * 53, bend: r(-4, 4), amp: r(1.2, 3.2), k: r(2, 5), ph: r(0, 6.28), rad: r(0.45, 0.7), lift: r(1.2, 6.5), sprawl: 0.6, wander: 2.2, thorn: [3.5, 6.5], every: 40, layer: 3, open: true, reach: r(2, 6) })
   }
+  // The twigs: the left of the ring is a tangle of thin steep lengths that stand out from the drum.
+  for (let i = 0; i < 18; i++) {
+    const a0 = r(-128, -72)
+    const span = r(18, 48)
+    push({ a0, span, h0: r(3, 31), slope: Math.tan((rng() < 0.5 ? -1 : 1) * r(14, 55) * RAD) * span * RAD * 53, bend: r(-5, 5), amp: r(0.8, 2.4), k: r(2, 6), ph: r(0, 6.28), rad: r(0.3, 0.52), lift: r(2.5, 9), sprawl: 1.2, wander: 2.4, thorn: [2.5, 5], every: 30, layer: 3, open: true, reach: r(3, 8) })
+  }
 }
 addStrands()
 
@@ -479,7 +485,7 @@ export function buildWax() {
     const { thick, drop } = prof(az)
     const t = j / (rows - 1)
     const top = [L.sphereRadiusAt(39.62) + 0.1, 39.62]
-    const h = top[1] - (drop + 0.9) * t
+    const h = top[1] - (drop + 0.9) * t * smooth(-0.45, 0.05, thick)
     const bulge = Math.sin(Math.PI * Math.min(t * 1.08, 1)) ** 0.6
     // The wax lies over the bead of the collar, never through it.
     const beadDy = h - (L.CROWN[1] - 0.79)
