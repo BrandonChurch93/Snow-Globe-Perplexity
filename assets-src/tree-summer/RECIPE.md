@@ -25,3 +25,11 @@ Prompt or command: `npm run make -- tree-summer`. Mesh `leaves`: the field of th
 Takes: rebuilt each time the script changed, the last build kept
 Why this one: one field gives both the picture and the distance field the seeds snag on
 Date: 2026-11-25
+
+### Fitting tools
+
+One measure used to fit the crown against the approved image. It needs Python 3 with Pillow, numpy and scipy, writes nothing but the picture it is asked for, and ships nowhere.
+
+- `python3 assets-src/tree-summer/crown-count.py approved [OUT.jpg]` counts the crown of `references/approved/summer-rest.png`. With `NOAIR.png IDS.png [OUT.jpg]` it counts our own rest still at hd in the same crop, at the same scale and through the same steps. With `doubt` it gives the span of every number of the approved when the hand marks and the rules of the mask are moved. It prints the crown's share of its hull, the bay and the notches, the lit band and its beads along the upper left outline, and each pad's length, thickness and tilt. OUT.jpg shows what was counted, laid over the picture: the crown's outline, its hull, the lit pixels and the notches by number.
+- `assets-src/tree-summer/crown-marks.json` holds the crop, the scale and the hand marks on the approved image: 13 seed heads whose light is never counted, 12 discs and 11 polygons where a seed head, a glow or the air lies over leaf (the 23 marks that add leaf), one point in each pad and the pairs of neighbours.
+- NOAIR.png comes from `npm run still -- --season summer --state rest --camera hero --tier review --format hd --no-air`, IDS.png from `npm run measure -- --unit summer --only M3 --tier review` (`out/work/stills/summer-rest-hd-review-ids.png`). The still without the air is a measuring aid and never a judged picture.
