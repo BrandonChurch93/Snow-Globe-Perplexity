@@ -1,62 +1,37 @@
-# Winter glints, handover
+# Winter glints, handover, second list
 
-Branch agent/p6-winter-glints. Two faults at 3840 x 2160, final tier, film frames 30 and 31.
+Branch agent/p6-winter-glints, head f47b33f1 (origin/main fe0f0202 merged in). Three items at 3840 x 2160.
 
-## The pond
+## 1. The backdrop not drawn beside the frond (frames 30 and 31)
 
-Cause. At 3840 the ice map stands at four texels and more to a pixel, and the bump normal was taken from a one pixel difference, so it turned fully from pixel to pixel and was new in every frame. Two places read it:
+Cause. The blur map (the texels view in src/core/materials.ts, STAGE_INSIDE) takes a vertex's blur from the parallax between the eye and two moved eyes, 4 mm across and 4 mm up. A vertex at the limit of what the ball shows, which one of the three eyes cannot see, is placed on the limb. Its parallax is near nothing or negative, the map read that as a depth of infinity, and since the depth is carried across the triangle that one vertex flooded its stretched triangle with the blur of infinity. The tile maximum and the reach then carried that radius over the undrawn backdrop beside the frond.
 
-- the mirror lobe of the lamp (iceLamp): with the mirror normal held flat the dark and bright dashes in the streak went;
-- three's own direct highlight at roughness 0.09: with a band limited normal there the scattered white dots went.
+The trial that showed it (hd, 12 samples, the map written out, frame 30): the wedge read 0.38 where infinity reads 0.388; the seen flags written to the map showed the wedge's far vertex unseen by the eye moved across; a floor on negative parallax changed nothing; giving the placed depth to a vertex any of the three eyes cannot see turned it off (wedge 0.38 to 0.09, tile maximum 0.387 to 0.262, reach 37.2 to 25.1 px). Frame 31 had the same fault in another place (tile maximum 0.381 to 0.257, reach 36.6 to 24.7 px).
 
-Glitter and sparkle switched off changed nothing. The colour on the dots is the post's fringe.
+Mend, with leave, in src/core/materials.ts: the two lensPlace calls of the moved eyes keep their seen flags, and one line gives the plain depth to a vertex any of the three eyes cannot see. tests/blur-map-unseen.test.ts holds it.
 
-Mend, in src/seasons/winter/mini/village.ts (iceMaterial, CALM). Where a pixel holds a texel or more of the ice map, bump and grain are read three levels up over six pixel steps; the mirror lobe widens with the reflection's change over the pixel; the lamp's highlight takes more roughness where the normal changes, and both are held no brighter. Below a quarter texel to a pixel nothing changes, so the hd pictures hold.
+Read at 3840 final, the wedge box 240,1200 to 800,1530, before against after: frame 30 moves 10918 pixels by more than 2 levels, frame 31 moves 744. The after frames also hold main's change to the glass's limb.
 
-Numbers, 3840 final, frame 30 against 31, fine part (sigma 2 px), travel removed:
+## 2. Frame 650's frost
 
-| box | rms main | rms mend | agreement main | agreement mend |
-| --- | --- | --- | --- | --- |
-| patch 1800,1760,2060,1960 | 7.95 | 1.24 | 0.093 | 0.596 |
-| core 1860,1760,2000,1860 | 11.79 | 1.56 | 0.162 | 0.765 |
-| top 1840,1700,2040,1800 | 11.03 | 2.06 | 0.159 | 0.745 |
+What it is. Not a step of one frame and not a patch that stays. Rows of white dots along the ball's travel on the rim frost. Each glint of the frost is narrower than a pixel, so a sample lights it or misses it, and in the shake the glass steps about 0.44 px between samples at hd (about 0.74 px at 3840), so the hits fall apart as dots about 2 px apart.
 
-At sigma 4 px the mend reads 0.785, 0.91 and 0.874 (main 0.204, 0.256, 0.283). The asked 0.8 is not reached in the finest band: what is left there is 1.2 to 2.1 levels rms, the size of the lens samples' own grain (plain snow on main reads agreement 0.18 to 0.36).
+Trials. Widening the glint's footprint by two and by five times the step did not remove the rows. Fading the glints with the glass's step between samples did.
 
-hd review against main: rest differs only in the pond (x 875..1055, y 657..715), mean 134.39 against 135.45, greatest 252.1 against 254.8. Landed: 643 px over 2 levels in x 935..1022, y 669..710. M3 winter-rest 0.9322 against main 0.9365.
+Mend, in src/seasons/winter/frost.ts: uTravel holds the glass's step between neighbouring samples of one picture in mm; the glints fade between 0.1 and 0.4 of a pixel of travel (look.glass.glintFade). At rest, in stills and on the live page the step is nothing and nothing changes.
 
-## The frond
+Read at hd final, frame 650, old against mend: the rows are gone; 14346 pixels move by more than 2 levels, all inside the ball (x 514 to 1257, y 63 to 701).
 
-Cause. The lens fill blurs each pixel by the radius the blur map holds, and the glass dressing was hidden from that map, so the frost took the radius of what stands behind it. Behind the left fronds the backdrop is not drawn, so the radius there is the tile reach (the tile maximum in src/core/accumulator.ts), fed in frame 30 by a sliver of ground at the ball's left limb with about 73 px. Frame 30: 26 px over the frond. Frame 31: about 2 px. Not the keep switch, not the floor pass, not uGrow.
+Not done: four frames at 3840 final before and after for frame 650. A frame there takes several minutes on this machine and the time did not reach.
 
-Mend. src/scene/stage.ts drawBlur draws winter's glass dressing into the map after the map's own draw; src/seasons/winter/frost.ts answers there with a cut of 0.004 (the picture's own discard), the plain texels view keeps 0.3.
+## 3. The pond's finest band
 
-Fill radius on the frost's pixels, px, 3840 final:
+Not mended. Frames 30 against 31 at 3840 final on this head, fine part at sigma 2 px, travel removed: patch 0.604 (rms 1.12), core 0.790 (1.60), top 0.766 (1.73). At sigma 4 px: 0.797, 0.921, 0.883. Removing the grain and dither alone reads 0.613, 0.798, 0.796 (patch, core, top) at 12 samples, so the grain is not the whole of it. What is new in each frame is the samples' own noise on detail finer than a pixel, plus the grain. By a model fitted to the two readings (not a proof), 0.8 in the patch needs about 48 samples and no grain on the ice, which is twice the render time of these frames and a change in the post, a shared file.
 
-| cover | frame 30 main | frame 30 mend | frame 31 mend |
-| --- | --- | --- | --- |
-| over 0.3 | 12.4 | 3.2 | 1.6 |
-| 0.05 to 0.3 | 20.4 | 2.0 | 1.7 |
-| under 0.05 | 19.5 | 2.1 | 1.7 |
-| no frost | 21.0 | 20.9 | 4.6 |
+## Checks on f47b33f1
 
-Fine rms in the frond box (440,1330,540,1450): main 2.26 then 2.90, mend 2.90 then 2.76.
-
-The cut. 0.3 leaves a hard outline, 0.05 ends the streak tips on an arc, 0.02 a fainter arc, 0.004 none.
-
-## Other seasons and checks
-
-Spring, summer and fall at rest, hd: byte for byte as main by sha256 at final (24 samples) and at draft with both trees on c1423ee5, and at draft again with both on 13e1a911 (spring e97d1b6f, summer 432f3c88, fall 7977ab28). A later head of main voids this guard; take it again from that head.
-
-Film frame 650 at hd final against main: 2 pixels differ by 1 level, nothing else. Winter at rest, hd final: only the pond differs (x 869..1062, y 651..722); the frost is as on main.
-
-tests/shake-change.test.ts stated the old rule (a fixed cut of 0.3 in the frost's view); it is restated in its own commit.
-
-## Still wrong, worst first
-
-1. The undrawn backdrop beside the frond still takes the tile reach in frame 30 and not in 31: a faint step (2 to 3 levels) at the frost's outer limit, and the flake beside the frond is crisp with a halo in 30 and soft in 31. That is the tile maximum, a shared file, left as told.
-2. The pond's finest band agrees 0.6 to 0.77, not 0.8.
-
-## Not seen
-
-Frames 27 to 29 and 32 to 34 at 3840 final. The close, frames 3281 to 3284. The tile switch in other seasons beyond one pair in each hold (spring 1000, summer 1750, fall 2500: no tile over 25 px, greatest reach 8.1, 4.1 and 21.8 px).
+- The eight draft hd stills equal main fe0f0202's list.
+- M3 at review for the four seasons reads the same lines before and after; the rest stills at review do not move by one pixel (the lens fill that reads the blur map runs from 12 samples, the review tier draws 8).
+- tsc exit 0; vitest 64 files passed, 1 skipped; 886 tests passed, 8 skipped.
+- Strict run for winter-rest and winter-shake: pass, 0 pixels differ.
+- No geometry changed; winter's triangles at high are as before.
