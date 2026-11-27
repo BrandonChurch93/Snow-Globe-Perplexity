@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { BODY } from '../assets-src/base-summer/profile.mjs'
-import { FALL, fallPaths, fallShare } from '../src/seasons/summer/arrival'
+import { FALL, GRAIN_ROW, fallPaths, fallShare, grainRows } from '../src/seasons/summer/arrival'
 
 // The sand that falls from the right shoulder of summer's base (open item 87: at rest nothing fell there). Each grain
 // leaves the shoulder under the collar (round 21: a thin stream from below the collar, no wall of sand up to the ledge),
@@ -85,5 +85,35 @@ describe("summer's falling sand", () => {
       last = v
     }
     expect(fallShare(12)).toBeLessThan(FALL.stand + 0.001)
+  })
+
+  // Once the jumping grains are gone the draw begins after the grains that only a landing's surge sets falling: a fifth of
+  // the fall, never in the air then, and not worth two triangles each. No grain that can still fall is left out of it.
+  it('leaves out of the rest draw only grains that the surge alone sets falling', () => {
+    const rows = grainRows()
+    const n = rows.data.length / GRAIN_ROW
+    const kind = (q: number): number => rows.data[q * GRAIN_ROW + 11]!
+    // The share a grain belongs to as the shader reads it, in single precision.
+    const share = (q: number): number => {
+      const v = Math.fround(Math.fround(rows.data[q * GRAIN_ROW + 12]! * Math.fround(FALL.pick[0]!)) + Math.fround(rows.data[q * GRAIN_ROW + 10]! * Math.fround(FALL.pick[1]!)))
+      return v - Math.floor(v)
+    }
+    const most = fallShare(FALL.gone)
+    expect(most).toBeGreaterThanOrEqual(FALL.stand)
+    let late = 0
+    let falling = 0
+    for (let q = 0; q < n; q++) {
+      if (kind(q) !== 1) continue
+      if (q >= rows.mark) {
+        falling++
+        continue
+      }
+      expect(share(q)).toBeGreaterThan(most + 1e-4)
+      late++
+    }
+    expect(late + falling).toBe(fallPaths().length)
+    for (let q = rows.mark - late; q < rows.mark; q++) expect(kind(q)).toBe(1)
+    expect(late).toBeGreaterThan(FALL.count * (1 - FALL.stand) * 0.9)
+    expect(late).toBeLessThan(FALL.count * (1 - FALL.stand))
   })
 })

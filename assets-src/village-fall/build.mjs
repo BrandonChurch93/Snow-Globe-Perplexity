@@ -338,7 +338,7 @@ for (const p of PUMPKINS) pumpkin(p)
 // The approved roof is thick, uneven, weathered shingles in a few staggered rows, dark brown violet, with a ridge that
 // sags. These lie just over the shared slope (its fine slates stay underneath, unseen), so the cottage keeps its place and size.
 const CAP = { fromMm: 17.6, keep: 0.84, out: 0.42, thick: 0.9 }
-const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], rise: [0.5, 0.72], gap: 0.16, eave: 0.3, ends: 0.34, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#a9805e') }
+const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], rise: [0.5, 0.72], gap: 0.16, eave: 0.3, ends: 0.34, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#a9805e'), wear: 0.38 }
 {
   const RS = rng(9241)
   const pick = (a) => a[Math.floor(RS() * a.length)]
@@ -369,7 +369,7 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
         const g = slab(b - a - SHINGLE.gap, thick, long, { round: 0.08, sx: 5, sy: 2, sz: 6, warp: 0.035, seed })
         const P = g.getAttribute('position')
         const col = new Float32Array(P.count * 3)
-        const tone = mul3(pick(SHINGLE.tones), 0.2 + 0.5 * RS())
+        const tone = mul3(pick(SHINGLE.tones), 0.3 + 0.5 * RS())
         const halfW = (b - a - SHINGLE.gap) / 2
         for (let i = 0; i < P.count; i++) {
           const x = P.getX(i)
@@ -385,8 +385,8 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
           P.setXYZ(i, q[0], q[1], q[2])
           const top = smooth(-0.1, 0.1, y)
           const streak = 0.72 + 0.5 * noise(x * 4.5 + seed, z * 0.8, 7)
-          const lit = top * smooth(0.84, 1, k) * (0.35 + 0.65 * smooth(0.5, 1, noise(x * 3.1 + seed, 9.2, 5) + 0.5))
-          const c = mix3(mul3(tone, streak * (0.42 + 0.58 * top) * (0.6 + 0.4 * k)), SHINGLE.worn, 0.8 * lit)
+          const lit = top * smooth(0.55, 1, k) * (0.35 + 0.65 * smooth(0.5, 1, noise(x * 3.1 + seed, 9.2, 5) + 0.5))
+          const c = mix3(mul3(tone, streak * (0.42 + 0.58 * top) * (0.6 + 0.4 * k)), SHINGLE.worn, SHINGLE.wear * lit)
           col.set(c, i * 3)
         }
         g.setAttribute('color', new THREE.BufferAttribute(col, 3))
@@ -453,7 +453,7 @@ for (const s of STONES) {
   const W = frame(L.cottagePoint(0, 0, C.halfLength), V3, UP, U3)
   const a = ATTIC
   const cy = a.sill + a.height / 2
-  const FRAME = lin('#3d2a1c')
+  const FRAME = lin('#17110f')
   const bar = (w, h, x, y) => {
     const g = slab(w, h, a.out + 0.35, { round: 0.05, sx: 2, sy: 2, sz: 1, warp: 0.03, seed: R() * 40 }).applyMatrix4(T(x, y, (a.out - 0.35) / 2))
     shade(g, (px, py) => 0.8 + 0.32 * noise(px * 5, py * 5, x + y))
