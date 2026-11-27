@@ -653,7 +653,9 @@ if (want(4)) {
   const back = await apart(a, d)
   await note(4, 'stir', { restApart: rest, afterStirApart: stirred, laterApart: back, seasonBefore: s.lit.join(), ...brief(after) }, after.lit.join() === s.lit.join() && !after.busy && stirred !== null && stirred > Math.max(rest * 1.5, rest + 0.3))
   // What a stir lifts is in the air for many seconds, and the look around that follows reads the picture at rest. So the
-  // step ends when the picture has stopped changing, not a count of frames after the stir.
+  // step ends when the picture has stopped changing, not a count of frames after the stir. On a slow machine what was
+  // lifted drifts so little from one picture to the next that it passes for rest: at rest the picture is also back near
+  // the one from before the stir.
   const still = Math.max(rest * 2, rest + 0.6)
   const t0 = Date.now()
   const changing = []
@@ -663,8 +665,9 @@ if (want(4)) {
     await frames(6)
     const next = await grab()
     const moved = await apart(last, next)
-    changing.push([Math.round((Date.now() - t0) / 100) / 10, moved, await apart(a, next)])
-    settled = moved !== null && moved < still
+    const from = await apart(a, next)
+    changing.push([Math.round((Date.now() - t0) / 100) / 10, moved, from])
+    settled = moved !== null && moved < still && from !== null && from < still * 2
     last = next
   }
   await note(4, 'stir-settled', { restApart: rest, cameToRest: settled, afterSeconds: Math.round((Date.now() - t0) / 100) / 10, secondsThenApartFromTheLastThenFromBeforeTheStir: changing.slice(-12), ...brief(await read()) }, settled)
