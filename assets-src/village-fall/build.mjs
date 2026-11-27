@@ -5,7 +5,7 @@ import { addLevels } from '../../tools/lib/glblevels.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadSource } from '../trunk/source.mjs'
 import { loadLayout } from '../village/layout.mjs'
-import { Bag, KIND, TILE_MM, clamp, fbm, frame, grainUv, lin, mix3, mul3, noise, rng, shade, slab, smooth, surf, writePng } from '../village/kit.mjs'
+import { Bag, KIND, TILE_MM, clamp, fbm, frame, grainUv, lin, mix3, mul3, noise, planar, rng, shade, slab, smooth, surf, writePng } from '../village/kit.mjs'
 
 const L = await loadLayout()
 const [PROPS, RF] = await loadSource(['/src/seasons/fall/mini/props.ts', '/src/miniature/roof.ts'])
@@ -20,6 +20,7 @@ const T = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z)
 const between = (a, b) => a + (b - a) * R()
 
 const SIZE = 1024
+const POST_WEAR = 0.5
 const ATTIC = PROPS.ATTIC
 const PUMPKINS = PROPS.PUMPKINS
 const STONES = PROPS.STONES
@@ -348,7 +349,7 @@ for (const p of PUMPKINS) pumpkin(p)
 // The approved roof is thick, uneven, weathered shingles in a few staggered rows, dark brown violet, with a ridge that
 // sags. These lie just over the shared slope (its fine slates stay underneath, unseen), so the cottage keeps its place and size.
 const CAP = { fromMm: 17.6, keep: 0.84, out: 0.42, thick: 0.9 }
-const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], rise: [0.5, 0.72], gap: 0.16, eave: 0.3, ends: 0.34, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#b07a55'), wear: 0.42 }
+const SHINGLE = { rows: 7, over: 1.5, wide: [3.4, 5.4], thick: [0.4, 0.6], rise: [0.5, 0.72], gap: 0.2, eave: 0.3, ends: 0.34, lap: 2.2, round: 0.3, ragged: 0.4, sx: 16, sz: 3, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#b07a55'), wear: 0.55 }
 {
   const RS = rng(9241)
   const pick = (a) => a[Math.floor(RS() * a.length)]
@@ -359,7 +360,7 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
   const sag = (along) => SHINGLE.ends * Math.pow(Math.abs(along) / len, 2)
   for (const sd of [-1, 1])
     for (let r = 0; r < SHINGLE.rows; r++) {
-      let t = -len - 0.12 + (r % 2 ? 0 : -0.6) - 0.5 * RS()
+      let t = -len - 0.12 + (r % 2 ? 0 : -SHINGLE.lap) - 0.5 * RS()
       while (t < len + 0.1) {
         const w = SHINGLE.wide[0] + (SHINGLE.wide[1] - SHINGLE.wide[0]) * RS()
         const a = Math.max(t, -len - 0.14)
@@ -376,7 +377,7 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
         const seed = RS() * 90
         const skew = (RS() - 0.5) * 0.4
         const curl = 0.2 * RS()
-        const g = slab(b - a - SHINGLE.gap, thick, long, { round: 0.08, sx: 5, sy: 2, sz: 6, warp: 0.035, seed })
+        const g = slab(b - a - SHINGLE.gap, thick, long, { round: 0.08, sx: SHINGLE.sx, sy: 2, sz: SHINGLE.sz, warp: 0.035, seed })
         const P = g.getAttribute('position')
         const col = new Float32Array(P.count * 3)
         const tone = mul3(pick(SHINGLE.tones), 0.5 + 0.5 * RS())
@@ -387,17 +388,17 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
           const z = P.getZ(i)
           const k = clamp(z / long + 0.5)
           const edge = smooth(0.72, 1, k)
-          const ragged = edge * (0.3 * noise(x * 2.1 + seed, 3.3, 1) + 0.14 * noise(x * 6.3 + seed, 1.1, 2))
-          const down = lo - long / 2 + z + ragged + skew * x * edge
           const side = Math.abs(x) / halfW
+          const ragged = edge * (SHINGLE.ragged * noise(x * 1.3 + seed, 3.3, 1) + 0.14 * noise(x * 4.3 + seed, 1.1, 2) - SHINGLE.round * long * Math.pow(side, 3))
+          const down = lo - long / 2 + z + ragged + skew * x * edge
           const lift = 0.06 + rise * k + y + thick / 2 + curl * edge * side * side + 0.05 * noise(x * 1.7 + seed, z * 1.7, 4) + sag(mid + x)
           const q = RF.roofAt(sd, down, mid + x, lift)
           P.setXYZ(i, q[0], q[1], q[2])
           const top = smooth(-0.1, 0.1, y)
-          const streak = 0.72 + 0.5 * noise(x * 4.5 + seed, z * 0.8, 7)
+          const streak = 0.68 + 0.6 * noise(x * 3.5 + seed, z * 2.5, 7)
           const lit = top * smooth(0.8, 1, k) * (0.45 + 0.55 * smooth(0.5, 1, noise(x * 3.1 + seed, 9.2, 5) + 0.5))
           const under = 0.22 + 0.78 * smooth(0.34, 0.62, k)
-          const cut = 0.16 + 0.84 * smooth(1, 0.62, side)
+          const cut = 0.16 + 0.84 * smooth(1, 0.7, side)
           const own = 0.35 + 1.3 * noise(seed, 5.7, 3)
           const c = mix3(mul3(tone, streak * (0.18 + 0.82 * top) * under * cut), SHINGLE.worn, clamp(SHINGLE.wear * own * lit))
           col.set(c, i * 3)
@@ -480,6 +481,178 @@ for (const s of STONES) {
   decor.add(back, { matrix: W, color: lin('#141210'), surf: [surf(KIND.wood, 0.9), 0], renormal: true })
   const g = new THREE.PlaneGeometry(a.width, a.height, 1, 1).applyMatrix4(T(a.across, cy, a.out - 0.08))
   attic.add(g, { matrix: W, keepUv: true, surf: [a.width, a.height] })
+}
+
+// The shared wall is round stones about 1.3 times as wide as the approved's. Fall draws its own on the gable and the
+// side wall: flat faced blocks in courses with a thin joint, each with a bevelled rim and chipped corners, standing on
+// the shared mortar round the shared openings. The shared round stones are put behind the mortar at load.
+const BLOCKS = { rowH: 0.9, rowJ: 0.14, wide: 1.4, wideJ: 0.4, share: [0.7, 1.3], gap: 0.06, bevel: 0.09, out: 0.3, vary: 0.05, tilt: 0.05, cut: [0.1, 0.24], cutShare: 0.5, jitter: 0.03, base: -1.8, plainBelow: -0.6, mortar: -0.5, sideDim: 0.5, gain: 0.8, tone: 0.8, rim: 0.45, chip: [0.45, 1.5], dent: 0.07, inner: 0.55, mark: 0.99, tones: ['#8c867d', '#7c766f', '#979289', '#726d66', '#837e75', '#9e988e', '#79736a', '#908a7f', '#6b6660', '#87837d'].map(lin), dirt: lin('#4b4538') }
+let blockCount = 0
+let blockTriangles = 0
+{
+  const RW = rng(4127)
+  const B = BLOCKS
+  const block = (W, x, y, w, h, o) => {
+    const bv = Math.min(B.bevel, 0.3 * Math.min(w, h))
+    const at = w / 2 - bv
+    const bt = h / 2 - bv
+    const top = B.mortar + (o.out ?? B.out) + (RW() - 0.5) * 2 * B.vary
+    const tx = (RW() - 0.5) * 2 * B.tilt
+    const ty = (RW() - 0.5) * 2 * B.tilt
+    const ring = []
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      const cut = (o.bend || y - h / 2 > B.plainBelow) && RW() < B.cutShare ? Math.min(B.cut[0] + (B.cut[1] - B.cut[0]) * RW(), 0.7 * Math.min(at, bt)) : 0
+      const j = () => (RW() - 0.5) * 2 * B.jitter
+      if (cut === 0) ring.push([sx * at + j(), sy * bt + j(), sx, sy])
+      else {
+        const upright = [sx * at + j(), sy * (bt - cut) + j(), sx, sy]
+        const level = [sx * (at - cut) + j(), sy * bt + j(), sx, sy]
+        if (sx * sy > 0) ring.push(upright, level)
+        else ring.push(level, upright)
+      }
+    }
+    const place = (px, py, pz) => {
+      if (o.bend) {
+        const th = o.bend.at - px / o.bend.r
+        return new THREE.Vector3(o.bend.cx + (o.bend.r + py) * Math.cos(th), o.bend.cy + (o.bend.r + py) * Math.sin(th), pz).applyMatrix4(W.M)
+      }
+      const qx = x + px
+      const qy = o.rake ? Math.min(y + py, o.rake(qx)) : y + py
+      return new THREE.Vector3(qx, qy, pz).applyMatrix4(W.M)
+    }
+    const hi = ring.map(([px, py]) => place(px, py, top + tx * px + ty * py))
+    const lo = ring.map(([px, py, sx, sy]) => place(px + sx * bv, py + sy * bv, top - bv))
+    const tone = mul3((o.tones ?? B.tones)[Math.floor(RW() * B.tones.length) % (o.tones ?? B.tones).length], B.gain * (0.97 - B.tone / 2 + B.tone * RW()) * (o.dim ?? 1))
+    const c = mix3(tone, B.dirt, o.bend ? 0 : smooth(1.4, -1.4, y) * 0.5)
+    const pos = []
+    const nor = []
+    const col = []
+    const out = new THREE.Vector3(0, 0, 1).transformDirection(W.M)
+    const tri = (a, b, d, ka, kb, kd) => {
+      const n = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(d, a))
+      if (n.lengthSq() < 1e-10) return
+      n.normalize()
+      const order = n.dot(out) < 0 ? [[a, ka], [d, kd], [b, kb]] : [[a, ka], [b, kb], [d, kd]]
+      if (n.dot(out) < 0) n.negate()
+      for (const [p, k] of order) {
+        pos.push(p.x, p.y, p.z)
+        nor.push(n.x, n.y, n.z)
+        col.push(c[0] * k, c[1] * k, c[2] * k)
+      }
+    }
+    const chip = () => B.chip[0] + (B.chip[1] - B.chip[0]) * RW()
+    if (o.bend || y - h / 2 > B.plainBelow) {
+      const dent = () => (RW() - 0.5) * 2 * B.dent
+      const mid = place(dent(), dent(), top + dent())
+      const inner = ring.map(([px, py]) => place(B.inner * px + dent(), B.inner * py + dent(), top + B.inner * (tx * px + ty * py) + dent()))
+      for (let k = 0; k < ring.length; k++) {
+        const m = (k + 1) % ring.length
+        const a = chip()
+        const b = chip()
+        const d = chip()
+        tri(mid, inner[k], inner[m], a, a, a)
+        tri(hi[k], hi[m], inner[m], b, b, b)
+        tri(hi[k], inner[m], inner[k], d, d, d)
+      }
+    } else {
+      const k0 = chip()
+      for (let k = 1; k < ring.length - 1; k++) tri(hi[0], hi[k], hi[k + 1], k0, k0, k0)
+    }
+    for (let k = 0; k < ring.length; k++) {
+      const m = (k + 1) % ring.length
+      tri(hi[k], lo[k], lo[m], 0.85, B.rim, B.rim)
+      tri(hi[k], lo[m], hi[m], 0.85, B.rim, 0.85)
+    }
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3))
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3))
+    g.setIndex(Array.from({ length: pos.length / 3 }, (_, i) => i))
+    decor.add(g, { surf: [surf(KIND.stone, B.mark), 0], uv: planar(W.U, W.V), uvOffset: [RW() * 7, RW() * 7] })
+    blockCount++
+    blockTriangles += pos.length / 9
+  }
+  const courses = (W, region, o = {}) => {
+    let y = region.y0
+    while (y < region.y1 - 0.3) {
+      let h = B.rowH + (RW() - 0.5) * B.rowJ
+      if (y + h > region.y1 - 0.45) h = region.y1 - y
+      const ym = y + h / 2
+      let spans = [[region.x0, region.x1]]
+      if (region.top) {
+        const half = region.top(ym)
+        if (half < 0.4) break
+        spans = [[Math.max(region.x0, -half), Math.min(region.x1, half)]]
+      }
+      for (const hole of region.holes ?? []) {
+        let hx0 = hole.x0
+        let hx1 = hole.x1
+        if (hole.arch && y + h > hole.arch.cy + 0.2) {
+          const dd = Math.max(y - hole.arch.cy, 0)
+          if (dd >= hole.arch.r) continue
+          const half = Math.sqrt(hole.arch.r ** 2 - dd ** 2)
+          hx0 = hole.arch.cx - half
+          hx1 = hole.arch.cx + half
+        } else if (!(y + h > hole.y0 + 0.2 && y < hole.y1 - 0.2)) continue
+        spans = spans.flatMap(([a, b]) => {
+          if (hx0 >= b || hx1 <= a) return [[a, b]]
+          const kept = []
+          if (hx0 - a > 0.45) kept.push([a, hx0])
+          if (b - hx1 > 0.45) kept.push([hx1, b])
+          return kept
+        })
+      }
+      for (const [a, b] of spans) {
+        const n = Math.max(1, Math.round((b - a) / (B.wide + (RW() - 0.5) * B.wideJ)))
+        const ws = Array.from({ length: n }, () => B.share[0] + (B.share[1] - B.share[0]) * RW())
+        const sum = ws.reduce((t, v) => t + v, 0)
+        let x = a
+        for (let i = 0; i < n; i++) {
+          const w = (ws[i] / sum) * (b - a)
+          block(W, x + w / 2, ym, w - B.gap, h - B.gap, { ...o, rake: region.rake })
+          x += w
+        }
+      }
+      y += h
+    }
+  }
+  const neg = (a) => [-a[0], -a[1], -a[2]]
+  const front = { M: frame(L.cottagePoint(0, 0, C.halfLength), V3, UP, U3), U: V3, V: UP }
+  const left = { M: frame(L.cottagePoint(-C.halfWidth, 0, 0), U3, UP, neg(V3)), U: U3, V: UP }
+  const doorR = C.door.width / 2 + 1.47
+  const spring = C.door.height - C.door.width / 2
+  const win = C.window
+  const side = C.sideWindow
+  const a = ATTIC
+  courses(front, {
+    x0: -C.halfWidth - 0.3,
+    x1: C.halfWidth + 0.3,
+    y0: B.base,
+    y1: C.wall + C.rise - 0.2,
+    top: (y) => (y <= C.wall ? C.halfWidth + 0.3 : C.halfWidth * (1 - (y - C.wall) / C.rise)),
+    rake: (x) => C.wall + C.rise * (1 - Math.abs(x) / C.halfWidth) - 0.1,
+    holes: [
+      { x0: C.door.across - doorR, x1: C.door.across + doorR, y0: -9, y1: spring, arch: { cx: C.door.across, cy: spring, r: doorR } },
+      { x0: win.across - win.width / 2 - 0.42, x1: win.across + win.width / 2 + 0.42, y0: win.sill - 0.95, y1: win.sill + win.height + 1.25 },
+      { x0: a.across - a.width / 2 - a.frame + 0.1, x1: a.across + a.width / 2 + a.frame - 0.1, y0: a.sill - 0.2, y1: a.sill + a.height + a.frame - 0.1 },
+    ],
+  })
+  const ring = { stones: 13, deep: 1.4, out: 0.62, gap: 0.08, from: 0.4, tones: ['#a59f95', '#999388', '#aea89d', '#918b80'].map(lin) }
+  const rm = C.door.width / 2 + 0.05 + ring.deep / 2
+  for (let i = 0; i < ring.stones; i++) {
+    const at = Math.PI * (1 - (i + 0.5) / ring.stones)
+    block(front, 0, 0, (Math.PI * rm) / ring.stones - ring.gap, ring.deep - 0.1, { bend: { cx: C.door.across, cy: spring, r: rm, at }, out: ring.out + 0.1 * RW(), tones: ring.tones })
+  }
+  for (const sd of [-1, 1]) {
+    let y = ring.from
+    while (y < spring - 0.3) {
+      let h = 1.0 + 0.4 * RW()
+      if (y + h > spring - 0.55) h = spring - y
+      block(front, C.door.across + sd * rm, y + h / 2, ring.deep - 0.12, h - ring.gap, { out: ring.out + 0.1 * RW(), tones: ring.tones })
+      y += h
+    }
+  }
+  courses(left, { x0: -C.halfLength - 0.3, x1: C.halfLength + 0.3, y0: B.base, y1: C.wall + 0.1, holes: [{ x0: side.along - side.width / 2 - 0.42, x1: side.along + side.width / 2 + 0.42, y0: side.sill - 0.95, y1: side.sill + side.height + 1.25 }] }, { dim: B.sideDim })
 }
 
 const blocked = (x, z, margin = 0) => {
@@ -668,7 +841,7 @@ for (const r of PROPS.ROCKS) {
       const foot = b.post ? 0.5 + 0.5 * smooth(-len / 2 + 0.4, -len / 2 + 2.2, y) : 1
       const side = b.picket ? 0 : smooth(half - 0.22, half - 0.02, Math.abs(x))
       const arch = b.post ? smooth(0.1, 0.02, crown(Math.max(-half, Math.min(half, x))) - y) : 0
-      const worn = 1 + Math.max(5 * side, 3 * arch)
+      const worn = 1 + Math.max((b.post ? POST_WEAR : 5) * side, 3 * arch)
       return grain * split * end * foot * worn
     })
     const mid = [(b.a[0] + b.b[0]) / 2, (b.a[1] + b.b[1]) / 2, (b.a[2] + b.b[2]) / 2]
@@ -802,21 +975,20 @@ let tuftCount = 0
     tuftCount++
   }
   let tries = 0
-  while (tuftCount < 560 && tries++ < 60000) {
+  while (tuftCount < 420 && tries++ < 60000) {
     const a = R() * TAU
     const rr = 54 * Math.sqrt(R())
     const x = rr * Math.cos(a)
     const z = rr * Math.sin(a)
-    if (blocked(x, z, 0.3) || pathGap(x, z) < 1.2 || treeGap(x, z) < 4 || rockGap(x, z) < -0.3) continue
+    if (blocked(x, z, 0.3) || fenceGap(x, z) < 16 || pathGap(x, z) < 1.2 || treeGap(x, z) < 4 || rockGap(x, z) < -0.3) continue
     const bank = 1 - smooth(1.05, 1.6, L.pondField(x, z))
-    const post = 1 - smooth(0.4, 1.6, fenceGap(x, z))
     const rock = 1 - smooth(0, 1.6, rockGap(x, z))
     const rim = 1 - smooth(1.5, 7, L.islandEdge(Math.atan2(z, x)) - Math.hypot(x, z))
     const patch = smooth(0.0, 0.5, fbm(x * 0.14 + 5, z * 0.14 + 1, 4, 2))
     const east = smooth(4, 16, x) * smooth(-4, 8, z)
     // The front rim (toward the hero camera) carries tall grass that stands up through the low fog and breaks its level edge.
     const front = rim * smooth(-0.2, 0.5, z / Math.max(1, Math.hypot(x, z)))
-    if (R() > 0.02 + 0.3 * bank + 0.45 * post + 0.2 * rim + 0.75 * front + 0.08 * patch + 0.6 * east + 0.9 * rock) continue
+    if (R() > 0.02 + 0.3 * bank + 0.2 * rim + 0.75 * front + 0.08 * patch + 0.6 * east + 0.9 * rock) continue
     tuft(x, z, 0.8 + 0.3 * bank + 0.2 * rim + 1.1 * front + 0.5 * east + 0.5 * rock)
   }
   const g = new THREE.BufferGeometry()
@@ -933,4 +1105,4 @@ const record = {
   },
 }
 writeJson(rel('out', 'work', 'village', 'build-fall.json'), record)
-console.log(`village-fall: ${out.triangles} triangles (medium ${lighter.medium}, low ${lighter.low}) in ${out.meshes} meshes (${Object.entries(record.model.meshes).map(([k, v]) => `${k} ${v}`).join(', ')}), ${(out.bytes / 1e6).toFixed(2)} MB; ${leafCount} leaves, ${tuftCount} tufts, ${flagCount} flagstones, ${rimCount} rim stones, ${pebbleCount} pebbles; maps ${((earthBytes + litterBytes) / 1e6).toFixed(2)} MB`)
+console.log(`village-fall: ${out.triangles} triangles (medium ${lighter.medium}, low ${lighter.low}) in ${out.meshes} meshes (${Object.entries(record.model.meshes).map(([k, v]) => `${k} ${v}`).join(', ')}), ${(out.bytes / 1e6).toFixed(2)} MB; ${leafCount} leaves, ${tuftCount} tufts, ${flagCount} flagstones, ${rimCount} rim stones, ${pebbleCount} pebbles, ${blockCount} wall blocks of ${blockTriangles} triangles; maps ${((earthBytes + litterBytes) / 1e6).toFixed(2)} MB`)
