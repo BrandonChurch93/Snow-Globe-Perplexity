@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 216 · 2026-11-27 14:24 UTC
+Status 217 · 2026-11-27 15:22 UTC
 
-- `out/stills/status/status-216-1.jpg`: The change of season at its four peaks at the final tier, film frames 675, 1395, 2115 and 2835, drawn on its builder's pushed head, not on main yet, not judged
-- `out/stills/status/status-216-2.jpg`: Summer's fence at four times, approved picture left, main in the middle, the miniature's list right, in chain 32
-- `out/stills/status/status-216-3.jpg`: Summer's pond at three times, approved picture left, main in the middle, the miniature's list right, in chain 32, below the bar
-- `out/stills/status/status-216-4.jpg`: The seventh publish's build opened at summer with its controls, read on a helper machine
+- `out/stills/status/status-217-1.jpg`: Summer at rest on chain 32, approved picture left and build right, on origin now, below the bar
+- `out/stills/status/status-217-2.jpg`: Fall at rest on chain 32 with the base's fourteenth step, approved picture left and build right, on origin now, below the bar
+- `out/stills/status/status-217-3.jpg`: Summer after its landing on chain 32, pale flat patches on the base under the glass, a fault on the live page, being mended
+- `out/stills/status/status-217-4.jpg`: The change of season, summer's sand heap leaving over film frames 2104 to 2109 at draft, torn into bands at 2108, on its builder's head, below the bar
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 14:24 UTC
-clock: phase 6, tick of 35.7 minutes
-phase 6: 35.58 h used of its 12.00 h box
-allowance (after the review): 35.58 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 35.58 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 15:22 UTC
+clock: phase 6, tick of 58.2 minutes
+phase 6: 36.55 h used of its 12.00 h box
+allowance (after the review): 36.55 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 36.55 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
