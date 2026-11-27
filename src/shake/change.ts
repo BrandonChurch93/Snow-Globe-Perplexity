@@ -12,6 +12,8 @@ const WINDOW_FRAMES = ((config.shake.swapWindow.toBeat - config.shake.swapWindow
 const frames = (n: number): number => n / WINDOW_FRAMES
 
 const SHUTTER = config.film.shutterDegrees / 360
+/** How far the change number goes while the film's shutter is open. */
+const SHUTTER_CHANGE = frames(SHUTTER)
 
 /**
  * What is outside the glass and stands (the base, the slab, the lights of the backdrop, the light of the room) changes in one
@@ -120,6 +122,53 @@ export function partChange(part: string, change: number, side = 0.5): number {
   const r = changeRamp(part)
   const v = (change - r.start - r.lag * Math.min(1, Math.max(0, side))) / r.length
   return v <= 0 ? 0 : v >= 1 ? 1 : v
+}
+
+/**
+ * What lies on the table as one piece and leaves it as one piece (summer's sand, winter's frost and the lumps of snow
+ * behind it) is not thinned where it lies: it goes out along the table, away from the foot, over the span `surface-leave`,
+ * slowly at first and then fast, as the petals and the leaves go, and in every sample it is the whole thing a little
+ * further out. `leaveOut` says how far, for a thing that is gone at `reachMm` and thins from `thinFromMm` out, in a change
+ * that takes it away (`leaves`; in every other, and at rest, it says the thing lies where it lay):
+ *
+ * - `run`, the share of the span that has passed, and `out`, how far out the thing is drawn in this sample, in mm: both 0
+ *   before the leaving. `kept` is the share of it that is left past `thinFromMm`, 1 before.
+ * - Such a thing goes faster than the globe, and the globe's travel sets how many samples a frame has and when each is
+ *   taken (src/film/motion.ts, `evenSet`): drawn at those moments its copies lie at uneven steps, some wider than its
+ *   grain, and every grain is a row of beads. So in a frame of `join` samples or more (`of`, else 0) the thing is drawn
+ *   where it is at even shares of the shutter from the frame's first sample on (`sample.hold`), a sample's share being
+ *   its rank in time, and the part that draws it reads its grain along the way over `tent` steps to either side, most at
+ *   the copy's own place: `behind` and `ahead` are those reaches in mm. Tents at even steps add up to the same at every
+ *   place, so a grain is the one line it leaves. A frame of fewer samples holds the whole thing, sharp, at each sample's
+ *   moment: they lie too far apart to be joined.
+ */
+export const LEAVE_OUT = { join: 8, tent: 3 } as const
+
+export interface LeaveOut {
+  run: number
+  out: number
+  behind: number
+  ahead: number
+  of: number
+  kept: number
+}
+
+export function leaveOut(leaves: boolean, change: number, sample: { t: number; of?: number; hold?: number } | null, reachMm: number, thinFromMm: number): LeaveOut {
+  if (!leaves) return { run: 0, out: 0, behind: 0, ahead: 0, of: 0, kept: 1 }
+  const gone = (c: number): number => reachMm * partChange('surface-leave', c) ** 2
+  const of = sample?.of ?? 1
+  const joins = sample !== null && sample.hold !== undefined && of >= LEAVE_OUT.join
+  const at = joins ? sample.hold! + (Math.floor(sample.t * of) / of) * SHUTTER_CHANGE : change
+  const out = gone(at)
+  const reach = joins ? (LEAVE_OUT.tent * SHUTTER_CHANGE) / of : 0
+  return {
+    run: partChange('surface-leave', at),
+    out,
+    behind: joins ? out - gone(at - reach) : 0,
+    ahead: joins ? gone(at + reach) - out : 0,
+    of: joins ? of : 0,
+    kept: Math.min(1, (reachMm - out) / (reachMm - thinFromMm)),
+  }
 }
 
 const ramp = (v: number): number => (v <= 0 ? 0 : v >= 1 ? 1 : v)

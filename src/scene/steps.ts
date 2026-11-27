@@ -129,14 +129,16 @@ export class Wish {
   private answered = false
   private into: string | null = null
   private at = 0
+  private atMs: number | null = null
   private time = 0
   private giving = false
   private given = false
 
-  /** A press for `season`, at the moment drawn last: the session has not counted on since. */
-  press(season: string): void {
+  /** A press for `season`, at the moment drawn last: the session has not counted on since. `nowMs` is what the clock said then. */
+  press(season: string, nowMs: number | null = null): void {
     this.into = season
     this.at = this.time
+    this.atMs = nowMs
     this.answered = false
   }
 
@@ -162,9 +164,15 @@ export class Wish {
     return (this.inAir || this.into !== null) && this.into !== season
   }
 
-  /** Whether what is left of `season` is made in one piece: it is the season pressed for, and the press is `LAST_S` old. */
-  last(season: string): boolean {
-    return this.into === season && this.time - this.at > LAST_S
+  /**
+   * Whether what is left of `season` is made in one piece: it is the season pressed for, and the press is `LAST_S` old.
+   * By the session's count, which is what the page gives the wish up by. Asked with `nowMs`, by the clock as well,
+   * whichever says so first: the session counts a quarter of a second of a frame at most, and falls behind the clock on
+   * a page that draws slowly.
+   */
+  last(season: string, nowMs?: number): boolean {
+    if (this.into !== season) return false
+    return this.time - this.at > LAST_S || (nowMs !== undefined && this.atMs !== null && nowMs - this.atMs > LAST_S * 1000)
   }
 
   /** The page works on the season pressed for, in the time before the frame that comes next. */
@@ -201,6 +209,92 @@ export function workIn(steps: Step[], season: string, turn: Turn, wish: Wish, pa
   if (wish.last(season)) while (steps.length) steps.shift()!()
   else runFor(steps, turn.frame === null ? spendOf(turn.waited, awaited) : spendIn(now() - turn.frame, pace.every, turn.waited, awaited, pace.taken), now)
   pace.taken += now() - from
+}
+
+/**
+ * The steps of a hand (`hand` in src/scene/stage.ts), a turn's worth at a time, for as long as `go` says. While the picture
+ * rests a turn spends `restMs` of a frame. For the season a press waits for it spends what the making would, and the wish
+ * is told that the page gave that time up itself. Once the press is `LAST_S` old all that is left is done at once and no
+ * turn is waited for: a turn is a frame, and the press has few left before it gives up.
+ *
+ * `byClock` is for a browser that links no program aside: there a step waits for its program with the page's thread,
+ * and where the browser draws with the processor it waits for the frame before it as well. A hand in steps then takes
+ * a frame a program, several times what one piece takes, while the session, a quarter of a second a frame, has not
+ * counted `LAST_S`. There the press is old by the clock as well.
+ */
+export async function handIn(steps: (() => void)[], season: string, wish: Wish, pace: FramePace, restMs: number, go: () => boolean, turnFor: () => Promise<Turn>, now: () => number, byClock = false): Promise<void> {
+  const last = (): boolean => wish.last(season, byClock ? now() : undefined)
+  for (let i = 0; i < steps.length && go(); ) {
+    const turn = last() ? null : await turnFor()
+    const awaited = wish.awaits(season)
+    if (awaited) wish.gives()
+    const from = now()
+    const used = turn === null || turn.frame === null ? null : from - turn.frame
+    let ms = Infinity
+    if (turn !== null && !last()) {
+      if (awaited) ms = used === null ? spendOf(turn.waited, true) : spendIn(used, pace.every, turn.waited, true, pace.taken)
+      else ms = used === null ? restMs : fitIn(restMs, used, pace.every, pace.taken)
+    }
+    while (i < steps.length && go() && now() - from < ms) steps[i++]!()
+    pace.taken += now() - from
+  }
+}
+
+/**
+ * The hands of the seasons made aside: one after the other, in the order the seasons were made, so that the picture at
+ * rest gives what a frame has spare to one of them. The season a press waits for does not wait its turn. Its hand begins
+ * at once, beside the others, and is given back for the press to wait for: the first frame that shows a season whose
+ * hand is not done links its programs itself, and that frame is in the middle of the shake. A season's hand begins
+ * once, whoever comes for it first.
+ */
+export class Hands {
+  private chain: Promise<void> = Promise.resolve()
+  private readonly begun = new Map<string, Promise<void>>()
+  private readonly open = new Set<string>()
+
+  constructor(private readonly hand: (season: string) => Promise<void>) {}
+
+  private of(season: string): Promise<void> {
+    let h = this.begun.get(season)
+    if (!h) {
+      h = this.hand(season)
+      this.begun.set(season, h)
+      const over = (): void => void this.open.delete(season)
+      h.then(over, over)
+    }
+    return h
+  }
+
+  /** `season` is made. Its hand takes its turn; where a press waits for the season it begins now and is given back. */
+  made(season: string, awaited: boolean): Promise<void> | undefined {
+    this.open.add(season)
+    const now = awaited ? this.of(season) : undefined
+    this.chain = this.chain.then(() => this.of(season))
+    return now
+  }
+
+  /** A press for `season`. Where it is made and not yet in the GPU's hands, its hand begins now if it has not, and is given back. */
+  pressed(season: string): Promise<void> | undefined {
+    return this.open.has(season) ? this.of(season) : undefined
+  }
+
+  /** Every hand there is so far, done. */
+  get all(): Promise<void> {
+    return this.chain
+  }
+}
+
+/** Waits for `done`, and no longer than `stop` allows: it is asked each time `turn` comes round. */
+export async function until(done: Promise<unknown>, stop: () => boolean, turn: () => Promise<unknown>): Promise<void> {
+  let waiting = true
+  const over = (): void => void (waiting = false)
+  const ended = done.then(over, over)
+  while (waiting && !stop()) await Promise.race([ended, turn()])
+}
+
+/** The seasons a frame of `moment` shows: one, or in the middle of a change the one it leaves and the one it goes into. */
+export function seasonsIn(moment: Pick<Moment, 'season' | 'from' | 'to' | 'change'>): [string] | [string, string] {
+  return moment.from === moment.to || !(moment.change > 0) || moment.change >= 1 ? [moment.season] : [moment.from, moment.to]
 }
 
 export function whole<T>(steps: Generator<void, T>): T {

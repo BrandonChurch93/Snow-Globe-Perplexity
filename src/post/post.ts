@@ -350,6 +350,8 @@ export class Post {
   /** One pixel: how bright the storm stands at the heart of the ball in the picture in hand (`LEVEL`). */
   private readonly heart: THREE.WebGLRenderTarget
   private chain: THREE.WebGLRenderTarget[] = []
+  /** The level is read in the first picture as well: its program is then linked there, under the first still, and not in the first change. */
+  private levelled = false
   exposure = 1
   seed = 0
   constructor(private readonly gfx: Gfx) {
@@ -522,7 +524,8 @@ export class Post {
       u.uHeartShare!.value = lensFall.heartShare
       u.uHeartAir!.value = lensFall.air
       ;(u.uHeartBell!.value as THREE.Vector3).copy(lensFall.bell)
-      if (lensFall.heartShare > 0) {
+      if (lensFall.heartShare > 0 || !this.levelled) {
+        this.levelled = true
         // How bright the storm stands at the heart of the ball in this picture: read once, into one pixel.
         const lu = this.level.material.uniforms
         lu.uMean!.value = mean
