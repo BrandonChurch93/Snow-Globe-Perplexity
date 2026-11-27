@@ -151,7 +151,7 @@ function grassAt(x, z) {
 }
 // The moss mounds of the bank (approved rest image: a lip of round cushions under the pond, lit on top, dark below).
 // One mound to each cell around the rim; moundAt gives 0 in the gap between two and up to 1 on a mound's middle line.
-const MOUND = { count: 30, low: 0.5, lipMm: 3.0, lipReach: 3.2, fromMm: 5.0, deepMm: 6.5, raggedMm: 3.0, underMm: 2.4, soilMm: [0.4, 4.5] }
+const MOUND = { count: 30, low: 0.5, lipMm: 1.25, lipReach: 3.2, fromMm: 5.0, deepMm: 6.5, raggedMm: 3.0, underMm: 2.4, soilMm: [0.4, 4.5] }
 const moundCells = Array.from({ length: MOUND.count }, (_, i) => ({ tall: MOUND.low + (1 - MOUND.low) * clamp(0.5 + 0.9 * noise(i * 1.7, 4.2, 9.9 + i * 0.37)), shift: 0.3 * clamp(0.5 + 0.9 * noise(i * 2.3, 1.1, 3.3)) - 0.15 }))
 function moundAt(th) {
   const u = ((th / (Math.PI * 2)) % 1 + 1) % 1 * MOUND.count
