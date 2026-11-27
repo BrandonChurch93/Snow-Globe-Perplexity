@@ -252,16 +252,53 @@ function field(): Field {
   const way = [key[0] / plan, key[2] / plan] as const
   const behind = [way[0] * (1 - T.by), way[1] * (1 - T.by) - T.by] as const
   const turned = [behind[0] / Math.hypot(behind[0], behind[1]), behind[1] / Math.hypot(behind[0], behind[1])] as const
+  // Most of a ray runs over ground too low to shade the place it starts from. For each cell `over` holds the highest
+  // ground a stretch of eight steps begun over it can pass, and a stretch that cannot lower the answer is not walked.
+  // The steps that are walked are the same ones, so the field is the same to the last bit, from a fraction of the samples.
+  const STRETCH = 8
+  const over = (dir: readonly [number, number]): Float32Array => {
+    const span = (k: number): [number, number] => [Math.floor(Math.min(0, k * (STRETCH - 1))) - 1, Math.ceil(Math.max(0, k * (STRETCH - 1))) + 2]
+    const [ax, bx] = span(dir[0])
+    const [az, bz] = span(dir[1])
+    const along = new Float32Array(nx * nz)
+    const top = new Float32Array(nx * nz)
+    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+      let most = -Infinity
+      for (let d = ax; d <= bx; d++) most = Math.max(most, at(i + d, j))
+      along[j * nx + i] = most
+    }
+    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+      let most = -Infinity
+      for (let d = az; d <= bz; d++) most = Math.max(most, along[Math.min(Math.max(j + d, 0), nz - 1) * nx + i]!)
+      top[j * nx + i] = most
+    }
+    return top
+  }
+  const march = (i: number, j: number, dir: readonly [number, number], top: Float32Array, rise: number, reach: number, edge: number, w0: number, w1: number): number => {
+    const here = h[j * nx + i]!
+    let least = 1
+    for (let s = step, k = 0; s < reach && least > 0; s += step, k++) {
+      if (k % STRETCH === 0) {
+        const far = s + (STRETCH - 1) * step
+        const most = top[Math.min(Math.max(Math.floor(j + (dir[1] * s) / step), 0), nz - 1) * nx + Math.min(Math.max(Math.floor(i + (dir[0] * s) / step), 0), nx - 1)]! - here
+        if (Math.min(edge - (most - rise * s) / (w0 + w1 * s), edge - (most - rise * far) / (w0 + w1 * far)) > least + 1e-6) {
+          s += (STRETCH - 1) * step
+          k += STRETCH - 1
+          continue
+        }
+      }
+      least = Math.min(least, edge - (soft(i + (dir[0] * s) / step, j + (dir[1] * s) / step) - here - rise * s) / (w0 + w1 * s))
+    }
+    return Math.max(least, 0)
+  }
+  const overWay = over(way)
+  const overTurned = over(turned)
   for (let j = 0; j < nz; j++) {
     for (let i = 0; i < nx; i++) {
       const o = j * nx + i
-      let least = 1
-      for (let s = step; s < C[2]! && least > 0; s += step) least = Math.min(least, 0.5 - (soft(i + (way[0] * s) / step, j + (way[1] * s) / step) - h[o]! - (key[1] / plan) * s) / (C[0]! + C[1]! * s))
+      cast[o] = march(i, j, way, overWay, key[1] / plan, C[2]!, 0.5, C[0]!, C[1]!)
       const low = T.low * (SAND_LIT.ragged[0]! + SAND_LIT.ragged[1]! * noise((x0 + i * step) / SAND_LIT.ragged[2]! + 1.7, (z0 + j * step) / SAND_LIT.ragged[2]! + 4.1, 23)) * (key[1] / plan)
-      cast[o] = Math.max(least, 0)
-      let shade = 1
-      for (let s = step; s < T.mm && shade > 0; s += step) shade = Math.min(shade, 1 - (soft(i + (turned[0] * s) / step, j + (turned[1] * s) / step) - h[o]! - low * s) / (T.w[0]! + T.w[1]! * s))
-      near[o] = Math.max(shade, 0)
+      near[o] = march(i, j, turned, overTurned, low, T.mm, 1, T.w[0]!, T.w[1]!)
       const gx = (at(i + 1, j) - at(i - 1, j)) / (2 * step)
       const gz = (at(i, j + 1) - at(i, j - 1)) / (2 * step)
       face[o] = faceOf((key[1] - gx * key[0] - gz * key[2]) / Math.hypot(gx, 1, gz))
