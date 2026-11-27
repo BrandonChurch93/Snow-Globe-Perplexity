@@ -479,6 +479,14 @@ const STONE_AFTER = `
   float stoneFootL = dot(reflectedLight.indirectDiffuse, vec3(0.3, 0.55, 0.15));
   float stoneFootPale = stoneLeftSide * smoothstep(18.0, 10.0, vBasePos.y) * smoothstep(0.5, 1.4, stoneFootL / (dot(material.diffuseContribution, vec3(0.3, 0.55, 0.15)) * RECIPROCAL_PI * dot(baseKeyAll, vec3(0.3333)) + 0.0001));
   reflectedLight.indirectDiffuse = mix(reflectedLight.indirectDiffuse, stoneFootL * vec3(1.14, 1.0, 0.78), 0.25 * stoneFootPale);
+  // The fold's crest under the pale piece faces the sun square on: the brightest sand of the body, cream. The strokes on the lip under it are gold and lower.
+  float stoneCrestX = (vBasePos.x + 34.0) / 5.0;
+  float stoneCrestY = (vBasePos.y - 17.6 + 0.35 * (vBasePos.x + 34.0)) / 2.1;
+  vec3 stoneCrest = (1.0 + vec3(2.7, 3.1, 3.5) * exp(-stoneCrestX * stoneCrestX - stoneCrestY * stoneCrestY) * mix(0.75, 1.0, baseBlotch)) * (1.0 - vec3(0.08, 0.108, 0.154) * stoneLeftSide * smoothstep(15.0, 13.9, vBasePos.y) * smoothstep(8.8, 10.4, vBasePos.y));
+  // Under the seat the right end's crust takes less of the sun than the crust below it.
+  stoneCrest *= 1.0 - vec3(0.12, 0.1, 0.03) * smoothstep(40.0, 47.0, vBasePos.x) * smoothstep(30.5, 33.5, vBasePos.y);
+  reflectedLight.indirectDiffuse *= stoneCrest;
+  reflectedLight.directDiffuse *= stoneCrest;
   ${STORM}
 }
 `
