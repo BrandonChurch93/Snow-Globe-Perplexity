@@ -68,11 +68,30 @@ export class Assets {
   private readonly listed = new Map<string, AssetEntry[]>()
   private readonly shas = new Map<string, string>()
 
-  async init(set: string): Promise<void> {
+  /**
+   * `visitor` is true on every page a visitor can open. There a set counts only if the host holds it: the published site holds
+   * the `web` set alone, so an address that names another set draws from `web` and the globe still opens. A capture passes
+   * false and stops on a missing file, since a tool asked for that set.
+   */
+  async init(set: string, visitor = false): Promise<void> {
     // The index has one name for ever, so it is the one file that is always asked of the host again (a short answer when nothing changed).
     const r = await fetch(new URL('assets/index.json', document.baseURI), { cache: 'no-cache' })
     if (!r.ok) throw new Error(`asset index did not load: ${r.status}`)
-    this.use((await r.json()) as AssetIndex, set)
+    const index = (await r.json()) as AssetIndex
+    this.use(index, set)
+    if (visitor && set !== 'web' && !(await this.held())) this.use(index, 'web')
+  }
+
+  /** Whether the host answers for the first file of the current set with a file, not with a missing page. */
+  private async held(): Promise<boolean> {
+    const first = Object.values(this.index.sets[this.set] ?? {})[0]?.[0]
+    if (!first) return false
+    try {
+      const r = await fetch(new URL(this.address(first.path), document.baseURI), { method: 'HEAD' })
+      return r.ok && !(r.headers.get('content-type') ?? '').includes('text/html')
+    } catch {
+      return false
+    }
   }
 
   /** Takes an index and the set to read from it. */
