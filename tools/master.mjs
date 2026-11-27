@@ -10,13 +10,14 @@ import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './li
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
 import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, headerRefFrames, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
-import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, firstPlace, heldLine, heldRanges, hours, intermediateVideo, joinPlan, markedHolder, notNumberFrames, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, parseTake, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, sampleRule, pieceCounts, countFacts, countsLine, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
+import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, firstPlace, heldLine, heldRanges, hours, intermediateVideo, joinPlan, markedHolder, notNumberFrames, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, parseTake, procsGainLine, SHORT_FLAG, memoryAvailable, memoryStart, watchFrame, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, sampleRule, pieceCounts, countFacts, countsLine, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
 import { Shipper, identityProblem, mainAuthor, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const say = console.log
 const USAGE = [
   'npm run master -- --what film-b|loop|opening [--first N --last M] [--ship BRANCH] [--procs P] [--crf N] [--part-mb N]',
+  '  a run at the size of the master is refused when less memory is free than its processes hold; --start-short-of-memory starts it all the same, for a run that somebody watches',
   'npm run master -- --calibrate',
   'npm run master -- --hd film-a|film-b [--test]',
   'npm run master -- --collect DIR [--files FOLDER] [--keep] [--no-branches] [--take BRANCH | WHAT:FIRST-LAST=BRANCH,...]',
@@ -183,9 +184,7 @@ function dropStaleFrames(ctx, c) {
 }
 
 async function openSession(lock, local) {
-  const busy = lock ? renderBusy() : null
-  if (busy) say(`waiting for the render that holds this clone's lock: ${busy.what} (pid ${busy.pid})`)
-  if (lock) return Session.open({ local, what: `master ${process.argv.slice(2).join(' ')}` })
+  if (lock) return Session.open({ local, what: `master ${process.argv.slice(2).join(' ')}`, say })
   const s = Object.create(Session.prototype)
   s.hash = requireBuild()
   s.server = await serve()
@@ -354,12 +353,16 @@ async function doChunk(ctx, src, c, progress) {
     let sanityMs
     let first
     let samples
+    const perSample = progress.samplesDone > 0 ? progress.seconds / progress.samplesDone : null
+    const unwatch = watchFrame({ frame: index, expected: planned !== undefined && perSample !== null ? perSample * planned : progress.rendered > 0 ? progress.seconds / progress.rendered : null, say })
     try {
       ;({ png, rgb, samples, notNumber = null, sanityMs = null, first = null } = await src.picture(index))
       if (planned !== undefined && samples !== planned) throw new Error(`the page gave ${planned} samples for this frame when the range was counted and ${samples} when it was drawn`)
     } catch (e) {
       const more = String(e.message).split('\n').slice(1).join('\n')
       throw new Error(`${stoppedLine(c, index, e.message)} ${stays}${more ? `\n${more}` : ''}`)
+    } finally {
+      unwatch()
     }
     const seconds = (Date.now() - t0) / 1000
     if (!fs.existsSync(factsFile)) writeJson(factsFile, src.facts())
@@ -584,6 +587,9 @@ async function render() {
   if (!haveFfmpeg()) throw new Error('ffmpeg and ffprobe are needed and were not found')
   const tooMany = ctx.engine && !ctx.standIn ? procsProblem(ctx.procs, ctx.format.id, LIMITS) : null
   if (tooMany) throw new Error(tooMany)
+  const tight = ctx.engine && !ctx.standIn && worker === null ? memoryStart(ctx.procs, ctx.format.id, memoryAvailable(), args[SHORT_FLAG] === true) : null
+  if (tight?.refuse) throw new Error(tight.line)
+  if (tight) say(tight.line)
   if (ctx.engine && !ctx.standIn && !ctx.calibration) throw new Error(`this machine has no calibration for this build and ${ctx.renderer}. Run npm run master -- --calibrate first (one picture, a few minutes), and check that its first line is the one every other machine printed.`)
   const own = worker === null ? ctx.chunks : split(ctx.chunks, ctx.procs, worker)
   const todo = stillToDo(own, { done: (c) => !!finished(ctx, c), sweep: (c) => dropStaleFrames(ctx, c), has: (c, i) => !!frameOnDisk(ctx, c, i) })

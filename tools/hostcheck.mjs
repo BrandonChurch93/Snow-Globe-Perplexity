@@ -7,7 +7,7 @@ import { engineHash, listFiles } from './lib/hashes.mjs'
 import { shippedHash } from './lib/checks.mjs'
 import { launch, machineId, pinnedBrowser, watchPage } from './lib/browser.mjs'
 import { serve } from './lib/server.mjs'
-import { checkDisk, renderBusy } from './lib/page.mjs'
+import { checkDisk, waitForLock } from './lib/page.mjs'
 import { pixels } from './lib/pixels.mjs'
 
 const args = parseArgs(process.argv.slice(2))
@@ -80,7 +80,7 @@ try {
     never: NEVER.filter((d) => fs.existsSync(path.join(dist, d))),
   }
 
-  while (renderBusy()) await new Promise((r) => setTimeout(r, 1000))
+  await waitForLock()
   writeJson(LOCK, { pid: process.pid, what: 'hostcheck', since: new Date().toISOString() })
   server = await serve({ dist })
   browser = await launch()
