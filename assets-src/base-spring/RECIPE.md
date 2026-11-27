@@ -39,7 +39,7 @@ Made by: assets-src/base-spring/build.mjs (sheet), Node 20.20.2 with sharp, help
 From: assets-src/base-spring/gen/moss-take1.png, stone-take1.png, bark-take1.png
 Prompt or command: npm run make -- base-spring
 Takes: built, not generated
-Why this one: each sheet with its slow light taken out, 2048 px in the file and 512 px in the pack (the name's `w512`); the detail map carries the slope of the sheet's own grain in red and green and its height in blue
+Why this one: each sheet with its slow light taken out, 2048 px in the file and 512 px in the pack (the name's `w512`); the detail map carries the slope of the sheet's own grain in red and green and its height in blue Phase 6, ninth list: the moss is a cushion over the glass's foot. `PROFILE` in layout.mjs runs on from 39.6 mm up along the glass to 47.6 mm, a millimetre off it at the end; `seam` in build.mjs sets, for each azimuth, how high the moss stands on the glass (4.65 mm over the old collar's 42.9 at the middle of the front, 7.7 at 46 degrees, where the glass's circle has climbed past the edge of the miniature's ground as the hero camera sees it, 1.2 at the sides, the old collar behind), and `surf` moves every point of the three meshes to it; `brow` stands the cushion 4.4 mm proud at 43 mm at the front and lets it fall in a straight bank to the glass, so the top is a slope that takes the light and the miniature's slab is covered at rest; the sheet's normals take one sign from its winding, so the brow's underside faces down; the old patterns keep their place on the longer line (`HN`). 131,641 triangles on high.
 Date: 2026-11-25
 
 ## assets-full/spring/base-relief.lin.w2048.png, assets-full/spring/base-cover.lin.w2048.png

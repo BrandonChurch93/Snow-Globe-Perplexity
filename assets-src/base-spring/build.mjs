@@ -92,6 +92,8 @@ const sOf = (pt) => (pt[1] > 31 ? S_TOP : sOfH(pt[1])) + (pt[2] ?? 0)
 
 const MM_X = (2 * Math.PI * R_REF) / W
 const MM_Y = S_MAP / (H - 1)
+// The fields' slow patterns stay where they lay on the stone when the profile was 46.2979 mm long.
+const HN = (H * 46.2979) / S_MAP
 const xOfAz = (az) => ((az + 180) / 360) * W
 const yOfS = (s) => clamp(s / S_MAP, 0, 1) * (H - 1)
 const wrapX = (x) => ((x % W) + W) % W
@@ -120,8 +122,8 @@ function voronoi(cellX, cellY, seed, jitter, warp = 1) {
   for (let y = 0; y < H; y++) {
     const my = y * MM_Y
     for (let x = 0; x < W; x++) {
-      const mx = x * MM_X + (warp ? warp * 3.4 * (fbm((x / W) * 36, (y / H) * 6, 36, 6, seed + 3, 3) - 0.5) : 0)
-      const myw = my + (warp ? warp * 2.6 * (fbm((x / W) * 40, (y / H) * 7, 40, 7, seed + 9, 3) - 0.5) : 0)
+      const mx = x * MM_X + (warp ? warp * 3.4 * (fbm((x / W) * 36, (y / HN) * 6, 36, 6, seed + 3, 3) - 0.5) : 0)
+      const myw = my + (warp ? warp * 2.6 * (fbm((x / W) * 40, (y / HN) * 7, 40, 7, seed + 9, 3) - 0.5) : 0)
       const ci = Math.floor(mx / cw)
       const cj = Math.floor(myw / cellY)
       let a = 1e9
@@ -226,7 +228,7 @@ for (let y = 0; y < H; y++) {
     const k = y * W + x
     const az = (x / W) * 360 - 180
     const pillow = smooth(0, 2.7, cob.f2[k] - cob.f1[k])
-    const lump = fbm((x / W) * 60, (y / H) * 9, 60, 9, 31, 4) - 0.5
+    const lump = fbm((x / W) * 60, (y / HN) * 9, 60, 9, 31, 4) - 0.5
     const dome = Math.max(0, 1 - (cob.f1[k] / 4.8) ** 2)
     rock[k] = (1.3 + 1.5 * dome) * Math.sin(1.5708 * pillow) + (cob.id[k] - 0.5) * 2.0 + 1.1 * lump - 2.9
     let tongue = 0
@@ -235,22 +237,22 @@ for (let y = 0; y < H; y++) {
       tongue = Math.max(tongue, d[1] * Math.exp(-((da / d[2]) ** 2)))
     }
     const drape = -4.5 + 4 * (fbm((x / W) * 22, 0.5, 22, 1, 71, 3) - 0.5) + 4 * (fbm((x / W) * 76, 0.5, 76, 1, 171, 2) - 0.5) + tongue
-    const ragged = 5.0 * (fbm((x / W) * 90, (y / H) * 12, 90, 12, 83, 4) - 0.5) + 3.0 * (1 - pillow)
+    const ragged = 5.0 * (fbm((x / W) * 90, (y / HN) * 12, 90, 12, 83, 4) - 0.5) + 3.0 * (1 - pillow)
     let cover = smooth(S_TOP - drape - 1.2, S_TOP - drape + 1.2, s + ragged)
-    const lowEdge = capEdge[x] - 1.6 * (1 - pillow) + 1.4 * (fbm((x / W) * 120, (y / H) * 18, 120, 18, 523, 3) - 0.5)
+    const lowEdge = capEdge[x] - 1.6 * (1 - pillow) + 1.4 * (fbm((x / W) * 120, (y / HN) * 18, 120, 18, 523, 3) - 0.5)
     capOn[k] = smooth(lowEdge - 0.5, lowEdge + 0.9, s)
     const bareTop = 29 + 14 * (fbm((x / W) * 14, 0.5, 14, 1, 331, 3) - 0.5)
     const bare = smooth(bareTop, bareTop - 7, m.h) * smooth(42, 24, az) * smooth(-78, -42, az)
-    let patch = smooth(0.58, 0.72, fbm((x / W) * 26, (y / H) * 4, 26, 4, 97, 4) + 0.2 * (1 - pillow) + 0.07 * smooth(30, 8, m.h) - 0.2 * pillow * bare + 0.02 * smooth(22, 44, az) * smooth(120, 85, az))
-    const frayed = 0.3 * (fbm((x / W) * 110, (y / H) * 16, 110, 16, 41, 3) - 0.5) + 0.2 * (1 - pillow)
+    let patch = smooth(0.58, 0.72, fbm((x / W) * 26, (y / HN) * 4, 26, 4, 97, 4) + 0.2 * (1 - pillow) + 0.07 * smooth(30, 8, m.h) - 0.2 * pillow * bare + 0.02 * smooth(22, 44, az) * smooth(120, 85, az))
+    const frayed = 0.3 * (fbm((x / W) * 110, (y / HN) * 16, 110, 16, 41, 3) - 0.5) + 0.2 * (1 - pillow)
     for (const p of PATCHES) {
       const da = (((az - p[0] + 540) % 360) - 180) * RAD * m.r
       const dh = m.h - p[1]
       patch = Math.max(patch, smooth(1.0, 0.35, Math.hypot(da / p[2], dh / p[3]) - 1.6 * frayed) * (1 - 0.75 * pillow * bare))
     }
-    const seam = smooth(0.5, 0.1, pillow) * smooth(0.36, 0.5, fbm((x / W) * 18, (y / H) * 3, 18, 3, 211, 4) + 0.12 * smooth(8, 30, m.h))
+    const seam = smooth(0.5, 0.1, pillow) * smooth(0.36, 0.5, fbm((x / W) * 18, (y / HN) * 3, 18, 3, 211, 4) + 0.12 * smooth(8, 30, m.h))
     cover = Math.max(cover, patch * smooth(0.5, 3.5, s), 0.9 * seam * smooth(0.5, 3.5, s), capOn[k])
-    const fine = fbm((x / W) * 420, (y / H) * 60, 420, 60, 149, 3) - 0.5
+    const fine = fbm((x / W) * 420, (y / HN) * 60, 420, 60, 149, 3) - 0.5
     moss[k] = clamp(cover + 2.6 * fine * cover * (1 - cover))
   }
 }
@@ -272,12 +274,12 @@ for (let y = 0; y < H; y++) {
   for (let x = 0; x < W; x++) {
     const k = y * W + x
     const bed = smooth(2.4, 0.7, band[k])
-    const lies = 0.58 * fbm((x / W) * 20, (y / H) * 3, 20, 3, 307, 4) + 0.42 * cob.id[k] + 0.08 * smooth(4, 26, atS(s).h)
-    const fray = fbm((x / W) * 90, (y / H) * 12, 90, 12, 83, 4) - 0.5
+    const lies = 0.58 * fbm((x / W) * 20, (y / HN) * 3, 20, 3, 307, 4) + 0.42 * cob.id[k] + 0.08 * smooth(4, 26, atS(s).h)
+    const fray = fbm((x / W) * 90, (y / HN) * 12, 90, 12, 83, 4) - 0.5
     const az = (x / W) * 360 - 180
     const bareTop = 29 + 14 * (fbm((x / W) * 14, 0.5, 14, 1, 331, 3) - 0.5)
     const shelf = (1 - 0.85 * smooth(bareTop, bareTop - 7, atS(s).h) * smooth(42, 24, az) * smooth(-78, -42, az)) * smooth(0.63, 0.69, lies) * smooth(0.02, 0.3, cob.f2[k] - cob.f1[k] + 0.5 * fray) * smooth(0.5, 3.5, s) * smooth(S_TOP + 1, S_TOP - 3, s)
-    const fine = fbm((x / W) * 420, (y / H) * 60, 420, 60, 149, 3) - 0.5
+    const fine = fbm((x / W) * 420, (y / HN) * 60, 420, 60, 149, 3) - 0.5
     moss[k] = Math.max(moss[k], clamp(shelf + 2.6 * fine * shelf * (1 - shelf)))
     rock[k] = mix(rock[k], rockSoft[k] - 0.2, bed)
     moss[k] *= smooth(0, 0.8, band[k] + 0.6 * fray)
@@ -373,14 +375,14 @@ for (let y = 0; y < H; y++) {
     const star = smooth(0, 0.6, sprig.f2[k] - sprig.f1[k])
     const az = (x / W) * 360 - 180
     const level = rim * (1 - smooth(46, 72, Math.abs(az - 7)))
-    const cushion = 0.3 * Math.pow(mound, 0.8) + 0.38 * fbm((x / W) * 64, (y / H) * 10, 64, 10, 173, 3) + 0.24 * fbm((x / W) * 150, (y / H) * 22, 150, 22, 131, 3)
-    const crest = fbm((x / W) * 34, (y / H) * 5, 34, 5, 263, 3)
+    const cushion = 0.3 * Math.pow(mound, 0.8) + 0.38 * fbm((x / W) * 64, (y / HN) * 10, 64, 10, 173, 3) + 0.24 * fbm((x / W) * 150, (y / HN) * 22, 150, 22, 131, 3)
+    const crest = fbm((x / W) * 34, (y / HN) * 5, 34, 5, 263, 3)
     const thick = ((0.25 + 1.9 * cushion + (0.1 + mix(1.6, 0.5, level) * smooth(0.38, 0.72, crest)) * top * seat + 0.3 * (tuft.id[k] - 0.5)) * mix(0.5, 1, smooth(S_TOP - 14, S_TOP - 3, s)) + 0.5 * star * star * (0.35 + sprig.id[k])) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
     const filled = Math.max(rock[k], mix(rockWide[k], rockBroad[k] + 0.5, 0.8) + 0.15)
     const dome = Math.sin(1.5708 * smooth(0, 2.1, clump.f2[k] - clump.f1[k]))
     const flank = smooth(48, 80, Math.abs(az))
     const deep = mix(2.8, 4.6, smooth(S_TOP + 4, S_MAP - 4, s)) * mix(0.78, 1, smooth(-100, -58, az)) * mix(1, 1.25, flank) * (1 - 0.72 * flank * smooth(S_MAP - 10, S_MAP - 3, s)) * (1 - smooth(S_MAP - 5.0, S_MAP - 0.2, s))
-    const heap = fbm((x / W) * 40, (y / H) * 5, 40, 5, 541, 3)
+    const heap = fbm((x / W) * 40, (y / HN) * 5, 40, 5, 541, 3)
     cap[k] = capOn[k] * Math.pow(smooth(0, 3.2, s - capEdge[x] + 1.6), 0.55) * deep * (0.7 + 0.1 * dome * (0.3 + 1.4 * clump.id[k]) + mix(0.36, 0.12, level) * heap) * smooth(1.0, 3.0, band[k])
     height[k] = mix(rock[k], mix(rock[k] + 0.12, filled, smooth(S_TOP - 13, S_TOP - 3, s)) + thick * mix(1, 0.5, capOn[k]), smooth(0.12, 0.6, c)) + cap[k]
   }
@@ -495,7 +497,7 @@ for (let y = 0; y < H; y++) {
     relief[k * 3] = byte(0.5 - (0.5 * dx) / l)
     relief[k * 3 + 1] = byte(0.5 - (0.5 * dy) / l)
     relief[k * 3 + 2] = byte(cavity)
-    const wet = Math.max(smooth(2.6, 0.9, band[k]), 0.55 * smooth(5, 0.5, m.h) * smooth(0.3, 0.8, fbm((x / W) * 50, (y / H) * 8, 50, 8, 211, 3) + 0.25 * smooth(3, 0, m.h)))
+    const wet = Math.max(smooth(2.6, 0.9, band[k]), 0.55 * smooth(5, 0.5, m.h) * smooth(0.3, 0.8, fbm((x / W) * 50, (y / HN) * 8, 50, 8, 211, 3) + 0.25 * smooth(3, 0, m.h)))
     cover[k * 3] = byte(0.3 * smooth(0.04, 0.6, mossSoft[k]) + 0.7 * smooth(0.25, 0.8, moss[k]))
     cover[k * 3 + 1] = byte(wet)
     cover[k * 3 + 2] = byte(band[k] < 4 ? along[k] : 1)
@@ -510,13 +512,35 @@ function outside(p) {
   const l = Math.hypot(d[0], d[1], d[2])
   return l < CUP_R ? add(C, d, CUP_R / l) : p
 }
+const END = PROFILE[PROFILE.length - 1]
+const H_JOIN = 38.5
+const glassR = (h) => Math.sqrt(Math.max(CUP_R * CUP_R - (CENTRE_H - h) ** 2, 0))
+const ease = (h) => (h > H_JOIN ? (h - H_JOIN) ** 2 / (h - H_JOIN + 1.5) : 0)
+// How far over the glass's foot the moss stands, in mm above the old collar's 42.9: from the hero camera the miniature's
+// ground lies level across the glass while the glass's own circle climbs to the sides, so the moss climbs with it to hide
+// the ground's edge, and falls back to the old collar round the sides and behind.
+function seam(az) {
+  const a = Math.abs(az)
+  const front = a <= 34 ? 4.65 + 1.75 * (a / 30) ** 2 : 7.69 - 0.0055 * (46 - Math.min(a, 46)) ** 2
+  const side = smooth(46, 84, a)
+  return front * (1 - side) + 1.2 * side * (1 - smooth(92, 135, a))
+}
+// The cushion's brow stands proud of the cap's face at the front and falls in a straight slope to the glass, so its top
+// is a lit bank and not a wall; round the sides the cap is drawn in, so the outline keeps its width.
+function brow(az, h, s) {
+  const a = Math.abs(az)
+  const bank = smooth(39.2, 43.2, h) * Math.max(END[1] - h, 0) / 4.4
+  return 4.4 * smooth(66, 34, a) * bank - 1.5 * smooth(30, 62, a) * smooth(S_MAP - 9.5, S_MAP - 5.5, s) * clamp((S_MAP - s) / 5.5)
+}
 function surf(az, s, field, liftMm = 0) {
   const m = atS(s)
   const d = sample(field, az, s) * seatOf(s) + liftMm
-  const q = dip(az)
-  return { p: outside(place(m.r + m.nr * d + swell(az, m.h), m.h + m.nh * d - q * smooth(35, 41, m.h), az)), n: turn(m.nr, m.nh, az), r: m.r }
+  const r = m.r + m.nr * d + swell(az, m.h) + brow(az, m.h, s)
+  const h = m.h + m.nh * d
+  const to = h + ((seam(az) - dip(az) - (END[1] - 42.9)) * ease(h)) / ease(END[1])
+  return { p: outside(place(r + glassR(to) - glassR(h), to, az)), n: turn(m.nr, m.nh, az), r: m.r }
 }
-// The crest is a near level soft line at the front, worn low under the glass, and stands in crowns at the flanks. On it lie
+// The crest is a near level soft line at the front and stands in crowns at the flanks. On it lie
 // a few low swells of unequal width at unequal gaps, the front five traced on references/approved/spring-rest.png.
 const SWELLS = (() => {
   const list = [[-26.5, 3.8, 0.5], [-11.3, 2.0, 0.3], [5.6, 1.5, 0.5], [29.5, 5.0, 0.5], [43.2, 1.0, 1.0]]
@@ -536,7 +560,7 @@ function dip(az) {
     if (d < 1) up = Math.max(up, g[2] * (0.5 + 0.5 * Math.cos(Math.PI * d)))
   }
   const wild = smooth(46, 72, Math.abs(az - 7))
-  return 1.0 * Math.exp(-(((az - 4) / 40) ** 2)) + mix(0.3, 2.6, wild) * smooth(0.34, 0.68, 0.65 * fbm(u * 11, 0.5, 11, 1, 431, 3) + 0.35 * fbm(u * 29, 0.5, 29, 1, 437, 2)) - up
+  return mix(0.3, 2.6, wild) * smooth(0.34, 0.68, 0.65 * fbm(u * 11, 0.5, 11, 1, 431, 3) + 0.35 * fbm(u * 29, 0.5, 29, 1, 437, 2)) - up
 }
 // The mound is no drum: it swells unevenly at its middle and spreads unevenly at the table, measured outward only so the foot stays on the table.
 function swell(az, h) {
@@ -555,8 +579,7 @@ function buildRock() {
   const rows = []
   for (let s = 0; s < S_MAP; s += s > S_TOP - 9 ? 0.35 : 0.52) rows.push({ s })
   rows.push({ s: S_MAP })
-  const end = PROFILE[PROFILE.length - 1]
-  for (const t of [0.12, 0.3, 0.5, 0.7, 0.88, 1]) rows.push({ s: S_MAP, cup: [end[0] * (1 - t), mix(end[1] - 2, CENTRE_H - CUP_R, t)] })
+  for (const t of [0.12, 0.3, 0.5, 0.7, 0.88, 1]) rows.push({ s: S_MAP, cup: [49.2 * (1 - t), mix(40.9, CENTRE_H - CUP_R, t)] })
   const pos = rows.map((row) => {
     const line = []
     for (let i = 0; i < cols; i++) {
@@ -565,16 +588,20 @@ function buildRock() {
     }
     return line
   })
-  soup.grid(cols, rows.length, (i, j) => {
-    const az = -180 + (360 * i) / (cols - 1)
+  const wound = (i, j) => {
     const a = pos[j][(i + cols - 2) % (cols - 1)]
     const b = pos[j][(i + 1) % (cols - 1)]
     const c = pos[Math.max(j - 1, 0)][i]
     const d = pos[Math.min(j + 1, rows.length - 1)][i]
-    let n = norm3(cross3(sub(b, a), sub(d, c)))
-    if (!(Math.hypot(n[0], n[1], n[2]) > 0.5)) n = [0, 1, 0]
-    const out = turn(1, 0.3, az)
-    if (n[0] * out[0] + n[1] * out[1] + n[2] * out[2] < 0) n = [-n[0], -n[1], -n[2]]
+    return norm3(cross3(sub(b, a), sub(d, c)))
+  }
+  // One sign for the whole sheet, read on the body: the brow's underside faces down and must keep doing so.
+  const body = wound((cols - 1) / 2, 6)
+  const face = body[0] * turn(1, 0.3, 0)[0] + body[1] * turn(1, 0.3, 0)[1] + body[2] * turn(1, 0.3, 0)[2] < 0 ? -1 : 1
+  soup.grid(cols, rows.length, (i, j) => {
+    const az = -180 + (360 * i) / (cols - 1)
+    let n = wound(i, j)
+    n = Math.hypot(n[0], n[1], n[2]) > 0.5 ? [face * n[0], face * n[1], face * n[2]] : [0, 1, 0]
     const s = rows[j].s
     return { p: pos[j][i], n, uv: [(az / 360 + 0.5) * REPEATS, s / MOSS_TILE], uv2: [(az + 180) / 360, (yOfS(s) + 0.5) / H], c: [rows[j].cup ? 0 : 1, 0, 0] }
   })

@@ -183,6 +183,9 @@ float baseAo = mix(0.3, mix(0.12 + 0.88 * smoothstep(0.1, 0.95, baseRelief.b), s
 baseAo *= mix(1.0, mix(0.66, 1.0, smoothstep(0.2, 0.6, baseMossD.b)), baseMoss);
 // The glass sits in the moss: the moss darkens where it meets the glass, and the stone where it meets the table.
 baseAo *= mix(0.55, 1.0, smoothstep(0.2, 1.8, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0)) * mix(0.45, 1.0, smoothstep(0.0, 2.6, vBasePos.y));
+// At the front the glass stands over the cushion's bank: the bank lies in its shade and only the brow keeps the light.
+float baseBank = smoothstep(0.55, 0.8, vBasePos.z / max(length(vBasePos.xz), 1.0)) * smoothstep(38.0, 24.0, vBasePos.x);
+baseAo *= mix(1.0, mix(0.16, 1.0, smoothstep(3.5, 7.0, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0)), baseBank);
 float baseBlotch = baseNoise(vBasePos * 0.19) * 0.6 + baseNoise(vBasePos * 0.8) * 0.4;
 float baseSun = baseNoise(vBasePos * 0.45 + 7.3);
 float baseSpeck = baseNoise(vBasePos * 6.5);
@@ -241,7 +244,7 @@ ${SHADE}
   // In the low sun the moss of the right flank is a crowd of round heads, each about half a millimetre, and the sun does not
   // reach between them: a slow pattern fixed to the stone, and gone before a head is narrower than two pixels.
   float liveSpan = max(length(dFdx(vBasePos)), length(dFdy(vBasePos)));
-  float liveHeads = baseMoss * max(smoothstep(34.0, 44.0, vBasePos.x), smoothstep(30.0, 38.0, vBasePos.x) * smoothstep(38.5, 36.0, vBasePos.y)) * smoothstep(0.5, 0.25, liveSpan);
+  float liveHeads = baseMoss * max(smoothstep(42.0, 50.0, vBasePos.x), smoothstep(30.0, 38.0, vBasePos.x) * smoothstep(37.0, 34.5, vBasePos.y)) * smoothstep(0.5, 0.25, liveSpan);
   float liveHead = baseNoise(vBasePos * 2.4 + 3.0);
   float liveBead = mix(1.0, mix(0.3, 1.0, smoothstep(0.3, 0.7, liveHead)), liveHeads);
   vec3 liveDry = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.6, 0.1))) * mix(vec3(1.5, 1.1, 0.8), vec3(1.2, 1.5, 0.72), baseMoss), mix(0.9, 0.8, baseMoss));
