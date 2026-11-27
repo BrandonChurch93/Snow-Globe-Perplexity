@@ -22,6 +22,7 @@ import { cameraKeys, cameraNumbers, filmPose, loopCamera, loopPose, MOVES, shotN
 import { loopGlobe, type LoopParticles, type SourceSwitch } from '../film/loop'
 import { loopMoment, timelineMoment } from '../film/moments'
 import { flaggedStandIns } from '../core/standins'
+import { VIEWS } from '../diagnostics/views'
 import { levelById, stageQuality, topLevel } from '../core/quality'
 import { framingOfRig, livePose, liveRig, roomUnder } from '../app/framing'
 import { Painter } from '../app/painter'
@@ -371,6 +372,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       await assets.init(id)
     },
     setDiagnostic(view) {
+      if (view !== 'none' && view !== '' && !(VIEWS as readonly string[]).includes(view)) throw new Error(`no such view: ${view}`)
       diag = view === 'none' ? '' : view
       stage.setDiagnostic(diag)
     },
