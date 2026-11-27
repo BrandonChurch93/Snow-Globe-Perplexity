@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { config } from '../src/config'
+import { reveal } from '../src/app/app'
 import { FRAME, baseSide, edges, framingOfRig, livePath, liveRig, margins, roomUnder, shakeReach } from '../src/app/framing'
 import { Drag, Look, MotionShake, TOUCH, stirAxis } from '../src/app/gestures'
 import { INTERFACE_STATES, createOverlay } from '../src/app/overlay'
@@ -1565,5 +1566,81 @@ describe('the scripted replays of the app', () => {
     const b = s.run.record()
     expect(Math.abs(b.yawDeg)).toBeLessThan(Math.abs(a.yawDeg) * 0.05)
     expect(b).toMatchObject({ stirs: 0, season: first, busy: false })
+  })
+})
+
+describe('the canvas over the first still', () => {
+  const sheet = readFileSync('index.html', 'utf8')
+  const rule = (selector: string): string => new RegExp(`\\n\\s*${selector.replace(/[[\]]/g, '\\$&')} \\{([^}]*)\\}`).exec(sheet)![1]!
+  const fadeMs = 1000 * Number(/transition: opacity ([\d.]+)s/.exec(rule('#view[data-live]'))![1])
+
+  /** A page as a browser keeps it. What the canvas stood at when the still was ended is written down: its mark, and its own word on its fade. */
+  const page = (still: boolean) => {
+    const heard: Record<string, (() => void)[]> = {}
+    const waits: { over: () => void; ms: number }[] = []
+    const ended: { mark: string | undefined; fade: string }[] = []
+    const told = { gone: 0 }
+    const canvas = {
+      style: { transition: '' },
+      dataset: {} as Record<string, string>,
+      addEventListener: (type: string, f: () => void): void => void (heard[type] ??= []).push(f),
+    }
+    const win = {
+      firstStill: still ? { place: (): void => undefined, end: (): void => void ended.push({ mark: canvas.dataset.live, fade: canvas.style.transition }) } : undefined,
+      setTimeout: (over: () => void, ms: number): number => waits.push({ over, ms }),
+    }
+    reveal(canvas as unknown as HTMLCanvasElement, win as unknown as Window, () => void told.gone++)
+    return { canvas, heard, waits, ended, told }
+  }
+
+  it('fades the canvas in to full sight over half a second, by the sheet of the page', () => {
+    expect(rule('#view')).toMatch(/opacity: 0;/)
+    expect(rule('#view[data-live]')).toMatch(/opacity: 1;/)
+    expect(fadeMs).toBe(500)
+  })
+
+  it('leaves the still under the canvas while the canvas comes in, and waits longer than the fade lasts', () => {
+    const p = page(true)
+    expect(p.canvas.dataset.live).toBe('')
+    expect(p.canvas.style.transition).toBe('')
+    expect(p.ended).toHaveLength(0)
+    expect(p.told.gone).toBe(0)
+    expect(p.heard.transitionend).toHaveLength(1)
+    expect(p.waits).toHaveLength(1)
+    expect(p.waits[0]!.ms).toBeGreaterThanOrEqual(2 * fadeMs)
+  })
+
+  // A fade keeps the time of the frames the page draws and the wait the time of the wall. Where frames are few the wait is over
+  // 33 ms into the fade: the still went from under a canvas at a twentieth of its sight, and the page was black for seconds.
+  it('cuts the fade short as the still goes when the wait is over and the fade is not: the still never goes from under a canvas short of full sight', () => {
+    const p = page(true)
+    p.waits[0]!.over()
+    expect(p.ended).toEqual([{ mark: '', fade: 'none' }])
+    expect(p.canvas.style.transition).toBe('none')
+    expect(p.canvas.dataset.live).toBe('')
+    expect(p.told.gone).toBe(1)
+    p.heard.transitionend![0]!()
+    p.waits[0]!.over()
+    expect(p.ended).toHaveLength(1)
+    expect(p.told.gone).toBe(1)
+  })
+
+  it('ends the still once, at the end of a fade that is over in time, and leaves the wait nothing to do', () => {
+    const p = page(true)
+    p.heard.transitionend![0]!()
+    expect(p.ended.map((e) => e.mark)).toEqual([''])
+    expect(p.told.gone).toBe(1)
+    p.waits[0]!.over()
+    expect(p.ended).toHaveLength(1)
+    expect(p.told.gone).toBe(1)
+  })
+
+  it('starts a film or the loop at once: no still, no fade and no wait', () => {
+    const p = page(false)
+    expect(p.canvas.style.transition).toBe('none')
+    expect(p.canvas.dataset.live).toBe('')
+    expect(p.waits).toHaveLength(0)
+    expect(p.heard.transitionend).toBeUndefined()
+    expect(p.told.gone).toBe(1)
   })
 })
