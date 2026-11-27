@@ -1,0 +1,10 @@
+Every picture: film B, 3840 x 2160, final tier, a crop at one to one, no scaling. Left is before (b2faf0a1), right is after (b2faf0a1 with the mend). No words on the pictures.
+631-tree-lights.jpg: frame 631, the tree's fairy lights and the star, crop at x 1850 y 320, 620 x 400.
+631-lamp.jpg: frame 631, the lamp and the cottage's lights, crop at x 1700 y 850.
+631-icicles.jpg: frame 631, the glass's outline, the collar and the icicles on the left, crop at x 1300 y 1150.
+631-outline.jpg: frame 631, the glass's outline against the still backdrop, crop at x 1330 y 480.
+631-foot-and-mirror-image.jpg: frame 631, the foot and its mirror image in the table, crop at x 1300 y 1840, 620 x 300. The mirror image is not touched by the mend.
+643-icicles.jpg: frame 643, icicles and the base's ornament, crop at x 1180 y 1400.
+643-inside-lights.jpg: frame 643, the lights inside, crop at x 1640 y 660.
+678-inside.jpg: frame 678, the fastest frame of shake 1, the inside under the petal veil, crop at x 1900 y 700.
+678-outline.jpg: frame 678, the glass's outline at the lower left, crop at x 1440 y 1000.
