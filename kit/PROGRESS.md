@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 185 · 2026-11-27 00:52 UTC
+Status 186 · 2026-11-27 01:16 UTC
 
-- `out/stills/status/status-185-1.jpg`: Still: fall landed hero, hd, draft
-- `out/stills/status/status-185-2.jpg`: Still: fall rest hero, hd, draft
-- `out/stills/status/status-185-3.jpg`: Still: summer landed hero, hd, draft
-- `out/stills/status/status-185-4.jpg`: Still: summer rest hero, hd, draft
+- `out/stills/status/status-186-1.jpg`: Spring at rest with the new base, the approved picture left and the build right, below the bar
+- `out/stills/status/status-186-2.jpg`: Fall at rest with its air's last pass, the approved picture left and the build right, below the bar
+- `out/stills/status/status-186-3.jpg`: Rough draft 5 in the making, winter into spring in twelve frames, below the bar
+- `out/stills/status/status-186-4.jpg`: Still: fall landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 00:52 UTC
-clock: phase 6, tick of 28.7 minutes
-phase 6: 22.05 h used of its 12.00 h box
-allowance (after the review): 22.05 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 22.05 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 01:16 UTC
+clock: phase 6, tick of 23.8 minutes
+phase 6: 22.45 h used of its 12.00 h box
+allowance (after the review): 22.45 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 22.45 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
