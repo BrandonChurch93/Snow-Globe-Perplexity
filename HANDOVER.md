@@ -95,3 +95,13 @@ Proofs on a1f02de5: tsc 0; M3 fall-rest 0.8047 (miniature 0.927); strict pass fo
 Open: the points are paler than the approved's (183 149 119 against 192 141 108) and fewer of them carry the soft orange glow the eye sees in the approved; 79 specks stand alone against 35; the roof's and the fence's boxes hold more leaves than the approved's; the upper left's medians stand 7 over the approved's in each channel; the two widest discs are 44 and 34 px against 50 and 44.
 
 Not seen in this list: the film played; only the five frames above. The storm's own numbers were not changed.
+
+## The merge with summer's air (4e8b1336)
+
+Summer's air (6ba34474) and the seventh list both changed three places in `cards.ts` and one in `looks.ts`. Resolved so that a light keeps every term summer's air gave it and a spark every term of the seventh list: the near size line carries summer's far softness for a light and the spark's own hash (`h2.w`); the disc closes in the storm for a light and `lid` is declared after it; the cover is one branch for a spark (with the lid inside) and one for a light (with the storm's hide), so that neither changes the other's arithmetic. In `looks.ts` the glow line and its comments are summer's, the spark line is fall's.
+
+Proved at draft, hero, hd. Fall on the merged tree equals fall on main 3170155e with the seventh list alone (78bd9db7): fall-rest 0be7d8c0e55c5a56, fall-landed da572167d7d29c5c. Summer on the merged tree equals summer on main 3170155e with summer's air alone (a local trial merge, not pushed): summer-rest 21530702e84d8d0d, summer-landed c8d8b7e4fe5e44bb. Winter's and spring's four equal the list of 3170155e. On 4e8b1336: tsc 0, strict pass for fall-rest and fall-shake, M4 0.9694, 0.8951, 0.956, 0.9584, M5 0.993, 1, 0.9721, 0.9995, vitest 68 files passed, 1 skipped, 948 passed, 8 skipped, triangles at high 1,796,373.
+
+Summer's air owes one more commit on its branch, a single number `glow.lensFilm` in `looks.ts`: that line is to stay as its branch has it.
+
+The eighth list is given (09:34 and 09:47 UTC): a soft orange glow for each point on a measure of the approved's glow width over point width for ten points; the upper air in patches on a count; the leaves lobed, in three sizes, at every angle, on counts by size and hue; the large discs soft with no edge, on a measure of the edge's width. Measure before dealing; a pair when the glow and the leaves stand.
