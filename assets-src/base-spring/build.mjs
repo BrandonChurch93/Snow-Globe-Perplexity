@@ -516,26 +516,30 @@ const END = PROFILE[PROFILE.length - 1]
 const H_JOIN = 38.5
 const glassR = (h) => Math.sqrt(Math.max(CUP_R * CUP_R - (CENTRE_H - h) ** 2, 0))
 const ease = (h) => (h > H_JOIN ? (h - H_JOIN) ** 2 / (h - H_JOIN + 1.5) : 0)
-// How far over the glass's foot the moss stands, in mm above the old collar's 42.9: from the hero camera the miniature's
-// ground lies level across the glass while the glass's own circle climbs to the sides, so the moss climbs with it to hide
-// the ground's edge, and falls back to the old collar round the sides and behind.
+const SEAT_FRONT = 4.4
+const BROW_H = END[1] - 4.9
+// How far over the glass's foot the moss stands, in mm above the old collar's 42.9: from the hero camera the plain wall
+// under the miniature's turf ends level across the glass while the glass's own circle climbs to the sides, so the moss
+// climbs a little with it to cover the wall, and falls back to the old collar round the sides and behind.
 function seam(az) {
   const a = Math.abs(az)
-  const front = a <= 34 ? 4.65 + 1.75 * (a / 30) ** 2 : 7.69 - 0.0055 * (46 - Math.min(a, 46)) ** 2
-  const side = smooth(46, 84, a)
+  const front = SEAT_FRONT + 1.2 * (Math.min(a, 30) / 30) ** 2
+  const side = smooth(34, 70, a)
   return front * (1 - side) + 1.2 * side * (1 - smooth(92, 135, a))
 }
-// The cushion's brow stands proud of the cap's face at the front and falls in a straight slope to the glass, so its top
-// is a lit bank and not a wall; round the sides the cap is drawn in, so the outline keeps its width.
-function brow(az, h, s) {
+// The roll's brow stands proud of the cap's face: at the front it is steep against the glass and flattens toward its
+// crown, so the bank at the glass lies in shade and the crown takes the light; round the sides and behind a lower swell
+// keeps the roll overhanging the body, as the approved's does.
+function brow(az, h) {
   const a = Math.abs(az)
-  const bank = smooth(39.2, 43.2, h) * Math.max(END[1] - h, 0) / 4.4
-  return 4.4 * smooth(66, 34, a) * bank - 1.5 * smooth(30, 62, a) * smooth(S_MAP - 9.5, S_MAP - 5.5, s) * clamp((S_MAP - s) / 5.5)
+  const v = Math.max(END[1] - h, 0) / (END[1] - BROW_H)
+  const bank = smooth(BROW_H - 4, BROW_H, h) * (0.3 * v + 0.7 * v * v)
+  return 4.6 * smooth(66, 34, a) * bank + 2.2 * smooth(40, 70, a) * Math.exp(-(((h - 39.5) / 3.3) ** 2))
 }
 function surf(az, s, field, liftMm = 0) {
   const m = atS(s)
   const d = sample(field, az, s) * seatOf(s) + liftMm
-  const r = m.r + m.nr * d + swell(az, m.h) + brow(az, m.h, s)
+  const r = m.r + m.nr * d + swell(az, m.h) + brow(az, m.h)
   const h = m.h + m.nh * d
   const to = h + ((seam(az) - dip(az) - (END[1] - 42.9)) * ease(h)) / ease(END[1])
   return { p: outside(place(r + glassR(to) - glassR(h), to, az)), n: turn(m.nr, m.nh, az), r: m.r }

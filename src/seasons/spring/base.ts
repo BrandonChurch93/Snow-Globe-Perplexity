@@ -185,7 +185,7 @@ baseAo *= mix(1.0, mix(0.66, 1.0, smoothstep(0.2, 0.6, baseMossD.b)), baseMoss);
 baseAo *= mix(0.55, 1.0, smoothstep(0.2, 1.8, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0)) * mix(0.45, 1.0, smoothstep(0.0, 2.6, vBasePos.y));
 // At the front the glass stands over the cushion's bank: the bank lies in its shade and only the brow keeps the light.
 float baseBank = smoothstep(0.55, 0.8, vBasePos.z / max(length(vBasePos.xz), 1.0)) * smoothstep(38.0, 24.0, vBasePos.x);
-baseAo *= mix(1.0, mix(0.16, 1.0, smoothstep(3.5, 7.0, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0)), baseBank);
+baseAo *= mix(1.0, mix(0.16, 1.0, smoothstep(4.4, 6.8, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0)), baseBank);
 float baseBlotch = baseNoise(vBasePos * 0.19) * 0.6 + baseNoise(vBasePos * 0.8) * 0.4;
 float baseSun = baseNoise(vBasePos * 0.45 + 7.3);
 float baseSpeck = baseNoise(vBasePos * 6.5);

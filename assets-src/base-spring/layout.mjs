@@ -1,8 +1,8 @@
 // Radius and height in mm, foot to collar: the foot is the widest place, the body leans in all the way up from the table, and a
 // collar stands up round the glass as a nest does, so the sphere sits in the moss and not on it (references/approved/spring-rest.png:
 // the outline is 1.00 of the glass's diameter at the table, 0.97 at mid height and 0.93 under the cap).
-// Above 39.6 mm the line is the front's: it follows the glass up over its foot, a millimetre off it at the end, so the moss on it
-// is a cushion that slopes up to the glass. Round the sides and the back the build sets this part lower.
+// Above 39.6 mm the line is the front's: it rolls in over the glass's foot and ends on the glass, so the moss on it is a roll
+// with a round shoulder and no flat top. Round the sides and the back the build sets this part lower.
 export const PROFILE = [
   [59.4, 0],
   [60.4, 1.6],
@@ -15,11 +15,11 @@ export const PROFILE = [
   [50.6, 32.5],
   [50.9, 36],
   [51.2, 39.6],
-  [51.6, 41.5],
-  [52.3, 43.5],
-  [52.9, 45.5],
-  [52.9, 46.9],
-  [52.2, 47.6],
+  [51.5, 41.2],
+  [51.6, 42.8],
+  [51.2, 44.2],
+  [50.5, 45.1],
+  [49.9, 45.6],
 ]
 
 export const DRIPS = [
