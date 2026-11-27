@@ -199,7 +199,7 @@ for (const p of trickle.samples) p.w = widthAt(p.t)
 
 console.log(`profile ${mer.total.toFixed(1)} mm long, the shoulder at ${S_TOP.toFixed(1)}; field ${W} by ${H}; trickle ${trickle.length.toFixed(1)} mm`)
 
-const cob = voronoi(12.6, 8.8, 11, 1.0, 1.7)
+const cob = voronoi(9.2, 7.0, 11, 1.0, 2.0)
 const tuft = voronoi(3.6, 3.2, 57, 1.0, 1.6)
 const sprig = voronoi(0.95, 0.9, 91, 1.0, 0)
 const rock = new Float32Array(W * H)
@@ -210,10 +210,10 @@ for (let y = 0; y < H; y++) {
   for (let x = 0; x < W; x++) {
     const k = y * W + x
     const az = (x / W) * 360 - 180
-    const pillow = smooth(0, 3.3, cob.f2[k] - cob.f1[k])
+    const pillow = smooth(0, 2.7, cob.f2[k] - cob.f1[k])
     const lump = fbm((x / W) * 60, (y / H) * 9, 60, 9, 31, 4) - 0.5
-    const dome = Math.max(0, 1 - (cob.f1[k] / 6.4) ** 2)
-    rock[k] = (1.15 + 1.25 * dome) * Math.sin(1.5708 * pillow) + (cob.id[k] - 0.5) * 2.2 + 1.3 * lump - 1.5
+    const dome = Math.max(0, 1 - (cob.f1[k] / 4.8) ** 2)
+    rock[k] = (1.3 + 1.5 * dome) * Math.sin(1.5708 * pillow) + (cob.id[k] - 0.5) * 2.0 + 1.1 * lump - 1.6
     let tongue = 0
     for (const d of DRIPS) {
       const da = ((az - d[0] + 540) % 360) - 180
@@ -222,8 +222,8 @@ for (let y = 0; y < H; y++) {
     const drape = -4.5 + 4 * (fbm((x / W) * 22, 0.5, 22, 1, 71, 3) - 0.5) + 4 * (fbm((x / W) * 76, 0.5, 76, 1, 171, 2) - 0.5) + tongue
     const ragged = 5.0 * (fbm((x / W) * 90, (y / H) * 12, 90, 12, 83, 4) - 0.5) + 3.0 * (1 - pillow)
     let cover = smooth(S_TOP - drape - 1.2, S_TOP - drape + 1.2, s + ragged)
-    const bareTop = 24 + 18 * (fbm((x / W) * 14, 0.5, 14, 1, 331, 3) - 0.5)
-    const bare = smooth(bareTop, bareTop - 11, m.h) * smooth(34, 12, az) * smooth(-150, -100, az)
+    const bareTop = 29 + 14 * (fbm((x / W) * 14, 0.5, 14, 1, 331, 3) - 0.5)
+    const bare = smooth(bareTop, bareTop - 7, m.h) * smooth(34, 12, az) * smooth(-78, -42, az)
     let patch = smooth(0.58, 0.72, fbm((x / W) * 26, (y / H) * 4, 26, 4, 97, 4) + 0.2 * (1 - pillow) + 0.07 * smooth(30, 8, m.h) - 0.2 * pillow * bare + 0.12 * smooth(22, 44, az) * smooth(120, 85, az))
     const frayed = 0.3 * (fbm((x / W) * 110, (y / H) * 16, 110, 16, 41, 3) - 0.5) + 0.2 * (1 - pillow)
     for (const p of PATCHES) {
@@ -231,8 +231,8 @@ for (let y = 0; y < H; y++) {
       const dh = m.h - p[1]
       patch = Math.max(patch, smooth(1.0, 0.35, Math.hypot(da / p[2], dh / p[3]) - 1.6 * frayed) * (1 - 0.75 * pillow * bare))
     }
-    const seam = smooth(0.5, 0.1, pillow) * smooth(0.44, 0.58, fbm((x / W) * 18, (y / H) * 3, 18, 3, 211, 4) + 0.12 * smooth(8, 30, m.h))
-    cover = Math.max(cover, patch * smooth(0.5, 3.5, s), 0.8 * seam * smooth(0.5, 3.5, s))
+    const seam = smooth(0.5, 0.1, pillow) * smooth(0.36, 0.5, fbm((x / W) * 18, (y / H) * 3, 18, 3, 211, 4) + 0.12 * smooth(8, 30, m.h))
+    cover = Math.max(cover, patch * smooth(0.5, 3.5, s), 0.9 * seam * smooth(0.5, 3.5, s))
     const fine = fbm((x / W) * 420, (y / H) * 60, 420, 60, 149, 3) - 0.5
     moss[k] = clamp(cover + 2.6 * fine * cover * (1 - cover))
   }
@@ -258,8 +258,8 @@ for (let y = 0; y < H; y++) {
     const lies = 0.58 * fbm((x / W) * 20, (y / H) * 3, 20, 3, 307, 4) + 0.42 * cob.id[k] + 0.08 * smooth(4, 26, atS(s).h)
     const fray = fbm((x / W) * 90, (y / H) * 12, 90, 12, 83, 4) - 0.5
     const az = (x / W) * 360 - 180
-    const bareTop = 24 + 18 * (fbm((x / W) * 14, 0.5, 14, 1, 331, 3) - 0.5)
-    const shelf = (1 - 0.85 * smooth(bareTop, bareTop - 11, atS(s).h) * smooth(34, 12, az) * smooth(-150, -100, az)) * smooth(0.63, 0.69, lies) * smooth(0.02, 0.3, cob.f2[k] - cob.f1[k] + 0.5 * fray) * smooth(0.5, 3.5, s) * smooth(S_TOP + 1, S_TOP - 3, s)
+    const bareTop = 29 + 14 * (fbm((x / W) * 14, 0.5, 14, 1, 331, 3) - 0.5)
+    const shelf = (1 - 0.85 * smooth(bareTop, bareTop - 7, atS(s).h) * smooth(34, 12, az) * smooth(-78, -42, az)) * smooth(0.63, 0.69, lies) * smooth(0.02, 0.3, cob.f2[k] - cob.f1[k] + 0.5 * fray) * smooth(0.5, 3.5, s) * smooth(S_TOP + 1, S_TOP - 3, s)
     const fine = fbm((x / W) * 420, (y / H) * 60, 420, 60, 149, 3) - 0.5
     moss[k] = Math.max(moss[k], clamp(shelf + 2.6 * fine * shelf * (1 - shelf)))
     rock[k] = mix(rock[k], rockSoft[k] - 0.2, bed)
@@ -282,7 +282,7 @@ for (let y = 0; y < H; y++) {
     const star = smooth(0, 0.6, sprig.f2[k] - sprig.f1[k])
     const cushion = 0.3 * Math.pow(mound, 0.8) + 0.38 * fbm((x / W) * 64, (y / H) * 10, 64, 10, 173, 3) + 0.24 * fbm((x / W) * 150, (y / H) * 22, 150, 22, 131, 3)
     const crest = fbm((x / W) * 34, (y / H) * 5, 34, 5, 263, 3)
-    const thick = ((0.25 + 1.9 * cushion + (0.1 + 2.6 * smooth(0.38, 0.72, crest)) * top * seat + 0.3 * (tuft.id[k] - 0.5)) * mix(0.5, 1, smooth(S_TOP - 14, S_TOP - 3, s)) + 0.5 * star * star * (0.35 + sprig.id[k])) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
+    const thick = ((0.25 + 1.9 * cushion + (0.1 + 1.6 * smooth(0.38, 0.72, crest)) * top * seat + 0.3 * (tuft.id[k] - 0.5)) * mix(0.5, 1, smooth(S_TOP - 14, S_TOP - 3, s)) + 0.5 * star * star * (0.35 + sprig.id[k])) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
     const filled = Math.max(rock[k], mix(rockWide[k], rockBroad[k] + 0.5, 0.8) + 0.15)
     height[k] = mix(rock[k], mix(rock[k] + 0.12, filled, smooth(S_TOP - 13, S_TOP - 3, s)) + thick, smooth(0.12, 0.6, c))
   }
@@ -475,14 +475,20 @@ function outside(p) {
 function surf(az, s, field, liftMm = 0) {
   const m = atS(s)
   const d = sample(field, az, s) * seatOf(s) + liftMm
-  return { p: outside(place(m.r + m.nr * d + swell(az, m.h), m.h + m.nh * d, az)), n: turn(m.nr, m.nh, az), r: m.r }
+  const q = cushion(az)
+  return { p: outside(place(m.r + m.nr * d + swell(az, m.h) + Math.exp(-(((m.h - 38 - 8 * (fbm(((az + 180) / 360) * 13, 0.5, 13, 1, 449, 2) - 0.5)) / 4.5) ** 2)) * (0.1 + 4.8 * q), m.h + m.nh * d + smooth(36, 41, m.h) * 3.2 * q * (0.55 + 0.9 * fbm(((az + 180) / 360) * 23, 0.5, 23, 1, 443, 2)), az)), n: turn(m.nr, m.nh, az), r: m.r }
+}
+// The top is no level collar: moss cushions of unequal size stand on the shoulder, hang over the rim and rise against the glass.
+function cushion(az) {
+  const u = (az + 180) / 360
+  return smooth(0.34, 0.68, 0.65 * fbm(u * 11, 0.5, 11, 1, 431, 3) + 0.35 * fbm(u * 29, 0.5, 29, 1, 437, 2))
 }
 // The mound is no drum: it swells unevenly at its middle and spreads unevenly at the table, measured outward only so the foot stays on the table.
 function swell(az, h) {
   const u = (az + 180) / 360
   const belly = Math.exp(-(((h - 15) / 11) ** 2))
   const foot = smooth(16, 0, h)
-  return belly * (7 * fbm(u * 5, 0.5, 5, 1, 401, 3) - 1.5) - 1.8 * Math.exp(-(((h - 33) / 5) ** 2)) + foot * (5 * fbm(u * 9, 0.5, 9, 1, 409, 3) - 3.4) + smooth(40, 6, h) * 4.6 * (fbm(u * 17, h / 14, 17, 64, 419, 3) - 0.5)
+  return belly * (7 * fbm(u * 5, 0.5, 5, 1, 401, 3) - 1.5) - 0.8 * Math.exp(-(((h - 33) / 5) ** 2)) + foot * (0.4 + 9 * Math.max(0, fbm(u * 7, 0.5, 7, 1, 409, 3) - 0.36)) + smooth(40, 6, h) * 4.6 * (fbm(u * 17, h / 14, 17, 64, 419, 3) - 0.5)
 }
 function seatOf(s) {
   return 1 - smooth(S_MAP - 3, S_MAP, s)
