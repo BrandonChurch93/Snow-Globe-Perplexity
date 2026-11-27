@@ -1,9 +1,10 @@
 import * as THREE from 'three'
 import { DEPTH_RANGE_MM, partBytes, viewCode } from '../diagnostics/views'
 import { LENS_GLSL, innerRadiusMm, lensIor, lensRadiusMm } from '../globe/lens'
-import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeRamp } from '../shake/change'
+import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, SHUTTER_CHANGE, changeRamp } from '../shake/change'
 import { LIGHT_FRAG, LIGHT_FRAG_PARS, lightUniforms } from './chunks/light'
 import { VEIL_FRAG, VEIL_FRAG_PARS, veilUniforms } from './chunks/veil'
+import type { Sample } from './sampler'
 import { flagStandIn } from './standins'
 import { STILL_SIDE, stillBytes } from './still'
 
@@ -270,9 +271,21 @@ export const GUST_LAST_DOWN_AT = OUTSIDE_RAMP.start + GUST_LAST_DOWN * OUTSIDE_R
 export const STAGE_GUST_GLSL = `
 uniform float uChange;
 uniform vec4 uState;
+#ifdef STAGE_STREAK
+uniform vec4 uGustSlot;
+varying float vGustPart;
+#endif
 vec3 stageGust(vec2 rest, float a, float b) {
+#ifdef STAGE_STREAK
+  float part = float(gl_InstanceID % STAGE_STREAK);
+  vGustPart = part;
+#endif
   if (uState.w < 0.5 || uState.z >= 0.0) return vec3(0.0);
+#ifdef STAGE_STREAK
+  float s = (uGustSlot.x + uGustSlot.y * (part + 0.5) / float(STAGE_STREAK) - uState.x) / uState.y;
+#else
   float s = (uChange - uState.x) / uState.y;
+#endif
   float r = length(rest);
   float far = clamp((r - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
   if (uState.w < 1.5) {
@@ -288,6 +301,87 @@ vec3 stageGust(vec2 rest, float a, float b) {
   return vec3(${GUST.reachOutMm.toFixed(1)} * (0.5 + a) * q * q, sin(1.5707963 * q), q);
 }
 `
+
+/**
+ * The scatter in the air, in a frame of the film. A piece is blown faster than the globe goes, and the globe's travel sets how
+ * many samples a frame has (src/film/motion.ts): drawn once a sample, a petal at 3840 lay as 76 copies 8 to 14 pixels apart,
+ * and its outline was a row of teeth. So while a piece of the scatter is in the air, in a frame of `join` samples or more, each
+ * sample's share of the shutter is its rank in time (as `leaveOut` takes it, change.ts) cut into `parts` equal parts, the
+ * scatter is drawn once at the middle of each part, and every pixel keeps one of them: its level in the still tile
+ * (still.ts), turned on by `turn` of a whole with every sample, so that neighbours keep unlike parts and one pixel goes
+ * round all of them. Over the frame a pixel then sees the scatter at as many moments as the frame has samples, one in each
+ * sample's share, and where a row of copies stood there is one smear with a fine grain. The parts are
+ * a second mesh over the same vertices (`gustTwin`), made when a film frame first asks for it and shown in place of the first
+ * for those samples alone: the live page has no sample, a still and a frame with nothing in the air have the first mesh, and
+ * their shader is the one it was (`STAGE_STREAK` is defined for the second mesh only).
+ */
+export const GUST_STREAK = { join: 8, parts: 8, turn: 0.6180339887 } as const
+const gustSlot = { value: new THREE.Vector4() }
+const GUST_AT = [0.5 / (1 + DRESSING_FRONT.gain), (0.5 + DRESSING_FRONT.gain) / (1 + DRESSING_FRONT.gain)] as const
+/** The shares of the outside span between which a piece of the scatter is in the air: from the first that lifts to the last that is gone, and from the first that starts in to the last that is down. */
+export const GUST_FLIGHT = {
+  out: [Math.max(TABLE.leaveFrom + TABLE.leaveLong * GUST_AT[0] - GUST.leadOut, TABLE.liftFrom), Math.max(TABLE.leaveFrom + TABLE.leaveLong * GUST_AT[1] - GUST.leadOut, TABLE.liftFrom) + GUST.longOut],
+  in: [TABLE.comeFrom + TABLE.comeLong * GUST_AT[0] - GUST.leadIn, GUST_LAST_DOWN],
+} as const
+
+/** Whether this sample draws the scatter in parts (`GUST_STREAK`), for a dressing that comes (`incoming`) or leaves; if so the sample's share of the shutter is set for the second mesh. */
+export function gustStreaks(sample: Sample | null, incoming: boolean): boolean {
+  const of = sample?.of ?? 1
+  if (!sample || sample.hold === undefined || of < GUST_STREAK.join) return false
+  const flight = incoming ? GUST_FLIGHT.in : GUST_FLIGHT.out
+  if (!(share(sample.hold + SHUTTER_CHANGE) > flight[0] && share(sample.hold) < flight[1])) return false
+  const rank = Math.floor(sample.t * of)
+  gustSlot.value.set(sample.hold + (rank / of) * SHUTTER_CHANGE, SHUTTER_CHANGE / of, (rank * GUST_STREAK.turn) % 1, 0)
+  return true
+}
+
+/** For the fragment shader of a part the gust carries: whether this pixel keeps another part of the sample's share than the one being drawn. */
+export const STAGE_GUST_FRAG_GLSL = `
+#ifdef STAGE_STREAK
+uniform vec4 uGustSlot;
+varying float vGustPart;
+bool stageGustElse() {
+  return floor(fract(stageStill(ivec2(gl_FragCoord.xy) + ivec2(53, 17)) + uGustSlot.z) * float(STAGE_STREAK)) != floor(vGustPart + 0.5);
+}
+#endif
+`
+
+/** The second mesh of a part the gust carries: the same vertices drawn `GUST_STREAK.parts` times, with the first mesh's uniforms and its place in the change. Returns the switch between the two; the second is made the first time it is asked for. */
+export function gustTwin(mesh: THREE.Mesh): (on: boolean) => void {
+  let twin: THREE.Mesh | null = null
+  const make = (): THREE.Mesh => {
+    const from = mesh.geometry
+    const g = new THREE.InstancedBufferGeometry()
+    for (const [name, a] of Object.entries(from.attributes)) {
+      const each = a as THREE.InstancedBufferAttribute
+      g.setAttribute(name, each.isInstancedBufferAttribute ? new THREE.InstancedBufferAttribute(each.array, each.itemSize, each.normalized, each.meshPerAttribute * GUST_STREAK.parts) : a)
+    }
+    g.setIndex(from.getIndex())
+    for (const group of from.groups) g.addGroup(group.start, group.count, group.materialIndex)
+    g.setDrawRange(from.drawRange.start, from.drawRange.count)
+    const own = (from as THREE.InstancedBufferGeometry).isInstancedBufferGeometry ? (from as THREE.InstancedBufferGeometry).instanceCount : 1
+    g.instanceCount = own * GUST_STREAK.parts
+    const first = mesh.material as THREE.ShaderMaterial
+    const m = first.clone()
+    m.uniforms = { ...first.uniforms, uGustSlot: gustSlot }
+    m.defines = { ...first.defines, STAGE_STREAK: GUST_STREAK.parts }
+    m.userData.stage = first.userData.stage
+    const second = new THREE.Mesh(g, m)
+    second.frustumCulled = mesh.frustumCulled
+    second.renderOrder = mesh.renderOrder
+    second.position.copy(mesh.position)
+    second.quaternion.copy(mesh.quaternion)
+    second.scale.copy(mesh.scale)
+    mesh.parent?.add(second)
+    return second
+  }
+  return (on: boolean): void => {
+    if (!on && !twin) return
+    twin ??= make()
+    twin.visible = on
+    mesh.visible = !on
+  }
+}
 
 export interface StageHandle {
   part: string
