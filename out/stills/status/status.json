@@ -1,47 +1,46 @@
 {
-  "number": 222,
-  "time": "2026-11-27 18:17 UTC",
+  "number": 224,
+  "time": "2026-11-27 19:03 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 222 · 2026-11-27 18:17 UTC · Phase 6",
+    "Status 224 · 2026-11-27 19:03 UTC · Phase 6",
     "Phases 1 to 5 complete. Phase 6 in progress.",
-    "Landed since Status 221: chain 36's checks ran on a helper machine and came back at 18:10 UTC with every step at exit 0 (decision 202's trial). Measured there on the three merged parts (fall's scene, tenth list; fall's air, Step B; spring's base, tenth list): fall at rest M3 0.9702 at review (base 0.970, miniature 0.989) against chain 35's 0.9354; spring at rest M3 0.8947 (base 0.900, miniature 0.895) against 0.8666, so the condition of decision 203 holds; M4 of shakes 1 to 4 0.9694, 0.9434, 0.9571, 0.9608; M5 0.9923, 1, 0.9878, 0.9998; the highest count at high 1,786,236 of 1,800,000 triangles; the whole test run 963 passed and 8 skipped in 68 files passed and 1 skipped, 382 s. Winter's and summer's four guard stills came out equal to this machine's, so the two machines draw alike; spring's two moved to the values its builder gave, fall's two moved. It is not on origin main yet: the four sound tests the helper cannot run, the engine's hash and the commit's files are read here first. The two pairs and the two landed stills were looked at: no fault seen, both seasons still below the bar (fall's tree a dark thicket, spring's base a tall cake where the approved sinks the glass into a mound).",
-    "The eighth publish is under way: the 40 first pictures of summer and fall were drawn on chain 35's head (agent/p6-first-8 948de11e, one commit over 6922e017); the publish's own build and whole test run started here at 18:01 UTC; a fresh security reviewer read the same commit and reports no block and no warning. The live page moves when this machine's run is read and the built files' hashes agree with the reviewer's.",
-    "Decision 204: fall's base sheaf goes into chain 37 although the base's part of M3 reads 0.916 against main's 0.970 by its builder, over the order's floor of 0.85; a fall, logged as one, not a pass. Decision 205: bar 1 (iii) of summer's falling sand is two readings now (pixels brighter than both neighbours in time at most 0.25 percent of the box; one frame events after carrying the neighbour frames along the fall under 1 percent), because the plain count rises with the rate and cannot tell travel from a boil; a change of what the bar measures, not a pass of the old reading, by which four times the rate is over the bar by a quarter. Decision 206: fall's tree, eleventh list. Its builder counted the form: twig ends 39 in the approved and 52 in the build, but sky ringed all round by wood 1 to 4 in the approved against 70 in the build, and a pale line on the upper side of 61 percent of the approved's limb cuts against 26 percent. Ruled: light on the bark first, then the crown untangled and the twigs drawn in curves to fine points, inside the tree's present triangles, with a 4K proof over four frames before any merge.",
-    "Also read: the shutter builder's report on open item 257 (the cause on this machine not found, the mechanism measured on its machine: a machine short of memory makes the 12 workers test crawl; the item stays open) and a trial on spring's dew for open item 259, not merged (on main it mends almost nothing; the drops mender measures again once chain 36 is on origin).",
-    "Disk on this machine: 3,522 MiB free after clearing old attachments and packing the repo (open item 258 eased, not closed).",
-    "Open and below the bar: winter's ferns torn at film frame 668, summer's heap torn at 2108, the petals' fringes at 680; spring's dots under the mushrooms' rims (item 259); summer's flame and star in the glass; a white round patch behind the lamp post at summer's close camera (item 260); summer's falling sand, which reads as an ochre band with dark dashes at every trial rate.",
-    "All four seasons remain below the bar. Sound credits 7,420 of 10,000.",
-    "phase 6: 39.46 h used of its 12.00 h box",
-    "allowance (after the review): 39.46 h used of 12.00 h allowed",
+    "Landed since Status 223: chain 37 reached origin main at 18:58 UTC as 92247ca7. It carries fall's sheaf on the base (decision 204), the shutter's wait for a master's lock and the eighth publish's first pictures. Read before the push: on the helper machine every step at exit 0, the whole test run 965 passed and 8 skipped in 68 files passed and 1 skipped, fall at rest against the approved picture 0.9159 at review (base 0.916, miniature 0.989; chain 36 read 0.9702, so the sheaf costs 0.0543, a fall allowed by decision 204 over its floor 0.85 and logged as a fall), the six guards of winter, spring and summer unmoved, the triangle budget a pass at 1,786,164 of 1,800,000; on this machine the commit's three files, the two stills' hashes, the engine's hash equal to the helper's and the sound tests 46 of 46. Looked at: fall at rest and landed. The sheaf reads as a tuft at the base's left flank, the tree is still a thicket.",
+    "Decision 209, the change of season: summer's heap may leave the table by lines in the sand's shader and not only by moving its mesh, because moved as a mesh every grain is drawn as a row of beads at 4K. Conditions: the eight guards at rest, nothing paid in a live frame, the heap whole in every frame of 2104 to 2111 at 4K. Winter's far lumps of snow go out with the frost by the same law, where they faded in place before. The three white specks are the table's own dust and no fault. In the builder's final frames the heap goes out to the right as one soft piece and the weave is gone. Not judged in motion, not pushed.",
+    "Decision 210, summer's falling sand: neither trial form is a pass. The faster one carries the fall in both views and fails the count of one frame events on the sheet (0.49 and 0.48 percent against a bar of 0.25). The slower one holds that count (0.08 and 0.09 percent) and shows no travel in the hero view. The rate is the faster, since a fall that reads as standing is the boil this work set out to end. The events are to be mended by structure: threads at least twice as long as they travel in one frame, half as wide. By my eye both forms are cream scales on orange, a braid and not yet sand.",
+    "The ninth publish is begun: its 40 first pictures were ordered at 19:02 UTC on 92247ca7. It will carry chains 36 and 37. The shutter's follow up for the 4K masters (a run refused at its start when memory is short, a line a minute while it waits for another render) is pushed as 20a5ebf6 and waits for its whole test run on the merged head.",
+    "Open and below the bar: winter's ferns at film frame 668 (mended at draft in its builder's tree, no final frame seen), the petals' fringes at 680; spring's dots under the mushrooms' rims (item 259); summer's flame and star in the glass; a white round patch behind the lamp post at summer's close camera (item 260); summer's falling sand; fall's tree; spring's base, a tall cake where the approved sinks the glass into a mound.",
+    "All four seasons remain below the bar. Sound credits 7,420 of 10,000, no call since 05:47 UTC on Thursday.",
+    "phase 6: 40.23 h used of its 12.00 h box",
+    "allowance (after the review): 40.23 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-222-1.jpg",
-      "caption": "Fall at rest on chain 36, approved picture left and build right, not on origin yet, below the bar",
+      "file": "out/stills/status/status-224-1.jpg",
+      "caption": "Fall at rest on chain 37, approved picture left and build right, on origin now, below the bar",
       "w": 1200,
       "h": 536
     },
     {
-      "file": "out/stills/status/status-222-2.jpg",
-      "caption": "Spring at rest on chain 36, approved picture left and build right, not on origin yet, below the bar",
-      "w": 1200,
-      "h": 536
-    },
-    {
-      "file": "out/stills/status/status-222-3.jpg",
-      "caption": "Fall after its landing on chain 36, not on origin yet, below the bar",
+      "file": "out/stills/status/status-224-2.jpg",
+      "caption": "Fall after its landing on chain 37, on origin now, below the bar",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-222-4.jpg",
-      "caption": "Fall's base at the left flank close up, approved picture left, main in the middle, the sheaf right, for chain 37, below the bar",
-      "w": 1196,
-      "h": 442
+      "file": "out/stills/status/status-224-3.jpg",
+      "caption": "The change of season, summer's heap leaving over film frames 2107 to 2111 at the final tier, in its builder's tree, not pushed, not judged in motion",
+      "w": 1200,
+      "h": 779
+    },
+    {
+      "file": "out/stills/status/status-224-4.jpg",
+      "caption": "Summer's falling sand at 4K at four times, film frames 1754 to 1757, the rate chosen, drawn without the smear, in its builder's tree, below the bar",
+      "w": 1200,
+      "h": 297
     }
   ]
 }

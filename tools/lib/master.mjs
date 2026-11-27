@@ -425,6 +425,54 @@ export function procsGainLine(procs, limits) {
   return `--procs ${procs} on ${limits.cpus} ${limits.cpus === 1 ? 'CPU' : 'CPUs'}: the best count depends on the machine. Measure it with --procs 1, 2 and 3 on three chunks before a long run, and keep the count that gives the most frames an hour.`
 }
 
+/** The memory the kernel holds free for new work, in bytes, from the text of /proc/meminfo, or null where it does not say. */
+export function availableBytes(meminfo) {
+  const m = /^MemAvailable:\s+(\d+) kB$/m.exec(meminfo ?? '')
+  return m ? Number(m[1]) * 1024 : null
+}
+
+export function memoryAvailable() {
+  try {
+    return availableBytes(fs.readFileSync('/proc/meminfo', 'utf8'))
+  } catch {
+    return null
+  }
+}
+
+/** A loud line when less memory is free than the render processes hold at the master's size, or null. Nothing is refused by it. */
+export function memoryShortLine(procs, format, available) {
+  if (available === null || format !== M.format) return null
+  const need = Math.round((procs * UHD_PROC_GB + UHD_SPARE_GB) * 10) / 10
+  if (available / GIB >= need) return null
+  return `SHORT OF MEMORY: ${gib(available)} GiB are free on this machine now, and ${procs === 1 ? `one ${format} render holds` : `${procs} ${format} renders hold`} about ${need} GB with the encoder. A machine short of memory does not fail, it crawls. Look at what else runs here (ps -eo rss,etime,args --sort=-rss | head) before a long run.`
+}
+
+export const OVERDUE = { times: 3, leastSeconds: 300, everySeconds: 60 }
+
+export function overdueLine({ frame, seconds, expected, available }) {
+  const free = available === null ? '' : ` ${gib(available)} GiB of memory are free now.`
+  return `OVERDUE: frame ${frame} has been drawing for ${hours(seconds)}, ${(seconds / expected).toFixed(1)} times the ${expected.toFixed(1)} s the frames so far give it. Nothing has failed and nothing was given up.${free} A machine short of memory crawls without an error: look at free -m and at what else runs here.`
+}
+
+/**
+ * Says a line when a frame takes far longer than the frames before it give it, and again each time that doubles. It ends nothing.
+ * Gives back the function that ends the watch. Without an expectation (the first frame of a run) it watches nothing.
+ * @param {{ frame: number, expected: number | null, say: (line: string) => void, available?: () => number | null, now?: () => number }} o
+ */
+export function watchFrame({ frame, expected, say, available = memoryAvailable, now = Date.now }) {
+  if (!(expected !== null && expected > 0)) return () => {}
+  const t0 = now()
+  let due = Math.max(OVERDUE.times * expected, OVERDUE.leastSeconds)
+  const timer = setInterval(() => {
+    const seconds = (now() - t0) / 1000
+    if (seconds < due) return
+    say(overdueLine({ frame, seconds, expected, available: available() }))
+    due = seconds * 2
+  }, OVERDUE.everySeconds * 1000)
+  timer.unref?.()
+  return () => clearInterval(timer)
+}
+
 export const NOT_A_NUMBER = 'NOT A NUMBER'
 export const NAN_MEASURE = "window.showcase.dev.sanity(): the values in the picture's mean that are no number, counted before the lens and the grade"
 
