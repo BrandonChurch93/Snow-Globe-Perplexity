@@ -341,8 +341,8 @@
         },
         {
           "path": "summer/base-summer.glb",
-          "bytes": 3143920,
-          "sha": "69299ff9f2ec66b3"
+          "bytes": 3143908,
+          "sha": "d7adf4dd9fc7d551"
         },
         {
           "path": "summer/tree-leaves.srgb.tile.w1024.first.webp",
@@ -679,7 +679,7 @@
         {
           "path": "summer/base-summer.glb",
           "bytes": 7977668,
-          "sha": "f0de0f7294fa5580"
+          "sha": "bbcd9d3b516a4d0c"
         },
         {
           "path": "summer/tree-leaves.srgb.tile.w1024.png",
@@ -759,7 +759,7 @@
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "853f4932ba4c0060",
-    "summer": "c2e56dad7d58fc67",
+    "summer": "de1e8abb56efda6c",
     "fall": "94aed2c6d13b3bdf"
   }
 }
