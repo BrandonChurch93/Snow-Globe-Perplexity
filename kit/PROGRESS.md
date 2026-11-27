@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 197 · 2026-11-27 05:33 UTC
+Status 198 · 2026-11-27 05:58 UTC
 
-- `out/stills/status/status-197-1.jpg`: Spring at rest and landed above, fall at rest and landed below, as on main now
-- `out/stills/status/status-197-2.jpg`: Spring at rest with the base's third list, approved picture left and build right, below the bar
-- `out/stills/status/status-197-3.jpg`: Fall at rest with the scene's fourth pass and the air's third list, approved picture left and build right, below the bar
-- `out/stills/status/status-197-4.jpg`: The shutter's mend at 4K in motion, film frame 1337, the glass at two times, the old way left and the mend right, soft teeth remain, not a pass
+- `out/stills/status/status-198-1.jpg`: The shutter at 4K in motion, film frame 1337, a small light at four times: the old way left, the earlier mend in the middle, the new deal right. Not on main yet.
+- `out/stills/status/status-198-2.jpg`: Fall's base: the approved picture above, main in the middle, the fourth list below. Held, below the bar.
+- `out/stills/status/status-198-3.jpg`: Spring's base: the approved picture above, main in the middle, the fourth list below. Held, below the bar.
+- `out/stills/status/status-198-4.jpg`: Summer's tree: the approved picture left, main in the middle, the eighth pass right. Held, below the bar.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 05:33 UTC
-clock: phase 6, tick of 21.3 minutes
-phase 6: 26.73 h used of its 12.00 h box
-allowance (after the review): 26.73 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 26.73 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 05:58 UTC
+clock: phase 6, tick of 24.9 minutes
+phase 6: 27.15 h used of its 12.00 h box
+allowance (after the review): 27.15 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 27.15 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
