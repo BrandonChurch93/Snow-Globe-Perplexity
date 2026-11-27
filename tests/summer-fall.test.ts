@@ -20,6 +20,8 @@ describe("summer's falling sand", () => {
     return 0
   }
   const paths = fallPaths()
+  let made: ReturnType<typeof grainRows> | undefined
+  const fileRows = (): ReturnType<typeof grainRows> => (made ??= grainRows())
 
   it('is the same list on every call', () => {
     expect(fallPaths()).toEqual(paths)
@@ -76,11 +78,13 @@ describe("summer's falling sand", () => {
       expect(p.life).toBeGreaterThan(p.slide < 0 ? 0.3 : 0.08)
       expect(p.life).toBeLessThan(p.slide < 0 ? 0.9 : 0.14)
       // The shader gives each loose grain a whole number of falls in the ambient period, and draws it for one opening of
-      // the shutter more than it flies. A grain of a thread is at every place of its path once in `fold` ambient
-      // periods; one at the back of the sheet has no rate of its own and goes with those before it.
+      // the shutter more than it flies. A grain of a thread is at every place of its path a whole number of times in
+      // `fold` ambient periods, so the stream comes round with the period: three times at the back of the sheet, and
+      // three, four or five times at its face (decision 201: the whole fall travels and nothing of it stands).
+      expect(p.rate).toBeGreaterThan(0)
       expect(period / Math.max(1, Math.floor(period * p.rate + 0.5))).toBeGreaterThan(p.life + 0.005)
       if (p.slide < 0) expect(period / Math.max(1, Math.floor(period * p.rate + 0.5))).toBeGreaterThan(p.life + FALL.shutter)
-      else expect(p.rate === 0 || p.rate === 1 / (FALL.fold * period)).toBe(true)
+      else expect(p.back ? [3] : [3, 4, 5]).toContain(p.rate * FALL.fold * period)
     }
   })
 
@@ -98,11 +102,12 @@ describe("summer's falling sand", () => {
       if (last && last[0]!.id === p.id && last[0]!.from[0] === p.from[0] && last[0]!.from[2] === p.from[2]) last.push(p)
       else threads.push([p])
     }
-    const back = threads.filter((t) => t[0]!.rate === 0)
-    const face = threads.filter((t) => t[0]!.rate > 0)
+    const back = threads.filter((t) => t[0]!.back)
+    const face = threads.filter((t) => !t[0]!.back)
     expect(back.length).toBeGreaterThan(20)
     expect(face.length).toBeGreaterThan(30)
-    expect(threads.slice(0, back.length).every((t) => t[0]!.rate === 0)).toBe(true)
+    expect(threads.slice(0, back.length).every((t) => t[0]!.back)).toBe(true)
+    expect(loose.every((p) => !p.back)).toBe(true)
     expect(loose.length).toBeGreaterThan(0)
     expect(loose.length).toBeLessThan(threads.length)
     for (const kind of [back, face]) {
@@ -128,6 +133,44 @@ describe("summer's falling sand", () => {
     }
   })
 
+  // Neighbours shear: no two threads of the face that lie side by side go down as often, whether the surge's threads
+  // run between them or not, each of the three numbers has a third of the threads that stand, and their mean is four.
+  it('runs the threads of its face at three rates dealt so that no two neighbours share one', () => {
+    const period = 8
+    expect(FALL.turns).toEqual([3, 4, 5])
+    expect(FALL.deepTurns).toBe(3)
+    const rows = fileRows()
+    const share = (q: number): number => {
+      const v = Math.fround(Math.fround(rows.data[q * GRAIN_ROW + 12]! * Math.fround(FALL.pick[0]!)) + Math.fround(rows.data[q * GRAIN_ROW + 10]! * Math.fround(FALL.pick[1]!)))
+      return v - Math.floor(v)
+    }
+    // A row of the file says with the sign of its rate whether its grain is at the back of the sheet.
+    let behind = 0
+    const stands = new Set<number>()
+    for (let q = 0; q < rows.data.length / GRAIN_ROW; q++) {
+      if (rows.data[q * GRAIN_ROW + 11] !== 1) continue
+      if (rows.data[q * GRAIN_ROW + 6]! < 0) behind++
+      if (share(q) <= FALL.stand) stands.add(rows.data[q * GRAIN_ROW + 10]! * 1e6 + rows.data[q * GRAIN_ROW + 3]!)
+    }
+    expect(behind).toBe(paths.filter((p) => p.back).length)
+    const face: FallPath[] = []
+    for (const p of paths) {
+      if (p.slide < 0 || p.back) continue
+      const last = face[face.length - 1]
+      if (!last || last.id !== p.id || last.from[0] !== p.from[0] || last.from[2] !== p.from[2]) face.push(p)
+    }
+    const standing = face.filter((p) => stands.has(Math.fround(p.id) * 1e6 + Math.fround(p.from[0])))
+    expect(standing.length).toBeGreaterThan(face.length * 0.7)
+    expect(standing.length).toBeLessThan(face.length)
+    for (const kind of [face, standing]) {
+      for (let i = 1; i < kind.length; i++) expect(kind[i]!.rate).not.toBe(kind[i - 1]!.rate)
+    }
+    const counts = FALL.turns.map((n) => standing.filter((p) => Math.round(p.rate * FALL.fold * period) === n).length)
+    expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1)
+    const mean = standing.reduce((sum, p) => sum + p.rate * FALL.fold * period, 0) / standing.length
+    expect(Math.abs(mean - 4)).toBeLessThan(0.05)
+  })
+
   it('stands at rest, surges after a landing and stops in the air', () => {
     expect(fallShare(-1)).toBe(0)
     expect(fallShare(Infinity)).toBe(FALL.stand)
@@ -145,7 +188,7 @@ describe("summer's falling sand", () => {
   // Once the jumping grains are gone the draw begins after the grains that only a landing's surge sets falling: a fifth of
   // the fall, never in the air then, and not worth two triangles each. No grain that can still fall is left out of it.
   it('leaves out of the rest draw only grains that the surge alone sets falling', () => {
-    const rows = grainRows()
+    const rows = fileRows()
     const n = rows.data.length / GRAIN_ROW
     const kind = (q: number): number => rows.data[q * GRAIN_ROW + 11]!
     // The share a grain belongs to as the shader reads it, in single precision.
