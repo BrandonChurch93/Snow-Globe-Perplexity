@@ -142,3 +142,53 @@ Eleventh pass, first pair (trial 163, the lace). Stills drawn on the tree merged
 14c8-film-frame-1990-3840-right-flank-twice-main-ours.jpg: Film frame 1990 at 3840 at the final tier (24 samples), the right flank (x 2260, y 620, 220 by 380) at twice by nearest neighbour: main bd0b2fcb, ours. Main: vivid green domes with clusters of pale beads on the tops and the shoulders. Ours: dark domes, the line on the tops, and down the right flank of both domes short pale gold lights 4 to 8 px long on leaf edges with dark between them. At this size they read as short dashes more than as round specks.
 14c9-film-frames-1990-1991-3840-right-flank-twice-ours.jpg: Ours, frames 1990 and 1991, the same window. Every light on the flank sits where it sat one frame before; what moves is the air (fireflies and seed puffs).
 14c10-measuring-aid-steps-1990-1991-right-flank-three-times-main-ours.jpg: A measuring aid. The flank's box (x 2320, y 650, 150 by 330) at three times over frame 1990 dimmed: main, ours. Red is a step of more than 12 levels from frame 1990 to 1991, yellow is an event that lives for one frame alone in frames 1989 to 1992. The red sits on the fireflies and the seed puffs in both; the flank's lights carry no red, bar two or three single pixels near the outline. In this box over the six frames: steps 3.651 percent of the box (main 3.578, item 2 3.643), one frame events 0.028 percent (main 0.027, item 2 0.027). The lit edge's class grew from 13.09 to 14.30 percent of the box with item 3 while its steps went from 1.043 to 1.046 percent of the box.
+
+Summer tree, round two. Head agent/p6-summer-tree 70dd76e8 (main 5b76c959 merged in it by 825af70a). All pictures drawn on the builder's machine at review, hd, with the air. The approved is always at the left. "Main" in these pictures is main 5b76c959, whose tree is round one's.
+
+r2-1-hero-rest-approved-left.jpg
+The hero at rest, approved left, round two right, each 597 px wide. At this size the tree reads alike in kind: a round dark crown with a lit edge on its stem. Ours is more olive and has less sparkle about it.
+
+r2-2-hero-landing-approved-left.jpg
+The hero at the landing, approved left, round two right. In ours the air's storm hides the tree; the tree cannot be judged in this still.
+
+r2-3-tree-one-scale-approved-left.jpg
+The tree at one scale, approved left, round two right. Ours: an olive body with pale yellow green on the pads' tops, a thin gold rim, warm undersides, dark limbs between the pads. The approved: a deeper green body, a wider string of gold on the tops, more open gaps. Below the bar: our tops stand about halfway between round one's and the approved's.
+
+r2-4-tree-approved-main-round-two.jpg
+The same, three ways: approved, main, round two. The pads' tops went from grey green to a mild yellow green, the limbs in the crown are darker, the right flank's specks a little more gold. The change is small at this scale.
+
+r2-5-close-camera-approved-hero-crop-left.jpg
+The close camera. The approved has no still from this camera: at the left its hero still, cropped to the stem and enlarged; at the right our close camera. Ours: a fluted trunk with fine fibres down the grain and warm light from the large lantern. The approved's stem is thicker, has a wide lit edge at its right and coarser bark. Our limbs still read as smooth tubes.
+
+r2-6-close-camera-trunk-before-left-round-two-right.jpg
+The close camera's trunk, enlarged twice. Left: before the wood's commit (head f9e53a0a, whose wood is main's). Right: round two. The broad polished sheen is broken into fibres; the wood reads more matt.
+
+r2-7-close-camera-whole-before-left-round-two-right.jpg
+The close camera whole. Left: before (head f9e53a0a, whose wood and crown tone are main's). Right: round two.
+
+r2-8-trunk-hero-approved-main-round-two.jpg
+The stem at the hero's size: approved, main, round two. At this size little of the grain shows: the fibres are finer than the picture holds and are faded to their mean so that the bark holds still. The limbs up in the crown are darker.
+
+r2-item1-specks-gold-whole-400px.jpg
+r2-item1-specks-gold-tree-one-scale.jpg
+r2-item1-specks-gold-right-domes.jpg
+r2-item1-specks-gold-ours-1to1-before-after.jpg
+Item 1 (db75b373), approved, before, after; the last is ours alone at four times, before and after. The flank's specks went from cream towards gold, with a little gold about each. By eye the turn is slight.
+
+r2-item2-string-round-the-turn-whole-400px.jpg
+r2-item2-string-round-the-turn-tree-one-scale.jpg
+r2-item2-string-round-the-turn-right-domes.jpg
+r2-item2-string-round-the-turn-ours-1to1-before-after.jpg
+Item 2 (f9e53a0a), approved, before, after. The string goes on round the bottom right of the low dome. About 3 mm of the underside is still bare where the approved crowds them.
+
+r2-critic-crown-sun-on-tops-whole-400px.jpg
+r2-critic-crown-sun-on-tops-tree-one-scale.jpg
+r2-critic-crown-sun-on-tops-right-domes.jpg
+r2-critic-crown-sun-on-tops-ours-1to1-before-after.jpg
+The critic's item, the crown (c68206b7), approved, before, after. Gold green on the leaves that face up near the top of their pad, warm on the undersides. Mild at this scale.
+
+r2-critic-wood-grain-whole-400px.jpg
+r2-critic-wood-grain-tree-one-scale.jpg
+r2-critic-wood-grain-right-domes.jpg
+r2-critic-wood-grain-ours-1to1-before-after.jpg
+The critic's item, the wood (70dd76e8), approved, before, after, from the hero. The limbs in the crown are darker; the grain itself shows in the close camera (r2-6), not here.
