@@ -203,6 +203,86 @@ export function workIn(steps: Step[], season: string, turn: Turn, wish: Wish, pa
   pace.taken += now() - from
 }
 
+/**
+ * The steps of a hand (`hand` in src/scene/stage.ts), a turn's worth at a time, for as long as `go` says. While the picture
+ * rests a turn spends `restMs` of a frame. For the season a press waits for it spends what the making would, and the wish
+ * is told that the page gave that time up itself. Once the press is `LAST_S` old all that is left is done at once and no
+ * turn is waited for: a turn is a frame, and the press has few left before it gives up.
+ */
+export async function handIn(steps: (() => void)[], season: string, wish: Wish, pace: FramePace, restMs: number, go: () => boolean, turnFor: () => Promise<Turn>, now: () => number): Promise<void> {
+  for (let i = 0; i < steps.length && go(); ) {
+    const turn = wish.last(season) ? null : await turnFor()
+    const awaited = wish.awaits(season)
+    if (awaited) wish.gives()
+    const from = now()
+    const used = turn === null || turn.frame === null ? null : from - turn.frame
+    let ms = Infinity
+    if (turn !== null && !wish.last(season)) {
+      if (awaited) ms = used === null ? spendOf(turn.waited, true) : spendIn(used, pace.every, turn.waited, true, pace.taken)
+      else ms = used === null ? restMs : fitIn(restMs, used, pace.every, pace.taken)
+    }
+    while (i < steps.length && go() && now() - from < ms) steps[i++]!()
+    pace.taken += now() - from
+  }
+}
+
+/**
+ * The hands of the seasons made aside: one after the other, in the order the seasons were made, so that the picture at
+ * rest gives what a frame has spare to one of them. The season a press waits for does not wait its turn. Its hand begins
+ * at once, beside the others, and is given back for the press to wait for: the first frame that shows a season whose
+ * hand is not done links its programs itself, and that frame is in the middle of the shake. A season's hand begins
+ * once, whoever comes for it first.
+ */
+export class Hands {
+  private chain: Promise<void> = Promise.resolve()
+  private readonly begun = new Map<string, Promise<void>>()
+  private readonly open = new Set<string>()
+
+  constructor(private readonly hand: (season: string) => Promise<void>) {}
+
+  private of(season: string): Promise<void> {
+    let h = this.begun.get(season)
+    if (!h) {
+      h = this.hand(season)
+      this.begun.set(season, h)
+      const over = (): void => void this.open.delete(season)
+      h.then(over, over)
+    }
+    return h
+  }
+
+  /** `season` is made. Its hand takes its turn; where a press waits for the season it begins now and is given back. */
+  made(season: string, awaited: boolean): Promise<void> | undefined {
+    this.open.add(season)
+    const now = awaited ? this.of(season) : undefined
+    this.chain = this.chain.then(() => this.of(season))
+    return now
+  }
+
+  /** A press for `season`. Where it is made and not yet in the GPU's hands, its hand begins now if it has not, and is given back. */
+  pressed(season: string): Promise<void> | undefined {
+    return this.open.has(season) ? this.of(season) : undefined
+  }
+
+  /** Every hand there is so far, done. */
+  get all(): Promise<void> {
+    return this.chain
+  }
+}
+
+/** Waits for `done`, and no longer than `stop` allows: it is asked each time `turn` comes round. */
+export async function until(done: Promise<unknown>, stop: () => boolean, turn: () => Promise<unknown>): Promise<void> {
+  let waiting = true
+  const over = (): void => void (waiting = false)
+  const ended = done.then(over, over)
+  while (waiting && !stop()) await Promise.race([ended, turn()])
+}
+
+/** The seasons a frame of `moment` shows: one, or in the middle of a change the one it leaves and the one it goes into. */
+export function seasonsIn(moment: Pick<Moment, 'season' | 'from' | 'to' | 'change'>): [string] | [string, string] {
+  return moment.from === moment.to || !(moment.change > 0) || moment.change >= 1 ? [moment.season] : [moment.from, moment.to]
+}
+
 export function whole<T>(steps: Generator<void, T>): T {
   for (;;) {
     const s = steps.next()

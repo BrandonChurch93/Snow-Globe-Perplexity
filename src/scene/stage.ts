@@ -26,7 +26,7 @@ import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, out
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { CHANGE_BLOOM, Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
-import { fitIn, FramePace, inPieces, SOON_MS, Wish, workIn, type Step, type Turn } from './steps'
+import { FramePace, handIn, Hands, inPieces, seasonsIn, SOON_MS, until, Wish, workIn, type Step, type Turn } from './steps'
 import { makeSlab, ReflectMix, updateSurface } from './surface'
 
 interface SeasonSet {
@@ -53,7 +53,7 @@ interface Making {
   steps: Step[]
 }
 
-/** What one frame spends on handing a season that is not on show to the GPU: the step that passes it is the frame's last. */
+/** What one frame spends on handing a season nobody waits for to the GPU: the step that passes it is the frame's last. */
 const HAND_MS = 4
 /** A layer nothing is on but the lights, which every program counts, and for one draw the mesh that is handed over. */
 const HAND_LAYER = 31
@@ -128,7 +128,7 @@ export class GlobeStage implements Stage {
   awaited?: () => boolean
   /** The picture the page paints into while it draws one sample a frame; none on a page that captures. */
   private live: THREE.WebGLRenderTarget | null = null
-  private handing: Promise<void> = Promise.resolve()
+  private readonly hands = new Hands((season) => this.hand(season))
   private readonly pace = new FramePace()
   private readonly scratch = new Map<string, THREE.WebGLRenderTarget>()
   private stale = false
@@ -182,9 +182,11 @@ export class GlobeStage implements Stage {
     return p
   }
 
-  expect(season: string): void {
+  /** Gives what the shake waits for where `season` is built and not yet in the GPU's hands: its hand, begun now. */
+  expect(season: string): Promise<void> | undefined {
     this.wish.press(season)
     this.awaited ??= () => this.wish.gave
+    return this.hands.pressed(season)
   }
 
   /**
@@ -201,9 +203,11 @@ export class GlobeStage implements Stage {
       }
       workIn(m.steps, season, await this.turnFor(season), this.wish, this.pace, NOW)
     }
-    // Not waited for: the season can be shown from here on, and a frame that shows it before this is done makes the rest
-    // itself, as it always did.
-    if (this.live) this.handing = this.handing.then(() => this.hand(season))
+    if (!this.live) return
+    // A season nobody pressed for is not waited for: it can be shown from here on, and a frame that shows it before its
+    // hand is done makes the rest itself, as it always did. The season a press waits for is not ready until the GPU has
+    // it: the frame that would make the rest is in the middle of its shake.
+    await this.hands.made(season, this.wish.awaits(season))?.catch(NOTHING)
   }
 
   /** The next frame in which something may be done for `season`: none while a shake is in the air that does not go into it. */
@@ -234,7 +238,7 @@ export class GlobeStage implements Stage {
 
   /** Resolves when every season asked for so far is built and, on a page that paints, in the GPU's hands. */
   settled(): Promise<void> {
-    return Promise.allSettled([...this.prepared.values()]).then(() => this.handing)
+    return Promise.allSettled([...this.prepared.values()]).then(() => this.hands.all)
   }
 
   private scratchOf(type: THREE.TextureDataType, samples: number): THREE.WebGLRenderTarget {
@@ -274,15 +278,7 @@ export class GlobeStage implements Stage {
         Object.assign(renderer.info.render, { calls, triangles, points, lines })
       }
     }
-    const run = async (steps: (() => void)[]): Promise<void> => {
-      for (let i = 0; i < steps.length && go(); ) {
-        const { frame } = await this.turnFor(season)
-        const from = performance.now()
-        const ms = frame === null ? HAND_MS : fitIn(HAND_MS, from - frame, this.pace.every, this.pace.taken)
-        while (i < steps.length && go() && performance.now() - from < ms) steps[i++]!()
-        this.pace.taken += performance.now() - from
-      }
-    }
+    const run = (steps: (() => void)[]): Promise<void> => handIn(steps, season, this.wish, this.pace, HAND_MS, go, () => this.turnFor(season), NOW)
     const like = this.scratchOf(live.texture.type, live.samples)
     const linked: Promise<unknown>[] = []
     // A browser that cannot link aside is not asked to: three writes a warning to the console of one that is.
@@ -301,7 +297,8 @@ export class GlobeStage implements Stage {
         }),
       ),
     )
-    await Promise.all(linked)
+    // A press that has waited `LAST_S` waits no longer for a link: the draws below wait for each program in turn.
+    if (linked.length) await until(Promise.all(linked), () => !go() || this.wish.last(season), () => this.frameOrSoon())
 
     const pictures = new Set<THREE.Texture>([s.grid])
     for (const e of this.assets.entries(season)) if (e.picture && hasTexture(e.name)) pictures.add(texture(e.name))
@@ -475,14 +472,15 @@ export class GlobeStage implements Stage {
     const view = this.diag
     const beauty = view === '' || view === 'refraction'
     const sliceOnly = view === 'flow' || view === 'lightgrid'
-    const single = moment.from === moment.to || !(moment.change > 0) || moment.change >= 1
+    const [first, second] = seasonsIn(moment)
+    const single = second === undefined
     this.live = sample === null ? target : null
     // A mesh handed to the GPU since the last frame left the shadow map with nothing else in it.
     const cast = shadows || this.stale
     this.stale = false
     this.wish.drawn(moment)
-    const a = this.set(single ? moment.season : moment.from)
-    const b = single ? a : this.set(moment.to)
+    const a = this.set(first)
+    const b = second === undefined ? a : this.set(second)
     const change = single ? 0 : moment.change
     const u = stageUniforms
     const liquid = this.source.liquid

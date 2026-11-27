@@ -319,7 +319,7 @@ export function startApp(d: AppDeps): AppBridge {
     if (playing !== 'live' || !ready) return false
     const season = to === null ? session.shake() : session.goTo(to)
     if (!season) return false
-    d.stage.expect?.(season)
+    loader.hold(season, d.stage.expect?.(season))
     if (!loader.ready(season)) void loader.want(season).catch(() => undefined)
     told = season
     if (session.reduced) engine?.setSeason(season)

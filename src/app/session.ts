@@ -31,6 +31,7 @@ const STATES = Object.keys(config.states).map((k) => k.replace(/Seconds$/, ''))
  */
 export class SeasonLoader {
   private readonly done = new Set<string>()
+  private readonly held = new Map<string, number>()
   private readonly started = new Map<string, Promise<void>>()
   readonly first: Promise<void>
   readonly all: Promise<void>
@@ -64,7 +65,22 @@ export class SeasonLoader {
     return config.seasons.includes(season) ? this.start(season, true) : Promise.resolve()
   }
 
-  ready = (season: string): boolean => this.done.has(season)
+  /**
+   * Something is still owed to `season` before it can be shown without a stop, as when the stage has built it and the GPU
+   * does not have it yet: it is not ready until `until` is over, however that ends.
+   */
+  hold(season: string, until: Promise<unknown> | void): void {
+    if (!until) return
+    this.held.set(season, (this.held.get(season) ?? 0) + 1)
+    const over = (): void => {
+      const left = (this.held.get(season) ?? 1) - 1
+      if (left > 0) this.held.set(season, left)
+      else this.held.delete(season)
+    }
+    until.then(over, over)
+  }
+
+  ready = (season: string): boolean => this.done.has(season) && !this.held.has(season)
 }
 
 export class LiveSession {

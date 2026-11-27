@@ -1,9 +1,10 @@
 import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { LIVE, LiveSession, type LiveSim } from '../src/app/session'
+import { LIVE, LiveSession, SeasonLoader, type LiveSim } from '../src/app/session'
 import { config } from '../src/config'
 import { Governor } from '../src/core/quality'
-import { FIT_MS, FramePace, GAPS, KEEP_MS, LAST_S, LEAST_MS, PACE, PRESS_S, SETTLE_S, SOON_MS, Wish, fitIn, inPieces, inSteps, leftIn, runFor, spendIn, spendOf, stepsOf, whole, workIn, type InSteps, type Step } from '../src/scene/steps'
+import { FIT_MS, FramePace, GAPS, Hands, KEEP_MS, LAST_S, LEAST_MS, PACE, PRESS_S, SETTLE_S, SOON_MS, Wish, fitIn, handIn, inPieces, inSteps, leftIn, runFor, seasonsIn, spendIn, spendOf, stepsOf, until, whole, workIn, type InSteps, type Step, type Turn } from '../src/scene/steps'
 import { kit as fall } from '../src/seasons/fall'
 import { kit as spring } from '../src/seasons/spring'
 import { kit as summer } from '../src/seasons/summer'
@@ -746,6 +747,548 @@ describe('a wish', () => {
   it('asks for it a frame before the page gives the wish up, however long the frames are', () => {
     expect(LAST_S + LIVE.maxFrameSeconds).toBeLessThan(config.live.loadWaitSeconds)
   })
+})
+
+/** Everything that waits on a promise settled so far has run. */
+const told = (): Promise<void> => new Promise((resolve) => setImmediate(resolve))
+
+describe('the hands of the seasons', () => {
+  const [a, b, c] = others as [string, string, string]
+  /** A stage whose hand of a season is over when the test says so. */
+  const stage = () => {
+    const begun: string[] = []
+    const ends = new Map<string, { done: () => void; fail: (e: Error) => void }>()
+    const hands = new Hands((season) => {
+      begun.push(season)
+      return new Promise<void>((done, fail) => ends.set(season, { done, fail }))
+    })
+    return { begun, hands, end: (season: string) => ends.get(season)!.done(), fail: (season: string) => ends.get(season)!.fail(new Error(season)) }
+  }
+
+  it('hands them one after the other, in the order they were made', async () => {
+    const s = stage()
+    for (const season of [a, b, c]) expect(s.hands.made(season, false)).toBeUndefined()
+    await told()
+    expect(s.begun).toEqual([a])
+    s.end(a)
+    await told()
+    expect(s.begun).toEqual([a, b])
+    s.end(b)
+    await told()
+    expect(s.begun).toEqual([a, b, c])
+    let all = false
+    void s.hands.all.then(() => (all = true))
+    await told()
+    expect(all).toBe(false)
+    s.end(c)
+    await told()
+    expect(all).toBe(true)
+  })
+
+  it('begins the hand of the season pressed for at the press, beside the one under way, and gives it to wait for', async () => {
+    const s = stage()
+    for (const season of [a, b, c]) s.hands.made(season, false)
+    await told()
+    const waited = s.hands.pressed(c)
+    expect(s.begun).toEqual([a, c])
+    let over = false
+    void waited!.then(() => (over = true))
+    await told()
+    expect(over).toBe(false)
+    s.end(c)
+    await told()
+    expect(over).toBe(true)
+  })
+
+  it('gives a press the hand that is under way where the turn of its season has come', async () => {
+    const s = stage()
+    s.hands.made(a, false)
+    await told()
+    let over = false
+    void s.hands.pressed(a)!.then(() => (over = true))
+    expect(s.begun).toEqual([a])
+    s.end(a)
+    await told()
+    expect(over).toBe(true)
+  })
+
+  it('begins each hand once, whoever comes for it first, and the others keep their order', async () => {
+    const s = stage()
+    for (const season of [a, b, c]) s.hands.made(season, false)
+    await told()
+    expect(s.hands.pressed(c)).toBe(s.hands.pressed(c))
+    s.end(a)
+    await told()
+    expect(s.begun).toEqual([a, c, b])
+    let all = false
+    void s.hands.all.then(() => (all = true))
+    s.end(b)
+    await told()
+    expect(s.begun).toEqual([a, c, b])
+    expect(all).toBe(false)
+    s.end(c)
+    await told()
+    expect(all).toBe(true)
+  })
+
+  it('gives a press nothing to wait for where the season is not made yet, and where its hand is over, however it ended', async () => {
+    const s = stage()
+    expect(s.hands.pressed(a)).toBeUndefined()
+    expect(s.begun).toEqual([])
+    s.hands.made(a, false)
+    await told()
+    s.end(a)
+    await told()
+    expect(s.hands.pressed(a)).toBeUndefined()
+    s.hands.made(b, false)
+    s.hands.all.catch(() => undefined)
+    await told()
+    s.fail(b)
+    await told()
+    expect(s.hands.pressed(b)).toBeUndefined()
+    expect(s.begun).toEqual([a, b])
+  })
+
+  it('begins the hand of a season that was made for a press as soon as it is made, and gives it for the making to end with', async () => {
+    const s = stage()
+    s.hands.made(a, false)
+    await told()
+    const waited = s.hands.made(b, true)
+    expect(s.begun).toEqual([a, b])
+    let over = false
+    void waited!.then(() => (over = true))
+    s.end(a)
+    await told()
+    expect(over).toBe(false)
+    expect(s.begun).toEqual([a, b])
+    s.end(b)
+    await told()
+    expect(over).toBe(true)
+  })
+})
+
+describe('the steps of a hand', () => {
+  const [season, other] = others as [string, string]
+  const REST_MS = 4
+  const rest = (time: number) => ({ beat: null, season: first, sinceLanding: 100, time })
+  /** A display whose pace the page has seen: a frame every `every` ms up to the one at `at`. */
+  const seen = (every: number, at: number): FramePace => {
+    const pace = new FramePace()
+    for (let n = GAPS + 1; n >= 0; n--) pace.frame(at - n * every)
+    return pace
+  }
+  /** A hand of `n` steps of `piece` ms each on a clock of the test's own, which gives it its turns. */
+  const hand = (n: number, piece: number, wish: Wish, pace = new FramePace(), of = season) => {
+    const h = { clock: 0, done: 0, go: true, turns: [] as ((turn: Turn) => void)[], over: false }
+    const steps = Array.from({ length: n }, () => (): void => {
+      h.clock += piece
+      h.done++
+    })
+    void handIn(steps, of, wish, pace, REST_MS, () => h.go, () => new Promise<Turn>((give) => h.turns.push(give)), () => h.clock).then(() => (h.over = true))
+    return h
+  }
+  const give = async (h: ReturnType<typeof hand>, turn: Turn): Promise<number> => {
+    const before = h.done
+    h.turns.shift()!(turn)
+    await told()
+    return h.done - before
+  }
+
+  it('takes a few of them a frame while the picture rests, and the step that passes what the frame gives is the frame\'s last', async () => {
+    const h = hand(40, 1.5, new Wish())
+    expect(h.done).toBe(0)
+    expect(await give(h, { waited: 60, frame: null })).toBe(Math.ceil(REST_MS / 1.5))
+    const every = 1000 / 60
+    const pace = seen(every, 1000)
+    const fast = hand(40, 1.5, new Wish(), pace)
+    fast.clock = 1002
+    expect(await give(fast, { waited: every, frame: 1000 })).toBe(Math.ceil(REST_MS / 1.5))
+    fast.clock = 1000 + every - KEEP_MS - 1
+    pace.taken = 0
+    expect(await give(fast, { waited: every, frame: 1000 })).toBe(1)
+    expect(fast.over).toBe(false)
+  })
+
+  it('takes for the season a press waits for what its making would take, and tells the wish that the page gave the time up', async () => {
+    const wish = new Wish()
+    wish.drawn(rest(1))
+    wish.press(season)
+    const slow = hand(400, 1, wish)
+    expect(await give(slow, { waited: 90, frame: null })).toBe(spendOf(90, true))
+    expect(spendOf(90, true)).toBeGreaterThan(REST_MS)
+    wish.drawn(rest(1.1))
+    expect(wish.gave).toBe(true)
+    wish.drawn(rest(1.2))
+    expect(wish.gave).toBe(false)
+    const every = 1000 / 60
+    const pace = seen(every, 1000)
+    const fast = hand(400, 1, wish, pace)
+    fast.clock = 1002
+    expect(await give(fast, { waited: every, frame: 1000 })).toBe(Math.ceil(spendIn(2, every, every, true)))
+    expect(spendIn(2, every, every, true)).toBeGreaterThan(2 * REST_MS)
+  })
+
+  it('tells the wish nothing of a season nobody waits for', async () => {
+    const wish = new Wish()
+    wish.drawn(rest(1))
+    wish.press(season)
+    const h = hand(40, 1, wish, new FramePace(), other)
+    expect(await give(h, { waited: 90, frame: null })).toBe(REST_MS)
+    wish.drawn(rest(1.1))
+    expect(wish.gave).toBe(false)
+  })
+
+  it('does all that is left at once when the press is LAST_S old, and waits for no turn before it', async () => {
+    const wish = new Wish()
+    wish.drawn(rest(1))
+    wish.press(season)
+    const h = hand(900, 1, wish)
+    expect(await give(h, { waited: 20, frame: null })).toBe(spendOf(20, true))
+    expect(h.turns).toHaveLength(1)
+    wish.drawn(rest(1 + LAST_S + 0.01))
+    expect(await give(h, { waited: 20, frame: null })).toBe(900 - spendOf(20, true))
+    expect(h.over).toBe(true)
+    expect(h.turns).toHaveLength(0)
+    const late = hand(900, 1, wish)
+    expect(late.done).toBe(900)
+    expect(late.turns).toHaveLength(0)
+    wish.drawn(rest(1 + LAST_S + 0.02))
+    expect(wish.gave).toBe(true)
+  })
+
+  it('does nothing more once a frame has shown the season, which made the rest itself', async () => {
+    const h = hand(40, 1, new Wish())
+    expect(await give(h, { waited: 60, frame: null })).toBe(REST_MS)
+    h.go = false
+    expect(await give(h, { waited: 60, frame: null })).toBe(0)
+    expect(h.over).toBe(true)
+    expect(h.turns).toHaveLength(0)
+  })
+})
+
+describe('the wait for what a browser links aside', () => {
+  const page = () => {
+    const p = { stop: false, turns: [] as (() => void)[], over: false, linked: (): void => undefined, failed: (): void => undefined }
+    const links = new Promise<void>((done, fail) => {
+      p.linked = done
+      p.failed = () => fail(new Error('link'))
+    })
+    void until(links, () => p.stop, () => new Promise<void>((turn) => p.turns.push(turn))).then(() => (p.over = true))
+    return p
+  }
+  const frame = async (p: ReturnType<typeof page>): Promise<void> => {
+    p.turns.shift()?.()
+    await told()
+  }
+
+  it('lasts until the programs are linked, through as many frames as that takes', async () => {
+    const p = page()
+    for (let n = 0; n < 5; n++) {
+      await frame(p)
+      expect(p.over).toBe(false)
+    }
+    p.linked()
+    await told()
+    expect(p.over).toBe(true)
+  })
+
+  it('ends at the frame that says so, though nothing is linked yet: a press that is LAST_S old, or a frame that showed the season', async () => {
+    const p = page()
+    await frame(p)
+    expect(p.over).toBe(false)
+    p.stop = true
+    await frame(p)
+    expect(p.over).toBe(true)
+  })
+
+  it('ends where a link fails, and leaves the failure to the draw that needs the program', async () => {
+    const p = page()
+    await frame(p)
+    p.failed()
+    await told()
+    expect(p.over).toBe(true)
+  })
+})
+
+describe('the seasons a frame shows', () => {
+  it('are the one the session is in, and in the change of a shake the one it leaves and the one it goes into', () => {
+    const session = new LiveSession(new Counted(), first)
+    const to = session.shake()!
+    const swap = config.shake.swapWindow
+    const shown: string[] = []
+    let both = 0
+    for (let n = 0; n < 60 * 6 && session.busy; n++) {
+      const moment = session.moment(session.tick(1 / 60), 1)
+      const here = seasonsIn(moment)
+      if (shown.at(-1) !== here.join('+')) shown.push(here.join('+'))
+      if (here.length < 2) continue
+      both++
+      expect(moment.beat).toBeGreaterThanOrEqual(swap.fromBeat)
+      expect(moment.beat).toBeLessThanOrEqual(swap.toBeat)
+    }
+    expect(shown).toEqual([first, `${first}+${to}`, to])
+    expect(both).toBeGreaterThan(10)
+  })
+
+  it('is one where a change is whole or has not begun, whatever it goes from and into', () => {
+    const [to] = others as [string]
+    expect(seasonsIn({ season: first, from: first, to, change: 0 })).toEqual([first])
+    expect(seasonsIn({ season: to, from: first, to, change: 1 })).toEqual([to])
+    expect(seasonsIn({ season: first, from: first, to: first, change: 0.5 })).toEqual([first])
+    expect(seasonsIn({ season: first, from: first, to, change: 0.5 })).toEqual([first, to])
+  })
+})
+
+const pressLines = fs.readFileSync(rel('src', 'app', 'app.ts'), 'utf8').split('\n').filter((l) => l.includes('stage.expect'))
+/** What the page does with a press once the session has taken it, as it stands in src/app/app.ts. */
+const PRESS = pressLines[0]?.trim() ?? ''
+/** The same before a press waited for the hand of its season. */
+const PRESS_BEFORE = 'd.stage.expect?.(season)'
+
+interface StageSide {
+  expect?(season: string): Promise<void> | void
+}
+type Press = (loader: SeasonLoader, d: { stage: StageSide }, season: string) => void
+const pressAs = (line: string): Press => new Function('loader', 'd', 'season', line) as Press
+
+/** The hands as they were: each in its turn, and nothing for a press. */
+class InTurn extends Hands {
+  override made(season: string): Promise<void> | undefined {
+    return super.made(season, false)
+  }
+  override pressed(): Promise<void> | undefined {
+    return undefined
+  }
+}
+
+/** The wish as a hand took it before: it was asked only whether a season is held. */
+class HeldOnly extends Wish {
+  override awaits(): boolean {
+    return false
+  }
+  override last(): boolean {
+    return false
+  }
+}
+
+interface Early {
+  /** The ms between two frames of the display. */
+  every: number
+  /** The ms the page's own script takes of each frame. */
+  script: number
+  /** The ms the hand of each season takes in all, and the ms one step of it takes. */
+  work: number
+  piece: number
+  /** The season pressed for: the one made first, whose hand is under way, or the next, whose turn has not come. */
+  to: string
+  reduced?: boolean
+  /** What the page does with the press. */
+  press?: string
+  hands?: (hand: (season: string) => Promise<void>) => Hands
+  wish?: Wish
+  /** Whether the visit goes on after the landing until every season is in the GPU's hands. */
+  through?: boolean
+}
+
+/**
+ * A visit to a page whose seasons are all built and none but the first in the GPU's hands: the visitor presses early, at
+ * the frame `PRESS_FRAME`, for `to`. The session, the loader, the wish and the hands are the page's own, and a hand is the
+ * stage's own steps with a clock for a GPU: it gets its turn at each frame the wish does not hold its season, as the
+ * stage gives it. A frame that shows a season whose hand is not over makes what is left itself and stands for as long
+ * (`stops`: the season, the ms, the beat of the shake). Gives the season the press landed in, those stops, the longest
+ * the picture stood between the press and the landing (`stood`), the ms the hands of other seasons worked from the press
+ * until the landing had settled, or with reduced motion until the season was on show, from where the picture rests under
+ * its fade (`aside`), and whether every hand was over in the end.
+ */
+async function early({ every, script, work, piece, to, reduced = false, press = PRESS, hands: handsOf = (hand) => new Hands(hand), wish = new Wish(), through = false }: Early) {
+  const loader = new SeasonLoader(first, async () => undefined)
+  await loader.all
+  const session = new LiveSession(new Counted(), first, loader.ready)
+  session.reduced = reduced
+  const pace = new FramePace()
+  const browser = KEEP_MS - LEAST_MS - 0.5
+  const shown = new Set([first])
+  const left = new Map(others.map((season) => [season, Math.ceil(work / piece)]))
+  let waiting: { season: string; from: number; give: (turn: Turn) => void }[] = []
+  let clock = 0
+  const hands = handsOf((season) => {
+    const steps = Array.from({ length: left.get(season)! }, () => (): void => {
+      clock += piece
+      left.set(season, left.get(season)! - 1)
+    })
+    return handIn(steps, season, wish, pace, 4, () => !shown.has(season), () => new Promise<Turn>((give) => waiting.push({ season, from: clock, give })), () => clock)
+  })
+  const stage: StageSide = {
+    expect: (season) => {
+      wish.press(season)
+      return hands.pressed(season)
+    },
+  }
+  for (const season of others) hands.made(season, false)
+  let all = false
+  void hands.all.then(() => (all = true))
+  await told()
+  const stops: { season: string; ms: number; beat: number | null }[] = []
+  let asked: string | null = null
+  let landed: string | null = null
+  let shaken = false
+  let aside = 0
+  let stood = 0
+  let begun = 0
+  let free = 0
+  for (let n = 0; n < 40000; n++) {
+    const at = n === 0 ? 0 : Math.max(begun + every, Math.ceil(free / every - 1e-9) * every)
+    const dt = n === 0 ? 0 : (at - begun) / 1000
+    if (n > PRESS_FRAME && landed === null) stood = Math.max(stood, at - begun)
+    begun = at
+    clock = at
+    if (n === PRESS_FRAME) {
+      asked = session.goTo(to)
+      pressAs(press)(loader, { stage }, to)
+    }
+    const moment = session.moment(session.tick(dt), 1)
+    wish.drawn(moment)
+    clock += script
+    for (const season of seasonsIn(moment)) {
+      if (shown.has(season)) continue
+      const rest = left.get(season)! * piece
+      if (rest > 0) stops.push({ season, ms: rest, beat: moment.beat })
+      clock += rest
+      left.set(season, 0)
+      shown.add(season)
+    }
+    shaken ||= moment.beat !== null
+    const storm = moment.beat !== null || (shaken && moment.sinceLanding < SETTLE_S)
+    if (n > PRESS_FRAME && landed === null && !session.busy) landed = session.season
+    pace.frame(at)
+    const turns = waiting
+    waiting = []
+    for (const w of turns) {
+      if (wish.holds(w.season)) {
+        w.from = clock
+        waiting.push(w)
+        continue
+      }
+      const from = clock
+      w.give({ waited: clock - w.from, frame: at })
+      await told()
+      if (n >= PRESS_FRAME && w.season !== to && (reduced ? !shown.has(to) : landed === null || storm)) aside += clock - from
+    }
+    free = clock + browser
+    if (landed !== null && !storm && (!through || others.every((season) => left.get(season) === 0))) break
+  }
+  await told()
+  return { asked, landed, stops, stood, aside, all }
+}
+
+describe('a press for a season that is built and not yet in the GPU\'s hands', () => {
+  const swap = config.shake.swapWindow
+  const [soon, later] = others as [string, string]
+  const pages: (Early & { where: string })[] = []
+  for (const reduced of [false, true])
+    for (const to of [soon, later])
+      for (const every of [16.67, 8.33])
+        for (const script of [2, 6, 14, 60, 300, 2000])
+          for (const work of [300, 1500, 3000, 6000])
+            for (const piece of [1, 40])
+              pages.push({ every, script, work, piece, to, reduced, where: `${reduced ? 'reduced motion, ' : ''}${to}, ${every} ms display, ${script} ms script, a hand of ${work} ms in steps of ${piece} ms` })
+  let visits: Promise<(Awaited<ReturnType<typeof early>> & { where: string; page: Early })[]> | null = null
+  const all = () => (visits ??= (async () => {
+    const out = []
+    for (const { where, ...page } of pages) out.push({ ...(await early(page)), where, page })
+    return out
+  })())
+
+  it('is held with the page\'s own line for a press', () => {
+    expect(pressLines).toHaveLength(1)
+    expect(PRESS).toContain('loader.hold(')
+  })
+
+  it('waits for the hand: no frame shows the season before the GPU has it, and the press lands in it, however long the hand is and however the page draws', async () => {
+    for (const v of await all()) {
+      expect(v.asked, v.where).toBe(v.page.to)
+      expect(v.stops, v.where).toEqual([])
+      expect(v.landed, v.where).toBe(v.page.to)
+    }
+  }, 300000)
+
+  it('draws on while it waits: with a hand in small steps that the wait has room for, the picture never stands longer than two frames of a display at 60 a second', async () => {
+    let looked = 0
+    for (const v of await all()) {
+      const { every, script, work, piece } = v.page
+      if (piece > 1 || work > 1500 || script + KEEP_MS > every) continue
+      looked++
+      expect(v.stood, v.where).toBeLessThanOrEqual(2 * 16.67 + 0.01)
+    }
+    expect(looked).toBeGreaterThan(8)
+  }, 300000)
+
+  it('does nothing for the hands of the other seasons from the press until the landing has settled, and with reduced motion until the season pressed for is on show', async () => {
+    for (const v of await all()) expect(v.aside, v.where).toBe(0)
+  }, 300000)
+
+  it('goes on with the others after that, in their order, until every season is in the GPU\'s hands', async () => {
+    for (const reduced of [false, true])
+      for (const to of [soon, later])
+        for (const script of [2, 14, 300]) {
+          const v = await early({ every: 16.67, script, work: 1500, piece: 1, to, reduced, through: true })
+          const where = `${reduced ? 'reduced motion, ' : ''}${to}, ${script} ms script`
+          expect(v.landed, where).toBe(to)
+          expect(v.stops, where).toEqual([])
+          expect(v.all, where).toBe(true)
+        }
+  }, 300000)
+
+  it('was shown, as things were, by a frame that made what was left of its hand itself, in the middle of its shake: what the wait is for', async () => {
+    for (const reduced of [false, true])
+      for (const to of [soon, later])
+        for (const script of [2, 14, 300])
+          for (const work of [1500, 6000]) {
+            const page = { every: 16.67, script, work, piece: 1, to, reduced }
+            const where = `${reduced ? 'reduced motion, ' : ''}${to}, ${script} ms script, a hand of ${work} ms`
+            const was = await early({ ...page, press: PRESS_BEFORE, hands: (hand) => new InTurn(hand), wish: new HeldOnly() })
+            expect(was.landed, where).toBe(to)
+            expect(was.stops.map((stop) => stop.season), where).toEqual([to])
+            const [stop] = was.stops as [(typeof was.stops)[0]]
+            expect(stop.ms, where).toBeGreaterThan(work / 2)
+            if (to === later) expect(stop.ms, where).toBe(work)
+            if (reduced) expect(stop.beat, where).toBeNull()
+            else {
+              expect(stop.beat, where).toBeGreaterThanOrEqual(swap.fromBeat)
+              expect(stop.beat, where).toBeLessThan(swap.toBeat)
+            }
+            expect((await early(page)).stops, where).toEqual([])
+          }
+  }, 300000)
+
+  it('would be shown the same way by a press that begins the hand and does not wait for it, with less left: what the page\'s line is for', async () => {
+    for (const to of [soon, later])
+      for (const script of [2, 14]) {
+        const page = { every: 16.67, script, work: 6000, piece: 1, to }
+        const where = `${to}, ${script} ms script`
+        const was = await early({ ...page, press: PRESS_BEFORE, hands: (hand) => new InTurn(hand), wish: new HeldOnly() })
+        const begun = await early({ ...page, press: PRESS_BEFORE })
+        expect(begun.stops.map((stop) => stop.season), where).toEqual([to])
+        expect(begun.stops[0]!.ms, where).toBeLessThan(was.stops[0]!.ms)
+        expect(begun.stops[0]!.beat, where).toBeGreaterThanOrEqual(swap.fromBeat)
+        expect(begun.landed, where).toBe(to)
+      }
+  }, 300000)
+
+  it('has what is left of its hand done in one piece when the press is LAST_S old; by the steps alone the press would land in the season it left', async () => {
+    for (const reduced of [false, true])
+      for (const to of [soon, later]) {
+        const page = { every: 16.67, script: 2, work: 6000, piece: 1, to, reduced }
+        const where = `${reduced ? 'reduced motion, ' : ''}${to}`
+        const steps = await early({ ...page, wish: new StepsOnly() })
+        expect(steps.landed, where).toBe(first)
+        expect(steps.stops, where).toEqual([])
+        const whole = await early(page)
+        expect(whole.landed, where).toBe(to)
+        expect(whole.stops, where).toEqual([])
+        expect(whole.stood, where).toBeGreaterThan(1000)
+      }
+  }, 300000)
 })
 
 // Each way is built in a process of its own (tools/miniatures.mjs says why), so the tool is run as a builder runs it.

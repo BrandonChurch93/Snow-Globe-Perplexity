@@ -18,6 +18,7 @@ import { openingPlan } from '../src/film/opening'
 import { barSeconds, beatSeconds, type Timeline } from '../src/film/timeline'
 import { REST_POSE, makeShake } from '../src/shake/table'
 import { framingOf } from '../src/scene/framing'
+import { seasonsIn } from '../src/scene/steps'
 
 const ui = vi.hoisted(() => ({ mount: null as null | ((root: unknown, bridge: unknown) => { setVisible(v: boolean): void; dispose(): void }) }))
 vi.mock('../src/app/mounts', () => ({ audioShips: false, loadInterface: async () => (ui.mount ? { mountInterface: ui.mount } : null) }))
@@ -246,6 +247,103 @@ describe('a season that is not loaded yet', () => {
     for (let i = 0; i < 40; i++) await Promise.resolve()
     expect(loader.ready(bad)).toBe(false)
     for (const season of seasons) if (season !== bad) expect(loader.ready(season)).toBe(true)
+  })
+})
+
+describe('a season that is loaded and still owed something', () => {
+  const to = next(first)
+  const loaded = async (): Promise<SeasonLoader> => {
+    const loader = new SeasonLoader(first, async () => undefined)
+    await loader.all
+    return loader
+  }
+  const told = (): Promise<void> => new Promise((resolve) => setImmediate(resolve))
+
+  it('is not ready until what it is held for is over, however that ends, and no other season is held with it', async () => {
+    for (const ends of ['done', 'failed'] as const) {
+      const loader = await loaded()
+      let end = (): void => undefined
+      loader.hold(to, new Promise<void>((done, fail) => (end = ends === 'done' ? done : () => fail(new Error('lost')))))
+      expect(seasons.filter((season) => !loader.ready(season))).toEqual([to])
+      await told()
+      expect(loader.ready(to)).toBe(false)
+      end()
+      await told()
+      for (const season of seasons) expect(loader.ready(season)).toBe(true)
+    }
+  })
+
+  it('is held until the last of what it is held for is over, and by nothing where nothing is owed', async () => {
+    const loader = await loaded()
+    loader.hold(to, undefined)
+    expect(loader.ready(to)).toBe(true)
+    const ends: (() => void)[] = []
+    for (let n = 0; n < 2; n++) loader.hold(to, new Promise<void>((done) => ends.push(done)))
+    ends[1]!()
+    await told()
+    expect(loader.ready(to)).toBe(false)
+    ends[0]!()
+    await told()
+    expect(loader.ready(to)).toBe(true)
+  })
+
+  it('is not made ready by a hold that ends before it is loaded', async () => {
+    let load = (): void => undefined
+    const loader = new SeasonLoader(first, (season) => (season === to ? new Promise<void>((done) => (load = done)) : Promise.resolve()))
+    await loader.first
+    await told()
+    let end = (): void => undefined
+    loader.hold(to, new Promise<void>((done) => (end = done)))
+    end()
+    await told()
+    expect(loader.ready(to)).toBe(false)
+    load()
+    await told()
+    expect(loader.ready(to)).toBe(true)
+  })
+
+  it('holds the storm of a shake into it and shows nothing of it meanwhile, then lands in it on a beat of the cycle', async () => {
+    const loader = await loaded()
+    let end = (): void => undefined
+    loader.hold(to, new Promise<void>((done) => (end = done)))
+    const s = new LiveSession(new FakeSim(), first, loader.ready)
+    expect(s.shake()).toBe(to)
+    const e = s.shaking!
+    const shown = new Set<string>()
+    const look = (): void => {
+      for (const season of seasonsIn(s.moment(1, 1))) shown.add(season)
+    }
+    run(s, barSeconds + 0.3, look)
+    expect(s.busy).toBe(true)
+    expect(e.holdBeats).toBeGreaterThan(0)
+    expect([...shown]).toEqual([first])
+    end()
+    await told()
+    const held = e.holdBeats!
+    let landedAt = 0
+    run(s, config.live.loadWaitSeconds + barSeconds, () => {
+      look()
+      if (!landedAt && !s.busy) landedAt = s.clock
+    })
+    expect(s.season).toBe(to)
+    expect([...shown]).toEqual([first, to])
+    expect(e.holdBeats! - held).toBeLessThanOrEqual(2 * (config.shake.swapWindow.fromBeat - config.shake.liftBeats))
+    expect(landedAt).toBeGreaterThanOrEqual(e.startSec + barSeconds + e.holdBeats! * beatSeconds)
+    expect(landedAt).toBeLessThan(e.startSec + barSeconds + e.holdBeats! * beatSeconds + 2 * FRAME_S)
+  })
+
+  it('gives the shake up after live.loadWaitSeconds where the hold does not end, as for a season that does not load', async () => {
+    const loader = await loaded()
+    loader.hold(to, new Promise<void>(() => undefined))
+    const s = new LiveSession(new FakeSim(), first, loader.ready)
+    expect(s.shake()).toBe(to)
+    const shown = new Set<string>()
+    run(s, barSeconds + config.live.loadWaitSeconds + 1, () => {
+      for (const season of seasonsIn(s.moment(1, 1))) shown.add(season)
+    })
+    expect([...shown]).toEqual([first])
+    expect(s.busy).toBe(false)
+    expect(s.season).toBe(first)
   })
 })
 
