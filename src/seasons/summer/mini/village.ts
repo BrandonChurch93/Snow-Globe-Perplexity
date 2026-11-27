@@ -9,9 +9,10 @@ import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial
 import { MIRROR_GLSL, MIRROR_MAX, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
-import { BUMP_GLSL, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type GlowSource } from '../../../miniature/surface'
+import { BUMP_GLSL, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, surfacing, type GlowSource } from '../../../miniature/surface'
 import { anchors, cottage as house, cottageFrame, groundAt, moundAt, moundSlope, pond, solidDistance, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
+import { ROW } from '../../../scene/steps'
 import type { InnerLight, KitMoment } from '../../kit'
 import { lanterns, type Lantern } from './lanterns'
 import { isTree, season, tones } from './palette'
@@ -106,11 +107,12 @@ const patches = lanterns
   })
   .map((l) => ({ at: hugged(l), color: embered(poolOf(l.tone)), reachMm: POOL.patchReach * l.radius, startS: startOf(l.order), rampS: l.order < 2 ? POOL.firstRampS : POOL.rampS }))
 
-function withPools(g: THREE.BufferGeometry, pools: readonly Pool[]): THREE.BufferGeometry {
+function* withPools(g: THREE.BufferGeometry, pools: readonly Pool[]): Generator<void, THREE.BufferGeometry> {
   const P = g.getAttribute('position')
   const N = g.getAttribute('normal')
   const out = new Float32Array(P.count * 4)
   for (let i = 0; i < P.count; i++) {
+    if (i % ROW === 0) yield
     let weight = 0
     let start = 0
     for (const l of pools) {
@@ -549,7 +551,7 @@ function inStack(x: number, z: number): boolean {
 }
 const stackLow = (y: number): number => (y - frame.floor > STACK.fromMm ? frame.floor + STACK.fromMm + (y - frame.floor - STACK.fromMm) * STACK.squash : y)
 
-function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeometry {
+function* dressed(g: THREE.BufferGeometry, sharedCount: number): Generator<void, THREE.BufferGeometry> {
   const P = g.getAttribute('position')
   const N = g.getAttribute('normal')
   const C = g.getAttribute('color')
@@ -577,8 +579,12 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
   // The top of a rail or a post is seen edge on and holds no light: the sides take it at their upper edge, where they meet it.
   const placed = (i: number): string => `${Math.round(P.getX(i) * 20)},${Math.round(P.getY(i) * 20)},${Math.round(P.getZ(i) * 20)}`
   const tops = new Set<string>()
-  for (let i = 0; i < sharedCount; i++) if (N.getY(i) > 0.5 && solidDistance(P.getX(i), P.getY(i), P.getZ(i), fence) < ROOF.reachMm) tops.add(placed(i))
   for (let i = 0; i < sharedCount; i++) {
+    if (i % ROW === 0) yield
+    if (N.getY(i) > 0.5 && solidDistance(P.getX(i), P.getY(i), P.getZ(i), fence) < ROOF.reachMm) tops.add(placed(i))
+  }
+  for (let i = 0; i < sharedCount; i++) {
+    if (i % ROW === 0) yield
     const x = P.getX(i)
     const y = P.getY(i)
     const z = P.getZ(i)
@@ -679,13 +685,23 @@ totalEmissiveRadiance += ${glsl(LIFT)};`,
   return m
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const shared = villageGeometry('solid')
-  const solids = withPools(withSurface(dressed(mergeGeometries([shared, geometry(MODEL, 'decor')]), shared.getAttribute('position').count), nearWall), lawnPools)
+  const merged = mergeGeometries([shared, geometry(MODEL, 'decor')])
+  yield
+  const stone = yield* dressed(merged, shared.getAttribute('position').count)
+  yield
+  const lit = yield* surfacing(stone, nearWall)
+  yield
+  const solids = yield* withPools(lit, lawnPools)
+  yield
   const walls = unmirrored(shadowed(new THREE.Mesh(solids, rimmed(surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-summer', fill: WALL_FILL })))), shared.index ? shared.index.count : shared.getAttribute('position').count)
-  const ground = shadowed(new THREE.Mesh(withPools(withSurface(geometry(MODEL, 'ground'), near), lawnPools), turfMaterial()), false)
-  const grass = unmirrored(shadowed(new THREE.Mesh(withPools(withSurface(geometry(MODEL, 'grass'), near), lawnPools), grassMaterial()), false))
-  const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water'), near), waterMaterial()), false)
+  yield
+  const ground = shadowed(new THREE.Mesh(yield* withPools(yield* surfacing(geometry(MODEL, 'ground'), near), lawnPools), turfMaterial()), false)
+  yield
+  const grass = unmirrored(shadowed(new THREE.Mesh(yield* withPools(yield* surfacing(geometry(MODEL, 'grass'), near), lawnPools), grassMaterial()), false))
+  yield
+  const water = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'water'), near), waterMaterial()), false)
   return new THREE.Group().add(walls, ground, grass, water)
 }
 

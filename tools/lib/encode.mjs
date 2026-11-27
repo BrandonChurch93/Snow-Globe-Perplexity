@@ -11,6 +11,11 @@ const PEAK_RATIO = 1.5
 const BUFFER_SECONDS = 2
 // The encoder's bytes depend on its thread count, so it is pinned.
 const ENCODER_THREADS = 2
+// With a rate cap (-maxrate and -bufsize) x264 on more than one thread gives other bytes on every run of the same frames:
+// measured on two machines, where three codings of the same 150 pictures gave three files, the first pass's log differing
+// from its 14th frame on, while one thread, or two threads without the cap, gave the same file every time. So a coding
+// with a cap has one thread, and two machines that draw the same chunk give the same file.
+const CAPPED_THREADS = 1
 const SCALER = 'flags=lanczos+accurate_rnd+full_chroma_int'
 const TO_VIDEO = `scale=in_range=full:out_range=tv:out_color_matrix=bt709:${SCALER}`
 const TO_PICTURE = `scale=in_range=tv:out_range=full:in_color_matrix=bt709:${SCALER},format=rgb24`
@@ -32,7 +37,7 @@ const VIDEO = {
         '-c:v', 'libx264', '-preset', 'slow', '-profile:v', 'high', '-pix_fmt', 'yuv420p',
         '-b:v', `${kbps}k`, '-maxrate', `${Math.round(kbps * PEAK_RATIO)}k`, '-bufsize', `${Math.round(kbps * BUFFER_SECONDS)}k`,
         '-g', gop, '-keyint_min', gop, '-sc_threshold', '0', '-bf', '2', '-x264-params', 'aq-mode=3',
-        '-threads', String(ENCODER_THREADS), '-flags:v', '+cgop+bitexact',
+        '-threads', String(CAPPED_THREADS), '-flags:v', '+cgop+bitexact',
       ]
     },
   },
@@ -45,6 +50,9 @@ const VIDEO = {
 const AUDIO = { aac: 'aac' }
 
 export const stillJpeg = STILL_JPEG
+
+/** The encoder's arguments for a film chunk at these settings, as `encodeFrames` hands them on. */
+export const chunkVideoArgs = (settings) => VIDEO[settings.codec].args(settings)
 
 export function videoSettings({ format, fps, local = false, mbps = null }) {
   const codec = local ? cfg.export.local.videoCodec : cfg.export.videoCodec

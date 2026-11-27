@@ -1,54 +1,50 @@
 {
-  "number": 185,
-  "time": "2026-11-27 00:52 UTC",
+  "number": 189,
+  "time": "2026-11-27 02:35 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 185 · 2026-11-27 00:52 UTC · Phase 6",
-    "Main moved to `f4df90d1` at 00:43 UTC (5:43 PM MT): the hand's inertia, with its checks read on the merged tree: tsc exit 0, the whole vitest 834 passed and 4 skipped, all eight M4 and M5 lines of the change pass, G11, G12 and G14 pass, M3 summer 0.8007 and winter 0.9262 pass, spring 0.4307 and fall 0.6996 as red as before the merge and below the bar. Every byte guard starts again from its eight draft stills.",
-    "Rough draft 5 of the film is being drawn on that head since 00:46 UTC by three helper machines: film B at 960x540, draft tier, twelve chunks of 300 frames. Joined and looked at about 01:45 UTC, if the machines keep the pace of draft 4.",
-    "Picture 1, summer at rest on the merged tree with the tree's fifth pass, the approved picture left and the build right (the measure's own comparison, drawn 00:45:28 UTC). M3 summer reads 0.8818 with the miniature at 0.882, from 0.8007. Below the bar, plainly: the base is grey brown where the approved is cream, the inside lies under a beige veil where the approved is dark and clear, the cottage is small and dark, and the tree still reads as tiers.",
-    "Picture 2, winter at 3840 in motion, frames 30 and 31 at eight times, main above and the mend below, by its mender: the pond's fine part falls from 7.95 to 1.24 levels rms and the agreement of the two frames rises from 0.093 to 0.596 against the 0.8 asked, so bettered and still below the asked number; the blur's reach on the frond falls from 12.4 to 20.4 px to 1.6 to 3.2 px. Open beside the frond: the undrawn backdrop takes about 21 px in one frame and 4.6 in the next (the tile maximum, mine).",
-    "Picture 3, the change of season at 3840 for the first time: winter into spring, eight of 60 test frames drawn by a farm machine on main `708c31cd`, before the rework and before the inertia. Its readings: steps of one frame in the glass's mean with the room standing (666 to 667 falls 12.5 levels, 683 to 684 falls 9.8, 630 to 631 rises 10.3), the cover's first and last frames are its largest steps, spring's base comes into sight and is lit in one frame each, the tree's lights and the base's icicles are drawn as rows of copies while the globe moves (the shutter's sample count, mine in the master tool), and petals on the table change their pose inside one frame. Passed to the change's finisher at 00:51 UTC. Below the bar.",
-    "The cost seen in that test: 60 frames at 3840 final in 2 h 15 min on one machine with two processes (196.8 and 266.3 s a frame in the mean, 5.55 and 5.71 s a sample, 22 and 25 of 30 frames over the base of 24 samples). These are test frames and no part of the masters.",
-    "Summer's tree, fifth pass, by its builder: 29 clumps of unlike size with lit rims. Not met in its own words: the leaf share (50.9 against 44.6), the plumpness of the approved's masses, rims as thin and gold as the approved's. Seen by me on its pair: the trunk is about one and a half times as wide as the approved's against the large lantern, straight and near black. A sixth list is out since 00:45 UTC (the body as one dome, the light as thin gold points, the wood's form, the bare limb), limit 02:45 UTC.",
-    "The tree and winter's mend are merged here (`1f83b117`, `441e867d`) and their chain runs since 00:43:57 UTC: tsc exit 0, the tree made (21,084 leaf triangles), build exit 0 (engine `d58f4dcfd676fb29`), M3 summer 0.8818 pass, M3 winter 0.9218 pass, draft stills: summer's two and winter's two changed, spring's and fall's four byte equal. G15 and the whole vitest still run. Nothing is pushed before they are read.",
-    "Spring's base, first push of its builder at 00:33 UTC: on its branch \"pass M3 spring-rest: 0.8299\" with the base at 0.830; its guards run, final report before 01:11 UTC, then it is merged. The strict check at 00:36 UTC: the white ring on a strict card comes from one shader (the ring mesh's), no mend yet.",
-    "Open items 244 and 250 are mended on a branch of mine (`agent/p6-root-guards`, `1300aae7`): the shared veil's density never goes below zero and its low share is held in 0 to 1; an address that names an asset set the host does not hold draws from the web set, and a capture keeps the set its tool asked for. Three tests beside the five of `tests/params.test.ts`, 8 of 8 passing in a side tree. They go into the next chain.",
-    "16 agents are at work: summer (tree, miniature, air, glass, sand, stone), fall (air, base, miniature), spring (base), the change of season, the controls, the strict check, and three machines on the draft.",
-    "Render counts. Drawn here since the last status: 8 draft stills and 2 review stills for the checks. On helper machines: rough draft 5 in progress (1,800 frames at 960x540) and the 60 test frames at 3840. No frame of the masters yet.",
-    "Sound: 7,420 of 10,000 credits, unchanged, no call planned (account counter 17,287 of 131,000 at 00:51 UTC).",
-    "Fall's air, final report of its builder at 00:52 UTC (`ce0a8387`, holds main `f4df90d1`): the shares of bright air read 9.0, 5.7 and 1.6 against the approved's 9.9, 4.9 and 1.8 (before 14.4, 6.3, 2.3) and its three tone boxes are inside their bounds. Still short in its own words: the upper air darker than approved (about 37 against 48), fewer sparks (about 1600 peaks against 2372), the low fog at the left saturated green where the approved is pale grey, four bats for three. Fall's storm does not hide the miniature at the swap (the tree's crown shows at frame 2116); its trial mend lay green over winter and was taken out again. Below the bar. It goes into the next chain.",
-    "The change of season: its finisher moved its times at 00:52 UTC. Shakes 1 and 2 pushed about 01:50 UTC, all four with checks about 03:15 UTC. Winter's base still reads red brown down its flank under the pour.",
-    "phase 6: 22.05 h used of its 12.00 h box",
-    "allowance (after the review): 22.05 h used of 12.00 h allowed",
+    "Status 189 · 2026-11-27 02:35 UTC · Phase 6",
+    "The app is published. At 02:16 UTC the build of `7f68d26e` went live after a fresh security review that blocked nothing and warned of nothing; its own rebuild equals a build made here without the sound in all 17 files asked for. Visibility: Organization. The live address answers 401 without a sign in, so the live pages were not read from here; what was read is the built folder (351 files, \"poster: pass · 40 stills and the table agree with the framing\"). The review page's films are older cuts; the newest rough draft is Preview 05.",
+    "Chain 9 is read whole and on origin main (`c97fc1dd`): the miniatures made in steps, fall's miniature second list, and the coder's mend of open item 251, which is closed (decision 177). tsc exit 0; build exit 0, engine `48c86419ce417ce9`; the whole vitest 63 files passed and 1 skipped, 887 tests passed and 4 skipped; `node tools/miniatures.mjs` pass, every season the same made whole and in steps; counts at high: fall 1,791,317 of 1,800,000 triangles, summer 1,716,044, winter 1,490,555, spring 1,470,770; six draft stills of the other seasons equal, fall's two changed as expected. \"FAIL M3 fall-rest: 0.6996 (threshold 0.75, detail.minSharpnessRatio)\", base 0.700, miniature 0.804 where main had 0.789: fall still fails its line on the base. \"pass M3 summer-rest: 0.8818\".",
+    "Picture 1, fall at rest after chain 9, approved left and build right. Below the bar: the trunk is brown where the approved is black with glints, the fence is thin stakes, the air has too many specks and too few leaves, the base's vines are thin. The third list went to its builder at 02:12 UTC (line 03:00, push 03:45, limit 04:15).",
+    "Picture 2, summer's tree after its sixth pass (`agent/p6-summer-tree` `2cc16c9d`, not merged yet), approved left and build right. The crown is one broad dark dome with gold points on the outlines and the trunk is slimmer; its builder states \"pass M3 summer-rest\" at 0.8926. At phone size the pair reads as one tree. Below the bar close up: level tiers at the left with sky between, thick straight boughs, a fine speckle where the approved has soft rounded masses. A seventh list follows.",
+    "Picture 3, summer's base after its fourth list (`agent/p6-summer-stone` `2663e240`, not merged yet), approved above and build below. The even rings are gone, the relief is broad unequal swirls, the shade is cool and the base dims in the storm as the approved's does; base 1.049 in its line, 229,351 triangles, exactly its limit. Below the bar: the lit left reads as brown stone where the approved is pale cream sand, thin orange brown crease lines, a narrower darker top roll. Its tones rest on a fitted table of light shares that was looked at in one camera only; it does not merge until the other cameras are seen and the table is smoothed.",
+    "Picture 4, the change into summer, film frames 1405 to 1415, main above and the take over below (`agent/p6-summer-air` `ecf23c09`, not merged yet): the cover now thins into summer without a step between frames.",
+    "Next chains: the glass's limb alone (one line, `08c71e07`), then summer's tree and air together.",
+    "Winter's wedge of blur at film frames 30 and 31 has its cause in five lines of the shared blur map (`src/core/materials.ts` 275 to 279); its mender has leave to change them under five conditions, the calibrate hash equal before and after among them; limit 03:20 UTC. The shutter builder's machine came back by itself, so no second builder was started; its mend of the rows of beads is due 04:00 UTC and no frame after it has been seen. The change of season slipped: shakes 1 and 2 by about 03:50 UTC, all four by about 05:45 UTC. Fall's base builder states base 0.722 with black vines, not pushed; it merges only at 0.700 or more and nearer by eye (decision 176). Spring's base push is due 02:50 UTC, the table's petals 03:30 UTC.",
+    "14 agents are at work at 02:35 UTC: summer (miniature, air, glass, sand, base), fall (miniature, base, air), spring (base), winter's glints, the change of season, the controls, the shutter, the table's petals. Summer's tree builder waits for its seventh list.",
+    "Render counts since the last status. Drawn here by chain 9: two review stills (fall and summer at rest) and eight draft stills at hd. On helper machines: the stills and frames behind pictures 2 to 4, drawn by their builders. No frame of the masters yet.",
+    "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
+    "phase 6: 23.76 h used of its 12.00 h box",
+    "allowance (after the review): 23.76 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-185-1.jpg",
-      "caption": "Still: fall landed hero, hd, draft",
+      "file": "out/stills/status/status-189-1.jpg",
+      "caption": "Fall at rest after chain 9, approved picture left and build right, below the bar",
       "w": 1200,
-      "h": 675
+      "h": 591
     },
     {
-      "file": "out/stills/status/status-185-2.jpg",
-      "caption": "Still: fall rest hero, hd, draft",
-      "w": 1200,
-      "h": 675
+      "file": "out/stills/status/status-189-2.jpg",
+      "caption": "Summer's tree after its sixth pass, approved picture left and build right, not merged yet, below the bar",
+      "w": 1126,
+      "h": 630
     },
     {
-      "file": "out/stills/status/status-185-3.jpg",
-      "caption": "Still: summer landed hero, hd, draft",
-      "w": 1200,
-      "h": 675
+      "file": "out/stills/status/status-189-3.jpg",
+      "caption": "Summer's base after its fourth list, approved picture above and build below, not merged yet, below the bar",
+      "w": 740,
+      "h": 686
     },
     {
-      "file": "out/stills/status/status-185-4.jpg",
-      "caption": "Still: summer rest hero, hd, draft",
+      "file": "out/stills/status/status-189-4.jpg",
+      "caption": "The change into summer, film frames 1405 to 1415, main above and the take over below, not merged yet",
       "w": 1200,
-      "h": 675
+      "h": 282
     }
   ]
 }
