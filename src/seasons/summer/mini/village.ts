@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { config } from '../../../config'
 import { afterLight } from '../../../core/chunks/light'
 import { stageMaterial, type Rgb } from '../../../core/materials'
-import { geometry, prepareModel } from '../../../core/models'
+import { LevelIndex, geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { MIRROR_GLSL, MIRROR_MAX, mirrorUniforms } from '../../../miniature/mirror'
@@ -334,9 +334,11 @@ function* withBlades(g: THREE.BufferGeometry): Generator<void, THREE.BufferGeome
   const P = g.getAttribute('position')
   const S = g.getAttribute('aSurf')
   const index = g.index
-  const corners = index ? index.count : P.count
+  // A lighter list (tools/lib/glblevels.mjs) is other triangles over the same corners, in another order. Every blade is read from the full list, whatever level the page draws.
+  const full = index instanceof LevelIndex ? Object.values(index.lists).reduce((a, b) => (b.count > a.count ? b : a)) : null
+  const corners = full ? full.count : index ? index.count : P.count
   if (!S || corners % 3 !== 0 || corners !== P.count) throw new Error('village-summer: a blade no longer has three corners of its own')
-  const at = (k: number): number => (index ? index.getX(k) : k)
+  const at = (k: number): number => (full ? full.array[k]! : index ? index.getX(k) : k)
   const sunLength = Math.hypot(rig.key.from[0], rig.key.from[2])
   const sun = [rig.key.from[0] / sunLength, rig.key.from[2] / sunLength] as const
   const wide = (i: number): number => (S.getY(i) >= 1.5 ? tuftWide(S.getX(i)) : 1 - S.getX(i))
