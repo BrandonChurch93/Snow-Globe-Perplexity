@@ -169,7 +169,7 @@ function pathOf(points, step, wiggle = 0, seed = 0) {
   if (wiggle) fine.forEach((q, i) => {
     const u = i / 24
     const ends = Math.min(1, i / 12, (fine.length - 1 - i) / 12)
-    q[0] += wiggle * ends * (1.5 * (fbm(u * 0.9, seed * 0.37, 64, 64, 7, 2) - 0.5) + 0.7 * (fbm(u * 2.7, seed * 0.61, 64, 64, 19, 2) - 0.5))
+    q[0] += wiggle * ends * (1.5 * (fbm(u * 0.9, seed * 0.37, 64, 64, 7, 2) - 0.5) + 0.3 * (fbm(u * 2.7, seed * 0.61, 64, 64, 19, 2) - 0.5))
     q[1] += wiggle * ends * 1.1 * (fbm(u * 1.1, seed * 0.53, 64, 64, 23, 2) - 0.5)
   })
   const out = []
@@ -200,7 +200,7 @@ for (const p of trickle.samples) p.w = widthAt(p.t)
 console.log(`profile ${mer.total.toFixed(1)} mm long, the shoulder at ${S_TOP.toFixed(1)}; field ${W} by ${H}; trickle ${trickle.length.toFixed(1)} mm`)
 
 const cob = voronoi(9.4, 6.6, 11, 0.95, 0.7)
-const tuft = voronoi(5.2, 4.6, 57, 1.0, 1.6)
+const tuft = voronoi(3.6, 3.2, 57, 1.0, 1.6)
 const sprig = voronoi(0.95, 0.9, 91, 1.0, 0)
 const rock = new Float32Array(W * H)
 const moss = new Float32Array(W * H)
@@ -222,15 +222,15 @@ for (let y = 0; y < H; y++) {
     const drape = -4.5 + 4 * (fbm((x / W) * 22, 0.5, 22, 1, 71, 3) - 0.5) + 4 * (fbm((x / W) * 76, 0.5, 76, 1, 171, 2) - 0.5) + tongue
     const ragged = 5.0 * (fbm((x / W) * 90, (y / H) * 12, 90, 12, 83, 4) - 0.5) + 3.0 * (1 - pillow)
     let cover = smooth(S_TOP - drape - 1.2, S_TOP - drape + 1.2, s + ragged)
-    let patch = smooth(0.58, 0.78, fbm((x / W) * 26, (y / H) * 4, 26, 4, 97, 4) + 0.16 * (1 - pillow))
+    let patch = smooth(0.58, 0.72, fbm((x / W) * 26, (y / H) * 4, 26, 4, 97, 4) + 0.2 * (1 - pillow) + 0.07 * smooth(30, 8, m.h))
     const frayed = 0.3 * (fbm((x / W) * 110, (y / H) * 16, 110, 16, 41, 3) - 0.5) + 0.2 * (1 - pillow)
     for (const p of PATCHES) {
       const da = (((az - p[0] + 540) % 360) - 180) * RAD * m.r
       const dh = m.h - p[1]
       patch = Math.max(patch, smooth(1.0, 0.35, Math.hypot(da / p[2], dh / p[3]) - 1.6 * frayed))
     }
-    const seam = smooth(0.34, 0.04, pillow) * smooth(0.5, 0.74, fbm((x / W) * 34, (y / H) * 5, 34, 5, 211, 3) + 0.25 * smooth(8, 30, m.h))
-    cover = Math.max(cover, patch * smooth(0.5, 3.5, s), 0.42 * seam * smooth(0.5, 3.5, s))
+    const seam = smooth(0.5, 0.1, pillow) * smooth(0.44, 0.58, fbm((x / W) * 18, (y / H) * 3, 18, 3, 211, 4) + 0.12 * smooth(8, 30, m.h))
+    cover = Math.max(cover, patch * smooth(0.5, 3.5, s), 0.55 * seam * smooth(0.5, 3.5, s))
     const fine = fbm((x / W) * 420, (y / H) * 60, 420, 60, 149, 3) - 0.5
     moss[k] = clamp(cover + 2.6 * fine * cover * (1 - cover))
   }
@@ -248,10 +248,19 @@ stampPath(trickle.samples, 7, (k, d, p) => {
 const rockRaw = Float32Array.from(rock)
 rock.set(blur(rockRaw, W, H, 0.75 / MM_X, true, false))
 const rockSoft = blur(rock, W, H, 1.2 / MM_X, true, false)
-for (let k = 0; k < W * H; k++) {
-  const bed = smooth(2.4, 0.7, band[k])
-  rock[k] = mix(rock[k], rockSoft[k] - 0.2, bed)
-  moss[k] *= smooth(0.3, 1.3, band[k])
+for (let y = 0; y < H; y++) {
+  const s = y * MM_Y
+  for (let x = 0; x < W; x++) {
+    const k = y * W + x
+    const bed = smooth(2.4, 0.7, band[k])
+    const lies = 0.58 * fbm((x / W) * 20, (y / H) * 3, 20, 3, 307, 4) + 0.42 * cob.id[k] + 0.08 * smooth(4, 26, atS(s).h)
+    const fray = fbm((x / W) * 90, (y / H) * 12, 90, 12, 83, 4) - 0.5
+    const shelf = smooth(0.63, 0.69, lies) * smooth(0.02, 0.3, cob.f2[k] - cob.f1[k] + 0.5 * fray) * smooth(0.5, 3.5, s) * smooth(S_TOP + 1, S_TOP - 3, s)
+    const fine = fbm((x / W) * 420, (y / H) * 60, 420, 60, 149, 3) - 0.5
+    moss[k] = Math.max(moss[k], clamp(shelf + 2.6 * fine * shelf * (1 - shelf)))
+    rock[k] = mix(rock[k], rockSoft[k] - 0.2, bed)
+    moss[k] *= smooth(0, 0.8, band[k] + 0.6 * fray)
+  }
 }
 
 const rockWide = blur(rock, W, H, 2.2 / MM_X, true, false)
@@ -265,11 +274,12 @@ for (let y = 0; y < H; y++) {
   for (let x = 0; x < W; x++) {
     const k = y * W + x
     const c = moss[k]
-    const mound = smooth(0, 2.6, tuft.f2[k] - tuft.f1[k])
+    const mound = smooth(0, 1.9, tuft.f2[k] - tuft.f1[k])
     const star = smooth(0, 0.6, sprig.f2[k] - sprig.f1[k])
-    const cushion = 0.46 * Math.pow(mound, 0.8) + 0.3 * fbm((x / W) * 64, (y / H) * 10, 64, 10, 173, 3) + 0.24 * fbm((x / W) * 150, (y / H) * 22, 150, 22, 131, 3)
-    const thick = (0.25 + 1.9 * cushion + 0.55 * top * seat + 0.55 * (tuft.id[k] - 0.5) + 0.3 * star * star * (0.35 + sprig.id[k])) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
-    height[k] = mix(rock[k], Math.max(rock[k], mix(rockWide[k], rockBroad[k] + 0.5, 0.8) + 0.15) + thick, smooth(0.12, 0.6, c))
+    const cushion = 0.3 * Math.pow(mound, 0.8) + 0.38 * fbm((x / W) * 64, (y / H) * 10, 64, 10, 173, 3) + 0.24 * fbm((x / W) * 150, (y / H) * 22, 150, 22, 131, 3)
+    const thick = ((0.25 + 1.9 * cushion + 0.55 * top * seat + 0.3 * (tuft.id[k] - 0.5)) * mix(0.5, 1, smooth(S_TOP - 14, S_TOP - 3, s)) + 0.5 * star * star * (0.35 + sprig.id[k])) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
+    const filled = Math.max(rock[k], mix(rockWide[k], rockBroad[k] + 0.5, 0.8) + 0.15)
+    height[k] = mix(rock[k], mix(rock[k] + 0.12, filled, smooth(S_TOP - 13, S_TOP - 3, s)) + thick, smooth(0.12, 0.6, c))
   }
 }
 
@@ -277,14 +287,14 @@ const THIN = { rock: { share: 0.74, error: 0.06 }, growth: { share: 0.74, error:
 const roots = []
 const rng = mulberry(4401)
 const pushRoot = (spec) => {
-  const p = pathOf(spec.pts, 0.8, spec.keep ? 1.2 : 2.2, roots.length + 1)
-  spec = { ...spec, r: spec.r * (spec.keep ? 0.8 : spec.fine ? 1 : spec.r > 1.3 ? 0.92 : 0.74) }
+  const p = pathOf(spec.pts, 0.8, spec.keep ? 1.2 : spec.fine ? 3.0 : 3.6, roots.length + 1)
+  spec = { ...spec, r: spec.r * (spec.keep ? 1.05 : spec.fine ? 1 : spec.r > 1.3 ? 1.3 : 1.12) }
   roots.push({ ...spec, ...p })
   return p
 }
 for (const spec of ROOTS) {
   const p = pushRoot(spec)
-  const twigs = spec.keep ? 0 : (spec.twigs ?? 0) + 2
+  const twigs = spec.keep ? 0 : (spec.twigs ?? 0)
   for (let i = 0; i < twigs; i++) {
     const from = p.samples[Math.floor(p.samples.length * (0.25 + 0.6 * rng()))]
     const side = rng() < 0.5 ? -1 : 1
@@ -300,11 +310,11 @@ for (const spec of ROOTS) {
       h -= (len / 4) * (0.5 + 0.5 * rng())
       lean += 0.7 * (rng() - 0.5)
     }
-    if (from.s < S_TOP) pushRoot({ r: Math.max(0.3, spec.r * 0.62 * (0.5 + 0.3 * rng()) * (1 - 0.5 * from.t)), pts, twigs: 0, fine: true })
+    if (from.s < S_TOP) pushRoot({ r: Math.max(0.45, spec.r * 0.8 * (0.5 + 0.3 * rng()) * (1 - 0.5 * from.t)), pts, twigs: 0, fine: true })
   }
 }
-for (let i = 0; i < 11; i++) {
-  let az = -92 + (184 * (i + rng())) / 11
+for (let i = 0; i < 4; i++) {
+  let az = -92 + (184 * (i + rng())) / 4
   let h = 20 + 12 * rng()
   const pts = [[az, h]]
   let lean = (rng() - 0.5) * 3.2
@@ -314,7 +324,7 @@ for (let i = 0; i < 11; i++) {
     lean += 1.2 * (rng() - 0.5)
     pts.push([az, Math.max(h, 0.2)])
   }
-  if (pts.length > 2) pushRoot({ r: 0.38 + 0.36 * rng(), pts, twigs: 0, fine: true })
+  if (pts.length > 2) pushRoot({ r: 0.6 + 0.4 * rng(), pts, twigs: 0, fine: true })
 }
 for (let i = 0; i < 12; i++) {
   let az = 100 + (160 * (i + rng())) / 12

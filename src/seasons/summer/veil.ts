@@ -49,35 +49,73 @@ export function stormHeld(moment: KitMoment): number {
 }
 
 /**
- * How much of the shared veil the held storm has taken over, 0 to 1. Where summer comes out of another season, nothing through
- * the first half of the swap window: the storm that hides the change is the shared one, whole, and the held storm is far
- * thinner. It takes over through the second half and has all of it at the window's end, where it always had it, so every frame
- * from there to the landing and after is as it was. A shake of summer alone has nothing to hide, and the held storm comes in
- * over the whole window as it always did.
+ * The take over: how the shared storm gives way to the held one where summer comes out of another season, while the globe is
+ * still in the hand. The shared storm is whole to `fromFrames` frames of the film about the swap window's end (below zero:
+ * before it), so the change stays under it, and the take over runs `frames` frames from there, past the window's end. What
+ * stands of the flood at the take over's end before the last of it goes is `left` of it. A shake of summer alone has nothing
+ * to hide and no take over: its held storm comes in over the whole window by `stormHeld`, as it always did.
  */
-function taken(moment: KitMoment): number {
+export const TAKE = { fromFrames: -3, frames: 16, left: 0.002 }
+
+const FRAMES_A_BEAT = (60 * config.film.fps) / config.film.defaultBpm
+
+/** Whether summer comes out of another season at a moment. After the window's end the season that has come stands alone, and the moment names the one it left. */
+export function comesOfAnother(moment: KitMoment): boolean {
   const f = moment.frame
-  if (moment.beat === null || f.from.veil === f.to.veil) return 1
-  const w = config.shake.swapWindow
-  return ramp(moment.beat, (w.fromBeat + w.toBeat) / 2, w.toBeat)
+  return moment.beat !== null && f.to.veil === veil && (f.from.veil !== veil || (f.moment?.left ?? null) !== null)
 }
+
+/** How far the take over has run at a moment, 0 to 1, at an even pace: a pure function of the beat. Nothing where there is none. */
+export function takePace(moment: KitMoment): number {
+  if (moment.beat === null || !comesOfAnother(moment)) return 0
+  const from = config.shake.swapWindow.toBeat + TAKE.fromFrames / FRAMES_A_BEAT
+  return Math.min(1, Math.max(0, ((moment.beat - from) * FRAMES_A_BEAT) / TAKE.frames))
+}
+
+/**
+ * The share of the flood that still stands when the take over has run `pace` of its way: all of it at 0, none at 1, and between
+ * them less by one and the same share of itself on every frame. A haze thins by ratio. Taken over by sum, the bank stood whole
+ * until the last frames of the swap window and went tenfold in two of them: what stands 60 mm deep in it was 4, 30 and 70
+ * hundredths seen on three frames running, and the tree came out of the fog in a step. By ratio every line of sight opens at one
+ * pace when its turn comes, the thin ones first (the dome, the crown) and the deepest last (the bank over the cottage), and none
+ * by more than a sixth of itself between two frames.
+ */
+export const floodLeft = (pace: number): number => (Math.pow(TAKE.left, pace) - TAKE.left) / (1 - TAKE.left)
+
+/**
+ * A haze of the shared storm on its way to the held storm's. `most` is that haze at the fullest flood, and the take over's own
+ * course runs from it: the held storm's haze and what is left of the flood. The shared storm thins by itself once the window is
+ * past, and a share of its value of the moment would thin twice over; so the haze is the take over's own course, and never more
+ * than the shared storm has. Where the shared haze is the thinner (a light shake) it rises to the held storm's by sum.
+ */
+const taken = (shared: number, held: number, most: number, pace: number): number => (shared <= held ? shared + (held - shared) * pace : Math.min(shared, held + (Math.max(most, shared) - held) * floodLeft(pace)))
 
 /** Turns the shared veil to summer's held storm. Runs after the shared veil has set its own values for the frame. */
 export function holdStorm(moment: KitMoment): number {
   const kept = stormHeld(moment)
-  const held = kept * taken(moment)
+  // Out of another season the held storm comes by the take over. In a shake of summer alone it comes, and after every landing
+  // it goes, by the share that is kept and by sum, as it did.
+  const taking = comesOfAnother(moment)
+  const held = taking ? takePace(moment) : kept
   const u = veilUniforms
   const storm = veil.density * VEIL_LOOK.haze * STORM.share * held
   const density = veil.rest + veil.density * VEIL_LOOK.haze * STORM.share
   if (held > 0 && density > 0) {
     u.uVeilUp.value.w += (Math.min(STORM.uneven, storm / density) - u.uVeilUp.value.w) * held
-    u.uVeil.value.w += (density - u.uVeil.value.w) * held
-    u.uVeilDrift.value.x *= 1 - STORM.calms * held
     const roll = u.uVeilRoll.value
-    roll.z += (STORM.white - roll.z) * held
-    roll.w += (STORM.fold - roll.w) * held
     const bank = u.uVeilBank.value
-    bank.set(bank.x + (STORM.bank.level - bank.x) * held, bank.y + (STORM.bank.soft - bank.y) * held, bank.z + (STORM.bank.density - bank.z) * held, bank.w + (STORM.bank.even - bank.w) * held)
+    roll.w += (STORM.fold - roll.w) * held
+    if (taking) {
+      u.uVeil.value.w = taken(u.uVeil.value.w, density, veil.rest + veil.density * VEIL_LOOK.haze, held)
+      u.uVeilDrift.value.x *= 1 - STORM.calms * (1 - floodLeft(held))
+      roll.z = taken(roll.z, STORM.white, veil.density * VEIL_LOOK.white, held)
+      bank.set(bank.x + (STORM.bank.level - bank.x) * held, bank.y + (STORM.bank.soft - bank.y) * held, taken(bank.z, STORM.bank.density, veil.density * VEIL_LOOK.bank * VEIL_LOOK.bankFloodGain, held), bank.w + (STORM.bank.even - bank.w) * held)
+    } else {
+      u.uVeil.value.w += (density - u.uVeil.value.w) * held
+      u.uVeilDrift.value.x *= 1 - STORM.calms * held
+      roll.z += (STORM.white - roll.z) * held
+      bank.set(bank.x + (STORM.bank.level - bank.x) * held, bank.y + (STORM.bank.soft - bank.y) * held, bank.z + (STORM.bank.density - bank.z) * held, bank.w + (STORM.bank.even - bank.w) * held)
+    }
   }
   // `rest` is below zero: it takes back the share of haze the shared veil keeps while the pool is afloat. Where the shared haze is
   // thinner than that share (seeds that lie count as landed, and the kept share falls with them), the sum went below zero. A veil
