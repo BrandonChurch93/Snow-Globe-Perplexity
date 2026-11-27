@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 192 · 2026-11-27 03:43 UTC
+Status 193 · 2026-11-27 04:07 UTC
 
-- `out/stills/status/status-192-1.jpg`: Summer at rest with the base's fourth list, approved picture left and build right, not on main yet, below the bar
-- `out/stills/status/status-192-2.jpg`: Fall at rest with the miniature's third list, approved picture left and build right, not on main yet, below the bar
-- `out/stills/status/status-192-3.jpg`: The table's petals at 4K, film frames 676 to 690, sliding before above and holding still with the mend below
-- `out/stills/status/status-192-4.jpg`: Still: fall landed hero, hd, draft
+- `out/stills/status/status-193-1.jpg`: Summer landed, fall landed, spring at rest and spring landed as on main now
+- `out/stills/status/status-193-2.jpg`: The glass's outline at 4K, film frames 1875 to 1878 at eight times, dotted pale line before above and gone with the mend below, not on main yet
+- `out/stills/status/status-193-3.jpg`: Summer's base close up, a straight warm band found top and gone with the glass's edge pass off middle and bottom, a test, not mended yet
+- `out/stills/status/status-193-4.jpg`: A leaf ornament on the base at 4K at four times, film frames 604 to 601, a weave on the edges in the two left frames and clean in the two right
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 03:43 UTC
-clock: phase 6, tick of 21.6 minutes
-phase 6: 24.90 h used of its 12.00 h box
-allowance (after the review): 24.90 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 24.90 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 04:07 UTC
+clock: phase 6, tick of 23.8 minutes
+phase 6: 25.30 h used of its 12.00 h box
+allowance (after the review): 25.30 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 25.30 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
@@ -1104,6 +1104,8 @@ Numbered. What, why, and the date.
 179. **The calibration line an order names is read as "the same line on plain main and on the head, drawn on the same machine"; the line for the masters is named when the farm starts.** (02:52 UTC Nov 27.) The shutter's builder reported that `npm run master -- --calibrate` prints `e77fbdcd3ad20f6a` (first 16) on its machine where two orders name `ba63d3b2ceb11deb`, on plain `99712bfc` and on its head alike. The cause is mine: the calibration is the sha256 of winter at rest, hero, review, hd (`tools/master.mjs` line 32), drawn on the build at hand, and the line the orders name belongs to build `4708b960e00eb5d2`. Main has changed winter at rest since then, and again with `fe0f0202` (the glass's limb). So the named line can no longer come out on any machine, and what the condition was for (a mend of motion must not change a picture at rest) is shown by the two lines being the same on one machine. Sent to every working builder at 02:52 UTC. Not proven by this: that two machines print the same line for one build today; that is read when the farm is set up for the masters, as `tools/farm/README.md` says, and a machine that prints another line draws nothing.
 
 180. **Three leaves for single lines in files that are not the asker's, each under conditions, and one triangle limit raised.** (02:40 to 02:56 UTC Nov 27.) (1) Fall's air builder may change line 113 of `tests/no-air.test.ts` from `[5.4, 5.5]` to `[4.5, 5.4, 5.5]` and add "its mist" to the test's name: its new mist is a mesh of fall's glass dressing drawn before the particles so that bats, leaves and sparks stand in front of it, the test pins the list of fall's air meshes, and the changed line asserts more than before; a commit of its own. (2) The controls' finisher may change line 485 of `src/app/app.ts` so that the governor does not judge the frames in which a pressed season is being made in steps: by its count with the real governor a quality level was lost at 45 to 90 of 90 moments of a press on a 60 a second page, and never with the line; conditions: its count as a test in `tests/`, a bound for a season that never becomes ready, the eight stills byte for byte, the whole vitest, `node tools/miniatures.mjs`, determinism. Not seen on a page by anyone yet. Widened at 03:00 UTC at its asking to the exact form: one optional member `awaited?(): boolean` on the Stage interface in `src/core/stage.ts`, true only while the pressed season is in fact being made in steps on the page, so that a load that fails or hangs leaves the governor hearing every frame and the silence ends by itself 3.5 session seconds after the press; only the live page's stage may implement it, no film, still, probe, loop or recording path may implement or read it, and the test must cover the member absent, a season made in steps, a failed load and a hanging load. (3) Summer's tree builder may change `src/miniature/trunk.ts` (the boughs' straightness and the trunk's S sit in lines 65 to 67 and 101): every new behaviour a parameter whose default gives the present result exactly, the other three trees' made files with the same sha256 before and after, the six stills of winter, spring and fall byte for byte, `node tools/miniatures.mjs` pass, the whole vitest. (4) Fall's base may go to 80,000 triangles (77,930 now) for the thick vines of the left tangle; fall stands at 1,791,095 of 1,800,000 at high with it and the miniature's builder has the rest.
+
+181. **The finished films travel to the root's machine as parts of 48 MiB by message attachment.** (04:06 UTC Nov 27.) Measured at 04:05 UTC on `farm_machine_7`: attachments of 480 MB, 200 MB and 100 MB are refused at once with "Attachment is larger than 50 MiB", and one of 52,428,800 bytes arrives here in 0.8 s with the same sha256 (`bf94aab1e2361f05`); the limit is checked before any byte moves. So the machine that joins and codes a master cuts the finished file into parts of 48 MiB, sends at most ten a message, and the root puts them together in order and checks the sha256 of the whole before anything is shown. A film under the platform's 512 MB is at most eleven parts. This settles the transport of open item 249; the join and the code stay on a helper machine because of this machine's disk (3.9 GB free at 04:06 UTC). Also learnt in the same test: a helper's machine can start again between jobs (the farm machine's boot id changed; its kept files were still there, its links were not), so a farm machine runs its setup and its calibration line again before it draws, and hands each finished chunk on at once instead of keeping it.
 
 ## Notes from Brandon
 
