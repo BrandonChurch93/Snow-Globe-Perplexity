@@ -446,13 +446,18 @@ ${FLARE_RAYS.map((ray, i) => `    star += flRay(p, vec2(${n(Math.cos(ray.a))}, $
 const W = look.wall
 // The wall's light is drawn three times: behind the miniature all of it but the glare, in front of the miniature the
 // glare alone (`front`), so the burn low on the far side lies over the turf and the fence as light on glass does, and
-// last, over the shell, the band of fine lines inside the outline alone (`rim`)
+// last, over the shell, the band of fine lines inside the outline alone (`rim`). The two drawn in front are light on the
+// glass, so whatever stands in front of the glass hides them (the base's crest and what lies on it): the sheet they are
+// drawn on runs through the middle of the globe, so each of their pixels writes the depth of the glass's own front where
+// its ray meets it, `seat.proud` outside the glass as the seat's band is, and is tested against what is already drawn
 const wallText = (front: boolean, rim = false): string => `
 uniform vec4 uFlareSun;
 uniform vec4 uSummer;
 uniform float uSummerAir;
 varying vec2 vWl;
 varying vec2 vWlDir;
+varying vec3 vWlMid;
+varying vec3 vWlDepth;
 // one streak of light in the glass: thin across the radius, as long as span (1 - the cosine of half its length) along the
 // arc about the bearing u, thinner and fainter toward its ends and broken along its length. f: where in the radius, its
 // half width, how far it leans across the arc, its own seed
@@ -494,7 +499,15 @@ void main() {
   float r = length(vWl);
   if (r > 1.24) discard;
   vec2 e = vWl / max(r, 1e-4);
-${rim ? `  // the glass's thickness, drawn over the glass and nothing else of the wall with it
+${front ? `  // light on the glass: the depth of the glass's own front along this pixel's ray, from the eye. The sheet's edge at
+  // r = 1 is the outline of the sphere as the eye sees it, so every ray inside it meets the glass
+  if (r > 1.0) discard;
+  vec3 wlRay = normalize(vec3(vWlMid.xy + vWl * vWlDepth.z, vWlMid.z));
+  float wlNear = dot(wlRay, vWlMid);
+  float wlFront = wlNear - sqrt(max(wlNear * wlNear - dot(vWlMid, vWlMid) + ${n((RS + look.seat.proud) * (RS + look.seat.proud))}, 0.0));
+  float wlDeep = max(-wlRay.z * wlFront, 1e-3);
+  gl_FragDepth = 0.5 + 0.5 * (vWlDepth.x - vWlDepth.y * wlDeep) / wlDeep;
+` : ''}${rim ? `  // the glass's thickness, drawn over the glass and nothing else of the wall with it
   if (r > 1.0 || r < ${n(W.rimAt[0])}) discard;
   float rimFoot = smoothstep(${n(W.rimFoot[0])}, ${n(W.rimFoot[1])}, e.y);
   if (rimFoot <= 0.0) discard;
@@ -724,7 +737,7 @@ function makeWall(front: boolean, rim = false): THREE.Mesh {
     standIn: false,
     change: 'glass-dressing',
     uniforms: { uFlareSun: uniforms.uFlareSun, uSummer: uniforms.uSummer, uSummerAir: uniforms.uSummerAir },
-    vertexPars: 'uniform vec4 uFlareSun;\nvarying vec2 vWl;\nvarying vec2 vWlDir;',
+    vertexPars: 'uniform vec4 uFlareSun;\nvarying vec2 vWl;\nvarying vec2 vWlDir;\nvarying vec3 vWlMid;\nvarying vec3 vWlDepth;',
     vertexMain: `
 vec4 wlC = viewMatrix * vec4(uLensCentre, 1.0);
 vec3 wlSun = (viewMatrix * vec4(uFlareSun.xyz, 0.0)).xyz;
@@ -733,6 +746,10 @@ vWlDir = normalize(vec2(wlSun.x < 0.0 ? 1.0 : -1.0, -${n(W.low)}));
 // the limb of a sphere seen from near is a little wider than its radius
 float wlR = ${n(RS)} / sqrt(max(1.0 - ${n(RS * RS)} / dot(wlC.xyz, wlC.xyz), 0.5));
 vWl = position.xy * 1.25;
+// for the depth of the two passes drawn in front: the globe's middle from the eye, and the two numbers of the projection that
+// turn a distance in front of the eye into a depth, with the sheet's scale
+vWlMid = wlC.xyz;
+vWlDepth = vec3(projectionMatrix[3][2], projectionMatrix[2][2], wlR);
 vec4 wlAt = wlC;
 wlAt.xy += vWl * wlR;
 gl_Position = projectionMatrix * wlAt;
@@ -741,7 +758,7 @@ vStageLocal = (uGlobeInv * vec4(uLensCentre, 1.0)).xyz;
 vStagePlaced = uLensCentre;
 vStageAux = vec3(0.0, -wlAt.z, length(wlAt.xyz));`,
     fragment: rim ? WALL_RIM : front ? WALL_FRONT : WALL,
-    params: rim ? { ...added, depthTest: false } : { ...added, transparent: false, depthTest: false },
+    params: rim ? { ...added, depthTest: true } : { ...added, transparent: false, depthTest: front },
   })
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m)
   mesh.renderOrder = front ? 13 : -0.25
