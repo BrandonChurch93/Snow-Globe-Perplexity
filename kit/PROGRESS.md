@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 228 · 2026-11-27 20:28 UTC
+Status 229 · 2026-11-27 20:58 UTC
 
-- `out/stills/status/status-228-1.jpg`: Fall's tree, approved picture left and the round one push right, in chain 38, below the bar
-- `out/stills/status/status-228-2.jpg`: Summer's lawn at the close camera at 4K, main above and the round one push below, in chain 38, below the bar
-- `out/stills/status/status-228-3.jpg`: The opening picture handing over to the live page, six frames, main above going near black and the mend below, in chain 38
-- `out/stills/status/status-228-4.jpg`: The change of season at 4K at the masters' tier, summer's heap leaving over film frames 2104 to 2110, on its builder's head, in chain 38, not played
+- `out/stills/status/status-229-1.jpg`: Summer on chain 38, approved pictures left and build right, at rest above and at the landing below, on origin now, below the bar
+- `out/stills/status/status-229-2.jpg`: Fall on chain 38, approved pictures left and build right, at rest above and at the landing below, on origin now, below the bar
+- `out/stills/status/status-229-3.jpg`: Spring on chain 38, approved pictures left and build right, at rest above and at the landing below, on origin now, below the bar
+- `out/stills/status/status-229-4.jpg`: Still: fall rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 20:28 UTC
-clock: phase 6, tick of 23.6 minutes
-phase 6: 41.64 h used of its 12.00 h box
-allowance (after the review): 41.64 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 41.64 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 20:58 UTC
+clock: phase 6, tick of 30.6 minutes
+phase 6: 42.15 h used of its 12.00 h box
+allowance (after the review): 42.15 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 42.15 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
