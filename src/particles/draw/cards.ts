@@ -164,8 +164,6 @@ export const CARD_VERT = `
       vec2 topG = (atG - vec2(${n(CARD.glow.topAt[0])}, ${n(CARD.glow.topAt[1])})) / vec2(${n(CARD.glow.topWide[0])}, ${n(CARD.glow.topWide[1])});
       float outG = max(${n(CARD.glow.swarmOut)} * (1.0 - smoothstep(${n(CARD.glow.swarmFrom[0])}, ${n(CARD.glow.swarmFrom[1])}, swarmG)) * (1.0 - ${n(CARD.glow.moreKeep)} * moreG), ${n(CARD.glow.cottageOut)} * cotG);
       outG = max(outG, max(${n(CARD.glow.fieldOut)} * (1.0 - moreG), ${n(CARD.glow.topOut)} * exp(-0.5 * dot(topG, topG))));
-      // the lights that hover in still air are more than the approved holds: of them this share is not drawn, wherever they stand and before any camera
-      outG = max(outG, ${n(CARD.glow.stillOut)});
       // before the cottage and the tree a light is a small point with a tight glow: they are few there, none is thrown out of focus, and none is large
       float crownG = 1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.hair.sceneEdge[1])}, length((atG - vec2(${n(CARD.hair.crownAt[0])}, ${n(CARD.hair.crownAt[1])})) / vec2(${n(CARD.hair.crownWide[0])}, ${n(CARD.hair.crownWide[1])})));
       // the lanterns, the trunk and the yard between the two are the miniature as well

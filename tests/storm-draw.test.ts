@@ -333,9 +333,6 @@ describe('how the storm is drawn', () => {
     expect(glow.openCorePx[0]).toBeLessThan(glow.openCorePx[1])
     expect(glow.wideOf).toBeLessThanOrEqual(0.05)
     expect(glow.nearShare).toBeLessThanOrEqual(0.05)
-    // the lights that hover in still air are thinned everywhere by one share
-    expect(glow.stillOut).toBeGreaterThanOrEqual(0.5)
-    expect(CARD_VERT).toContain('outG = max(outG, ' + String(glow.stillOut) + ')')
     // an ember is fall's: it keeps its card's reach, its pale point and its disc, and the lights' own numbers are read by the lights alone
     expect(glow.wide).toBe(4.5)
     expect(CARD_VERT).toContain('reachC = ' + String(glow.wide) + ' * 2.2 * rC')
