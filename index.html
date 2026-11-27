@@ -224,10 +224,28 @@
         // live picture does that comes in over it. Moved by half a pixel, a picture drawn at half its file's size would be the
         // browser's own halved copy, smeared over two pixels. With a layer of its own and a hair more than half, the browser
         // halves the file itself where the picture stands.
+        //
+        // Until the app has said where the glass is, a place is read from the table, which is kept only near the app: a still
+        // that the screen shows at half or the whole of its file is read a little beside its file's pixels, and soft. Read
+        // within `LOOSE` of the size it was drawn for, on a screen as high as that, it is put at that size from the top, where
+        // the app's word then leaves it, and whole where it then reaches both sides. `LOOSE` is more than the table is off on
+        // any such screen and less than one pixel across the narrowest still: on a screen one pixel narrower or wider than a
+        // still the table is right, and the glass is that much smaller or larger.
         var NEAR = 0.1
         var HAIR = 1e-5
+        var LOOSE = 0.0022
         function put(img, b) {
           var d = window.devicePixelRatio || 1
+          for (var i = 0; !exact && i < layers.length; i++) {
+            var s = layers[i].still
+            var k = (2 * d * s[1]) / img.naturalWidth
+            var own = layers[i].over === img && (k === 1 || k === 2) && k * img.naturalHeight === 2 * d * s[2]
+            var off = Math.max(Math.abs(b.w / s[1] - 1), Math.abs(b.h / s[2] - 1), Math.abs(b.y) / s[2])
+            if (own && s[2] === (box.clientHeight || window.innerHeight) && off < LOOSE) {
+              b = { x: b.x + (b.w - s[1]) / 2, y: 0, w: s[1], h: s[2] }
+              if (Math.max(b.x, (box.clientWidth || window.innerWidth) - b.x - b.w) * d < NEAR) img.style.webkitMaskImage = img.style.maskImage = ''
+            }
+          }
           var far = function (n) {
             var e = [b.x, b.y, b.x + b.w, b.y + b.h]
             var most = 0

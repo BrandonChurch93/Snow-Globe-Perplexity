@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import sharp from 'sharp'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { config } from '../src/config'
 import { reveal } from '../src/app/app'
 import { FRAME, baseSide, edges, framingOfRig, livePath, liveRig, margins, roomUnder, shakeReach } from '../src/app/framing'
@@ -1648,15 +1649,26 @@ describe('the canvas over the first still', () => {
 describe('where the page puts a picture of the first still', () => {
   type Box = { x: number; y: number; w: number; h: number }
   type Pic = { style: Record<string, string>; naturalWidth: number; naturalHeight: number; laid?: Box; heard: (() => void)[]; addEventListener(kind: string, heard: () => void): void }
+  type Still = [string, number, number, ...(string | number)[]]
+  type Put = (img: Pic, b: Box) => void
   const script = /<script>([\s\S]*?)<\/script>/.exec(readFileSync('index.html', 'utf8'))![1]!
-  const source = /\n( *var NEAR = [\d.e-]+\n *var HAIR = [\d.e-]+\n *function put\(img, b\) \{[\s\S]*?\n {8}\})\n/.exec(script)![1]!
+  const source = /\n( *var NEAR = [\d.e-]+\n *var HAIR = [\d.e-]+\n *var LOOSE = [\d.e-]+\n *function put\(img, b\) \{[\s\S]*?\n {8}\})\n/.exec(script)![1]!
   const near = Number(/var NEAR = ([\d.e-]+)/.exec(source)![1])
   const hair = Number(/var HAIR = ([\d.e-]+)/.exec(source)![1])
-  /** The page's own `put`, on a screen that draws so many pixels for one of the page's. */
-  const putOn = (ratio: number | undefined): ((img: Pic, b: Box) => void) => new Function('window', `${source}\nreturn put`)({ devicePixelRatio: ratio })
+  const loose = Number(/var LOOSE = ([\d.e-]+)/.exec(source)![1])
+  const table = JSON.parse(/\/\*first:begin\*\/([\s\S]*?)\/\*first:end\*\//.exec(script)![1]!) as { season: string; stills: Still[] }
+  /** The sizes the stills of the places below were drawn for, written here: these tests are of `put` and not of the table. */
+  const drawnFor: Record<string, readonly [number, number]> = { hd: [1920, 1080], wide: [2560, 1080], tablet: [1024, 1366], phone: [390, 844], phone590: [390, 590], mid: [719, 600] }
+  const still = (name: string): Still => [name, ...drawnFor[name]!]
+  const made = new Function('window', 'exact', 'box', 'layers', `${source}\nreturn put`) as (window: object, exact: object | null, box: object | null, layers: { still: Still; over: Pic }[]) => Put
+  /** The page's own `put` once the app has said where the glass is, on a screen that draws so many pixels for one of the page's. */
+  const putOn = (ratio: number | undefined): Put => made({ devicePixelRatio: ratio }, {}, null, [])
+  /** The same `put` before the app has spoken, unless it is said to have: on a screen of that size, with those stills in place. */
+  const readOn = (ratio: number, wide: number, high: number, layers: { still: Still; over: Pic }[], said = false, inner: readonly [number, number] = [1, 1]): Put =>
+    made({ devicePixelRatio: ratio, innerWidth: inner[0], innerHeight: inner[1] }, said ? {} : null, { clientWidth: wide, clientHeight: high }, layers)
   const px = (v: string | undefined): number => Number((v ?? '').replace(/px$/, ''))
   /** Where a browser draws the picture: its box, moved and sized by its matrix if it has one. */
-  const drawn = (img: Pic): Box => {
+  const drawn = (img: { style: Record<string, string> }): Box => {
     const m = /^matrix\((.+)\)$/.exec(img.style.transform ?? '')
     const [a = 1, , , d = 1, e = 0, f = 0] = m ? m[1]!.split(',').map(Number) : []
     return { x: px(img.style.left) + e, y: px(img.style.top) + f, w: px(img.style.width) * a, h: px(img.style.height) * d }
@@ -1688,6 +1700,27 @@ describe('where the page puts a picture of the first still', () => {
   const midIn590 = { at: { x: -56.4389, y: 0.0435, w: 702.8779, h: 586.5462 }, file: [1438, 1200] } as const
   const lowIn600 = { at: { x: -59.4955, y: 0.001, w: 718.991, h: 480.994 }, file: [1438, 962] } as const
   const between: Box = { x: 10.3, y: 0.4, w: 701.3, h: 501.1 }
+  // Places the built page reads from its table before the app has spoken, each with its still, its screen and the pixels of its file.
+  type Read = { still: string; screen: readonly [number, number]; at: Box; file: readonly [number, number] }
+  const midRead: Read = { still: 'mid', screen: [600, 600], at: { x: -59.33537, y: -0.00433, w: 718.67074, h: 599.72523 }, file: [1438, 1200] }
+  const hdRead: Read = { still: 'hd', screen: [1800, 1080], at: { x: -59.70198, y: -0.00311, w: 1919.40396, h: 1079.66473 }, file: [1920, 1080] }
+  const wideRead: Read = { still: 'wide', screen: [2600, 1080], at: { x: 20.04518, y: -0.00035, w: 2559.90964, h: 1079.96188 }, file: [2560, 1080] }
+  const tallRead: Read = { still: 'mid', screen: [600, 601], at: { x: -60.23459, y: -0.00651, w: 720.46918, h: 601.22602 }, file: [1438, 1200] }
+  const narrowRead: Read = { still: 'phone', screen: [389, 844], at: { x: 0.00588, y: 0.94597, w: 388.98823, h: 841.81043 }, file: [780, 1688] }
+  const widerRead: Read = { still: 'phone', screen: [391, 844], at: { x: 0.00158, y: -0.90529, w: 390.99683, h: 846.15724 }, file: [780, 1688] }
+  const tabletRead: Read = { still: 'tablet', screen: [1023, 1366], at: { x: 0.02797, y: 1.21255, w: 1022.94407, h: 1364.5914 }, file: [1229, 1639] }
+  const shortRead: Read = { still: 'phone590', screen: [369, 590], at: { x: -10.13621, y: 0.73277, w: 389.27243, h: 588.89931 }, file: [780, 1180] }
+  /** A picture put where the page read it: the top picture of its still unless another is, of the file of the read unless of another. */
+  const reads = (r: Read, ratio = 1, o: { said?: boolean; top?: boolean; file?: readonly [number, number]; mask?: string } = {}): Pic => {
+    const img = pic(...(o.file ?? r.file))
+    if (o.mask) img.style.maskImage = img.style.webkitMaskImage = o.mask
+    readOn(ratio, r.screen[0], r.screen[1], [{ still: still(r.still), over: o.top === false ? pic(...r.file) : img }], o.said)(img, r.at)
+    return img
+  }
+  const wholly = (img: { style: Record<string, string> }, b: Box): void => {
+    expect(img.style).toMatchObject({ transform: '', willChange: '' })
+    sameBox(drawn(img), b, 6)
+  }
 
   it('lays a picture whose place is on whole pixels there, with no matrix and no layer, to be drawn pixel for pixel', () => {
     for (const [ratio, still] of [[1, hd], [3, phone], [1, midIn601], [2, midIn600]] as const) {
@@ -1808,5 +1841,419 @@ describe('where the page puts a picture of the first still', () => {
     expect(img.style.willChange).toBe('transform')
     put(img, midIn601.at)
     plainly(img, midIn601.at)
+  })
+
+  // The table is kept within a thousandth of the height of the app. A still drawn at half its file, read a third of a pixel
+  // beside its place, was the browser's own soft copy until the app spoke, and sharpened and moved when it did.
+  it('stands a still read within a little of the size it was drawn for at that size from the top, before the app has spoken', () => {
+    const half = reads(midRead)
+    expect(half.style).toMatchObject({ left: '0px', top: '0px', width: '719px', height: '600px', willChange: 'transform' })
+    sameBox(drawn(half), { x: -59.5, y: 0, w: 719, h: 600 }, 1)
+    expect(drawn(half).x + drawn(half).w / 2).toBeCloseTo(midRead.at.x + midRead.at.w / 2, 9)
+    wholly(reads(hdRead), { x: -60, y: 0, w: 1920, h: 1080 })
+    wholly(reads(midRead, 2), { x: -59.5, y: 0, w: 719, h: 600 })
+    // Of all the screens that show a still at half or the whole of its file, the table is furthest off on this one.
+    const short = reads(shortRead, 2)
+    expect(short.style).toMatchObject({ transform: '', willChange: '' })
+    sameBox(drawn(short), { x: -10.5, y: 0, w: 390, h: 590 }, 4)
+    expect(reads(shortRead).style.willChange).toBe('transform')
+    for (const [read, said, ratio] of [[midRead, midIn600, 1], [midRead, midIn600, 2], [hdRead, { at: { x: -59.991, y: 0.0025, w: 1919.982, h: 1079.9899 }, file: hdRead.file }, 1]] as const) {
+      const before = reads(read, ratio)
+      const after = pic(...said.file)
+      putOn(ratio)(after, said.at)
+      expect([before.style.transform === '', before.style.willChange], `${read.still} ${ratio}`).toEqual([after.style.transform === '', after.style.willChange])
+      sameBox(drawn(before), drawn(after), 1)
+    }
+  })
+
+  it('takes a place for read at the size of its still only within less than one pixel across the narrowest still', () => {
+    expect(loose).toBeLessThan(1 / (Math.min(...table.stills.map((s) => s[1])) + 1))
+    const own: Box = { x: -59.5, y: 0, w: 719, h: 600 }
+    for (const [share, stands] of [[0.9, true], [1.1, false]] as const) {
+      for (const off of [share * loose, -share * loose]) {
+        for (const b of [{ ...own, x: own.x - (off * own.w) / 2, w: own.w * (1 + off) }, { ...own, h: own.h * (1 + off) }, { ...own, y: off * own.h }]) {
+          const img = pic(...midRead.file)
+          readOn(1, 600, 600, [{ still: still('mid'), over: img }])(img, b)
+          sameBox(drawn(img), stands ? own : b, 1)
+        }
+      }
+    }
+  })
+
+  it('leaves a place as it was read wherever the screen does not show the still at half or the whole of its file from the top', () => {
+    const left: [string, Pic, Box][] = [
+      ['the app has spoken', reads(midRead, 1, { said: true }), midRead.at],
+      ['not the top picture of its still', reads(midRead, 1, { top: false }), midRead.at],
+      ['a screen of another height', reads(tallRead), tallRead.at],
+      ['a screen a pixel narrower than a still that fills its width', reads(narrowRead, 2), narrowRead.at],
+      ['a screen a pixel wider than it', reads(widerRead, 2), widerRead.at],
+      ['a file as wide as the still and not as high', reads(midRead, 1, { file: [1438, 1202] }), midRead.at],
+      ['a file that has not arrived', reads(midRead, 1, { file: [0, 0] }), midRead.at],
+    ]
+    for (const ratio of [1.25, 1.5, 1.75, 3, Math.fround(1.1)]) left.push([`${ratio} pixels of the screen for one`, reads(midRead, ratio), midRead.at])
+    for (const ratio of [1.5, 2, 3]) left.push([`a whole file on ${ratio} pixels for one`, reads(hdRead, ratio), hdRead.at])
+    // The largest still is kept at four fifths of its size, and at less where the browser reads no avif.
+    for (const file of [[1229, 1639], [983, 1311]] as const) for (const ratio of [1, 1.5, 2]) left.push([`a file of ${file[0]} pixels across at ${ratio}`, reads(tabletRead, ratio, { file }), tabletRead.at])
+    for (const [what, img, at] of left) {
+      expect(img.style.transform, what).not.toBe('')
+      expect(img.style.willChange, what).toBe('')
+      for (const k of ['x', 'y', 'w', 'h'] as const) expect(drawn(img)[k], `${what} ${k}`).toBeCloseTo(at[k], 9)
+    }
+    const late = left[6]![1]
+    expect(late.heard).toHaveLength(1)
+    arrive(late, ...midRead.file)
+    expect(late.heard).toHaveLength(1)
+    expect(late.style.willChange).toBe('transform')
+    sameBox(drawn(late), { x: -59.5, y: 0, w: 719, h: 600 }, 1)
+  })
+
+  it('reads each top picture against its own still while two stills are in place', () => {
+    const hdOn600: Box = { x: -127.793, y: 1.569, w: 855.587, h: 481.267 }
+    for (const first of [true, false]) {
+      const [old, now] = [pic(...hdRead.file), pic(...midRead.file)]
+      const layers = [{ still: still('hd'), over: old }, { still: still('mid'), over: now }]
+      const put = readOn(1, 600, 600, first ? layers : layers.reverse())
+      put(old, hdOn600)
+      put(now, midRead.at)
+      sameBox(drawn(old), hdOn600)
+      expect(now.style.willChange).toBe('transform')
+      sameBox(drawn(now), { x: -59.5, y: 0, w: 719, h: 600 }, 1)
+    }
+  })
+
+  // A picture thins out toward an edge it does not reach. Read a little small, a still was thinned toward the foot of a screen
+  // it fills, and a thinned picture is never halved in place.
+  it('takes the thinning from a still that stands at its own size and reaches both sides, and from no other', () => {
+    const foot = 'linear-gradient(to top, transparent, #000 1px)'
+    const sides = 'linear-gradient(to left, transparent, #000 60px),linear-gradient(to right, transparent, #000 60px)'
+    expect(reads(midRead, 1, { mask: foot }).style).toMatchObject({ maskImage: '', webkitMaskImage: '', willChange: 'transform' })
+    expect(reads(hdRead, 1, { mask: foot }).style).toMatchObject({ maskImage: '', webkitMaskImage: '', transform: '' })
+    const bare = reads(wideRead, 1, { mask: sides })
+    expect(bare.style).toMatchObject({ maskImage: sides, webkitMaskImage: sides })
+    wholly(bare, { x: 20, y: 0, w: 2560, h: 1080 })
+    for (const read of [narrowRead, widerRead, tallRead]) expect(reads(read, 2, { mask: foot }).style, read.still).toMatchObject({ maskImage: foot, webkitMaskImage: foot })
+    expect(reads(midRead, 1, { mask: foot, said: true }).style).toMatchObject({ maskImage: foot, webkitMaskImage: foot })
+    const mid = still('mid')
+    for (const [ratio, wide, x, thinned] of [[1, 600, 5, true], [1, 600, -124, true], [1, 600, -119, false], [1, 719, 0.09, false], [1, 719, 0.11, true], [1, 719, -0.11, true], [2, 719, 0.04, false], [2, 719, 0.06, true], [2, 719, -0.06, true]] as const) {
+      const img = pic(...midRead.file)
+      img.style.maskImage = img.style.webkitMaskImage = sides
+      readOn(ratio, wide, 600, [{ still: mid, over: img }])(img, { x, y: 0, w: 719, h: 600 })
+      expect(img.style.maskImage, `${ratio} ${wide} ${x}`).toBe(thinned ? sides : '')
+      expect(img.style.webkitMaskImage, `${ratio} ${wide} ${x}`).toBe(thinned ? sides : '')
+    }
+  })
+
+  it('reads the size of the screen from the box of the stills, and from the window where the box gives none', () => {
+    const foot = 'linear-gradient(to top, transparent, #000 1px)'
+    for (const [high, inner, stands] of [[600, 700, true], [0, 600, true], [0, 601, false], [601, 600, false]] as const) {
+      const img = pic(...midRead.file)
+      readOn(1, 600, high, [{ still: still('mid'), over: img }], false, [600, inner])(img, midRead.at)
+      expect(img.style.willChange === 'transform', `${high} ${inner}`).toBe(stands)
+    }
+    for (const [wide, inner, thinned] of [[600, 2000, false], [0, 600, false], [0, 2000, true], [2000, 600, true]] as const) {
+      const img = pic(...midRead.file)
+      img.style.maskImage = img.style.webkitMaskImage = foot
+      readOn(1, wide, 600, [{ still: still('mid'), over: img }], false, [inner, 600])(img, midRead.at)
+      expect(img.style.maskImage, `${wide} ${inner}`).toBe(thinned ? foot : '')
+    }
+  })
+
+  describe('on the whole page, with the files of the stills and the word of the app', () => {
+    type Heard = { kind: string; f: () => void; once: boolean }
+    type Globe = { cx: number; cy: number; r: number }
+    type Screen = { w: number; h: number; ratio?: number; coarse?: boolean; coder?: 'avif' | 'webp' }
+    class Piece {
+      style: Record<string, string> = {}
+      children: Piece[] = []
+      parentNode: Piece | null = null
+      naturalWidth = 0
+      naturalHeight = 0
+      complete = false
+      src = ''
+      clientWidth = 0
+      clientHeight = 0
+      laid?: Box
+      heard: Heard[] = []
+      appendChild(c: Piece): Piece {
+        c.parentNode?.removeChild(c)
+        c.parentNode = this
+        this.children.push(c)
+        return c
+      }
+      insertBefore(c: Piece, before: Piece): Piece {
+        c.parentNode?.removeChild(c)
+        c.parentNode = this
+        this.children.splice(this.children.indexOf(before), 0, c)
+        return c
+      }
+      removeChild(c: Piece): Piece {
+        this.children.splice(this.children.indexOf(c), 1)
+        c.parentNode = null
+        return c
+      }
+      setAttribute(): void {}
+      getBoundingClientRect(): { height: number } {
+        return { height: 0 }
+      }
+      addEventListener(kind: string, f: () => void, how?: { once?: boolean }): void {
+        this.heard.push({ kind, f, once: !!how?.once })
+      }
+      set textContent(_: string) {
+        this.children = []
+      }
+    }
+
+    const files = new Map<string, readonly [number, number]>()
+    beforeAll(async () => {
+      for (const s of table.stills)
+        for (const coder of ['avif', 'webp'] as const) {
+          const m = await sharp(`public/first/${table.season}-${s[0]}.${coder}`).metadata()
+          files.set(`${s[0]}.${coder}`, [m.width ?? 0, m.height ?? 0])
+        }
+    })
+
+    /** Whether a screen answers a media rule of the kind the table asks. */
+    const holds = (rule: string, w: number, h: number, coarse: boolean): boolean =>
+      rule.split(',').some((part) =>
+        part
+          .trim()
+          .split(' and ')
+          .every((term) => {
+            const [name, value = ''] = term
+              .trim()
+              .replace(/^\(|\)$/g, '')
+              .split(':')
+              .map((v) => v.trim())
+            const size = parseFloat(value)
+            if (name === 'min-width') return w >= size
+            if (name === 'max-width') return w <= size
+            if (name === 'min-height') return h >= size
+            if (name === 'max-height') return h <= size
+            if (name === 'orientation') return value === (h >= w ? 'portrait' : 'landscape')
+            if (name === 'pointer') return value === (coarse ? 'coarse' : 'fine')
+            throw new Error(`a media rule this test cannot read: ${term}`)
+          }),
+      )
+
+    const whole = new Function('window', 'document', 'location', script) as (window: object, document: object, location: object) => void
+    const cut = script.slice(script.indexOf('function between(axis, v) {'), script.indexOf('// A still is [name'))
+    const controlsOn = new Function('T', 'window', 'document', 'box', `${cut}\nreturn controls`) as (T: object, window: object, document: object, box: object) => (h: number) => number
+    const said = new Map<string, Globe>()
+    /** Where the app says the glass is, as `placeStill` in src/app/app.ts does: over controls as high as the page takes them to be. */
+    const word = (w: number, h: number, drawnRatio: number, coarse: boolean): Globe => {
+      const bar = controlsOn(table, { matchMedia: (rule: string) => ({ matches: holds(rule, w, h, coarse) }) }, { createElement: () => new Piece() }, new Piece())(h)
+      const aspect = Math.max(2, Math.round(w * drawnRatio)) / Math.max(2, Math.round(h * drawnRatio))
+      const key = `${w} ${h} ${bar} ${aspect}`
+      const known = said.get(key)
+      if (known) return known
+      const globe = framingOfRig(liveRig(aspect, 0, 0, roomUnder(h, bar, w)), w, h).globe
+      said.set(key, globe)
+      return globe
+    }
+
+    /** The page's whole script of the first still, run on a screen: its box of stills, and the files arriving when told to. */
+    const open = (at: Screen) => {
+      const box = new Piece()
+      const size = { w: at.w, h: at.h }
+      const heard = new Map<string, (() => void)[]>()
+      const win = {
+        innerWidth: at.w,
+        innerHeight: at.h,
+        devicePixelRatio: at.ratio ?? 1,
+        firstStill: undefined as undefined | { place(globe: Globe): void; end(): void },
+        matchMedia: (rule: string) => ({ matches: holds(rule, size.w, size.h, !!at.coarse) }),
+        setTimeout: (f: () => void) => (f(), 0),
+        addEventListener: (kind: string, f: () => void) => void heard.set(kind, [...(heard.get(kind) ?? []), f]),
+        removeEventListener: (kind: string, f: () => void) => void heard.set(kind, (heard.get(kind) ?? []).filter((g) => g !== f)),
+      }
+      box.clientWidth = at.w
+      box.clientHeight = at.h
+      whole(win, { getElementById: (id: string) => (id === 'first' ? box : null), createElement: () => new Piece() }, { search: '' })
+      const stills = (): Piece[] => {
+        const out: Piece[] = []
+        const walk = (p: Piece): void => {
+          if (p.src.startsWith('first/')) out.push(p)
+          p.children.forEach(walk)
+        }
+        walk(box)
+        return out
+      }
+      return {
+        box,
+        stills,
+        /** The picture that lies over all others. */
+        top: (): Piece => box.children.at(-1)!.children.at(-1)!.children[1]!,
+        arrive: (): void => {
+          for (const img of stills()) {
+            if (img.complete) continue
+            const [wide, high] = files.get(`${shapeOf(img)}.${at.coder ?? 'avif'}`)!
+            Object.assign(img, { naturalWidth: wide, naturalHeight: high, complete: true })
+            const now = img.heard.filter((l) => l.kind === 'load')
+            img.heard = img.heard.filter((l) => l.kind !== 'load' || !l.once)
+            for (const l of now) l.f()
+          }
+        },
+        resize: (w: number, h: number): void => {
+          size.w = box.clientWidth = win.innerWidth = w
+          size.h = box.clientHeight = win.innerHeight = h
+          for (const f of heard.get('resize') ?? []) f()
+        },
+        speak: (drawnRatio = at.ratio ?? 1): void => win.firstStill!.place(word(size.w, size.h, drawnRatio, !!at.coarse)),
+      }
+    }
+    const shapeOf = (img: Piece): string => /^first\/\w+-(\w+)\./.exec(img.src)![1]!
+    const inTable = (name: string): Still => table.stills.find((s) => s[0] === name)!
+    const kindOf = (img: Piece): 'whole' | 'halved' | 'moved' => (img.style.transform === '' ? 'whole' : img.style.willChange === 'transform' ? 'halved' : 'moved')
+    const apart = (a: Box, b: Box): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y), Math.abs(a.x + a.w - b.x - b.w), Math.abs(a.y + a.h - b.y - b.h))
+    /** How far a place is, as a share, from the size its still was drawn for from the top: what `put` reads. */
+    const offOf = (b: Box, s: Still): number => Math.max(Math.abs(b.w / s[1] - 1), Math.abs(b.h / s[2] - 1), Math.abs(b.y) / s[2])
+
+    it('reads the page with the script and the heights of the controls it was written with', () => {
+      expect(cut).toContain('function controls(h) {')
+      expect(files.size).toBe(2 * table.stills.length)
+      for (const [name, size] of files) expect(Math.min(...size), name).toBeGreaterThan(0)
+      expect(word(1280, 720, 1, true).r).toBeLessThan(word(1280, 720, 1, false).r)
+    })
+
+    it('stands a still at the size it was drawn for before the app has spoken, and the word of the app leaves it there', () => {
+      for (const [at, name, kind] of [
+        [{ w: 600, h: 600 }, 'mid', 'halved'],
+        [{ w: 600, h: 600, ratio: 2 }, 'mid', 'whole'],
+        [{ w: 1800, h: 1080 }, 'hd', 'whole'],
+        [{ w: 369, h: 590, coarse: true }, 'phone590', 'halved'],
+        [{ w: 369, h: 590, ratio: 2, coarse: true }, 'phone590', 'whole'],
+      ] as const)
+        for (const coder of ['avif', 'webp'] as const) {
+          const what = `${at.w} x ${at.h} at ${'ratio' in at ? at.ratio : 1}, ${coder}`
+          const s = inTable(name)
+          const own: Box = { x: (at.w - s[1]) / 2, y: 0, w: s[1], h: s[2] }
+          const page = open({ ...at, coder })
+          const img = page.top()
+          expect(shapeOf(img), what).toBe(name)
+          const read = { ...img.laid! }
+          expect(offOf(read, s), what).toBeGreaterThan(0)
+          sameBox(drawn(img), read)
+          page.arrive()
+          expect(kindOf(img), what).toBe(kind)
+          sameBox(drawn(img), own, 1)
+          expect([img.style.maskImage, img.style.webkitMaskImage], what).toEqual(['', ''])
+          page.speak()
+          expect(kindOf(img), what).toBe(kind)
+          expect(apart(drawn(img), own) * ('ratio' in at ? at.ratio : 1), what).toBeLessThan(near)
+          expect([img.style.maskImage, img.style.webkitMaskImage], what).toEqual(['', ''])
+          const spoken = open({ ...at, coder })
+          spoken.speak()
+          spoken.arrive()
+          expect(spoken.top().style, what).toEqual(img.style)
+        }
+    })
+
+    it('keeps the thinning toward the sides of a screen wider than the still, the same as the word of the app lays it', () => {
+      const page = open({ w: 2600, h: 1080 })
+      const img = page.top()
+      page.arrive()
+      wholly(img, { x: 20, y: 0, w: 2560, h: 1080 })
+      const mask = img.style.maskImage
+      expect(mask).toMatch(/^linear-gradient\(to (left|right), transparent, #000 \d+px\),linear-gradient\(to (left|right), transparent, #000 \d+px\)$/)
+      expect(img.style.webkitMaskImage).toBe(mask)
+      const under = page.stills().length
+      expect(under).toBeGreaterThan(1)
+      page.speak()
+      expect(kindOf(img)).toBe('whole')
+      expect(apart(drawn(img), { x: 20, y: 0, w: 2560, h: 1080 })).toBeLessThan(near)
+      expect(img.style.maskImage).toBe(mask)
+      expect(page.stills()).toHaveLength(under)
+    })
+
+    it('leaves a still as the table reads it on a screen a pixel off the one it was drawn for', () => {
+      for (const at of [{ w: 389, h: 844, ratio: 2, coarse: true }, { w: 391, h: 844, ratio: 2, coarse: true }, { w: 600, h: 601 }, { w: 600, h: 599 }] as const) {
+        const page = open(at)
+        const img = page.top()
+        const read = { ...img.laid! }
+        page.arrive()
+        expect(kindOf(img), `${at.w} x ${at.h}`).toBe('moved')
+        sameBox(drawn(img), read)
+        sameBox(img.laid!, read)
+      }
+    })
+
+    it('stands the still of a new shape of screen when its file arrives, as the one before it is taken away', () => {
+      const page = open({ w: 1800, h: 1080 })
+      page.arrive()
+      page.speak()
+      const old = page.top()
+      expect(kindOf(old)).toBe('whole')
+      page.resize(600, 600)
+      const img = page.top()
+      expect(page.box.children).toHaveLength(2)
+      expect([shapeOf(old), shapeOf(img)]).toEqual(['hd', 'mid'])
+      expect([kindOf(old), kindOf(img)]).toEqual(['moved', 'moved'])
+      page.arrive()
+      expect(page.box.children).toHaveLength(1)
+      expect(page.top()).toBe(img)
+      expect(kindOf(img)).toBe('halved')
+      sameBox(drawn(img), { x: -59.5, y: 0, w: 719, h: 600 }, 1)
+      page.speak()
+      expect(kindOf(img)).toBe('halved')
+      expect(apart(drawn(img), { x: -59.5, y: 0, w: 719, h: 600 })).toBeLessThan(near)
+      // The word of the app is for one shape of screen: on the next the table is read again.
+      page.resize(620, 600)
+      expect(page.top()).toBe(img)
+      expect(kindOf(img)).toBe('halved')
+      sameBox(drawn(img), { x: -49.5, y: 0, w: 719, h: 600 }, 1)
+      page.resize(620, 601)
+      expect(kindOf(img)).toBe('moved')
+    })
+
+    // Every width at every height a still was drawn for, with a mouse and with a finger, on screens of one and of two pixels
+    // for one of the page's, the app drawing at each size its levels allow. The table is kept about a thousandth of the
+    // height from the app, which moves a still on a screen as high as its own by well under four times `LOOSE` of its size:
+    // the app is asked wherever a still is read nearer than that.
+    it('shows a still the way the app means it before the app has spoken, wherever that is at half or the whole of its file', () => {
+      const caps = levels.map((l) => l.pixelRatioCap)
+      const heights = [...new Set(table.stills.map((s) => s[2]))]
+      const wrong: string[] = []
+      const meant = new Set<string>()
+      let need = 0
+      for (const s of table.stills) expect((1e-3 * Math.max(1e5, Number(s[3]) + Number(s[4]))) / Number(s[4]), s[0]).toBeLessThan(4 * loose)
+      for (const coder of ['avif', 'webp'] as const)
+        for (const h of heights) {
+          const other = table.stills.some((s) => s[2] === h && `${files.get(`${s[0]}.webp`)}` !== `${files.get(`${s[0]}.avif`)}`)
+          if (coder === 'webp' && !other) continue
+          for (let w = 200; w <= 3200; w++)
+            for (const coarse of [false, true])
+              for (const ratio of [1, 2]) {
+                const page = open({ w, h, ratio, coarse, coder })
+                const img = page.top()
+                const s = inTable(shapeOf(img))
+                const read = { ...img.laid! }
+                page.arrive()
+                const before = { at: drawn(img), kind: kindOf(img), mask: img.style.maskImage }
+                if (offOf(read, s) >= 4 * loose && apart(before.at, read) * ratio < near / 2) continue
+                const file = files.get(`${s[0]}.${coder}`)!
+                for (const drawnRatio of new Set(caps.map((cap) => Math.min(ratio, cap)))) {
+                  const what = `${s[0]} on ${w} x ${h} ${coarse ? 'coarse' : 'fine'} at ${ratio}, drawn at ${drawnRatio}, ${coder}`
+                  page.speak(drawnRatio)
+                  const after = { at: drawn(img), kind: kindOf(img), mask: img.style.maskImage }
+                  const to = img.laid!
+                  const ofFile = (n: number): boolean => Math.abs(after.at.w * ratio * n - file[0]) < near * n * 2 && Math.abs(after.at.h * ratio * n - file[1]) < near * n * 2
+                  if (apart(before.at, to) * ratio > apart(read, to) * ratio + near) wrong.push(`${what}: further from the app than as read`)
+                  if (after.kind === 'moved' || !(ofFile(1) || ofFile(2))) continue
+                  meant.add(s[0])
+                  need = Math.max(need, offOf(read, s))
+                  if (before.kind !== after.kind || apart(before.at, after.at) * ratio >= near) wrong.push(`${what}: ${before.kind} ${JSON.stringify(before.at)} and then ${after.kind} ${JSON.stringify(after.at)}`)
+                  const sides = (mask: string): string => (mask.match(/linear-gradient\(to (left|right)[^)]*\)/g) ?? []).join()
+                  const rest = before.mask.replace(/linear-gradient\(to (left|right)[^)]*\),?/g, '').replace(/,$/, '')
+                  if (sides(before.mask) !== sides(after.mask) || !['', 'linear-gradient(to top, transparent, #000 1px)'].includes(rest)) wrong.push(`${what}: thinned ${before.mask} and then ${after.mask}`)
+                }
+              }
+        }
+      expect(wrong.slice(0, 20)).toEqual([])
+      expect(wrong).toHaveLength(0)
+      expect(need).toBeLessThan(loose)
+      const shown = table.stills.filter((s) => ['avif', 'webp'].some((coder) => [1, 2, 4].includes(files.get(`${s[0]}.${coder}`)![0] / s[1])))
+      expect(shown.length).toBeGreaterThan(table.stills.length / 2)
+      expect([...meant].sort()).toEqual(shown.map((s) => s[0]).sort())
+    }, 600_000)
   })
 })
