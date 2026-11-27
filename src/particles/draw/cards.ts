@@ -28,8 +28,21 @@ vec3 cardRestLight(float u, float scene, float own) {
  * axis on the picture and the depth parts of the other two (vL1), the sheet's facing in view space and the storm
  * share (vL2), the particle's own numbers (vL3), and its bends and radius (vL4).
  */
+/** A clock's own numbers (looks.ts, CARD.clock), in the vertex and in the pixel alike, so the two agree on which head is a stout one. */
+const CLOCK_HASH = `/** Three numbers of its own for each hair of a clock, and for the clock itself: whole numbers in, so they are the same on every machine and in every pixel of the card. */
+vec3 cardHairHash(uint id) {
+  uvec3 v = uvec3(id) * uvec3(1664525u, 22695477u, 747796405u) + uvec3(1013904223u, 12345u, 2891336453u);
+  v ^= v >> 15u;
+  v *= 2246822519u;
+  v ^= v >> 13u;
+  v *= 3266489917u;
+  v ^= v >> 16u;
+  return vec3(v >> 8u) / 16777216.0;
+}
+`
+
 export const CARD_VERT_PARS = `${REST_LIGHT}
-uniform vec4 uKindWay[${MAX_KINDS}];
+${CLOCK_HASH}uniform vec4 uKindWay[${MAX_KINDS}];
 /** Where the bats are in the globe's own frame, and each one's radius in millimetres (0: no bat). */
 uniform vec4 uBat[${BATS}];
 /** 1 where each particle is drawn once and whole (the app), 0 where the film's samples draw it many times over. */
@@ -204,7 +217,7 @@ export const CARD_VERT = `
           float atK = depth + ${n(CARD.clock.depthVary)} * (fract(h.w * 113.0) * 2.0 - 1.0);
           float midK = smoothstep(${n(CARD.clock.farAt[0])}, ${n(CARD.clock.farAt[1])}, atK);
           float nearK = smoothstep(${n(CARD.clock.nearAt[0])}, ${n(CARD.clock.nearAt[1])}, atK) * (1.0 - sceneC);
-          rC = mix(rC, look.y * uPoint.y * mag / zImg * shrink * mix(mix(${n(CARD.clock.mm[0])}, ${n(CARD.clock.mm[1])}, midK), ${n(CARD.clock.mm[2])}, nearK) * mix(${n(CARD.clock.vary[0])}, ${n(CARD.clock.vary[1])}, fract(vary * 7.0)) * mix(${n(CARD.clock.goSize)}, 1.0, wholeC), clockC);
+          rC = mix(rC, look.y * uPoint.y * mag / zImg * shrink * mix(mix(${n(CARD.clock.mm[0])}, ${n(CARD.clock.mm[1])}, midK), ${n(CARD.clock.mm[2])} * mix(1.0, ${n(CARD.clock.stoutMm)}, step(cardHairHash((pid & 4095u) * 64u + 63u).y, ${n(CARD.clock.warmShare)})), nearK) * mix(${n(CARD.clock.vary[0])}, ${n(CARD.clock.vary[1])}, fract(vary * 7.0)) * mix(${n(CARD.clock.goSize)}, 1.0, wholeC), clockC);
           seedSoft = mix(seedSoft, closeC * mix(mix(${n(CARD.clock.softPx[0])}, ${n(CARD.clock.softPx[1])}, midK), ${n(CARD.clock.softPx[2])}, nearK), clockC);
           keepC *= mix(1.0, mix(mix(${n(CARD.clock.classSeen[0])}, ${n(CARD.clock.classSeen[1])}, midK), ${n(CARD.clock.classSeen[2])}, nearK), clockC);
           seedNear = mix(seedNear, nearK, clockC);
@@ -668,17 +681,7 @@ export const CARD_FRAG_PARS = `${REST_LIGHT}
 /** The down of the seeds' heads: every form at every lean, drawn once at start (down.ts). */
 uniform sampler2D uDown;
 uniform vec4 uPoint;
-/** Three numbers of its own for each hair of a clock, and for the clock itself: whole numbers in, so they are the same on every machine and in every pixel of the card. */
-vec3 cardHairHash(uint id) {
-  uvec3 v = uvec3(id) * uvec3(1664525u, 22695477u, 747796405u) + uvec3(1013904223u, 12345u, 2891336453u);
-  v ^= v >> 15u;
-  v *= 2246822519u;
-  v ^= v >> 13u;
-  v *= 3266489917u;
-  v ^= v >> 16u;
-  return vec3(v >> 8u) / 16777216.0;
-}
-/** One ring of a clock's hairs (looks.ts, CARD.clock): the three hairs about the pixel's own angle, each a line that fades toward its tip and ends in a tuft, or the mean of them all where they stand closer than a hair is wide. The share told of the ring's light stands as hairs that are told apart and the rest as the mean. */
+${CLOCK_HASH}/** One ring of a clock's hairs (looks.ts, CARD.clock): the three hairs about the pixel's own angle, each a line that fades toward its tip and ends in a tuft, or the mean of them all where they stand closer than a hair is wide. The share told of the ring's light stands as hairs that are told apart and the rest as the mean. */
 float cardClockRing(float th, float r, float u, float R, float n, uint id, float turn, float v, float thin, float vT, float thinT, vec2 weight, vec2 span, float tip, float fall, float told) {
   float stepK = 6.2831853 / n;
   float i0 = floor(th / stepK + 0.5);
@@ -1080,7 +1083,7 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
       float thinT = (pxK + tipK * tipK) / vT;
       uint headK = uint(floor(vKind.z)) * 64u;
       float turnK = 6.2831853 * ownK.z;
-      float strongK = cardClockRing(thK, rK, uK, RK, nK, headK, turnK, vK, thinK, vT, thinT, vec2(${n(CARD.clock.weight[0])}, ${n(CARD.clock.weight[1])}), vec2(${n(CARD.clock.long[0])}, ${n(CARD.clock.long[1])}), ${n(CARD.clock.tip)}, ${n(CARD.clock.fall)}, mix(${n(CARD.clock.told[0])}, ${n(CARD.clock.told[1])}, warmK));
+      float strongK = cardClockRing(thK, rK, uK, RK, nK, headK, turnK, vK, thinK, vT, thinT, vec2(${n(CARD.clock.weight[0])}, ${n(CARD.clock.weight[1])}), vec2(${n(CARD.clock.long[0])}, ${n(CARD.clock.long[1])}), mix(${n(CARD.clock.tip)}, ${n(CARD.clock.stoutTip)}, warmK), mix(${n(CARD.clock.fall)}, ${n(CARD.clock.stoutFall)}, warmK), mix(${n(CARD.clock.told[0])}, ${n(CARD.clock.told[1])}, warmK));
       float downK = 0.0;
       float inK = smoothstep(${n(CARD.clock.downFrom[0])}, ${n(CARD.clock.downFrom[1])}, uK);
       if (inK > 0.0) downK = inK * cardClockRing(thK + 3.14159265 / nK, rK, uK, RK, nK, headK + ${CARD.clock.hairsMost}u, turnK + 2.0, vD, thinD, vT, thinT, vec2(${n(CARD.clock.downWeight[0])}, ${n(CARD.clock.downWeight[1])}), vec2(${n(CARD.clock.downLong[0])}, ${n(CARD.clock.downLong[1])}), ${n(CARD.clock.downTip)}, ${n(CARD.clock.downFall)}, mix(${n(CARD.clock.downTold[0])}, ${n(CARD.clock.downTold[1])}, warmK));

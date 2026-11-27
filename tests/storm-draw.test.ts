@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { CARD_FRAG_PARS, CARD_VERT } from '../src/particles/draw/cards'
+import { CARD_FRAG_PARS, CARD_VERT, CARD_VERT_PARS } from '../src/particles/draw/cards'
 import { CARD, PIXEL_SIGMA2, SEED_RESTS, SHAPE, STORM_FLOOD, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC, SUMMER_EDGE, lookOf } from '../src/particles/draw/looks'
 import { seatsOn } from '../src/particles/draw/points'
 import { VERT_MAIN } from '../src/particles/draw/shader'
@@ -415,6 +415,15 @@ describe('how the storm is drawn', () => {
     expect(clock.white).toBeLessThanOrEqual(1.1)
     expect(clock.stoutWhite).toBeGreaterThan(clock.white)
     expect(clock.warmShare).toBeLessThanOrEqual(1)
+    // a stout near head is the larger, by the head's own whole number, which the vertex and the pixel read alike, and its hairs are bold at the hub and taper to a small tuft
+    expect(clock.stoutMm).toBeGreaterThan(1)
+    expect(clock.stoutMm).toBeLessThanOrEqual(1.5)
+    expect(clock.stoutFall).toBeLessThan(clock.fall)
+    expect(clock.stoutTip).toBeLessThan(clock.tip)
+    expect(CARD_VERT_PARS).toContain('vec3 cardHairHash(uint id)')
+    expect(CARD_VERT).toContain('step(cardHairHash((pid & 4095u) * 64u + 63u).y, ')
+    expect(CARD_VERT).toContain('float(pid & 4095u) + 0.01')
+    expect(CARD_FRAG_PARS).toContain('ownK = cardHairHash(uint(floor(vKind.z)) * 64u + 63u);')
     // the look is whole in the calm and gone at the storm's full level, where a head is drawn as it was
     expect(clock.stormOff[0]).toBeLessThan(clock.stormOff[1])
     expect(clock.stormOff[1]).toBeLessThanOrEqual(0.99)
