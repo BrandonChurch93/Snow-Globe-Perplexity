@@ -75,7 +75,7 @@ const mossAt = (x, z) => {
 }
 
 {
-  const rings = 110
+  const rings = 100
   const around = 320
   const skirt = 8
   const r = L.innerRadiusMm - 0.6
