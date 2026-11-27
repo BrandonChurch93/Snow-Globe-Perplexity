@@ -3,7 +3,7 @@ import { crownOffset, foot, limbs, padAxes, type Limb, type Pad } from '../../..
 import type { Vec3 } from '../../kit'
 import { lanterns, stringEnds } from './lanterns'
 
-// The crown is six domes of unlike size that overlap, each made of a few rounded clumps. A clump is a dome of leaf over a shallow
+// The crown is domes of unlike size with sky between them, each made of a few rounded clumps. A clump is a dome of leaf over a shallow
 // belly: `at` is the middle of its underside, `size` the clump's half width, its height and its half depth (millimetres, in the
 // trunk's own frame) and `dir` the way it stands. Lumps stand proud of the dome and make its lobes; small ones hang under it, some
 // lower than others (`underDrop`), and break the underside into unequal lobes.
@@ -31,52 +31,51 @@ const hung = (x: number, hs: number, z: number, size: Pad['size'], lx = 0): Clum
 }
 
 export const clumps: readonly Clump[] = [
-  // Six domes of unlike size that overlap. Each is one large body, so that its top is one curve and its underside a shallower one
-  // that rises toward its edges. The top dome is the largest: its peak stands a little left of the middle, and a shoulder at its
-  // right runs down to the right dome.
+  // Domes of unlike size with sky between them. Each is one large body, so that its top is one curve and its underside a shallower
+  // one that rises toward its edges. The top dome is the largest: its peak stands a little left of the middle, and a shoulder at
+  // its right runs down to the right dome.
   seen(-1.6, 37.4, 0.3, [5.4, 4.9, 4.2]),
   seen(5.0, 35.0, 1.2, [3.6, 3.2, 3.4], 0.12),
-  // Its left shoulder. The slit under the upper left dome closes against it.
-  seen(-4.9, 36.6, 1.4, [2.4, 3.2, 3.0], -0.08),
-  // The upper left dome, and a small body behind and under it.
-  seen(-9.6, 36.8, 1.8, [3.6, 1.8, 2.8], -0.2),
+  // Its left shoulder. The band of sky under the upper left dome closes against it.
+  seen(-4.9, 37.0, 1.4, [2.4, 3.0, 3.0], -0.08),
+  // The upper left dome, a flat pad that stands clear over the large left dome, and a small body behind and under it.
+  seen(-9.6, 38.6, 1.8, [3.6, 1.2, 2.8], -0.2),
   seen(-9.6, 29.8, -2.2, [1.6, 1.2, 1.6]),
   // The right dome: an inner lobe and the body, whose right end droops onto the dome under it.
-  seen(6.4, 32.2, 2.8, [2.6, 2.6, 2.8], 0.05),
-  seen(10.3, 31.8, 2.2, [3.7, 2.7, 3.4], 0.18),
-  seen(13.0, 28.4, 1.8, [1.7, 2.4, 2.0], 0.3),
-  // The large left dome, which reaches farthest out, and its inner end by the stem. A slit parts it from the dome above.
-  seen(-10.4, 30.2, 2.9, [5.9, 1.0, 2.9], -0.06),
-  seen(-4.8, 29.4, 2.6, [1.9, 3.4, 2.4], 0.1),
-  // The low left dome, over the left limb, and a smaller one that climbs toward the stem. A slit parts them from the large dome:
-  // it closes at the smaller dome's inner end, and a bough runs in it.
-  seen(-13.6, 21.6, 2.4, [3.6, 1.8, 2.6], -0.08),
-  seen(-6.6, 23.9, 3.6, [3.0, 1.3, 2.0], -0.1),
-  // A low lobe at the right of the fork, in front of the stem.
-  seen(2.8, 25.2, 3.2, [1.9, 1.0, 1.8]),
+  seen(6.2, 33.5, 2.8, [2.6, 1.9, 2.8], 0.05),
+  seen(10.3, 33.3, 2.2, [3.7, 1.9, 3.4], 0.18),
+  seen(13.8, 28.2, 1.8, [1.4, 3.4, 2.0], 0.3),
+  // The large left dome, a flat pad that reaches farthest out, and its inner end by the stem. A band of sky some five millimetres
+  // high parts it from the dome above.
+  seen(-10.4, 30.2, 2.9, [5.9, 0.8, 2.9], -0.06),
+  seen(-4.9, 29.4, 2.6, [1.3, 2.2, 2.3], 0.1),
+  // The low left dome, over the left limb, a smaller one that climbs toward the stem and a mound on its inner end. A band of sky
+  // parts them from the large dome: it closes at the mound, and a bough runs in it.
+  seen(-13.3, 20.9, 2.4, [3.9, 1.3, 2.6], -0.08),
+  seen(-6.2, 22.8, 3.6, [3.3, 1.2, 2.0], -0.1),
+  seen(-4.3, 24.9, 3.2, [1.4, 1.3, 1.8]),
+  // A low lobe at the right of the fork, in front of the stem. It and the mound stand close across the stem; the sky over them,
+  // on both sides of the stem and up to the bodies of the middle, is the crown's largest opening.
+  seen(2.4, 24.6, 3.2, [2.1, 1.0, 1.8]),
   // The low right dome. Its underside rises toward the fork, so that the boughs under it stand clear, and its right end hangs as a
   // smaller dome that holds the twig of the last lanterns.
-  seen(9.0, 23.3, 2.8, [4.6, 2.0, 3.9], 0.25),
+  seen(9.0, 22.5, 2.8, [4.6, 1.8, 3.9], 0.25),
   seen(14.3, 19.6, 2.8, [2.2, 2.2, 2.9], 0.1),
-  // Bodies behind and over the stem that fill the middle of the crown, above the holes by the fork.
-  seen(0.5, 33.6, -0.6, [4.8, 3.6, 3.3]),
-  seen(-0.6, 31.7, 3.4, [3.2, 2.4, 2.6]),
+  // Bodies behind and over the stem that fill the middle of the crown, above the opening by the fork.
+  seen(0.5, 34.9, -0.6, [4.8, 2.8, 3.3]),
+  seen(-0.6, 34.3, 3.4, [3.2, 1.4, 2.6]),
   seen(5.8, 24.6, -2.2, [2.0, 1.4, 2.4], 0.1),
-  // Lobes that hang, each a rounded body. One droops from the left end of the large left dome onto the low one, so that the slit
-  // between them closes before the outline.
-  hung(-14.9, 27.6, 3.0, [1.8, 2.8, 2.0]),
-  // One from the right dome's inner lobe down to the low right dome: it parts the hole at the right of the stem from the one
-  // farther right.
-  hung(5.0, 31.2, 3.6, [1.5, 3.0, 1.8]),
+  // Lobes that hang, each a rounded body. One droops from the left end of the large left dome onto the low one and one from the
+  // left end of the upper left dome onto the large one, so that each band of sky closes before the outline.
+  hung(-15.6, 27.6, 3.0, [1.3, 3.8, 2.0]),
+  hung(-14.1, 37.6, 2.2, [1.2, 4.7, 1.6]),
+  // One from the right dome's inner lobe down to the low right dome: it parts the opening by the stem from the window farther
+  // right.
+  hung(5.0, 31.2, 3.6, [1.4, 3.6, 1.8]),
   // The last three hold the ends of limbs in leaf: under the low left dome, under the low right dome and under its right end.
   hung(-13.6, 21.2, -0.4, [1.6, 1.8, 1.8]),
   hung(8.6, 23.0, 2.4, [1.5, 2.8, 1.8]),
   hung(14.3, 19.6, 4.0, [1.7, 2.3, 1.9]),
-  // Two bodies that stand behind the slits, in the shade of the domes, one behind the inner half of the upper slit and one behind
-  // the outer half of the lower: there the eye meets dark leaf through the slit and not the sky, so that no slit is a strip of sky
-  // from side to side.
-  seen(-7.0, 32.6, -1.4, [1.9, 2.0, 1.4]),
-  seen(-11.2, 25.0, 0.4, [2.0, 1.6, 1.2]),
 ]
 
 const frames = clumps.map((k) => ({ at: k.at, a: k.size[0], t: k.size[1], c: k.size[2], grain: Math.min(1, Math.max(0.35, Math.sqrt(k.size[0] * k.size[2]) / FULL.grain)), ...padAxes(k) }))
@@ -173,7 +172,7 @@ const knobs = (x: number, h: number, z: number): number => {
 // Notches through the crown, as the hero camera sees it: each is an ellipse in the plane that faces the camera (its middle, its half
 // width and half height in millimetres, and its tilt in degrees) and runs straight through along the line of sight, which climbs by
 // PITCH for every millimetre toward the camera. The sprigs on their walls close about a millimetre of each side. None is cut now:
-// the slits between the domes and the holes by the fork are what the clumps leave between them.
+// the bands of sky between the domes and the openings by the fork are what the clumps leave between them.
 export const holes: readonly (readonly [number, number, number, number, number])[] = []
 
 const cuts = holes.map((o) => ({ x: o[0], h: o[1], a: o[2], b: o[3], cos: Math.cos((o[4] * Math.PI) / 180), sin: Math.sin((o[4] * Math.PI) / 180) }))
