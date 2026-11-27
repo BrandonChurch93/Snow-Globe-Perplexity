@@ -649,7 +649,9 @@ export const CARD_VERT = `
     clip.xy -= holdC * vec2(projectionMatrix[0][0], projectionMatrix[1][1]) * (clip.w / uPoint.y);
     if (${at(SHAPE.seed)} && on > 0.5 && !laidB && !glowB) {
       // The glass's fade at its edge looks at where a particle's centre stands, and that is enough for a flake or a mote. A seed is wider than that: its down stands at the end of its stalk, up to nearly two of its own radii from its centre, and a stroke of the storm runs on for half its length. So a seed near the wall is drawn further in by what would have stood past the ball's outline: no hair, stalk or stroke is drawn in the room.
-      vec2 fromS = (view.xy / -view.z - centreV.xy / -centreV.z) * uPoint.y - holdC;
+      // The film looks through another place of its lens in every sample, and a clock stands at one place in all of them (shader.ts, lensC). The ball's middle does not: taken as each sample sees it, a head by the wall was drawn in by another length in every sample, and stood as many times as the frame has samples, a few pixels apart (seen at the right rim in the film's close camera once the near heads were let in). So the middle is moved here by the share the head itself is moved by; in the storm, from the level at which the clocks' look is gone (looks.ts, CARD.clock.stormOff), it is as it was.
+      vec2 midS = (centreV.xy + uAperture.xy * (lensC * (1.0 - smoothstep(${n(CARD.clock.stormOff[0])}, ${n(CARD.clock.stormOff[1])}, uStorm.x)))) / -centreV.z;
+      vec2 fromS = (view.xy / -view.z - midS) * uPoint.y - holdC;
       float isS = length(fromS);
       vec2 dirS = fromS / max(isS, 1e-3);
       float outS;

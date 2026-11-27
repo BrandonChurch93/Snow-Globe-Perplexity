@@ -407,6 +407,10 @@ describe('how the storm is drawn', () => {
     // a clock stands at one place in every sample of the film's lens, so a hair is one line and a tuft one dot
     expect(clock.lensFilm).toBe(1)
     expect(VERT_MAIN).toContain(`if (abs(shape - ${SHAPE.seed.toFixed(1)}) < 0.5 && uStorm.x < ${clock.stormOff[1]}) lensShare = mix(`)
+    // and a clock by the wall too: the ball's middle it is drawn in from is moved by the head's own share of the lens, so it is drawn in by one length in every sample; from the storm's level at which the clocks' look is gone the middle is each sample's own, as the storm was drawn before
+    expect(CARD_VERT).toContain(`vec2 midS = (centreV.xy + uAperture.xy * (lensC * (1.0 - smoothstep(${clock.stormOff[0]}, ${clock.stormOff[1]}, uStorm.x)))) / -centreV.z;`)
+    expect(CARD_VERT).toContain('vec2 fromS = (view.xy / -view.z - midS) * uPoint.y - holdC;')
+    expect(CARD_VERT).not.toContain('vec2 fromS = (view.xy / -view.z - centreV.xy / -centreV.z)')
     // a head hangs near upright and rocks by less than the angle between two hairs of a ring
     expect(clock.rock).toBeLessThan((2 * Math.PI) / clock.hairsMost)
     expect(clock.lean).toBeLessThan(1)
