@@ -1,0 +1,31 @@
+Looks of `controls_finisher`, branch `agent/p6-steps`. Four pictures. None is a render of a tier: each is the live page
+at `?quality=low`, drawn by the software renderer of the VM (lavapipe), as `tools/visit.mjs` pictured it. BEFORE is main
+`38eff8da` (my last walk of main, Nov 26, on the looks branch `agent/p6-controls-looks` under `walk-f/`). AFTER is
+`eb7db90d`: `agent/p6-steps` at `75e5403f` with main `d13d29c6` merged in, walked Nov 27 from 04:55 to 05:30 UTC. Between
+the two lie the steps, the hand, the governor line and the two late mends of this branch, and every push of the other
+builders up to chain 15. The pictures are states. Nothing in them shows how the page moves.
+
+walk-eb7d/hd-first-look-before-after.jpg
+  Shows: the first look of the page on the wide layout, 1920 x 1080 (step 16 of the walk).
+  State: left column BEFORE, right column AFTER. Top: the first thing painted, the small first still, out of focus.
+  Middle: the first still in focus. Bottom: the live picture with the controls come in.
+  AFTER in numbers: the still seen 0.79 s after the address was asked for, in focus at 1.61 s, the live picture whole at
+  40.8 s on this machine; the still and the live picture lie 0 px apart. Tier: none.
+
+walk-eb7d/hd-rest-before-after.jpg
+  Shows: winter at rest with the controls, wide layout, 1920 x 1080.
+  State: top BEFORE, at rest after the first look. Bottom AFTER, at rest after the hint has pulsed once (step 1,
+  `03-hint-after.png`). The controls lie where they lay: the Shake control at 900, 1006, 120 x 46, the marks 44 x 44.
+  Tier: none.
+
+walk-eb7d/phone-rest-landed-before-after.jpg
+  Shows: the phone layout, 390 x 844, at rest in winter and just landed in spring.
+  State: from the left: winter at rest BEFORE; winter at rest AFTER; spring just landed BEFORE; spring just landed
+  AFTER (after a press on Shake, the bar dimmed to its floor of 60 percent in both). Spring itself looks different
+  because of the other builders' pushes since, not because of this branch. The Shake control at 132, 748, 127 x 50, the
+  marks 48 x 48. Tier: none.
+
+walk-eb7d/tablet-rest-before-after.jpg
+  Shows: winter at rest with the controls, tablet layout, 1024 x 1366.
+  State: left BEFORE, right AFTER (step 1, after the hint). The Shake control at 446, 1280, 132 x 52, the marks 48 x 48.
+  Tier: none.

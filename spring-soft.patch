@@ -1,0 +1,44 @@
+diff --git a/src/scene/stage.ts b/src/scene/stage.ts
+index 2abd01de..967c0055 100644
+--- a/src/scene/stage.ts
++++ b/src/scene/stage.ts
+@@ -302,6 +302,8 @@ export class GlobeStage implements Stage {
+       ),
+     )
+     await Promise.all(linked)
++    // What a mesh draws aside before its own draw is linked here too, or the first shake into the season waits for it.
++    await run(meshes.flatMap((d) => (typeof d.userData.warm === 'function' ? [() => aside(like, () => (d.userData.warm as (r: THREE.WebGLRenderer) => void)(renderer))] : [])))
+ 
+     const pictures = new Set<THREE.Texture>([s.grid])
+     for (const e of this.assets.entries(season)) if (e.picture && hasTexture(e.name)) pictures.add(texture(e.name))
+diff --git a/src/seasons/spring/glass.ts b/src/seasons/spring/glass.ts
+index 4672821b..17bbeb02 100644
+--- a/src/seasons/spring/glass.ts
++++ b/src/seasons/spring/glass.ts
+@@ -733,6 +733,18 @@ function soften(renderer: THREE.WebGLRenderer, target: THREE.WebGLRenderTarget,
+   behindUniforms.uSoft.value = soft.texture
+ }
+ 
++const warmTo = new THREE.WebGLRenderTarget(1, 1, { depthBuffer: false, stencilBuffer: false })
++
++/** The soft copy's program, linked while the picture rests: linked at its first use, it held the first shake into spring. */
++function warmSoft(renderer: THREE.WebGLRenderer): void {
++  softPass ??= new Pass(SOFT, softUniforms)
++  const bound = renderer.getRenderTarget()
++  const drawn = { ...renderer.info.render }
++  softPass.render(renderer, warmTo)
++  renderer.setRenderTarget(bound)
++  Object.assign(renderer.info.render, drawn)
++}
++
+ // The frame as it stands when the glass has been drawn, for the drops to look through. One copy serves the beads and the
+ // trails: it is taken before the first of them is drawn.
+ function copyBehind(renderer: THREE.WebGLRenderer, material: THREE.Material, first: boolean): void {
+@@ -785,6 +797,7 @@ function make(): THREE.Group {
+   trails.renderOrder = 11
+   trails.frustumCulled = false
+   trails.onBeforeRender = (renderer, _scene, _camera, _geometry, material) => copyBehind(renderer, material, true)
++  trails.userData.warm = warmSoft
+   const beads = new THREE.Mesh(
+     beadsGeometry(),
+     stageShader({ part: PART, standIn: false, change: 'glass-dressing', uniforms, vertexPars: BEAD_VERT_PARS, vertexMain: BEAD_VERT, fragment: BEAD, params: { ...blend } }),
