@@ -37,8 +37,10 @@ const RAD = Math.PI / 180
 // the room's light, so no pale band stands inside the outline. The ring at the outline is thin and hides little of the inside
 // (`ringThin`, `ringCover`, `rimClear`), its cool line over the top and the ceiling's reflection are held low (`topLine`,
 // `ceiling`), and the lamps outside the frame show as fine arcs (`arcs`). The rest of the light on the glass is the wall's
-// streaks and bands, below
-setGlass('summer', { windowTint: [0.9, 0.86, 0.78], windowGain: [0, 0, 0, 0], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], rimSide: [1.3, 0.5, 0.28], wallTint: [0.5, 0.36, 0.2], ringCover: 0.4, strip: 0, bend: 1, ringThin: 0.75, rimClear: 0.4, topLine: 0.3, ringMottle: 0.3, ceiling: 0.5, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 0.4, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
+// streaks and bands, below. The shell's bend is off (`bend`): it draws the inside from further in over the outermost
+// twelfth of the radius, which set the flame's white middle a second time against the outline as a cream band and the
+// wall's wash into the dark gap under the rim
+setGlass('summer', { windowTint: [0.9, 0.86, 0.78], windowGain: [0, 0, 0, 0], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], rimSide: [1.3, 0.5, 0.28], wallTint: [0.5, 0.36, 0.2], ringCover: 0.4, strip: 0, bend: 0, ringThin: 0.75, rimClear: 0.4, topLine: 0.3, ringMottle: 0.3, ceiling: 0.5, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 0.4, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
 
 export const look = {
   // leaving: the light goes out between these two counts of beats before the swap window opens
@@ -117,14 +119,14 @@ export const look = {
     flameAt: [-0.2, 0.27] as const,
     flameFoot: [-0.02, 0.12] as const,
     flameBend: [0.03, 0.05] as const,
-    flameLean: 0.29,
-    flameCore: [0.883, 0.36, 0.045, 0.2] as const,
+    flameLean: 0.42,
+    flameCore: [0.883, 0.4, 0.045, 0.45] as const,
     flameDim: 0.2,
-    flameBody: [0.035, 0.12, 0.4, 0.6] as const,
+    flameBody: [0.035, 0.07, 0.4, 0.6] as const,
     flameLanes: 1,
     flameFine: 0.7,
     flameTongues: 44,
-    flameOut: 0.95,
+    flameOut: 0.925,
     flameSoft: 0.05,
     flameSkirt: [0.25, 0.05] as const,
     flameHard: 0.004,
@@ -147,7 +149,7 @@ export const look = {
     // the limb's own warm edge on the far side: the glass wall takes the flame's light as one thin bright line just
     // inside the outline, beside the flame and no further. How strong, where up the limb (radians) and how far it runs,
     // where in the radius and how thick
-    edge: 4,
+    edge: 2,
     edgeAt: [-0.02, 0.2] as const,
     edgeIn: [0.984, 0.007] as const,
     edgeColor: [1, 0.6, 0.28] as const,
@@ -163,7 +165,7 @@ export const look = {
     // its middle lies as a share of the radius and in radians up the limb from the wall's middle, how far it reaches
     // toward the middle of the globe and toward the outline, down the limb and up it), and a thinner one that lies
     // over the left side of the ball (`airFar`, the same), which the banks break twice over
-    air: [0.45, 0.82, 0, 0.11, 0.2, 0.2, 0.17] as const,
+    air: [0.3, 0.82, 0, 0.11, 0.2, 0.2, 0.17] as const,
     airColor: [1, 0.62, 0.3] as const,
     airFar: [0.065, 0.82, 0.43, 0.25, 0.3, 0.45, 0.25] as const,
     airFarColor: [1, 0.7, 0.42] as const,
@@ -260,26 +262,26 @@ export const look = {
     // Under it the glass holds the room's warm dark as one thin brown arc (`under`: how far below the ribbon's
     // lower edge its middle lies, half its thickness, how strong; `underEnds`: it comes in between the first two
     // bearings and is gone between the last two, radians)
-    ribbon: 0.16,
+    ribbon: 0.18,
     ribbonColor: [1, 0.64, 0.43] as const,
     ribbonPeak: [0.65, 1.6, 0.28] as const,
-    ribbonElbow: [1.536, 0.9, 0.058] as const,
+    ribbonElbow: [1.536, 0.922, 0.058] as const,
     ribbonLevel: [0.73, 0.244] as const,
-    ribbonRound: 0.11,
+    ribbonRound: 0.2,
     ribbonLow: [0.925, 0.62, 1.693, 0.75, 0.04] as const,
     ribbonEnds: [0.45, 1, 1.95, 2.25] as const,
-    ribbonUpper: [0.03, 0.009] as const,
+    ribbonUpper: [0.012, 0.009] as const,
     ribbonLower: [0.03, 0.06] as const,
     ribbonUnder: 0.75,
-    ribbonDeep: 0.8,
+    ribbonDeep: 0.6,
     ribbonStreaks: [1.3, 6] as const,
     ribbonStreaked: [0.4, 0.16] as const,
     under: [0.075, 0.02, 0.056] as const,
     underEnds: [0.96, 1.2, 1.95, 2.2] as const,
     underColor: [1, 0.6, 0.38] as const,
     // the glass has thickness: just inside the outline lies a band of fine lines of light that run along the arc, and
-    // against the outline one bright line. It is drawn last, over the shell, whose own band there bends the inside and
-    // would bend these lines away with it. `rim` is the whole of its strength, `rimAt` where in the radius the band
+    // against the outline one bright line. It is drawn last, over the shell, whose own ring there covers the inside and
+    // would cover these lines with it. `rim` is the whole of its strength, `rimAt` where in the radius the band
     // begins, is whole, begins to end and has ended, `rimFoot` where it ends above the base (the height of the bearing:
     // none below the first, all above the second). The lines are hair thin and no two alike: two sets of them, `rimLines`
     // and, down the left limb alone, `rimLinesWide` to a globe radius across the band, which are hair lines that wander
@@ -295,7 +297,7 @@ export const look = {
     // further in and wider (`rimTopLine`, about the bearing in `rimTopWide` with its cosines), a soft blue white band
     // under the outline; over the top and left of it the line stays thin and at the outline, and the glass under it is
     // dark. On the left a broken cream line marks the band's inner edge (`rimInner`: where, half width, strength).
-    // At the upper left the glass mirrors the room's lit wall as the end of the ribbon, which the shell's bend would
+    // At the upper left the glass mirrors the room's lit wall as the end of the ribbon, which the shell's ring would
     // hide: it is drawn here, from `rimInside` of the radius outward and only within `rimUpLeft` (a bearing and the
     // half angle about it, degrees). `satin` is that end, one broad cream band along the arc: how strong, where in the
     // radius its middle lies, half its width and how soft its two edges are; it comes in between the first two
@@ -378,7 +380,9 @@ export const look = {
       [127, 24, 0.934, 0.0042, -0.02, 0.4, 0],
       [127, 14, 0.92, 0.0036, -0.04, 0.25, 0],
       [130, 6, 0.906, 0.005, 0, 0.2, 0],
-      [80, 13, 0.984, 0.003, 0, 0.14, 1],
+      [80, 13, 0.984, 0.005, 0, 0.31, 1],
+      [74, 11, 0.937, 0.013, 0, 0.05, 1],
+      [105, 5, 0.969, 0.004, 0, 0.24, 1],
     ] as const,
     arcCream: [1, 0.64, 0.43] as const,
     arcCool: [0.74, 0.86, 1] as const,
