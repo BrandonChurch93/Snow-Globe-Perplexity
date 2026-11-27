@@ -1,3 +1,6 @@
+import { config } from '../config'
+import type { Moment } from '../core/stage'
+
 /**
  * A making that can stop between its pieces. Called, it runs through and gives what it made, as a plain function would;
  * `steps` gives the same statements in the same order with a place to stop after each piece, so a page that is drawing can
@@ -100,6 +103,82 @@ export function runFor(steps: Step[], ms: number, now: () => number): void {
   let small: boolean | void
   do small = steps.shift()?.()
   while (small && now() < until)
+}
+
+/**
+ * How long a press holds other seasons' work back where no shake answers it (reduced motion): as long as the page keeps
+ * the wish. In the seconds the session counts, as all the times of a wish are: a frame counts a quarter of a second there
+ * at most, so a page that draws slowly keeps a wish far longer than the clock says. Counted by the clock, the wish would
+ * go on such a page before the season pressed for had its turn at the last piece, and the press would land nowhere.
+ */
+export const PRESS_S = config.live.loadWaitSeconds
+/** How long after a press its season is made in steps. What is left then is made in one piece: the picture stands for it, and the wish is not lost. */
+export const LAST_S = PRESS_S - 0.5
+/** How long after a landing the picture is still watched as a shake: until the storm has cleared and the liquid stands. */
+export const SETTLE_S = Math.max(config.shake.settleCheckSeconds, config.shake.spinDownSeconds)
+
+/**
+ * The season a press asked for. The wish stands until the shake that answers the press has landed and settled, and for
+ * `PRESS_S` where none does. While it stands nothing is made for any other season, and nothing at all through a shake
+ * nobody pressed for.
+ */
+export class Wish {
+  private inAir = false
+  private answered = false
+  private into: string | null = null
+  private at = 0
+  private time = 0
+
+  /** A press for `season`, at the moment drawn last: the session has not counted on since. */
+  press(season: string): void {
+    this.into = season
+    this.at = this.time
+    this.answered = false
+  }
+
+  /** A frame of `moment` is drawn. A landing is no rest: what arrived is still coming down, and a stop there is seen. */
+  drawn(moment: Pick<Moment, 'beat' | 'sinceLanding' | 'time'>): void {
+    // The time runs back where a session begins again or a state is set. The wish keeps its age through that: let go in
+    // mid shake, it would leave the season pressed for held with all the others.
+    if (moment.time < this.time) this.at -= this.time - moment.time
+    this.time = moment.time
+    if (moment.beat !== null) this.inAir = this.answered = true
+    else if (!(moment.sinceLanding < SETTLE_S)) this.inAir = false
+    if (!this.inAir && (this.answered || !(this.time - this.at < PRESS_S))) this.into = null
+  }
+
+  awaits(season: string): boolean {
+    return this.into === season
+  }
+
+  /** Whether nothing is made for `season` now. */
+  holds(season: string): boolean {
+    return (this.inAir || this.into !== null) && this.into !== season
+  }
+
+  /** Whether what is left of `season` is made in one piece: it is the season pressed for, and the press is `LAST_S` old. */
+  last(season: string): boolean {
+    return this.into === season && this.time - this.at > LAST_S
+  }
+}
+
+/** A turn at work that is done aside: how long it took to come, and when the frame began that brought it. None began where the page did not draw in time. */
+export interface Turn {
+  waited: number
+  frame: number | null
+}
+
+/**
+ * One turn at the making of `season` on a page that draws. What it spends: the whole wait counts, however long: where a
+ * frame holds the thread for seconds (no GPU, a program linked inside the frame) that is the page's pace, and a share of
+ * 50 ms of it left a season a minute in the making. Where a frame brought the turn it is spent by what that frame has left.
+ */
+export function workIn(steps: Step[], season: string, turn: Turn, wish: Wish, pace: FramePace, now: () => number): void {
+  const awaited = wish.awaits(season)
+  const from = now()
+  if (wish.last(season)) while (steps.length) steps.shift()!()
+  else runFor(steps, turn.frame === null ? spendOf(turn.waited, awaited) : spendIn(now() - turn.frame, pace.every, turn.waited, awaited, pace.taken), now)
+  pace.taken += now() - from
 }
 
 export function whole<T>(steps: Generator<void, T>): T {

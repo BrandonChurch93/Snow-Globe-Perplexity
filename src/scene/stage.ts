@@ -26,7 +26,7 @@ import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, out
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { CHANGE_BLOOM, Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
-import { fitIn, FramePace, runFor, SOON_MS, spendIn, spendOf, stepsOf, type Step } from './steps'
+import { fitIn, FramePace, SOON_MS, stepsOf, Wish, workIn, type Step, type Turn } from './steps'
 import { makeSlab, ReflectMix, updateSurface } from './surface'
 
 interface SeasonSet {
@@ -53,18 +53,13 @@ interface Making {
   steps: Step[]
 }
 
-/** How long a press holds other seasons' work back while no frame of its shake has been drawn: as long as the page keeps the wish. */
-const PRESS_MS = config.live.loadWaitSeconds * 1000
-/** How long after a press its season is made in steps. What is left then is made in one piece: the picture stands for it, and the wish is not lost. */
-const LAST_MS = PRESS_MS - 500
-/** How long after a landing the picture is still watched as a shake: until the storm has cleared and the liquid stands. */
-const SETTLE_S = Math.max(config.shake.settleCheckSeconds, config.shake.spinDownSeconds)
 /** What one frame spends on handing a season that is not on show to the GPU: the step that passes it is the frame's last. */
 const HAND_MS = 4
 /** A layer nothing is on but the lights, which every program counts, and for one draw the mesh that is handed over. */
 const HAND_LAYER = 31
 
 const NOTHING = (): void => undefined
+const NOW = (): number => performance.now()
 
 const materialsOf = (d: Drawn): THREE.Material[] => (Array.isArray(d.material) ? d.material : [d.material])
 
@@ -77,12 +72,6 @@ function picturesOf(m: THREE.Material, linked: Linked['uniforms']): THREE.Textur
   for (const v of Object.values(m)) take(v)
   for (const u of Object.values({ ...(m as THREE.ShaderMaterial).uniforms, ...linked })) take(u?.value)
   return out
-}
-
-/** A turn at work that is done aside: how long it took to come, and when the frame began that brought it. None began where the page did not draw in time. */
-interface Turn {
-  waited: number
-  frame: number | null
 }
 
 const BLUR_CLEAR = new THREE.Color(0, 1, 0.5)
@@ -134,9 +123,7 @@ export class GlobeStage implements Stage {
   private readonly pass: PassContext
   private readonly up = new THREE.Vector3()
   private readonly turn = new THREE.Quaternion()
-  private inAir = false
-  private into: string | null = null
-  private intoAt = 0
+  private readonly wish = new Wish()
   /** The picture the page paints into while it draws one sample a frame; none on a page that captures. */
   private live: THREE.WebGLRenderTarget | null = null
   private handing: Promise<void> = Promise.resolve()
@@ -194,17 +181,7 @@ export class GlobeStage implements Stage {
   }
 
   expect(season: string): void {
-    this.into = season
-    this.intoAt = performance.now()
-  }
-
-  /**
-   * Whether a shake is in the air, or has landed and not yet settled, that does not go into `season`: nothing is made for a
-   * season the shake does not need.
-   */
-  private held(season: string): boolean {
-    if (this.into !== null && !this.inAir && performance.now() - this.intoAt > PRESS_MS) this.into = null
-    return (this.inAir || this.into !== null) && this.into !== season
+    this.wish.press(season)
   }
 
   /**
@@ -219,12 +196,7 @@ export class GlobeStage implements Stage {
         m.steps.shift()?.()
         continue
       }
-      const turn = await this.turnFor(season)
-      const awaited = this.into === season
-      const from = performance.now()
-      if (awaited && from - this.intoAt > LAST_MS) while (m.steps.length) m.steps.shift()!()
-      else runFor(m.steps, this.spend(turn, awaited), () => performance.now())
-      this.pace.taken += performance.now() - from
+      workIn(m.steps, season, await this.turnFor(season), this.wish, this.pace, NOW)
     }
     // Not waited for: the season can be shown from here on, and a frame that shows it before this is done makes the rest
     // itself, as it always did.
@@ -238,7 +210,7 @@ export class GlobeStage implements Stage {
     do {
       from = performance.now()
       frame = await this.frameOrSoon()
-    } while (this.held(season))
+    } while (this.wish.holds(season))
     return { waited: performance.now() - from, frame }
   }
 
@@ -255,16 +227,6 @@ export class GlobeStage implements Stage {
       if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go)
       setTimeout(go, SOON_MS, null)
     })
-  }
-
-  /**
-   * What a turn spends on a making. The whole wait counts, however long: where a frame holds the thread for seconds (no
-   * GPU, a program linked inside the frame) that is the page's pace, and a share of 50 ms of it left a season a minute in
-   * the making. Where a frame brought the turn it is spent by what that frame has left.
-   */
-  private spend(turn: Turn, awaited: boolean): number {
-    if (turn.frame === null) return spendOf(turn.waited, awaited)
-    return spendIn(performance.now() - turn.frame, this.pace.every, turn.waited, awaited, this.pace.taken)
   }
 
   /** Resolves when every season asked for so far is built and, on a page that paints, in the GPU's hands. */
@@ -521,12 +483,7 @@ export class GlobeStage implements Stage {
     // A mesh handed to the GPU since the last frame left the shadow map with nothing else in it.
     const cast = shadows || this.stale
     this.stale = false
-    // A landing is no rest: what arrived is still coming down, and a stop there is seen.
-    if (moment.beat !== null) this.inAir = true
-    else if (this.inAir && !(moment.sinceLanding < SETTLE_S)) {
-      this.inAir = false
-      this.into = null
-    }
+    this.wish.drawn(moment)
     const a = this.set(single ? moment.season : moment.from)
     const b = single ? a : this.set(moment.to)
     const change = single ? 0 : moment.change

@@ -1,7 +1,9 @@
 import { spawnSync } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
+import { LIVE, LiveSession, type LiveSim } from '../src/app/session'
+import { config } from '../src/config'
 import { Governor } from '../src/core/quality'
-import { FIT_MS, FramePace, GAPS, KEEP_MS, LEAST_MS, PACE, SOON_MS, fitIn, inSteps, leftIn, runFor, spendIn, spendOf, stepsOf, whole, type InSteps, type Step } from '../src/scene/steps'
+import { FIT_MS, FramePace, GAPS, KEEP_MS, LAST_S, LEAST_MS, PACE, PRESS_S, SETTLE_S, SOON_MS, Wish, fitIn, inSteps, leftIn, runFor, spendIn, spendOf, stepsOf, whole, workIn, type InSteps, type Step } from '../src/scene/steps'
 import { kit as fall } from '../src/seasons/fall'
 import { kit as spring } from '../src/seasons/spring'
 import { kit as summer } from '../src/seasons/summer'
@@ -341,6 +343,298 @@ describe('a page that makes a season while it draws', () => {
         expect(Math.max(...run.gaps), `${every} ms display, ${page} ms page`).toBeLessThanOrEqual(16.68)
         expect(run.level).toBe(run.top)
       }
+  })
+})
+
+const seasons = config.seasons
+const first = config.defaultSeason
+const others = seasons.filter((s) => s !== first)
+
+class Counted implements LiveSim {
+  step = 0
+  advanceTo(step: number): void {
+    this.step = Math.max(this.step, step)
+  }
+  reset(): void {
+    this.step = 0
+  }
+}
+
+/** The wish without its last piece. */
+class StepsOnly extends Wish {
+  override last(): boolean {
+    return false
+  }
+}
+
+interface Visit {
+  /** The ms between two frames of the display. */
+  every: number
+  /** The ms the page's own script takes of each frame. */
+  script: number
+  /** The ms of work left at the press on the season in the making, and on each one begun later. */
+  work: number
+  /** The season pressed for: the one in the making, or one whose making the press begins. */
+  to: string
+  /** The ms one step of a making takes, and whether it says that another may follow it in the same frame. */
+  piece?: number
+  small?: boolean
+  reduced?: boolean
+  wish?: Wish
+  /** Whether the visit goes on after the landing until every season is made. */
+  through?: boolean
+}
+
+const PRESS_FRAME = 40
+
+/**
+ * A visit to a page that rests on the season it opened on and makes the others one after the other, as the loader asks
+ * for them. At the frame `PRESS_FRAME` the visitor presses for `to`. The session is the page's own and takes a season as
+ * ready once its making is through. Each frame the page's script ticks the session and tells the wish of the moment it
+ * draws, then every making that is not held takes its turn as the stage gives it. Gives the season the press landed in,
+ * the ms worked for other seasons before the one pressed for was made (`early`), while a shake was in the air or its
+ * landing settled (`storm`) and after that (`late`), and whether every season was made in the end.
+ */
+function visit({ every, script, work, to, piece = 1, small = true, reduced = false, wish = new Wish(), through = false }: Visit) {
+  const made = new Set([first])
+  const session = new LiveSession(new Counted(), first, (s) => made.has(s))
+  session.reduced = reduced
+  const pace = new FramePace()
+  const browser = KEEP_MS - LEAST_MS - 0.5
+  const aside = { early: 0, storm: 0, late: 0 }
+  const making: { season: string; steps: Step[]; step: Step; idle: number }[] = []
+  let clock = 0
+  const left = (ms: number, step: Step): Step[] => Array<Step>(Math.ceil(ms / piece)).fill(step)
+  const begin = (season: string, ms: number): void => {
+    const step = (): boolean => {
+      clock += piece
+      return small
+    }
+    making.push({ season, steps: left(ms, step), step, idle: clock })
+  }
+  begin(others[0]!, 0)
+  let asked: string | null = null
+  let landed: string | null = null
+  let shaken = false
+  let begun = 0
+  let free = 0
+  for (let n = 0; n < 40000; n++) {
+    const at = n === 0 ? 0 : Math.max(begun + every, Math.ceil(free / every - 1e-9) * every)
+    const dt = n === 0 ? 0 : (at - begun) / 1000
+    begun = at
+    clock = at
+    if (n < PRESS_FRAME) for (const m of making) while (m.steps.length * piece < 4 * (script + every)) m.steps.push(m.step)
+    if (n === PRESS_FRAME) {
+      asked = session.goTo(to)
+      wish.press(to)
+      for (const m of making) m.steps = left(work, m.step)
+      if (!making.some((m) => m.season === to)) begin(to, work)
+    }
+    const moment = session.moment(session.tick(dt), 1)
+    wish.drawn(moment)
+    clock += script
+    shaken ||= moment.beat !== null
+    const storm = moment.beat !== null || (shaken && moment.sinceLanding < SETTLE_S)
+    if (n > PRESS_FRAME && landed === null && !session.busy) landed = session.season
+    pace.frame(at)
+    for (const m of [...making]) {
+      const from = clock
+      if (!wish.holds(m.season)) workIn(m.steps, m.season, { waited: clock - m.idle, frame: at }, wish, pace, () => clock)
+      m.idle = clock
+      if (n >= PRESS_FRAME && m.season !== to) aside[!made.has(to) ? 'early' : storm ? 'storm' : 'late'] += clock - from
+      if (m.steps.length) continue
+      made.add(m.season)
+      making.splice(making.indexOf(m), 1)
+      const next = others.find((s) => !made.has(s))
+      if (next !== undefined && !making.some((o) => o.season === next)) begin(next, work)
+    }
+    free = clock + browser
+    if (landed !== null && !storm && (!through || made.size === seasons.length)) break
+  }
+  return { asked, landed, aside, all: made.size === seasons.length }
+}
+
+describe('a press for a season that is still in the making', () => {
+  const pages: (Visit & { where: string })[] = []
+  for (const reduced of [false, true])
+    for (const to of [others[0]!, others[1]!])
+      for (const every of [16.67, 8.33])
+        for (const script of [2, 6, 10, 14, 60, 120, 300, 2000])
+          for (const work of [500, 1500, 3000, 5000])
+            for (const [piece, small] of [[1, true], [20, false]] as const)
+              pages.push({ every, script, work, to, piece, small, reduced, where: `${reduced ? 'reduced motion, ' : ''}${to}, ${every} ms display, ${script} ms script, ${work} ms left in steps of ${piece} ms` })
+  let visits: (ReturnType<typeof visit> & { where: string; to: string })[] | null = null
+  const all = () => (visits ??= pages.map(({ where, ...page }) => ({ ...visit(page), where, to: page.to })))
+
+  it('lands in the season asked for, however much of it is left and however the page draws, with a shake and with reduced motion', () => {
+    for (const v of all()) {
+      expect(v.asked, v.where).toBe(v.to)
+      expect(v.landed, v.where).toBe(v.to)
+    }
+  })
+
+  it('makes nothing for another season before the one pressed for is made, nor while the shake is in the air or its landing settles', () => {
+    for (const v of all()) {
+      expect(v.aside.early, v.where).toBe(0)
+      expect(v.aside.storm, v.where).toBe(0)
+    }
+  })
+
+  it('goes on with the other seasons after that, until all are made', () => {
+    for (const reduced of [false, true])
+      for (const to of [others[0]!, others[1]!])
+        for (const script of [2, 14, 300]) {
+          const v = visit({ every: 16.67, script, work: 1500, to, reduced, through: true })
+          const where = `${reduced ? 'reduced motion, ' : ''}${to}, ${script} ms script`
+          expect(v.landed, where).toBe(to)
+          expect(v.aside.early + v.aside.storm, where).toBe(0)
+          expect(v.aside.late, where).toBeGreaterThan(0)
+          expect(v.all, where).toBe(true)
+        }
+  })
+
+  it('would land in the season it left by the steps alone where more is left than the wait holds: what the last piece is for', () => {
+    for (const work of [4000, 5000])
+      for (const reduced of [false, true]) {
+        const page = { every: 16.67, script: 2, work, to: others[0]!, reduced }
+        expect(visit({ ...page, wish: new StepsOnly() }).landed).toBe(first)
+        expect(visit(page).landed).toBe(others[0])
+      }
+  })
+})
+
+describe('a wish', () => {
+  const [to, other] = others as [string, string]
+  const air = (time: number) => ({ beat: 1, sinceLanding: 0, time })
+  const rest = (time: number, sinceLanding = 100) => ({ beat: null, sinceLanding, time })
+  const held = (w: Wish): string[] => seasons.filter((s) => w.holds(s))
+  const but = (season: string): string[] => seasons.filter((s) => s !== season)
+
+  it('holds nothing where nobody pressed and no shake is drawn', () => {
+    const w = new Wish()
+    w.drawn(rest(50))
+    expect(held(w)).toEqual([])
+    for (const s of seasons) {
+      expect(w.awaits(s)).toBe(false)
+      expect(w.last(s)).toBe(false)
+    }
+  })
+
+  it('holds every other season from the press and never the one pressed for, and lets go after PRESS_S of the session where no shake answers', () => {
+    const w = new Wish()
+    w.drawn(rest(10))
+    w.press(to)
+    for (const time of [10, 10 + PRESS_S - 0.01]) {
+      w.drawn(rest(time))
+      expect(held(w)).toEqual(but(to))
+      expect(w.awaits(to)).toBe(true)
+    }
+    w.drawn(rest(10 + PRESS_S))
+    expect(held(w)).toEqual([])
+    expect(w.awaits(to)).toBe(false)
+  })
+
+  it('holds through a shake for as long as it is in the air, and after its landing until the liquid stands', () => {
+    const w = new Wish()
+    w.press(to)
+    w.drawn(air(0.1))
+    w.drawn(air(10 * PRESS_S))
+    expect(held(w)).toEqual(but(to))
+    expect(w.awaits(to)).toBe(true)
+    w.drawn(rest(10 * PRESS_S + 1, 0))
+    w.drawn(rest(10 * PRESS_S + 2, SETTLE_S - 0.01))
+    expect(held(w)).toEqual(but(to))
+    w.drawn(rest(10 * PRESS_S + 3, SETTLE_S))
+    expect(held(w)).toEqual([])
+    expect(w.awaits(to)).toBe(false)
+  })
+
+  it('holds every season through a shake nobody pressed for', () => {
+    const w = new Wish()
+    w.drawn(air(1))
+    expect(held(w)).toEqual(seasons)
+    w.drawn(rest(2, SETTLE_S))
+    expect(held(w)).toEqual([])
+  })
+
+  it('takes a press in the settle of the last shake as the wish of the next', () => {
+    const w = new Wish()
+    w.press(to)
+    w.drawn(air(1))
+    w.drawn(rest(3, 1))
+    w.press(other)
+    expect(held(w)).toEqual(but(other))
+    w.drawn(air(3.1))
+    w.drawn(rest(6, 0.5))
+    expect(held(w)).toEqual(but(other))
+    w.drawn(rest(9, SETTLE_S))
+    expect(held(w)).toEqual([])
+  })
+
+  it('keeps a press that no shake answers past the settle of the shake before it, for as long as the page keeps it', () => {
+    const w = new Wish()
+    w.press(to)
+    w.drawn(air(1))
+    w.drawn(rest(6, SETTLE_S - 0.5))
+    w.press(other)
+    w.drawn(rest(6.5, SETTLE_S))
+    expect(held(w)).toEqual(but(other))
+    expect(w.awaits(other)).toBe(true)
+    w.drawn(rest(6 + PRESS_S, SETTLE_S + PRESS_S))
+    expect(held(w)).toEqual([])
+    expect(w.awaits(other)).toBe(false)
+  })
+
+  it('goes at the settle of the shake that answered it, however young it is', () => {
+    const w = new Wish()
+    w.press(to)
+    w.drawn(air(0.1))
+    w.drawn(rest(0.2, SETTLE_S))
+    expect(held(w)).toEqual([])
+    expect(w.awaits(to)).toBe(false)
+  })
+
+  it('keeps its age where the time of the session runs back', () => {
+    const w = new Wish()
+    w.drawn(rest(100))
+    w.press(to)
+    w.drawn(rest(101))
+    w.drawn(rest(0.5))
+    expect(w.awaits(to)).toBe(true)
+    w.drawn(rest(PRESS_S - 0.51))
+    expect(held(w)).toEqual(but(to))
+    w.drawn(rest(PRESS_S - 0.5))
+    expect(held(w)).toEqual([])
+    expect(w.awaits(to)).toBe(false)
+  })
+
+  it('is not lost where the time runs back in mid shake', () => {
+    const w = new Wish()
+    w.drawn(rest(100))
+    w.press(to)
+    w.drawn(air(100.5))
+    w.drawn(air(0.1))
+    expect(held(w)).toEqual(but(to))
+    expect(w.awaits(to)).toBe(true)
+    w.drawn(rest(2, SETTLE_S - 0.01))
+    expect(held(w)).toEqual(but(to))
+    w.drawn(rest(2.1, SETTLE_S))
+    expect(held(w)).toEqual([])
+  })
+
+  it('asks for what is left in one piece only of the season pressed for, and only once the press is LAST_S old', () => {
+    const w = new Wish()
+    w.drawn(rest(5))
+    w.press(to)
+    w.drawn(rest(5 + LAST_S))
+    expect(w.last(to)).toBe(false)
+    w.drawn(rest(5 + LAST_S + 0.01))
+    expect(w.last(to)).toBe(true)
+    expect(w.last(other)).toBe(false)
+  })
+
+  it('asks for it a frame before the page gives the wish up, however long the frames are', () => {
+    expect(LAST_S + LIVE.maxFrameSeconds).toBeLessThan(config.live.loadWaitSeconds)
   })
 })
 
