@@ -2,7 +2,16 @@
 
 Branch agent/p6-fall-base, head c291a11c: the shader commit d2878876 with main 35d00e1b merged in (fall's scene fifth list and air fourth list). The fifth list changed src/seasons/fall/base.ts only. The mesh is as on the fourth list, whose asset script change still stands: `npm run make -- base-fall` must be run and its files committed by /root (80910 triangles, 1448 more than main's 79462; public glb 1348780 bytes, sha eb905811891fd477 on this VM).
 
-## The fourteenth step (about 14:20 UTC), the newest head
+## The fifteenth step, item 2 of the fourteenth order: the pumpkin faces (about 16:00 UTC), the newest head
+- Head f213dfce: commit 93dbd9d9 (src/seasons/fall/base.ts, assets-src/base-fall/maps.mjs, RECIPE.md) with main 6d459061 (chain 32) merged in. The faces map changed, so `npm run make -- base-fall` changed and /root remakes. The mesh is as it was: 77,762 triangles, none spent.
+- What changed. Shader: no glow round the cuts; the cut edge is antialiased over 0.6 of a pixel; the rind's cut wall is a dark red rim with a hard step to the hollow; the hollow is yellow with mottled pulp; the skin has eight meridian grooves and fine streaks in colour, ember and tilt; a thin line of ember where a gourd turns from the eye or meets the iron. Map: the carvings redrawn as slanted eyes of unlike size, a small nose, a crescent grin with ragged teeth.
+- Numbers at review on f213dfce: M3 fall-rest 0.9573, base 0.970 (fourteenth 0.883), miniature 0.957. Face columns over approved, twelfth, fourteenth, fifteenth: x 728 to 786 0.41, 0.33, 0.81; x 960 to 1018 0.60, 0.62, 1.14; x 1018 to 1076 0.21, 0.24, 0.67; x 1134 to 1192 0.54, 0.56, 0.93. Flank runs 4.9 and 5.0, 90th percentile 105.5 (kept).
+- Proofs on f213dfce: tsc clean; the whole vitest 948 passed, 8 skipped, 288.8 s (steps test 129 s); eight draft stills, the six others equal chain 32's list, fall-rest 7727bc3ba0df32df, fall-landed 9505f2e040e78c03. On e71342d9 with the same files: strict pass, determinism pass, stand-ins black, four frames at 3840 final.
+- Short: the column x 1018 to 1076 reads 0.67, under the bar of 0.8 (0.73 without the two rows under the face, where approved has a white twig). The grooves read as broad dark bands, hard stripes at 3840, where approved has fine streaks. The hollow is paler and more yellow than approved's. The third gourd is brown where approved's is blue black.
+- A correction: the column x 1260 to 1320 of the earlier reports is not a face, it is the flank right of the third face. The third face is at about x 1125 to 1195.
+- Next: item 3 the sheaf, item 4 the wall, item 5 the web, each its own commit.
+
+## The fourteenth step (about 14:20 UTC)
 
 /root held the thirteenth (efca8b82) at 13:20 for one thing: the vines read grey (flank runs 6.0 and 5.6, 90th percentile 133.3). The fourteenth is that one thing and nothing else: commit e3414aeb (base.ts, two lines: BRAMBLE.SOFT 0.85 to 1.18, the soft light's power 18 to 60, its bead 0.6 + 0.9 to 0.3 + 1.7), then main 06954500 and bbdd4b03 merged (status files only). The mesh is the thirteenth's; make base-fall is still owed by /root.
 
