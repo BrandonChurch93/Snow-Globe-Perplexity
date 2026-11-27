@@ -560,20 +560,20 @@ void main() {
     float id = float(k) + sheet * 9.0;
     float at = (float(k) + 0.25 + 0.5 * webHash(id * 3.3)) / 7.0 * rim + (webHash(id * 5.9) - 0.5) * 0.3 * hang;
     float caught = 0.06 + 0.94 * smoothstep(0.45, 0.8, webNoise(vWebUv.y * 3.0 + id * 7.7));
-    float whole = 1.0 - smoothstep(0.0, 0.04, vWebUv.y - 0.45 - 0.75 * webHash(id * 4.7));
+    float whole = 1.0 - smoothstep(0.0, 0.04, vWebUv.y - 0.6 - 0.75 * webHash(id * 4.7));
     float off = abs(vWebUv.x - at) / du;
     thread = max(thread, (1.0 - smoothstep(0.0, 0.7, off)) * caught * (0.3 + 0.7 * webHash(id * 2.1)) * whole);
     float beadAt = vWebUv.y * 23.0 + 9.0 * webHash(id * 4.3);
     dew = max(dew, step(0.9, webHash(floor(beadAt) + id * 13.0)) * (1.0 - smoothstep(0.7, 1.8, length(vec2(abs(fract(beadAt) - 0.5) / max(fwidth(beadAt), 1e-4), off)))) * whole * smoothstep(0.4, 0.6, vWebUv.y));
   }
-  // A few threads cross the others at a slant and sag between them.
-  for (int k = 0; k < 4; k++) {
+  // Many threads cross the others at a slant and sag between them, down to the foot.
+  for (int k = 0; k < 16; k++) {
     float id = float(k) + sheet * 5.0 + 40.0;
-    float from = 0.5 * webHash(id * 6.1);
-    float till = from + 0.35 + 0.4 * webHash(id * 8.3);
-    float at = 0.26 + 0.17 * float(k) + 0.1 * webHash(id * 3.1) + (webHash(id * 1.7) - 0.5) * 0.5 * (vWebUv.x - 0.5) + 0.05 * (0.5 + webHash(id * 2.9)) * sin(3.14159265 * clamp((vWebUv.x - from) / (till - from), 0.0, 1.0));
-    float caught = 0.08 + 0.92 * smoothstep(0.4, 0.8, webNoise(vWebUv.x * 4.0 + id * 3.7));
-    thread = max(thread, (1.0 - smoothstep(0.0, 0.7, abs(vWebUv.y - at) / dv)) * caught * 0.55 * smoothstep(from, from + 0.03, vWebUv.x) * (1.0 - smoothstep(till - 0.03, till, vWebUv.x)));
+    float from = 0.6 * webHash(id * 6.1);
+    float till = from + 0.3 + 0.5 * webHash(id * 8.3);
+    float at = 0.16 + 0.05 * float(k) + 0.05 * webHash(id * 3.1) + (webHash(id * 1.7) - 0.5) * 0.3 * (vWebUv.x - 0.5) + 0.04 * (0.5 + webHash(id * 2.9)) * sin(3.14159265 * clamp((vWebUv.x - from) / (till - from), 0.0, 1.0));
+    float caught = 0.2 + (1.0 - 0.2) * smoothstep(0.35, 0.75, webNoise(vWebUv.x * 4.0 + id * 3.7));
+    thread = max(thread, (1.0 - smoothstep(0.0, 0.7, abs(vWebUv.y - at) / dv)) * caught * (0.45 + 0.3 * webHash(id * 4.9)) * smoothstep(from, from + 0.03, vWebUv.x) * (1.0 - smoothstep(till - 0.03, till, vWebUv.x)));
   }
   float u = vWebUv.x * 7.0;
   float cell = floor(u);
