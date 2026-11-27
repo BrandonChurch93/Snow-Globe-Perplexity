@@ -31,7 +31,7 @@ const LOOK = {
   ledge: { r: [46.5, 52.0], h: 42.6 },
   jump: { count: 8600, thin: 0.24, shade: 0.3, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
   fall: { count: 24000, gravity: 7000, az: 80, spread: 2.5, most: 2.0, off: [0.35, 1.6], h: [29.0, 30.5], outMmS: [60, 150], lean: 1.7, fliers: { share: 0, far: [1.2, 1.6] }, fanDeg: 1.5, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.03, 0.07], fine: 2.5, core: [0.3, 70, 160], edge: [95, 130, 0.85], thinPx: 0.6, sizes: [0.7, 0.9], soft: { share: 0.5, wide: 2.2 }, cover: 2.7, rise: 0.012, low: [0.66, 0.6, 0.56], shine: [0.4, 1.0], pale: 0.4, least: [0.03, 0.12], bright: [0.75, 1.0], lit: 1.8, shaded: 0.08, mist: { seconds: 0.07, outMmS: [5, 40], upMmS: [5, 45], cover: 0.012, mm: [0.25, 0.5], turn: 0.45 } },
-  loose: { x: [16, 136], z: [-70, 112], kind: { proud: [0.26, 0.08] }, thinPx: 1.0, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, under: 3500, radiusMm: [0.07, 0.17, 0.45], small: 0.6, lean: 1.6, thin: 0.45, sunk: 0.3, vary: [0.6, 1.2], apart: 0.3 }, dust: { count: 14000, radiusMm: [0.03, 0.07], reach: 0.13, cover: 0.6 }, grain: { count: 1000, radiusMm: [0.07, 0.22], lean: 2.5, reach: 0.15 }, crumb: { count: 40, radiusMm: [0.3, 0.8], lean: 1.6, reach: 0.35 }, vary: [0.1, 0.42], warm: [1.0, 0.8, 0.56] },
+  loose: { x: [16, 136], z: [-70, 112], kind: { proud: [0.26, 0.08] }, thinPx: 1.0, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, under: 3500, radiusMm: [0.07, 0.17, 0.45], small: 0.6, lean: 1.6, thin: 0.45, sunk: 0.3, vary: [0.6, 1.2], apart: 0.3 }, dust: { count: 12400, radiusMm: [0.03, 0.07], reach: 0.13, cover: 0.6 }, grain: { count: 2600, radiusMm: [0.07, 0.36], lean: 2.4, reach: 0.15 }, crumb: { count: 40, radiusMm: [0.3, 0.8], lean: 1.6, reach: 0.35 }, vary: [0.1, 0.42], warm: [1.0, 0.8, 0.56] },
   sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 1.0, round: [1.6, 4.0], clear: 6 },
   slope: { clearMm: 0.25, keeps: 0.75, roll: 0.5, bulge: 0.0038, crestMm: [60.6, 66], crestLean: 1.6, offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
@@ -241,11 +241,14 @@ if (falls < 0.5) {
   thinner = aFlight.w / max(aFlight.w, least);
   thinner *= thinner;
   // A grain out of focus is one soft disc as wide as the lens draws it, at the one place the lens's points share (as the
-  // backdrop's discs are): drawn once from each point it is a row of beads.
+  // backdrop's discs are): drawn once from each point it is a row of beads. A blur narrower than the grain widens it
+  // as squares add, hardly at all; a blur three times the grain and more is laid round it whole.
   float lensPull = max(-nowV.z, 1.0) * uGrainFocus.y - 1.0;
   nowV.xy -= uGrainShift * lensPull;
   soft = uGrainFocus.x * abs(lensPull) * alive;
-  thinner *= size * size / max((size + soft) * (size + soft), 1e-10);
+  float lensWide = size * size + soft * soft + 2.0 * size * soft * smoothstep(1.0, 3.0, soft / max(size, 1e-10));
+  thinner *= size * size / max(lensWide, 1e-10);
+  soft = sqrt(lensWide) - size;
   size += soft;
 }
 vec4 grainV = nowV;
@@ -371,7 +374,8 @@ void main() {
   vec3 v = normalize(cameraPosition - vStageWorld);
   float falls = vGrainShape.z > 0.5 && vGrainShape.z < 1.5 ? 1.0 : 0.0;
   // A grain a pixel or two wide has no lit side and shaded side to show: each would be a rim of its own colour. It is lit as one.
-  float round = max(falls, smoothstep(${LOOK.lens.round[0]!.toFixed(1)}, ${LOOK.lens.round[1]!.toFixed(1)}, inversesqrt(max(lensX.x * lensX.x + lensY.x * lensY.x, 1e-8)) * ${(LOOK.lens.rows / 2).toFixed(1)} / min(uGrainLens.x, uGrainLens.y)));
+  // What counts is the grain's own width, not the width of the disc the lens makes of it.
+  float round = max(falls, smoothstep(${LOOK.lens.round[0]!.toFixed(1)}, ${LOOK.lens.round[1]!.toFixed(1)}, (1.0 - vGrainSoft) * inversesqrt(max(lensX.x * lensX.x + lensY.x * lensY.x, 1e-8)) * ${(LOOK.lens.rows / 2).toFixed(1)} / min(uGrainLens.x, uGrainLens.y)));
   round *= 1.0 - vGrainSoft;
   n = normalize(mix(normalize(uGrainKey + v + vec3(0.0, 1.0, 0.0)), n, round));
   float id = vGrainLook.x;
@@ -401,7 +405,7 @@ void main() {
     float back = clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0);
     float near = mix(0.7, 1.0, clamp((length(vStageWorld.xz) - 55.5) / 13.0, 0.0, 1.0));
     vec3 paint = albedo * mix(${vec(LOOK.loose.warm)}, vec3(${SAND_LIT.tint.map((x) => x.toFixed(3)).join(', ')}) * sandCrest(vStageWorld.y) * mix(${vec(SAND_LIT.lone)} * ${SAND_LIT.thin[0]!.toFixed(3)}, vec3(1.0), deep), proud);
-    col = sandKnee(sandTone(paint * mix(gain, 1.0, proud), uGrainKeyCol * (vGrainSun * vGrainLook.z * side * (1.0 + ${SAND_LIT.back.toFixed(3)} * back * back)), (dome + uRigCardCol * (${SAND_LIT.card.toFixed(3)} * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0))) * near * sandShade(vGrainSun * vGrainLook.z * side)) * mix(1.0, gain, proud));
+    col = sandKnee(sandTone(paint * mix(gain, 1.0, proud), uGrainKeyCol * (vGrainSun * vGrainLook.z * side * (1.0 + ${SAND_LIT.back.toFixed(3)} * back * back)), (dome + uRigCardCol * (${SAND_LIT.card.toFixed(3)} * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0))) * near * sandShade(vGrainSun * vGrainLook.z)) * mix(1.0, gain, proud));
     // One grain in forty of those strewn on the table turns a face to the light and glints.
     col *= mix(1.0, ${LOOK.loose.glint.lit.toFixed(2)}, step(1.5, kind));
   }
