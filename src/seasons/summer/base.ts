@@ -453,7 +453,7 @@ const STONE_AFTER = `
   float stoneRimN = clamp(0.2 + 1.1 * dot(geometryNormal, normalize(baseView * vec3(0.9, 0.3, -0.32))), 0.0, 1.0);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * baseSunC * vec3(1.0, 0.84, 0.66) * (${STONE.rim.toFixed(2)} * stoneRim * stoneRimN * stoneRimN * mix(1.0, 1.4, smoothstep(35.5, 37.5, vBasePos.y)) * clamp(0.35 + 2.0 * baseHigh - 1.2 * baseCavity, 0.1, 2.5));
   // There the sun rakes the sand: every face turned to it is lit and the one behind it lies in its shade, with a sharp line between them.
-  float stoneRaked = mix(1.0, mix(0.65, 1.3, smoothstep(-0.15, 0.15, baseFace)), smoothstep(42.0, 49.0, vBasePos.x) * smoothstep(38.0, 35.0, vBasePos.y));
+  float stoneRaked = mix(1.0, mix(0.45, 1.3, smoothstep(-0.15, 0.15, baseFace)), smoothstep(42.0, 49.0, vBasePos.x) * smoothstep(38.0, 35.0, vBasePos.y));
   stoneRaked *= mix(1.0, mix(0.55, 1.5, smoothstep(0.3, 0.6, baseHash(floor(vBasePos * 3.4 + 29.0)))), stoneRim);
   // Read on the approved: on the right shoulder the top of the lip faces the sun and is the brightest sand of that side.
   stoneRaked *= 1.0 + 0.5 * smoothstep(35.5, 37.5, vBasePos.y) * smoothstep(40.0, 44.0, vBasePos.x);
