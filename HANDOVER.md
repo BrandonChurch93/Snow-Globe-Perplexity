@@ -1,4 +1,4 @@
-# Handover: spring's base (phase 6, ninth list)
+# Handover: spring's base (phase 6, tenth list)
 
 Branch `agent/p6-spring-base`. Files: `src/seasons/spring/base.ts`, `assets-src/base-spring/build.mjs`, `layout.mjs`, `RECIPE.md`. Assets to make again: `npm run make -- base-spring`, then `npm run texpack -- --group spring` (texpack also rewrites `public/assets/spring/village-spring.glb`, which is not this job's; restore it with `git checkout`).
 
@@ -81,3 +81,32 @@ Single pixels (film frames 1251 and 1252, 3840 final, `spk.py`: a pixel counts w
 - box 2496,1560, 96 by 80: T 32: 15 and 13; T 64: 1 and 0; T 96: 0 and 0. Whole base region (1100,1280 to 2760,2080): T 64: 11 and 12; T 40: 108 and 125.
 - They are yellow green single pixels in the dark moss under the caps, with red and blue beside them from the lens. With the dew's grains switched off for a trial (not kept), frame 1251: box T 32: 1, T 64: 0; region T 64: 4, T 40: 68. So the source is the dew's pinpoint, a grain of about one pixel at 3840, in the 20 lines that belong to the drops mender. Tried for them, frame 1251 only, not kept: `1.8` in place of `1.22` in `liveWide`: box T 32: 1, T 64: 0; region T 64: 4, T 40: 77 (picture 36). Its look at hd was not seen.
 Three frames and two frames are not the film: nobody has watched this at 60 a second.
+
+## Tenth list (head aa229f81, main 63914740 merged; the ninth list was held and is replaced by this)
+What was built:
+- The roll. `PROFILE` in `layout.mjs` after (51.2, 39.6) is now (51.5, 41.2), (51.6, 42.8), (51.2, 44.2), (50.5, 45.1), (49.9, 45.6): it rolls in over the glass's foot and ends on the glass, so there is no flat top. In `build.mjs`, `seam(az)` is `SEAT_FRONT` 4.4 mm over the old 42.9 at the middle of the front, 5.6 at 30 degrees, falling from 34 to 70 degrees to 1.2 at the sides, nothing behind 135. `brow(az, h)` stands the roll 4.6 mm proud at `BROW_H` (40.7 mm) at the front with a top that is steep at the glass and flatter at the crown (0.3 v + 0.7 v squared, v the share of the way down from the end to the brow), and 2.2 mm proud at 39.5 mm from 40 to 70 degrees on round the sides and the back. The ninth's draw-in at the sides is out.
+- The light in `base.ts`: the bank's shade (`baseBank`, one line) now reaches 4.4 to 6.8 mm from the glass (ninth 3.5 to 7.0). Nothing else in the shader moved. The dew's 20 lines are byte for byte as on main.
+- Made size: rock 102,034, growth 22,845, water 2,768, 127,647 triangles in all, 4.73 MB. Spring at high by sum 1,493,420 (main 1,496,825).
+
+What it reads (approved, main's base which is the sixth list's, the tenth):
+- M4 of shake 2 at draft: 0.9447, 123,053 of 130,257 (main 0.8957, ninth 0.9647, eighth 0.8937). Shakes 1, 3, 4: 0.9694, 0.9567, 0.9597, as main. M5: 0.9923, 1, 0.9845, 0.9997.
+- The detail line at review: 0.8947, base 0.900 over 171,750, miniature 0.895 over 102,258 (main 0.8666: 0.909, 0.867; ninth 0.9072: 0.911, 0.907). The base's part is 0.009 under main's.
+- Seat over the glass's lowest point: middle 135 px, y 708 (ninth 140, eighth 107); side crossings (651,685) and (1259,697).
+- Build outside the traced outline: 46,638 px (ninth 52,951, eighth 31,774, bar 31,774): above the traced top line 20,276 (ninth 26,602, eighth 5,409), under the table line 25,822, left 501, right 9, other 30. Traced and not covered 3,753. The bar would need the part above the top line at or under 5,412, that is the seat within about a pixel of the eighth's line at y 734 to 737, where M4 of shake 2 read 0.8937 and the plain wall showed.
+- The crest's trace on the ids view, x 790 to 1190: sd 2.45 about its slow line, range -2.6 to +6.1 (ninth 3.00); it now carries the climb toward the shoulders.
+- Row levels at x 900 to 1020 from y 690 by 5: 153, 155, 115, 33, 36, 46, 40, 46, 59, 69, 78, 59, 38, 34, 25, 17. Approved: 154, 161, 166, 170, 131, 89, 63, 49, 44, 39, 82, 97, 58, 41, 36, 29.
+
+What the approved's top line is: its traced line (y 742 to 744 across x 840 to 1160) is where its glass meets its moss. The dark band over it, y 715 to 739, is the miniature's own mossy bank seen through the glass, and the lit rim is y 740 to 750. In the build the miniature shows, in the same place, the lower rows of its turf's skirt: a plain olive wall from about y 705 at the middle (695 at x 800, 690 at x 700) down to the base. That is why the seat cannot go down to the approved's line with the miniature as it is. The wall is `SKIRT` and `MOUND` in `assets-src/village-spring/build.mjs` (the 18 skirt rows of the turf, shaded to soil under the mossy foot), drawn by the turf's material in `src/seasons/spring/mini/village.ts` (`SKIRT_FILL`, `SOIL`). If the skirt carried the bank's moss down to the collar, the seat could go to y 743, `SEAT_FRONT` near 0, and the brow could become a crest in front of the glass with the lit fringe the approved has.
+
+What is short of the approved picture on the tenth list:
+- The roll is about 60 px tall at the middle against about 45, and its seat is 35 px over the approved's line.
+- The lit line reads 64 to 78 against 97 to 103 and is a speckled band, not a fringe of bright tips against a dark bank. The face under it is 17 to 38 against 29 to 58.
+- The right end of the roll is pale yellow; the approved's is green with a warm rim.
+- Small slivers of the plain wall still show under the glass's rim at x 725 to 745 and near x 1190 (about 4 px high).
+- The pale band at the left of the glass's foot (x 650 to 680, y 660 to 690) is the miniature through the glass's lower rim, not the base (picture 39).
+- Not started: the heads toward beads of 3 px, the front right crown, the limb's thickness, the moss's lower edge, the trickle.
+- Not seen: any film frame of the tenth list at 3840, the shake stills at review other than spring landed, the back of the base.
+
+The dew's line: branch `agent/p6-spring-dew` carries `liveWide` 1.8 for 1.22 as one commit on main. See picture 40 and the report: on main the line changes almost nothing in the box at (2496,1560); what stands out there is the caps' rims, which the seventh list's bound of the low sun mends (on this branch since the seventh list).
+
+Proofs run on aa229f81: tsc 0; the whole vitest 68 files passed and 1 skipped (`tests/shake-looks.test.ts`, which runs only when asked), 950 tests passed, 8 skipped, 293 s, `tests/steps.test.ts` 133 s; strict pass for spring-rest and spring-shake; G15 pass (the gate prints fall's 1,759,623 of 1,800,000); the six draft stills that are not spring's equal the list of 63914740; spring-rest caa42db060e03278, spring-landed bfda838820e392ab; spring landed at review looked at.
