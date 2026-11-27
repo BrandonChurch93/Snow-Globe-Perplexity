@@ -36,6 +36,10 @@ const SEEN_PUMP = 9 / 1080
 const FIRST_HAND = (name: string): boolean => name === 'test' || name.startsWith('test:') || name === 'preroll'
 /** The most the foot of the held hand rocks over after the landing, in degrees: the bound of decision 106 itself. */
 const OVERSHOOT_HELD_DEG = 2.5
+/** The turn of the held hand's wrist about the globe's upright axis, in degrees: enough for the miniature and the shells on the base to be seen to swing. */
+const TWIST_DEG = [6, 12] as const
+/** The frames after a reversal of the globe in which the front of the glass is furthest round: late, as a weight in a hand is, but inside the next stroke. */
+const TWIST_LAG_FRAMES = [2, 9] as const
 
 const film = shots.filter((shot) => shot.kind === 'shake').map((shot) => shot.id)
 const NAMES = ['test', ...config.seasons.map((season) => `test:${season}`), 'preroll', ...film, 'loop', ...Array.from({ length: FRAME.shakePaths }, (_, i) => `live-${i}`)]
@@ -665,6 +669,89 @@ describe('the shake path: as the hero lens sees it', () => {
       }
       expect(most, `${name} roll`).toBeGreaterThan(0.87 * s.tiltDeg)
       expect(most, `${name} roll`).toBeLessThan(s.tiltDeg + 0.5)
+    }
+  })
+})
+
+describe('the shake path: the wrist turns the globe about its upright axis', () => {
+  it('turns every held shake a few degrees and the first hand not at all, and is square again before the edge meets the surface', () => {
+    for (const name of NAMES) {
+      const m = shakeMotion(name)
+      const path = makeShake(name)
+      if (FIRST_HAND(name)) {
+        expect(m.plan.twistPeak, name).toBe(0)
+        for (let b = 0.013; b < m.endBeat; b += 0.0371) expect(path.poseAt(b).twist, `${name} at ${b}`).toBeUndefined()
+        continue
+      }
+      let most = 0
+      for (let b = 0.013; b < m.endBeat; b += 0.0371) {
+        const twist = path.poseAt(b).twist
+        expect(twist, `${name} at ${b}`).toBe(m.at('twist', b) === 0 ? 0 : m.at('twist', b))
+      }
+      for (let b = 0; b < m.endBeat; b += FRAME_BEATS / 8) most = Math.max(most, Math.abs(path.poseAt(b).twist ?? 0))
+      expect(most * DEG, `${name} twist`).toBeGreaterThan(TWIST_DEG[0])
+      expect(most * DEG, `${name} twist`).toBeLessThanOrEqual(TWIST_DEG[1])
+      expect(m.plan.twistPeak).toBeCloseTo(most, 3)
+      for (let b = m.plan.touch; b < m.endBeat + 0.5; b += FRAME_BEATS / 4) expect(path.poseAt(b).twist ?? 0, `${name} at ${b}`).toBe(0)
+      expect(path.poseAt(m.plan.liftOff / 2).twist ?? 0).toBe(0)
+    }
+  })
+
+  it('joins its pieces in turn, rate and pull at every knot, leaves and returns to rest without a step, and turns no harder than the hand tilts', () => {
+    const tolerance = [1e-6 / 58, 1e-4 / 58, 1e-3 / 58]
+    const hair = 1e-10
+    const dt = 1 / 2400 / BEAT_S
+    for (const name of NAMES) {
+      if (FIRST_HAND(name)) continue
+      const m = shakeMotion(name)
+      const path = makeShake(name)
+      const knots = Math.round(m.endBeat * m.knotsPerBeat)
+      for (let i = 1; i < knots; i++) {
+        const b = i / m.knotsPerBeat
+        for (let order = 0; order <= 2; order++) {
+          const gap = Math.abs(m.at('twist', b - hair, order) - m.at('twist', b, order))
+          if (gap > tolerance[order]!) throw new Error(`${name} twist order ${order} steps by ${gap} at beat ${b}`)
+        }
+      }
+      for (let order = 0; order <= 2; order++) {
+        expect(Math.abs(m.at('twist', 1e-10, order)), `${name} ${order} at the start`).toBeLessThan(1e-3)
+        expect(Math.abs(m.at('twist', m.plan.touch, order)), `${name} ${order} at the touch`).toBe(0)
+      }
+      expect((m.jerkPeak('twist', 0, m.endBeat) * DEG) / BEAT_S ** 3, name).toBeLessThan(JERK_DEG_S3)
+      let spin = 0
+      const p: number[] = []
+      for (let i = -3; i <= Math.ceil((m.endBeat + 0.05) / dt); i++) {
+        p.push(path.poseAt(i * dt).twist ?? 0)
+        if (p.length < 4) continue
+        const [a, b, c, d] = p.slice(-4) as [number, number, number, number]
+        spin = Math.max(spin, (Math.abs(d - 3 * c + 3 * b - a) / dt ** 3) * DEG / BEAT_S ** 3)
+      }
+      expect(spin, `${name} twist jerk`).toBeLessThan(JERK_DEG_S3)
+    }
+  })
+
+  it('trails each reversal: the front of the glass swings on toward the side the globe has reached, furthest round some frames after the turn, and comes back through the next stroke', () => {
+    for (const name of NAMES) {
+      if (FIRST_HAND(name)) continue
+      const m = shakeMotion(name)
+      const turns = m.plan.strokes
+      let before = 0
+      for (const turn of turns) {
+        const side = Math.sign(turn.mm)
+        let peak = { beat: turn.beat, twist: -Infinity }
+        for (let b = turn.beat - 2 * FRAME_BEATS; b <= turn.beat + 12 * FRAME_BEATS; b += FRAME_BEATS / 8) {
+          const twist = side * m.at('twist', b)
+          if (twist > peak.twist) peak = { beat: b, twist }
+        }
+        const lag = (peak.beat - turn.beat) / FRAME_BEATS
+        expect(lag, `${name} twist after the turn at beat ${turn.beat.toFixed(3)}`).toBeGreaterThan(TWIST_LAG_FRAMES[0])
+        expect(lag, `${name} twist after the turn at beat ${turn.beat.toFixed(3)}`).toBeLessThan(TWIST_LAG_FRAMES[1])
+        expect(peak.twist / m.plan.twistPeak, `${name} twist at the turn at beat ${turn.beat.toFixed(3)}`).toBeGreaterThan(0.4)
+        // On the turn itself it is still coming round from the last one.
+        expect(side * m.at('twist', turn.beat), `${name} late at beat ${turn.beat.toFixed(3)}`).toBeLessThan(0.5 * peak.twist)
+        expect(Math.sign(before) !== side || before === 0, `${name} alternates`).toBe(true)
+        before = side
+      }
     }
   })
 })
