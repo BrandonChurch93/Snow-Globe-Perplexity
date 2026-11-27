@@ -17,7 +17,7 @@ const HEAP = {
   cone: { x: 59.3, z: 17.2, mm: 10.2, tip: 0.25, foot: 0.2, round: [[-180, 1.3], [-18, 1.5], [14, 1.6], [150, 1.5], [180, 1.3]], reach: [[-180, 20], [-90, 22], [-50, 27], [-20, 28], [12, 31], [40, 28], [90, 29], [125, 29], [155, 26], [180, 20]] },
   apron: { mm: 2.0, from: 0.6, lean: 2.5, extra: [[-180, 6], [-90, 6], [-30, 30], [0, 34], [25, 30], [50, 12], [90, 6], [130, 5], [180, 6]], patch: [-0.6, 0.3, 0.5] },
   bank: { mm: [[-180, 0], [-10, 0], [15, 2.0], [40, 5.0], [62, 7.5], [85, 7.5], [105, 3.0], [135, 0], [180, 0]], r: 58, w: 14 },
-  skirt: { at: [90, -40], mm: [24, 26], high: 0.7, patch: [0.05, 0.5] },
+  skirt: { at: [96, 8], mm: [22, 9], high: 0.7, patch: [0.05, 0.5] },
   lumps: [0.06, 0.22, 0.8],
   sprinkle: { at: [-63.8, -47.6], lit: [-0.918, -0.396], run: [-12, -2, 22, 78], rise: [0, 0.6], core: [0.95, 1.1], veil: [0.5, 6.5] },
   cover: [0.02, 3.0],
@@ -94,7 +94,9 @@ const apron = (x: number, z: number): number => {
   return A.mm * (1 - out ** A.lean) * ease((patch - A.patch[0]! - (A.patch[1]! - A.patch[0]!) * out) / A.patch[2]!)
 }
 
-// The sand that the stream's grains have thrown behind the heap, to the right: a skirt less than a grain deep, in patches.
+// The sand that the stream's grains have thrown past the heap, to the right and level with it as the camera sees it: a
+// skirt less than a grain deep, in patches. None of it lies behind the heap, where thin sand on the dark table reads as
+// grains in the air.
 const skirt = (x: number, z: number): number => {
   const K = HEAP.skirt
   const patch = 0.55 * noise(x / 11 + 4.1, z / 15 + 2.3, 71) + 0.45 * noise(x / 3.7 + 9.3, z / 5.3 + 6.7, 73)
@@ -454,6 +456,33 @@ vec3 sandKnee(vec3 c) {
 }
 `
 
+// The sand comes with the landing in patches, those by the base first and fewer with the distance. The skin and the single
+// grains (arrival.ts) ask the same patches; a grain is a little before or after its patch by its own number.
+const COMES = { near: [55, 150], spread: 0.6, late: 0.75, soft: 0.2, patchMm: [11, 3.7], own: 0.3 } as const
+export const SAND_BORN = `
+float sandSeed(vec2 c) {
+  uvec2 q = uvec2(ivec2(c) + 32768);
+  q = q * 1664525u + 1013904223u;
+  q.x += q.y * 374761393u;
+  q.x ^= q.x >> 15u;
+  q.x *= 668265263u;
+  q.x ^= q.x >> 13u;
+  return float(q.x >> 8u) / 16777216.0;
+}
+float sandPatch(vec2 p) {
+  vec2 c = floor(p);
+  vec2 t = p - c;
+  t = t * t * (3.0 - 2.0 * t);
+  return mix(mix(sandSeed(c), sandSeed(c + vec2(1.0, 0.0)), t.x), mix(sandSeed(c + vec2(0.0, 1.0)), sandSeed(c + vec2(1.0, 1.0)), t.x), t.y);
+}
+float sandCome(vec2 p, float own, float grow) {
+  float away = smoothstep(${f(COMES.near[0])}, ${f(COMES.near[1])}, length(p));
+  float lot = 0.65 * sandPatch(p * ${f(1 / COMES.patchMm[0])}) + 0.35 * sandPatch(p * ${f(1 / COMES.patchMm[1])} + 19.0);
+  float born = ${f(COMES.late)} * mix(away, mix(lot, own, ${f(COMES.own)}), ${f(COMES.spread)});
+  return smoothstep(born, born + ${f(COMES.soft)}, grow);
+}
+`
+
 const SLAB_PARS = `
 varying vec3 vSlab;
 uniform vec4 uSlabLens;
@@ -569,7 +598,7 @@ float slabAlpha = 1.0;
 diffuseColor.a = slabAlpha;
 `
 
-// While the heap grows (arrival.ts) it is as high as it has grown, and covers the table only where that height covers it.
+// While the heap grows (arrival.ts) it is as high as it has grown, and its skin comes in patches, those by the base first.
 // Where the heap leant on the foot it stands, as the foot leaves, as the cast of the foot's edge. It does not stand long:
 // within the second the sand slides down into the print at its angle of repose, and the print is closed.
 const SLUMP = { from: 0.33, seconds: 1.0, steep: 5.0 } as const
@@ -578,8 +607,8 @@ float slabStood = uSandLift < 0.0 ? 0.0 : 1.0 - smoothstep(${f(SLUMP.from)}, ${f
 float slabCut = ${f(SLUMP.steep)} * slabStood * slabStood * slabStood * max(${f(SLAB.footMm)} - length(position.xz), 0.0);
 float slabTall = max(position.y - ${f(SLAB.liftMm)} - slabCut, 0.0);
 transformed.y = ${f(SLAB.liftMm)} + slabTall;
-float slabGrown = clamp((slabTall * uSandGrow - ${f(HEAP.cover[0]!)}) / ${f(HEAP.cover[1]! - HEAP.cover[0]!)}, 0.0, 1.0);
-vSlab = vec3(mix(slabGrown * slabGrown * (3.0 - 2.0 * slabGrown), aSlab.x, step(1.0, uSandGrow) * step(slabCut, 0.0)), aSlab.yz);
+float slabGrown = clamp((slabTall - ${f(HEAP.cover[0]!)}) / ${f(HEAP.cover[1]! - HEAP.cover[0]!)}, 0.0, 1.0);
+vSlab = vec3(mix(slabGrown * slabGrown * (3.0 - 2.0 * slabGrown), aSlab.x * sandCome(position.xz, 0.5, uSandGrow), step(slabCut, 0.0)), aSlab.yz);
 `
 
 // The heap is the stage's sand (base.ts) with the light and the edge of this file put in place of its own.
@@ -602,7 +631,7 @@ function slabSand(): THREE.Material {
     shader.uniforms.uSandGrow = arrivalPart.sandGrow
     shader.uniforms.uSandLift = arrivalPart.sandLift
     shader.uniforms.uSandFoot = arrivalPart.sandFoot
-    shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec3 aSlab;\nvarying vec3 vSlab;\nuniform float uSandGrow;\nuniform float uSandLift;').replace('#include <begin_vertex>', `#include <begin_vertex>\n${SLAB_RISE}`)
+    shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>\nattribute vec3 aSlab;\nvarying vec3 vSlab;\nuniform float uSandGrow;\nuniform float uSandLift;${SAND_BORN}`).replace('#include <begin_vertex>', `#include <begin_vertex>\n${SLAB_RISE}`)
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>\n${SLAB_PARS}`)
       .replace('#include <opaque_fragment>', `${SLAB_LIGHT}\n#include <opaque_fragment>`)

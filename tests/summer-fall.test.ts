@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { BODY } from '../assets-src/base-summer/profile.mjs'
+import { BODY, LEDGE_H } from '../assets-src/base-summer/profile.mjs'
 import { FALL, GRAIN_ROW, fallPaths, fallShare, grainRows } from '../src/seasons/summer/arrival'
 
 // The sand that falls from the right shoulder of summer's base (open item 87: at rest nothing fell there). Each grain
-// leaves the shoulder under the collar (round 21: a thin stream from below the collar, no wall of sand up to the ledge),
-// clears the belly of the stone or tumbles down it and lands on the mound; the fall stands for as long as the globe
-// stands, is fuller just after a landing and stops while the globe is in the air.
+// leaves the top of the shoulder under the rim of the ledge (round 22: a trickle of single grains from the top of the
+// shoulder down the profile, the shells of the base before it), clears the belly of the stone or tumbles down it and
+// lands on the mound; the fall stands for as long as the globe stands, is fuller just after a landing and stops while
+// the globe is in the air.
 describe("summer's falling sand", () => {
   const body = BODY as [number, number][]
   const stoneAt = (h: number): number => {
@@ -23,22 +24,23 @@ describe("summer's falling sand", () => {
     expect(paths.length).toBe(FALL.count)
   })
 
-  it('starts at the shoulder under the collar on the right, close to the stone, and lands on the mound outside the foot', () => {
-    const foot = body.find(([r, h], i) => h > 20 && i + 1 < body.length && body[i + 1]![1] > h && (r - body[i + 1]![0]) / (body[i + 1]![1] - h) < 0.1)![1]
-    expect(foot).toBeGreaterThan(28)
-    expect(foot).toBeLessThan(34)
+  it('starts at the top of the shoulder under the rim of the ledge, at the right edge of the base, close to the stone, and lands on the mound outside the foot', () => {
+    const rim = LEDGE_H as number
+    expect(rim).toBeGreaterThan(38)
+    expect(rim).toBeLessThan(42)
+    const top = body.find(([, h]) => h > rim - 1)![0]
     for (const p of paths) {
       const az = (Math.atan2(p.from[0], p.from[2]) * 180) / Math.PI
-      expect(az).toBeGreaterThan(60)
-      expect(az).toBeLessThan(116)
-      expect(Math.hypot(p.from[0], p.from[2])).toBeGreaterThan(52)
+      expect(az).toBeGreaterThan(82)
+      expect(az).toBeLessThan(98)
+      expect(Math.hypot(p.from[0], p.from[2])).toBeGreaterThan(top)
       expect(Math.hypot(p.from[0], p.from[2])).toBeGreaterThan(stoneAt(p.from[1]))
       expect(Math.hypot(p.from[0], p.from[2])).toBeLessThan(stoneAt(p.from[1]) + 2)
-      expect(p.from[1]).toBeLessThanOrEqual(foot)
-      expect(p.from[1]).toBeGreaterThan(foot - 2)
+      expect(p.from[1]).toBeLessThanOrEqual(rim)
+      expect(p.from[1]).toBeGreaterThan(rim - 2)
       expect(Math.hypot(p.to[0], p.to[2])).toBeGreaterThan(60)
       expect(p.to[1]).toBeGreaterThan(3)
-      expect(p.to[1]).toBeLessThan(p.from[1] - 15)
+      expect(p.to[1]).toBeLessThan(p.from[1] - 28)
     }
   })
 
@@ -61,12 +63,12 @@ describe("summer's falling sand", () => {
     expect(slow).toBeLessThan(paths.length * 0.9)
   })
 
-  it('takes the time a grain of sand takes to fall two centimetres, and is back at the shoulder only after it has landed', () => {
+  it('takes the time a grain of sand takes to fall three centimetres, and is back at the shoulder only after it has landed', () => {
     const period = 8
     for (const p of paths) {
       expect(p.life).toBeGreaterThanOrEqual(p.seconds)
       expect(p.seconds).toBeGreaterThan(0.03)
-      expect(p.life).toBeGreaterThan(0.06)
+      expect(p.life).toBeGreaterThan(0.08)
       expect(p.life).toBeLessThan(0.14)
       // The shader gives each grain a whole number of falls in the ambient period.
       expect(period / Math.max(1, Math.floor(period * p.rate + 0.5))).toBeGreaterThan(p.life + 0.005)
