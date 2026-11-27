@@ -337,7 +337,9 @@ ${SHADE}
   vec3 liveKickDir = normalize(mat3(viewMatrix) * vec3(-0.85, 0.3, -0.3));
   float liveKick = clamp((dot(geometryNormal, liveKickDir) + 0.2) / 1.2, 0.0, 1.0);
   reflectedLight.indirectDiffuse *= liveShade;
-  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * vec3(0.8, 1.0, 0.9) * dot(liveSunC, vec3(0.3333)) * (0.55 * baseBark);
+  // In the shade of the front the caps stand in the room's warm light from above and the roots in its fill, so both read against the dark stones;
+  // on the sunlit right the roots keep their dark sides.
+  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * mix(vec3(1.0, 0.88, 0.7), mix(vec3(0.82, 1.0, 1.0), vec3(0.8, 1.0, 0.9), smoothstep(22.0, 36.0, vBasePos.x)), baseBark) * dot(liveSunC, vec3(0.3333)) * mix(3.0 * (0.35 + 0.65 * liveUp) * mix(1.0, 0.5, smoothstep(0.45, 0.8, dot(vBasePaint, vec3(0.3, 0.6, 0.1)))) * (1.0 - 0.85 * liveOpen), mix(1.6, 0.55, smoothstep(22.0, 36.0, vBasePos.x)), baseBark);
   reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.8);
   reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveKeyC * vec3(1.0, 0.8, 0.66) * ((mix(0.7, 0.8, baseBark) * liveRim * liveRim * liveOpen + mix(0.3, 0.25, baseBark) * liveKick * liveKick) * baseAo);
   // The same low warm sun that grazes the right flank of the stone catches the roots that stand out of it.
