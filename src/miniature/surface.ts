@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { afterLight } from '../core/chunks/light'
 import { stageMaterial, type Rgb } from '../core/materials'
+import { ROW, whole } from '../scene/steps'
 
 export interface GlowSource {
   at: readonly [number, number, number]
@@ -12,13 +13,14 @@ export interface GlowSource {
 
 const WRAP = 0.22
 
-export function withSurface(g: THREE.BufferGeometry, glow: readonly GlowSource[]): THREE.BufferGeometry {
+export function* surfacing(g: THREE.BufferGeometry, glow: readonly GlowSource[]): Generator<void, THREE.BufferGeometry> {
   const surf = g.getAttribute('uv1')
   if (surf && !g.getAttribute('aSurf')) g.setAttribute('aSurf', surf)
   const P = g.getAttribute('position')
   const N = g.getAttribute('normal')
   const out = new Float32Array(P.count * 3)
   for (let i = 0; i < P.count; i++) {
+    if (i % ROW === 0) yield
     const x = P.getX(i)
     const y = P.getY(i)
     const z = P.getZ(i)
@@ -49,6 +51,10 @@ export function withSurface(g: THREE.BufferGeometry, glow: readonly GlowSource[]
   }
   g.setAttribute('aGlow', new THREE.BufferAttribute(out, 3))
   return g
+}
+
+export function withSurface(g: THREE.BufferGeometry, glow: readonly GlowSource[]): THREE.BufferGeometry {
+  return whole(surfacing(g, glow))
 }
 
 export const SURFACE_VERT_PARS = `

@@ -4,7 +4,7 @@ import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
-import { bakeGlow, buildTrunk, chainSolid, glow, glowHook, limbs, placeGeometry, placePoint, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { chainSolid, glow, glowHook, glowing, limbs, placeGeometry, placePoint, placing, prepareTrunk, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { season, tones } from './palette'
 import { PUMPKINS, pumpkinFace } from './props'
@@ -16,16 +16,16 @@ const BARK = 'shared/trunk-bark.srgb.tile.w1024.png'
 const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.w1024.png'
 const CYCLES = 5
 const FLICKER = 0.2
-const BARK_TINT: [number, number, number] = [0.06, 0.055, 0.052]
+const BARK_TINT: [number, number, number] = [0.14, 0.125, 0.11]
 const TWIG_TINT: [number, number, number] = [0.05, 0.047, 0.045]
-const BARK_RELIEF = 1.25
+const BARK_RELIEF = 1.7
 const EMBER_GAIN = 6.5
 const EMBER_ON_WOOD = { power: 14, reachMm: 0.9 }
-const LAMP_ON_WOOD = { power: 7.5, reachMm: 15, wrap: -0.3 }
-const LAMP_SHIFT: Vec3 = [-3, 0, -5]
-const PUMPKIN_ON_WOOD = { power: 20, reachMm: 6, wrap: 0.1 }
-const POND_ON_WOOD = { power: 3, reachMm: 22, wrap: 0.2 }
-const FILL_ON_WOOD = { power: 2.2, reachMm: 1000, wrap: 0.4 }
+const LAMP_ON_WOOD = { power: 56, reachMm: 15, wrap: 0 }
+const LAMP_SHIFT: Vec3 = [-3, 0, 2]
+const PUMPKIN_ON_WOOD = { power: 12, reachMm: 6, wrap: 0.1 }
+const POND_ON_WOOD = { power: 2, reachMm: 22, wrap: 0.2 }
+const FILL_ON_WOOD = { power: 1.0, reachMm: 1000, wrap: 0.4 }
 const FILL_FROM: Vec3 = [40, 20, 60]
 const SKY: [number, number, number] = [0.62, 0.8, 0.85]
 const GROUP = { power: 0.06, reachMm: 5.5, along: 0.72 }
@@ -39,7 +39,7 @@ const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
 // Wet black bark: the lamp, the pumpkin at the foot and the green of the pond glance off the ridges as small sharp lights
 // and leave the grooves black. `shine` is the lobe's exponent, `ridge` how far a groove (dark vertex colour) is kept out.
 const GLINT = { shine: 80, ridge: [0.3, 0.8] as [number, number], rough: 0.86 }
-const GLINT_LAMP = { lift: 3.6, power: 1.3, reachMm: 11 }
+const GLINT_LAMP = { lift: 3.6, power: 1.6, reachMm: 11 }
 const GLINT_TONE: [number, number, number] = [1, 0.46, 0.14]
 const GLINT_PUMPKIN = { power: 0.9, reachMm: 8 }
 const GLINT_POND = { power: 0.05, reachMm: 24 }
@@ -136,11 +136,12 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareTrunk(), prepareModel(MODEL)])
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const part = `miniature-${season}`
   const lit = onWood()
-  const g = placeGeometry(geometry(MODEL, 'twigs'))
-  bakeGlow(g, lit)
+  const g = yield* placing(geometry(MODEL, 'twigs'))
+  yield* glowing(g, lit)
+  yield
   const bark = stageMaterial({
     part,
     standIn: false,
@@ -151,14 +152,15 @@ export function build(): THREE.Object3D {
     color: new THREE.Color(TWIG_TINT[0], TWIG_TINT[1], TWIG_TINT[2]),
     vertexColors: true,
     roughness: GLINT.rough,
-    extra: { normalMap: texture(BARK_NORMAL), normalScale: new THREE.Vector2(1.4, 1.4) },
+    extra: { normalMap: texture(BARK_NORMAL), normalScale: new THREE.Vector2(2.4, 2.4) },
     hook: barkHook,
     key: 'twigs-fall',
   })
   const twigs = new THREE.Mesh(g, bark)
   twigs.castShadow = true
   twigs.receiveShadow = true
-  return new THREE.Group().add(buildTrunk(part, lit, BARK_TINT), twigs)
+  yield
+  return new THREE.Group().add(yield* trunkMaking(part, lit, BARK_TINT), twigs)
 }
 
 export function lights(): THREE.Object3D {

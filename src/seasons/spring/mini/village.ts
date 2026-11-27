@@ -8,9 +8,10 @@ import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial
 import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
-import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
+import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, surfacing, type Cover, type GlowSource } from '../../../miniature/surface'
 import { anchors, collarY, cottage, cottageFrame, fence, groundAt, moundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
+import { ROW } from '../../../scene/steps'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
 
@@ -478,12 +479,13 @@ void main() {
   })
 }
 
-function dressed(g: THREE.BufferGeometry): THREE.BufferGeometry {
+function* dressed(g: THREE.BufferGeometry): Generator<void, THREE.BufferGeometry> {
   const P = g.getAttribute('position')
   const C = g.getAttribute('color')
   const chimney = (r: string): boolean => r === 'chimney'
   const fenceOnly = (r: string): boolean => r === 'fence'
   for (let i = 0; i < P.count; i++) {
+    if (i % ROW === 0) yield
     const lum = 0.3 * C.getX(i) + 0.6 * C.getY(i) + 0.1 * C.getZ(i)
     if (solidDistance(P.getX(i), P.getY(i), P.getZ(i), chimney) < STACK.reachMm) C.setXYZ(i, lum * STACK.tone[0] * 2, lum * STACK.tone[1] * 2, lum * STACK.tone[2] * 2)
     else if (solidDistance(P.getX(i), P.getY(i), P.getZ(i), fenceOnly) < FENCE_WOOD.reachMm) {
@@ -503,11 +505,18 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
   return m
 }
 
-export function build(): THREE.Object3D {
-  const walls = shadowed(new THREE.Mesh(withSurface(dressed(villageGeometry('solid').clone()), nearWall), surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: mossy, key: 'village-solid-spring', fill: WALL_FILL })))
-  const turf = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'turf'), near), turfMaterial()), false)
-  const growth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'growth'), nearGrowth), growthMaterial()), false)
-  const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water'), near), waterMaterial()), false)
+export function* making(): Generator<void, THREE.Object3D> {
+  const stone = yield* dressed(villageGeometry('solid').clone())
+  yield
+  const solids = yield* surfacing(stone, nearWall)
+  yield
+  const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: mossy, key: 'village-solid-spring', fill: WALL_FILL })))
+  yield
+  const turf = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'turf'), near), turfMaterial()), false)
+  yield
+  const growth = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'growth'), nearGrowth), growthMaterial()), false)
+  yield
+  const water = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'water'), near), waterMaterial()), false)
   growth.onBeforeRender = (_r, _s, _c, g) => g.setDrawRange(0, growth.matrixWorld.determinant() < 0 ? 0 : Infinity)
   growth.onAfterRender = (_r, _s, _c, g) => g.setDrawRange(0, Infinity)
   return new THREE.Group().add(walls, turf, growth, water)
