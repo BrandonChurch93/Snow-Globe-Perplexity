@@ -1,19 +1,22 @@
-# Status 220
+# Status 221
 
-2026-11-27 17:01 UTC
+2026-11-27 17:45 UTC
 
 - Phases 1 to 5 complete. Phase 6 in progress.
-- Landed since Status 219: chain 34 is on origin main (63914740, pushed 16:56 UTC). Fall's base carries its three cut and lit pumpkin faces and the shutter's fine motion is in. Measured on it: fall at rest M3 0.9354 at review against 0.8835 before, the base's part 0.970 against 0.883; M4 of shakes 1 to 4 0.9694, 0.8957, 0.9567, 0.9597; the whole test run 954 passed, 4 skipped; triangles at high 1,759,623 of 1,800,000 for fall, the largest of the four.
-- Chain 35 runs since 16:59 UTC with three parts: the mend of summer's pale patches under the glass (open item 255; its builder's pictures looked at, the patches are gone in them), the change of season's first reworked item (bases, rim and lamps dissolve smoothly at 4K) and the thirteenth pass of summer's tree. Its checks are not read yet and nothing of it is on origin.
-- Decision 200: the first item of the tree's fourteenth list (shade inside the crown) is a real step in the crown's depth by my look and is held for its second item, because by its builder's own rows the top over the core and the wing fell.
+- Landed since Status 220: chain 35 is on origin main (6922e017, pushed 17:33 UTC). It carries the mend of summer's pale patches under the glass (open item 255, gone in the landing still, closed), the change of season's first reworked item (bases, rim and lamps dissolve at 4K) and the thirteenth pass of summer's tree. Measured on it: summer at rest M3 0.854 at review, equal to before (0.8541), with the miniature's part at 0.980 against 0.996 before, a fall inside its floor of 0.97 (decision 196); fall at rest M3 0.9354, equal to chain 34; M4 of shakes 1 to 4 0.9694, 0.895, 0.957, 0.9595; M5 0.993, 1, 0.9879, 0.9997; the whole test run 967 passed and 4 skipped in 68 files passed and 1 skipped, 986 s; triangles at high 1,698,998 of 1,800,000 for summer. Of the eight guard stills only summer's two moved.
+- Decision 201, summer's falling sand: its builder drew ten trial rates with a slice through time for each. Main's stream boils (no grain is found again in the next frame); the held version stands and reads as wicker against the stone. Ruled: the whole fall travels at about four times the held version's rate, the threads a little unlike so that neighbours shear, and bar 1 is restated to catch a boil and not travel. Its first reading at 4K came since: one frame events at four times the rate 1.25 and 1.15 percent of the close box against a bar of 1 percent, at twice the rate 0.34 and 0.29; no ruling on it yet. No trial was seen in motion, at 4K or in the app.
+- Chain 36 is under way: fall's scene, tenth list (by its builder M3 fall at rest 0.9702 against main's 0.9354, its fence at 4K over four frames without flicker by its counts), fall's air, Step B (dabs and grain in the upper air, fine points; its glow and leaf in front of the chimney are a fault its builder names) and spring's base, tenth list (the lid is a roll now; decision 203 takes it although the base's own part of M3 reads 0.900 against 0.909 by its builder, since the total and M4 rise; a departure from the hold rule, not a pass). The three are merged here after their reports were read and pictures looked at; none is on origin main.
+- Decision 202, a trial: chain 36's checks run on a helper machine and are read here, because a chain on this machine takes about 34 minutes in which nothing else may run on it. A fault of mine at 17:35 UTC: I tried to set the helper's branch with a forced push; it was stopped before it ran and the branch was made by a plain push. Main was not touched.
+- Ordered at 17:43 UTC: the first pictures of the eighth publish on chain 35's head; next lists to fall's scene (the tree), fall's air (the chimney, the leaves, the points) and spring's base (the skirt, so that the seat can sink to the approved's line).
+- The loop: the one place it plays 96 samples then 24 (frames 48 to 49) holds by its builder's table, worst tile 1.04 times against a bar of 1.5. No picture was made of it and nothing was seen in motion.
 - Open and below the bar: winter's ferns torn at film frame 668, summer's heap torn at 2108, the petals' fringes at 680 (with the change's builder); spring's dots under the mushrooms' rims (open item 259); summer's flame and star in the glass; a white round patch behind the lamp post at summer's close camera (open item 260).
 - All four seasons remain below the bar. Sound credits 7,420 of 10,000.
-- phase 6: 38.20 h used of its 12.00 h box
-- allowance (after the review): 38.20 h used of 12.00 h allowed
+- phase 6: 38.93 h used of its 12.00 h box
+- allowance (after the review): 38.93 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-220-1.jpg`: Fall at rest on chain 34 with the base's cut faces, approved picture left and build right, on origin now, below the bar
-- `out/stills/status/status-220-2.jpg`: Fall after its landing on chain 34, on origin now, below the bar
-- `out/stills/status/status-220-3.jpg`: Summer after its landing, the pale patches on the base above and gone with the mend below, in chain 35, not on origin yet
-- `out/stills/status/status-220-4.jpg`: Summer's tree, approved picture left, main in the middle, the fourteenth list's first item right, held for its second item, below the bar
+- `out/stills/status/status-221-1.jpg`: Summer at rest on chain 35 with the tree's thirteenth pass, approved picture left and build right, on origin now, below the bar
+- `out/stills/status/status-221-2.jpg`: Spring's base, approved picture above and the tenth list below, the lid a roll, in chain 36, below the bar
+- `out/stills/status/status-221-3.jpg`: Fall's air in the upper left, approved picture left and Step B right, in chain 36, below the bar
+- `out/stills/status/status-221-4.jpg`: Summer's falling sand at draft at four times, main, the held version, four times its rate and sixteen times, each with a slice through 24 frames at its right, a measuring aid, below the bar
