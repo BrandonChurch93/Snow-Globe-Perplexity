@@ -130,6 +130,8 @@ export class Wish {
   private into: string | null = null
   private at = 0
   private time = 0
+  private giving = false
+  private given = false
 
   /** A press for `season`, at the moment drawn last: the session has not counted on since. */
   press(season: string): void {
@@ -144,6 +146,8 @@ export class Wish {
     // mid shake, it would leave the season pressed for held with all the others.
     if (moment.time < this.time) this.at -= this.time - moment.time
     this.time = moment.time
+    this.given = this.giving
+    this.giving = false
     if (moment.beat !== null) this.answered = true
     this.inAir = moment.beat !== null || moment.sinceLanding < SETTLE_S
     if (!this.inAir && (this.answered || moment.season === this.into || !(this.time - this.at < PRESS_S))) this.into = null
@@ -162,6 +166,21 @@ export class Wish {
   last(season: string): boolean {
     return this.into === season && this.time - this.at > LAST_S
   }
+
+  /** The page works on the season pressed for, in the time before the frame that comes next. */
+  gives(): void {
+    this.giving = true
+  }
+
+  /**
+   * Whether the page worked on the season pressed for in the time the frame drawn last took to come. It gave that time
+   * up by its own choice (`spendIn`), so the frame says nothing of the machine's pace, and the governor is not told of
+   * it. Only where that work was in fact done: a season whose files fail or never come is not worked on, and holds the
+   * governor off for no frame. And it ends, because what is left `LAST_S` after the press is made in one piece.
+   */
+  get gave(): boolean {
+    return this.given
+  }
 }
 
 /** A turn at work that is done aside: how long it took to come, and when the frame began that brought it. None began where the page did not draw in time. */
@@ -177,6 +196,7 @@ export interface Turn {
  */
 export function workIn(steps: Step[], season: string, turn: Turn, wish: Wish, pace: FramePace, now: () => number): void {
   const awaited = wish.awaits(season)
+  if (awaited) wish.gives()
   const from = now()
   if (wish.last(season)) while (steps.length) steps.shift()!()
   else runFor(steps, turn.frame === null ? spendOf(turn.waited, awaited) : spendIn(now() - turn.frame, pace.every, turn.waited, awaited, pace.taken), now)
