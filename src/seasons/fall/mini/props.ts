@@ -58,7 +58,7 @@ const POSTS = [
 // triangles stay at every level; the make marks them black and the village folds them away under the ground.
 const PICKETS = [
   { at: 0.3, tall: 6.3, along: 0.07, wide: 0.85, shown: false },
-  { at: 0.66, tall: 8.1, along: -0.06, wide: 0.75, shown: false },
+  { at: 0.5, tall: 8.0, along: -0.03, wide: 0.55, shown: true },
 ]
 const RAILS = [
   { at: 3.5, tilt: [0.3, -0.45, 0.35, -0.25, 0.45, -0.35], wide: 1.3 },

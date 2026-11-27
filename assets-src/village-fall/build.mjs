@@ -349,7 +349,8 @@ for (const p of PUMPKINS) pumpkin(p)
 // The approved roof is thick, uneven, weathered shingles in a few staggered rows, dark brown violet, with a ridge that
 // sags. These lie just over the shared slope (its fine slates stay underneath, unseen), so the cottage keeps its place and size.
 const CAP = { fromMm: 17.6, keep: 0.84, out: 0.42, thick: 0.9 }
-const SHINGLE = { rows: 7, over: 1.5, wide: [3.4, 5.4], thick: [0.4, 0.6], rise: [0.5, 0.72], gap: 0.2, eave: 0.3, ends: 0.34, lap: 2.2, round: 0.3, ragged: 0.4, sx: 16, sz: 3, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#b07a55'), wear: 0.55 }
+const STACKED = { out: 0.3, gap: 0.11, cell: [0.5, 0.56], span: [[99, 1]], tall: [[2, 0.8], [3, 0.2]], wide: [[3, 0.3], [4, 0.4], [5, 0.3]] }
+const SHINGLE = { rows: 8, ridge: [0.52, 3.2], over: 1.5, wide: [4.0, 5.6], thick: [0.4, 0.6], rise: [0.5, 0.72], gap: 0.2, eave: 0.3, ends: 0.34, lap: 2.2, round: 0.3, ragged: 0.4, sx: 16, sz: 3, tones: ['#63545c', '#716164', '#584d67', '#7c6e6c', '#655a7c', '#4f4661'].map(lin), worn: lin('#9e8673'), wear: 0.55 }
 {
   const RS = rng(9241)
   const pick = (a) => a[Math.floor(RS() * a.length)]
@@ -380,7 +381,7 @@ const SHINGLE = { rows: 7, over: 1.5, wide: [3.4, 5.4], thick: [0.4, 0.6], rise:
         const g = slab(b - a - SHINGLE.gap, thick, long, { round: 0.08, sx: SHINGLE.sx, sy: 2, sz: SHINGLE.sz, warp: 0.035, seed })
         const P = g.getAttribute('position')
         const col = new Float32Array(P.count * 3)
-        const tone = mul3(pick(SHINGLE.tones), 0.5 + 0.5 * RS())
+        const tone = mul3(pick(SHINGLE.tones), (0.5 + 0.5 * RS()) * (SHINGLE.ridge[0] + (SHINGLE.ridge[1] - SHINGLE.ridge[0]) * Math.pow(r / (SHINGLE.rows - 1), 2)))
         const halfW = (b - a - SHINGLE.gap) / 2
         for (let i = 0; i < P.count; i++) {
           const x = P.getX(i)
@@ -484,14 +485,18 @@ for (const s of STONES) {
 }
 
 // The shared wall is round stones about 1.3 times as wide as the approved's. Fall draws its own on the gable and the
-// side wall: flat faced blocks in courses with a thin joint, each with a bevelled rim and chipped corners, standing on
-// the shared mortar round the shared openings. The shared round stones are put behind the mortar at load.
+// side wall, standing on the shared mortar round the shared openings: field stone on the walls, and flat faced blocks
+// with a bevelled rim and chipped corners round the door. The shared round stones are put behind the mortar at load.
 const BLOCKS = { rowH: 0.9, rowJ: 0.14, wide: 1.4, wideJ: 0.4, share: [0.7, 1.3], gap: 0.06, bevel: 0.09, out: 0.3, vary: 0.05, tilt: 0.05, cut: [0.1, 0.24], cutShare: 0.5, jitter: 0.03, base: -1.8, plainBelow: -0.6, mortar: -0.5, sideDim: 0.5, gain: 0.8, tone: 0.8, rim: 0.45, chip: [0.45, 1.5], dent: 0.07, inner: 0.55, mark: 0.99, tones: ['#8c867d', '#7c766f', '#979289', '#726d66', '#837e75', '#9e988e', '#79736a', '#908a7f', '#6b6660', '#87837d'].map(lin), dirt: lin('#4b4538') }
+// The approved wall is field stone: stones about twice as wide as tall (4 to 20 px wide, 12 to 13 in the middle, 5 to 8
+// tall at hd), each with a rounded face lit from its upper left and a dark gap round it, in courses that step.
+const FIELD = { cell: [0.33, 0.35], gap: 0.025, span: [[12, 0.25], [16, 0.3], [20, 0.25], [26, 0.2]], spanLeast: 6, tall: [[2, 0.72], [3, 0.28]], twice: 0.08, twiceWide: 6, wide: [[3, 0.05], [4, 0.08], [5, 0.12], [6, 0.18], [7, 0.2], [8, 0.17], [9, 0.12], [10, 0.08]], cut: [0.1, 0.3], jitter: 0.03, wobble: 0.05, wobbleFrom: 1.2, dome: 0.03, lip: 0.055, round: 0.015, deep: 0.06, rim: 0.95, shoulder: 0.97, inner: 0.45, light: 0.07, mottle: 0.12, tone: 0.2, vary: 0.5 }
 let blockCount = 0
 let blockTriangles = 0
 {
-  const RW = rng(4127)
+  let RW = rng(4127)
   const B = BLOCKS
+  const F = FIELD
   const block = (W, x, y, w, h, o) => {
     const bv = Math.min(B.bevel, 0.3 * Math.min(w, h))
     const at = w / 2 - bv
@@ -522,7 +527,7 @@ let blockTriangles = 0
     }
     const hi = ring.map(([px, py]) => place(px, py, top + tx * px + ty * py))
     const lo = ring.map(([px, py, sx, sy]) => place(px + sx * bv, py + sy * bv, top - bv))
-    const tone = mul3((o.tones ?? B.tones)[Math.floor(RW() * B.tones.length) % (o.tones ?? B.tones).length], B.gain * (0.97 - B.tone / 2 + B.tone * RW()) * (o.dim ?? 1))
+    const tone = mul3((o.tones ?? B.tones)[Math.floor(RW() * B.tones.length) % (o.tones ?? B.tones).length], B.gain * (0.97 - (o.tone ?? B.tone) / 2 + (o.tone ?? B.tone) * RW()) * (o.dim ?? 1))
     const c = mix3(tone, B.dirt, o.bend ? 0 : smooth(1.4, -1.4, y) * 0.5)
     const pos = []
     const nor = []
@@ -540,7 +545,8 @@ let blockTriangles = 0
         col.push(c[0] * k, c[1] * k, c[2] * k)
       }
     }
-    const chip = () => B.chip[0] + (B.chip[1] - B.chip[0]) * RW()
+    const chips = o.chip ?? B.chip
+    const chip = () => chips[0] + (chips[1] - chips[0]) * RW()
     if (o.bend || y - h / 2 > B.plainBelow) {
       const dent = () => (RW() - 0.5) * 2 * B.dent
       const mid = place(dent(), dent(), top + dent())
@@ -572,49 +578,155 @@ let blockTriangles = 0
     blockCount++
     blockTriangles += pos.length / 9
   }
-  const courses = (W, region, o = {}) => {
-    let y = region.y0
-    while (y < region.y1 - 0.3) {
-      let h = B.rowH + (RW() - 0.5) * B.rowJ
-      if (y + h > region.y1 - 0.45) h = region.y1 - y
-      const ym = y + h / 2
-      let spans = [[region.x0, region.x1]]
-      if (region.top) {
-        const half = region.top(ym)
-        if (half < 0.4) break
-        spans = [[Math.max(region.x0, -half), Math.min(region.x1, half)]]
+  const greyOfWall = B.tones.reduce((sum, t) => [sum[0] + t[0] / B.tones.length, sum[1] + t[1] / B.tones.length, sum[2] + t[2] / B.tones.length], [0, 0, 0])
+  const stone = (W, r, o) => {
+    const w = r.x1 - r.x0 - (o.gap ?? F.gap)
+    const h = r.y1 - r.y0 - (o.gap ?? F.gap)
+    const x = (r.x0 + r.x1) / 2
+    const y = (r.y0 + r.y1) / 2
+    const top = (o.top ?? B.mortar + B.out) + (RW() - 0.5) * 2 * B.vary
+    const tone = mul3(mix3(greyOfWall, B.tones[Math.floor(RW() * B.tones.length)], F.vary), B.gain * (1 - F.tone / 2 + F.tone * RW()) * (o.dim ?? 1))
+    const c = mix3(tone, B.dirt, smooth(1.4, -1.4, y) * 0.5)
+    const place = (px, py, pz) => new THREE.Vector3(x + px, Math.min(y + py, r.rake ? r.rake(x + px) : Infinity), pz).applyMatrix4(W.M)
+    const pos = []
+    const nor = []
+    const col = []
+    const out = new THREE.Vector3(0, 0, 1).transformDirection(W.M)
+    if (r.y1 < B.plainBelow) {
+      const q = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sy]) => place((sx * w) / 2, (sy * h) / 2, top))
+      for (const k of [0, 1, 2, 0, 2, 3]) {
+        pos.push(q[k].x, q[k].y, q[k].z)
+        nor.push(out.x, out.y, out.z)
+        col.push(c[0], c[1], c[2])
       }
-      for (const hole of region.holes ?? []) {
-        let hx0 = hole.x0
-        let hx1 = hole.x1
-        if (hole.arch && y + h > hole.arch.cy + 0.2) {
-          const dd = Math.max(y - hole.arch.cy, 0)
-          if (dd >= hole.arch.r) continue
-          const half = Math.sqrt(hole.arch.r ** 2 - dd ** 2)
-          hx0 = hole.arch.cx - half
-          hx1 = hole.arch.cx + half
-        } else if (!(y + h > hole.y0 + 0.2 && y < hole.y1 - 0.2)) continue
-        spans = spans.flatMap(([a, b]) => {
-          if (hx0 >= b || hx1 <= a) return [[a, b]]
-          const kept = []
-          if (hx0 - a > 0.45) kept.push([a, hx0])
-          if (b - hx1 > 0.45) kept.push([hx1, b])
-          return kept
+    } else {
+      const tx = (RW() - 0.5) * 2 * B.tilt
+      const ty = (RW() - 0.5) * 2 * B.tilt
+      const small = Math.min(w, h)
+      const outline = []
+      for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        const cut = small * (F.cut[0] + (F.cut[1] - F.cut[0]) * RW())
+        const j = () => (RW() - 0.5) * 2 * F.jitter
+        const upright = [(sx * w) / 2 + j(), sy * (h / 2 - cut) + j()]
+        const level = [sx * (w / 2 - cut) + j(), (sy * h) / 2 + j()]
+        if (sx * sy > 0) outline.push(upright, level)
+        else outline.push(level, upright)
+        if (!o.plain && w > F.wobbleFrom && sx * sy > 0) outline.push([(RW() - 0.5) * w * 0.3, sy * (h / 2 + (RW() - 0.5) * 2 * F.wobble)])
+      }
+      const dome = F.dome * Math.min(1, small / 0.75) * (0.7 + 0.6 * RW())
+      const lit = (px, py) => 1 + F.light * ((-px / w + py / h) * 2)
+      const speck = () => 1 - F.mottle / 2 + F.mottle * RW()
+      const loop = (inset, lip, drop, tone) =>
+        outline.map(([px, py]) => {
+          const qx = px * (1 - inset) - Math.sign(px) * Math.min(lip, Math.abs(px) * 0.3)
+          const qy = py * (1 - inset) - Math.sign(py) * Math.min(lip, Math.abs(py) * 0.3)
+          return { p: place(qx, qy, top - drop + dome * inset * (2 - inset) + tx * qx + ty * qy), k: tone(qx, qy), n: new THREE.Vector3() }
         })
+      const edge = loop(0, F.lip, F.round, (px, py) => F.shoulder * lit(px, py))
+      const bevel = [loop(0, 0, F.deep, () => F.rim), edge.map((v) => ({ p: v.p, k: v.k, n: new THREE.Vector3() }))]
+      const rings = o.plain ? [edge] : [edge, loop(F.inner, F.lip, 0, (px, py) => lit(px, py) * speck())]
+      const mid = { p: place(0, 0, top + dome), k: speck(), n: new THREE.Vector3() }
+      const tris = []
+      const face = (a, b, d) => {
+        const n = new THREE.Vector3().subVectors(b.p, a.p).cross(new THREE.Vector3().subVectors(d.p, a.p))
+        if (n.lengthSq() < 1e-10) return
+        const back = n.dot(out) < 0
+        if (back) n.negate()
+        for (const v of [a, b, d]) v.n.add(n)
+        tris.push(back ? [a, d, b] : [a, b, d])
       }
-      for (const [a, b] of spans) {
-        const n = Math.max(1, Math.round((b - a) / (B.wide + (RW() - 0.5) * B.wideJ)))
-        const ws = Array.from({ length: n }, () => B.share[0] + (B.share[1] - B.share[0]) * RW())
-        const sum = ws.reduce((t, v) => t + v, 0)
-        let x = a
-        for (let i = 0; i < n; i++) {
-          const w = (ws[i] / sum) * (b - a)
-          block(W, x + w / 2, ym, w - B.gap, h - B.gap, { ...o, rake: region.rake })
-          x += w
+      const n = outline.length
+      for (const set of [bevel, rings])
+        for (let q = 0; q + 1 < set.length; q++)
+          for (let k = 0; k < n; k++) {
+            const m = (k + 1) % n
+            face(set[q][k], set[q][m], set[q + 1][m])
+            face(set[q][k], set[q + 1][m], set[q + 1][k])
+          }
+      const last = rings[rings.length - 1]
+      for (let k = 0; k < n; k++) face(mid, last[k], last[(k + 1) % n])
+      for (const t of tris)
+        for (const v of t) {
+          const vn = v.n.lengthSq() > 0 ? v.n.clone().normalize() : out
+          pos.push(v.p.x, v.p.y, v.p.z)
+          nor.push(vn.x, vn.y, vn.z)
+          col.push(c[0] * v.k, c[1] * v.k, c[2] * v.k)
+        }
+    }
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3))
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3))
+    g.setIndex(Array.from({ length: pos.length / 3 }, (_, i) => i))
+    decor.add(g, { surf: [surf(KIND.stone, B.mark), 0], uv: planar(W.U, W.V), uvOffset: [RW() * 7, RW() * 7] })
+    blockCount++
+    blockTriangles += pos.length / 9
+  }
+  // Field stone is dealt on a fine grid from the lowest free cell up, a span of stones at a time. The stones of a span
+  // share a height, so a course line runs level along the span and steps at its ends, and a few stones stand two
+  // courses tall.
+  const fieldstones = (W, region, o = {}) => {
+    const cell = region.cell ?? F.cell
+    const cols = Math.round((region.x1 - region.x0) / cell[0])
+    const rows = Math.ceil((region.y1 - region.y0) / cell[1])
+    const ux = (region.x1 - region.x0) / cols
+    const uy = cell[1]
+    const inHole = (x, y) =>
+      (region.holes ?? []).some((hole) => {
+        if (hole.arch && y > hole.arch.cy) return Math.hypot(x - hole.arch.cx, y - hole.arch.cy) < hole.arch.r - 0.1
+        return x > hole.x0 && x < hole.x1 && y > hole.y0 && y < hole.y1
+      })
+    const over = (x, y) => (region.rake ? y - uy / 2 > region.rake(x) - 0.15 : false)
+    const cellAt = (r, q) => [region.x0 + (q + 0.5) * ux, region.y0 + (r + 0.5) * uy]
+    const taken = Array.from({ length: rows }, (_, r) =>
+      Array.from({ length: cols }, (_, q) => {
+        const [x, y] = cellAt(r, q)
+        return inHole(x, y) || over(x, y) || (region.floor ? y + uy / 2 < region.floor(x) : false)
+      }),
+    )
+    const shut = (r, q) => r >= rows || (taken[r][q] && !over(...cellAt(r, q)))
+    const pick = (table) => {
+      let t = RW() * table.reduce((sum, [, share]) => sum + share, 0)
+      for (const [value, share] of table) if ((t -= share) < 0) return value
+      return table[0][0]
+    }
+    const snap = (v, edges) => edges.find((e) => Math.abs(e - v) < 0.75 * ux) ?? v
+    const xEdges = (region.holes ?? []).flatMap((hole) => (hole.arch ? [] : [hole.x0, hole.x1]))
+    const yEdges = (region.holes ?? []).flatMap((hole) => (hole.arch ? [] : [hole.y0, hole.y1]))
+    const twice = region.twice ?? F.twice
+    for (let r = 0; r < rows; r++)
+      for (let q = 0; q < cols; q++) {
+        if (taken[r][q]) continue
+        let run = 1
+        while (q + run < cols && !taken[r][q + run]) run++
+        let at = q
+        while (at < q + run) {
+          const left = q + run - at
+          let span = Math.min(pick(region.span ?? F.span), left)
+          if (left - span < F.spanLeast) span = left
+          let tall = Math.min(pick(region.tall ?? F.tall), rows - r)
+          if (rows - r - tall === 1) tall++
+          let k = at
+          while (k < at + span) {
+            const rest = at + span - k
+            let wide = Math.min(pick(region.wide ?? F.wide), rest)
+            if (rest - wide < 2) wide = rest
+            let high = RW() < twice ? tall + 2 : tall
+            if (high > tall) wide = Math.min(wide, F.twiceWide)
+            if (at + span - k - wide === 1) wide++
+            const free = (a) => Array.from({ length: wide }, (_, c) => shut(r + a, k + c)).every((v) => !v)
+            let fit = 1
+            while (fit < high && free(fit)) fit++
+            for (let a = 0; a < fit; a++) for (let c = 0; c < wide; c++) taken[r + a][k + c] = true
+            const x0 = region.x0 + k * ux
+            const y0 = region.y0 + r * uy
+            if (region.tally) region.tally.push([wide * ux, fit * uy, fit > tall, y0 + (fit * uy) / 2])
+            stone(W, { x0: k === 0 ? x0 : snap(x0, xEdges), x1: k + wide === cols ? region.x1 : snap(x0 + wide * ux, xEdges), y0: snap(y0, yEdges), y1: Math.min(snap(y0 + fit * uy, yEdges), region.y1), rake: region.rake }, o)
+            k += wide
+          }
+          at += span
         }
       }
-      y += h
-    }
   }
   const neg = (a) => [-a[0], -a[1], -a[2]]
   const front = { M: frame(L.cottagePoint(0, 0, C.halfLength), V3, UP, U3), U: V3, V: UP }
@@ -624,35 +736,49 @@ let blockTriangles = 0
   const win = C.window
   const side = C.sideWindow
   const a = ATTIC
-  courses(front, {
+  fieldstones(front, {
     x0: -C.halfWidth - 0.3,
     x1: C.halfWidth + 0.3,
     y0: B.base,
     y1: C.wall + C.rise - 0.2,
-    top: (y) => (y <= C.wall ? C.halfWidth + 0.3 : C.halfWidth * (1 - (y - C.wall) / C.rise)),
-    rake: (x) => C.wall + C.rise * (1 - Math.abs(x) / C.halfWidth) - 0.1,
+    rake: (x) => (Math.abs(x) > C.halfWidth ? C.wall + 0.1 : C.wall + C.rise * (1 - Math.abs(x) / C.halfWidth) - 0.1),
     holes: [
       { x0: C.door.across - doorR, x1: C.door.across + doorR, y0: -9, y1: spring, arch: { cx: C.door.across, cy: spring, r: doorR } },
       { x0: win.across - win.width / 2 - 0.42, x1: win.across + win.width / 2 + 0.42, y0: win.sill - 0.95, y1: win.sill + win.height + 1.25 },
       { x0: a.across - a.width / 2 - a.frame + 0.1, x1: a.across + a.width / 2 + a.frame - 0.1, y0: a.sill - 0.2, y1: a.sill + a.height + a.frame - 0.1 },
     ],
   })
-  const ring = { stones: 13, deep: 1.4, out: 0.62, gap: 0.08, from: 0.4, tones: ['#a59f95', '#999388', '#aea89d', '#918b80'].map(lin) }
+  RW = rng(977)
+  const ring = { stones: 13, deep: 1.4, out: 0.62, gap: 0.08, from: 0.4, tone: 0.3, chip: [0.75, 1.3], tones: ['#a59f95', '#999388', '#aea89d', '#918b80'].map(lin) }
   const rm = C.door.width / 2 + 0.05 + ring.deep / 2
   for (let i = 0; i < ring.stones; i++) {
     const at = Math.PI * (1 - (i + 0.5) / ring.stones)
-    block(front, 0, 0, (Math.PI * rm) / ring.stones - ring.gap, ring.deep - 0.1, { bend: { cx: C.door.across, cy: spring, r: rm, at }, out: ring.out + 0.1 * RW(), tones: ring.tones })
+    block(front, 0, 0, (Math.PI * rm) / ring.stones - ring.gap, ring.deep - 0.1, { bend: { cx: C.door.across, cy: spring, r: rm, at }, out: ring.out + 0.1 * RW(), tones: ring.tones, tone: ring.tone, chip: ring.chip })
   }
   for (const sd of [-1, 1]) {
     let y = ring.from
     while (y < spring - 0.3) {
       let h = 1.0 + 0.4 * RW()
       if (y + h > spring - 0.55) h = spring - y
-      block(front, C.door.across + sd * rm, y + h / 2, ring.deep - 0.12, h - ring.gap, { out: ring.out + 0.1 * RW(), tones: ring.tones })
+      block(front, C.door.across + sd * rm, y + h / 2, ring.deep - 0.12, h - ring.gap, { out: ring.out + 0.1 * RW(), tones: ring.tones, tone: ring.tone, chip: ring.chip })
       y += h
     }
   }
-  courses(left, { x0: -C.halfLength - 0.3, x1: C.halfLength + 0.3, y0: B.base, y1: C.wall + 0.1, holes: [{ x0: side.along - side.width / 2 - 0.42, x1: side.along + side.width / 2 + 0.42, y0: side.sill - 0.95, y1: side.sill + side.height + 1.25 }] }, { dim: B.sideDim })
+  RW = rng(4129)
+  fieldstones(left, { x0: -C.halfLength - 0.3, x1: C.halfLength + 0.3, y0: B.base, y1: C.wall + 0.1, holes: [{ x0: side.along - side.width / 2 - 0.42, x1: side.along + side.width / 2 + 0.42, y0: side.sill - 0.95, y1: side.sill + side.height + 1.25 }] }, { dim: B.sideDim, plain: true })
+  // The approved stack is the wall's rough stone, about seven courses of two stones to a face under the cap. These
+  // stand just proud of the shared stack's four sides, from the roof to the cap.
+  RW = rng(5303)
+  const ch = C.chimney
+  const capFoot = CAP.fromMm + (ch.top - CAP.fromMm) * CAP.keep - 0.25 - CAP.thick / 2
+  const roofUp = (across) => C.wall + C.rise * (1 - Math.abs(across) / C.halfWidth) - 0.4
+  for (const [M, U, half, floor] of [
+    [frame(L.cottagePoint(ch.across, 0, ch.along + ch.halfAlong), V3, UP, U3), V3, ch.half, (x) => roofUp(ch.across + x)],
+    [frame(L.cottagePoint(ch.across, 0, ch.along - ch.halfAlong), neg(V3), UP, neg(U3)), neg(V3), ch.half, (x) => roofUp(ch.across - x)],
+    [frame(L.cottagePoint(ch.across - ch.half, 0, ch.along), U3, UP, neg(V3)), U3, ch.halfAlong, () => roofUp(ch.across - ch.half)],
+    [frame(L.cottagePoint(ch.across + ch.half, 0, ch.along), neg(U3), UP, V3), neg(U3), ch.halfAlong, () => roofUp(ch.across + ch.half)],
+  ])
+    fieldstones({ M, U, V: UP }, { x0: -half - STACKED.out, x1: half + STACKED.out, y0: roofUp(ch.across - ch.half), y1: capFoot + 0.1, floor, cell: STACKED.cell, tall: STACKED.tall, wide: STACKED.wide, span: STACKED.span, twice: 0 }, { top: STACKED.out, gap: STACKED.gap })
 }
 
 const blocked = (x, z, margin = 0) => {
@@ -678,6 +804,7 @@ const conform = (g, x, z, yaw, lift) => {
 }
 // The approved path is warm, pinkish slate under the lamp; the cold key light greys a neutral stone, so the flags lean red.
 const FLAG_TONE = [1.02, 0.9, 0.78]
+const FLAG = { wide: [6.6, 8.4], gap: 0.3, turn: 0.1, lift: [0.5, 0.9] }
 // Where a stone stands in the pond it is wet: dark and smooth from the waterline up to a soak line, on the side toward the water.
 const WET = { soakMm: 0.85, dark: 0.34, rough: 0.22 }
 const wetAt = (p) => {
@@ -715,33 +842,19 @@ let flagCount = 0
     flagCount++
   }
 }
+// The approved path is a few broad slabs, one to a stride. The layout places five stones after the three steps, so
+// each of them is one slab as wide as the path, turned along it.
 {
-  let carry = 0
-  for (let i = 0; i < PATH_LINE.length - 1; i++) {
-    const [ax, az] = PATH_LINE[i]
-    const [bx, bz] = PATH_LINE[i + 1]
-    const len = Math.hypot(bx - ax, bz - az)
-    const dx = (bx - ax) / len
-    const dz = (bz - az) / len
-    const yaw = Math.atan2(-dz, dx)
-    let s = carry
-    while (s < len) {
-      const along = between(3.1, 4.3)
-      const widen = 1 + 0.25 * smooth(0, PATH_LINE.length - 2, i)
-      const split = between(-0.5, 0.5)
-      const span = 7.0 * widen
-      const left = span / 2 + split
-      const right = span - left
-      const cx = ax + dx * (s + along / 2)
-      const cz = az + dz * (s + along / 2)
-      for (const [off, w] of [[-(left / 2) - 0.08, left - 0.16], [right / 2 + 0.08, right - 0.16]]) {
-        const j = between(-0.25, 0.25)
-        cobble(cx - dz * off + dx * j, cz + dx * off + dz * j, along - 0.3, w, 1.3, yaw + between(-0.14, 0.14), 0.45 + between(0, 0.45), 1, true)
-        flagCount++
-      }
-      s += along
-    }
-    carry = s - len
+  const places = [L.steps[L.steps.length - 1], ...L.stones]
+  for (let i = 1; i < places.length; i++) {
+    const [px, pz] = places[i - 1]
+    const [x, z] = places[i]
+    const [nx, nz] = places[i + 1] ?? [2 * x - px, 2 * z - pz]
+    const len = Math.hypot(nx - px, nz - pz)
+    const dx = (nx - px) / len
+    const dz = (nz - pz) / len
+    cobble(x, z, len / 2 - FLAG.gap, FLAG.wide[0] + ((FLAG.wide[1] - FLAG.wide[0]) * (i - 1)) / (L.stones.length - 1), 1.3, Math.atan2(-dz, dx) + between(-FLAG.turn, FLAG.turn), FLAG.lift[0] + (FLAG.lift[1] - FLAG.lift[0]) * R(), 1, true)
+    flagCount++
   }
 }
 
