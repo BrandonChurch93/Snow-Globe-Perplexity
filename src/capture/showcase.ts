@@ -1,5 +1,6 @@
+import type { GlobePose } from '../shake/table'
 import { config, formatById, tierEvenFromPx, tierMotion, tierSamples, type FormatSpec } from '../config'
-import { centrePacePx, evenSet, framesamples, shutterTravelPx, type Timed } from '../film/motion'
+import { centrePacePx, evenSet, framesamples, shutterTravelPx, spreadAt, type Timed } from '../film/motion'
 import { Accumulator, type SampleFacts, type Sanity } from '../core/accumulator'
 import type { Assets } from '../core/assets'
 import { finish, type Gfx } from '../core/gl'
@@ -227,7 +228,13 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     counts.particles = stage.particleCount()
   }
 
-  async function picture(at: At, timeSec: number, shutterSec: number, pose: (t: number) => Pose, samples: number, salt: number, pace?: (sec: number) => [number, number]): Promise<void> {
+  /** A frame in which the ball travels: where the ball is at a moment, and the pace of its centre on the picture in pixels a shutter. */
+  interface Travel {
+    globe: (sec: number) => GlobePose
+    pace: (sec: number) => [number, number]
+  }
+
+  async function picture(at: At, timeSec: number, shutterSec: number, pose: (t: number) => Pose, samples: number, salt: number, travel?: Travel): Promise<void> {
     plain()
     const flat = diag !== ''
     // One set for every picture, not one a frame: 24 places in a pixel and on the lens cannot
@@ -235,7 +242,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     // drew the same still ground differently each frame and it crawled. The grain and the
     // shader's seed below still go by the frame.
     const own: Sample[] = flat ? [] : sampleSet(samples, 0, 'picture').sort((a, b) => a.t - b.t)
-    const set: { sample: Sample | null; at: number }[] = flat ? [{ sample: null, at: 0 }] : pace && shutterSec > 0 ? evenSet(own, (u) => pace(timeSec + u * shutterSec)) : own.map((s): Timed => ({ sample: s, at: s.t }))
+    const set: { sample: Sample | null; at: number }[] = flat ? [{ sample: null, at: 0 }] : travel && shutterSec > 0 ? evenSet(own, (u) => travel.pace(timeSec + u * shutterSec)) : own.map((s): Timed => ({ sample: s, at: s.t }))
     gfx.renderer.info.reset()
     acc.begin()
     let done = 0
@@ -249,7 +256,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       const t1 = now()
       timing.simMs += t1 - t0
       stage.drawSample(acc.sample, pose(t), s, moment, done === 0 || shutterSec > 0)
-      acc.add()
+      acc.add(travel && s && shutterSec > 0 ? spreadAt(t, shutterSec / set.length, travel.globe, pose, format.width, format.height) : null)
       done++
       finish(gfx)
       timing.drawMs += now() - t1
@@ -289,14 +296,14 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
   }
   const filmCamera = (t: number) => filmPose(getGrid(), t - prerollSeconds)
   const hero = () => poseById('hero')
-  type Globe = (sec: number) => ReturnType<typeof loopGlobe>
+  type Globe = (sec: number) => GlobePose
   /** The count of a frame whose shutter opens at `from`, and, where the tier draws a travelling frame with even times, the pace of the ball's centre. */
-  const shot = (t: string, from: number, globe: Globe, pose: (sec: number) => Pose): { samples: number; travelPx: number; pace?: (sec: number) => [number, number] } => {
+  const shot = (t: string, from: number, globe: Globe, pose: (sec: number) => Pose): { samples: number; travelPx: number; travel?: Travel } => {
     const motion = tierMotion(t)
     const even = tierEvenFromPx(t)
     const travelPx = motion || even !== undefined ? shutterTravelPx(from, shutter, globe, pose, format.width, format.height) : 0
     const samples = framesamples(tierSamples(t), motion, () => travelPx)
-    return even !== undefined && travelPx >= even ? { samples, travelPx, pace: (sec) => centrePacePx(sec, shutter, globe, pose, format.width, format.height) } : { samples, travelPx }
+    return even !== undefined && travelPx >= even ? { samples, travelPx, travel: { globe, pace: (sec) => centrePacePx(sec, shutter, globe, pose, format.width, format.height) } } : { samples, travelPx }
   }
   const filmGlobe: Globe = (sec) => globePoseAt(getFilm(), sec)
   const filmShot = (t: string, i: number, pose: (sec: number) => Pose) => shot(t, frameTime(i), filmGlobe, pose)
@@ -380,7 +387,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         const swap = g.swaps.find((s) => s.shot === span.shot.id)!
         const i = spec.change.at === 'swap' ? Math.round((swap.first + swap.last) / 2) : span.last + 1
         const f = filmShot(spec.tier, i, hero)
-        await picture(along(getFilm()), frameTime(i), shutter, hero, f.samples, i + 1, f.pace)
+        await picture(along(getFilm()), frameTime(i), shutter, hero, f.samples, i + 1, f.travel)
         return
       }
       const onScreen = (spec.interface || !!spec.live) && spec.camera === MOVES.wide
@@ -413,7 +420,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       await ready
       tier = t
       const f = filmShot(t, i, filmCamera)
-      await picture(along(getFilm()), frameTime(i), shutter, filmCamera, f.samples, i + 1, f.pace)
+      await picture(along(getFilm()), frameTime(i), shutter, filmCamera, f.samples, i + 1, f.travel)
     },
     opening() {
       return { frameCount: openingPlan().frameCount }
@@ -432,7 +439,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       tier = t
       const w = wrapFrame(i)
       const f = shot(t, w / fpsFilm, loopGlobe, loopPose)
-      await picture(around, w / fpsFilm, shutter, loopPose, f.samples, 100000 + w, f.pace)
+      await picture(around, w / fpsFilm, shutter, loopPose, f.samples, 100000 + w, f.travel)
     },
     dev: {
       caps: () => ({ ...gfx.caps, precision: acc.precision }),
@@ -591,7 +598,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         if (!span || span.shot.kind !== 'shake') throw new Error(`no such shake: ${shot}`)
         const i = span.first + Math.round(offset(span.seconds) * fpsFilm)
         const f = filmShot(t, i, hero)
-        await picture(along(getFilm()), frameTime(i), shutter, hero, f.samples, i + 1, f.pace)
+        await picture(along(getFilm()), frameTime(i), shutter, hero, f.samples, i + 1, f.travel)
       },
       async simulate(fromSeconds, seconds) {
         replay = null

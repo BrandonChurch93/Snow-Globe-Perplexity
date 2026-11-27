@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import { applyPose, type Pose } from '../scene/cameras'
 import { CENTRE_Y } from '../particles/engine/sdf'
 import { config } from '../config'
+import type { Spread } from '../core/accumulator'
+import { SPREAD } from '../core/accumulator'
 import type { Sample } from '../core/sampler'
 import type { GlobePose } from '../shake/table'
 
@@ -143,4 +145,33 @@ export function evenSet(set: readonly Sample[], pace: (u: number) => readonly [n
     return { sample: { ...s, px: along * dx - across * dy, py: along * dy + across * dx, t: u }, at: Math.max(0, Math.min(1, u + move)) }
   })
   return out.sort((a, b) => a.at - b.at || a.sample.index - b.sample.index)
+}
+
+const turn = new THREE.Quaternion()
+const ONE = new THREE.Vector3(1, 1, 1)
+
+/** The ball's own space to the world: turned about the foot, then moved. */
+function ballMatrix(g: GlobePose, into: THREE.Matrix4): THREE.Matrix4 {
+  return into.compose(shift.set(g.x, g.y, g.z), turn.setFromEuler(euler.set(g.tiltX, g.twist ?? 0, g.tiltZ, 'XZY')), ONE)
+}
+
+function ballToClip(sec: number, globeAt: (sec: number) => GlobePose, poseAt: (sec: number) => Pose, width: number, height: number): THREE.Matrix4 {
+  aim(poseAt(sec), width, height)
+  return new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).multiply(ballMatrix(globeAt(sec), new THREE.Matrix4()))
+}
+
+/** The ball as the spread takes it: a little more than the glass, and the base with room for what hangs from its rim. */
+export const SPREAD_BALL: { sphere: [number, number]; base: [number, number, number] } = {
+  sphere: [CENTRE_Y, config.globe.sphereDiameterMm / 2 + SPREAD.sphereMarginMm],
+  base: [config.globe.baseDiameterMm / 2 + SPREAD.baseMarginMm, -SPREAD.baseBelowMm, config.globe.baseHeightMm + SPREAD.baseAboveMm],
+}
+
+/** What the spread of the sample drawn at `sec` needs, when the samples lie `spacingSec` apart. */
+export function spreadAt(sec: number, spacingSec: number, globeAt: (sec: number) => GlobePose, poseAt: (sec: number) => Pose, width: number, height: number): Spread {
+  const before = ballToClip(sec - spacingSec / 2, globeAt, poseAt, width, height)
+  const after = ballToClip(sec + spacingSec / 2, globeAt, poseAt, width, height)
+  aim(poseAt(sec), width, height)
+  const toWorld = new THREE.Matrix4().multiplyMatrices(camera.matrixWorld, camera.projectionMatrixInverse)
+  const toBall = ballMatrix(globeAt(sec), new THREE.Matrix4()).invert()
+  return { toWorld, toBall, before, after, ball: SPREAD_BALL }
 }

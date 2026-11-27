@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { config, tierEvenFromPx, tierMotion, tierSamples } from '../src/config'
 import { sampleSet } from '../src/core/sampler'
-import { TRAVEL_MARKS, centrePacePx, evenSet, framesamples, shutterTravelPx } from '../src/film/motion'
+import { SPREAD_BALL, TRAVEL_MARKS, centrePacePx, evenSet, framesamples, shutterTravelPx, spreadAt } from '../src/film/motion'
 import { applyPose, poseById } from '../src/scene/cameras'
 import { REST_POSE } from '../src/shake/table'
 import { countFacts, countsLine, recordMatchesRun, ruleCount, sampleRule, tierOf } from '../tools/lib/master.mjs'
@@ -105,6 +105,51 @@ describe('the samples of a frame that travels', () => {
     expect(a).toEqual(b)
     for (let k = 1; k < a.length; k++) expect(a[k]!.at).toBeGreaterThanOrEqual(a[k - 1]!.at)
     expect(new Set(a.map((s) => s.sample.index)).size).toBe(72)
+  })
+})
+
+describe('the spread of a sample along the ball\'s motion', () => {
+  const moving = (sec: number) => ({ ...REST_POSE, x: 14 * (sec / shutter), tiltZ: 0.05 * (sec / shutter) })
+  const n = 60
+
+  it('moves a point of the ball by one sample spacing of its own travel', () => {
+    const s = spreadAt(shutter / 2, shutter / n, moving, pose, W, H)
+    for (const mark of [TRAVEL_MARKS[0]!, TRAVEL_MARKS[1]!, TRAVEL_MARKS[9]!]) {
+      const a = new THREE.Vector3(...mark).applyMatrix4(s.before)
+      const b = new THREE.Vector3(...mark).applyMatrix4(s.after)
+      const hop = [((b.x - a.x) / 2) * W, ((a.y - b.y) / 2) * H]
+      const at = (sec: number) => {
+        const g = moving(sec)
+        const camera = new THREE.PerspectiveCamera()
+        applyPose(camera, pose(), W, H, null)
+        const p = new THREE.Vector3(...mark).applyEuler(new THREE.Euler(g.tiltX, 0, g.tiltZ, 'XZY')).add(new THREE.Vector3(g.x, g.y, g.z)).project(camera)
+        return [(p.x * 0.5 + 0.5) * W, (0.5 - p.y * 0.5) * H]
+      }
+      const from = at(shutter / 2 - shutter / n / 2)
+      const to = at(shutter / 2 + shutter / n / 2)
+      expect(hop[0]!).toBeCloseTo(to[0]! - from[0]!, 4)
+      expect(hop[1]!).toBeCloseTo(to[1]! - from[1]!, 4)
+      expect(Math.hypot(hop[0]!, hop[1]!)).toBeGreaterThan(0.3)
+      expect(Math.hypot(hop[0]!, hop[1]!)).toBeLessThan(4)
+    }
+  })
+
+  it('finds the ball under the pixel its centre lands on, and nothing in a corner of the picture', () => {
+    const s = spreadAt(shutter / 2, shutter / n, moving, pose, W, H)
+    const g = moving(shutter / 2)
+    const camera = new THREE.PerspectiveCamera()
+    applyPose(camera, pose(), W, H, null)
+    const centre = new THREE.Vector3(0, SPREAD_BALL.sphere[0], 0)
+    const ndc = centre.clone().applyEuler(new THREE.Euler(g.tiltX, 0, g.tiltZ, 'XZY')).add(new THREE.Vector3(g.x, g.y, g.z)).project(camera)
+    const ray = (x: number, y: number) => {
+      const from = new THREE.Vector3(x, y, -1).applyMatrix4(s.toWorld).applyMatrix4(s.toBall)
+      const to = new THREE.Vector3(x, y, 1).applyMatrix4(s.toWorld).applyMatrix4(s.toBall)
+      return new THREE.Ray(from, to.sub(from).normalize())
+    }
+    expect(ray(ndc.x, ndc.y).distanceToPoint(centre)).toBeLessThan(1e-3)
+    expect(ray(-0.98, 0.98).distanceToPoint(centre)).toBeGreaterThan(SPREAD_BALL.sphere[1] * 2)
+    expect(SPREAD_BALL.sphere[1]).toBeGreaterThan(config.globe.sphereDiameterMm / 2)
+    expect(SPREAD_BALL.base[0]).toBeGreaterThan(config.globe.baseDiameterMm / 2)
   })
 })
 
