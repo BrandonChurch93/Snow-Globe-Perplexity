@@ -68,3 +68,5 @@ web-21.jpg: the web at three times (x 1270 to 1400, y 740 to 930 of the hd revie
 webframes-21.jpg: four neighbouring frames (2364 to 2367) of the film at 3840 final on f6c970b2, the web at twice (x 2570 to 2770, y 1560 to 1830). In the box x 2600 to 2740, y 1600 to 1800: 15 and 11 pixels lit for one frame, one dark, correlation 0.979 0.978 0.977.
 waxframes-21.jpg: the same four frames, the long wax run at twice (x 2290 to 2410, y 1400 to 1640). Its lights keep their places: correlation 0.999, no pixel lit or dark for one frame.
 wallframes-21.jpg: the same four frames, bare wall of the lit flank at four times (x 2410 to 2490, y 1480 to 1540). Correlation 0.987 0.986 0.986, no pixel lit or dark for one frame.
+rest-21.jpg: fall at rest, hero camera, hd review, the base cut 1:1 (x 560 to 1360, y 700 to 1010). Top: approved scaled to 1920. Middle: the twelfth step 6f76d000. Bottom: ours on f6c970b2.
+landed-21.jpg: the base at the landing, hd review at 0.62 (x 480 to 1440, y 560 to 1040). Left: approved fall-shake scaled to 1920. Right: ours on f6c970b2.
