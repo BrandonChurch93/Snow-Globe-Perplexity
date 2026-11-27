@@ -245,13 +245,20 @@ const DISC_VERT = `
   vStageAux = vec3(0.0, depth, length(placed.xyz));
   vDisc = corner;
   vLook = aLook;
-  vColor = mix(aColorA, aColorB, uBackMix) * (size * size) / (radius * radius);
-  vColor *= 1.0 + dot(corner, aLean);
   // Under the cover of a change every lamp stands at one level, between what it gives in the season that leaves and in the
   // season that comes (their geometric mean), so that when the two cross its colour passes and its light does not step.
   float lampA = dot(aColorA, vec3(0.2126, 0.7152, 0.0722));
   float lampB = dot(aColorB, vec3(0.2126, 0.7152, 0.0722));
-  vColor *= uBackHold * pow(max(sqrt(max(lampA * lampB, 0.0)) / max(mix(lampA, lampB, uBackMix), 1e-9), 1e-4), uBackEven);`
+  // Its colour passes evenly too. Mixed by the crossing's own share, a lamp that one season gives many times the light of
+  // the other took the brighter season's colour within one frame of the three. So under the cover the share of the season
+  // that comes is weighed by the two lights, and the colour is as far across as the crossing is. Where no two seasons
+  // cross (the share is 0 or 1), and where nothing is evened, it is the crossing's own share to the bit.
+  float lampGoes = max(lampA, 1e-9);
+  float lampComes = max(lampB, 1e-9);
+  float lampShare = uBackMix + uBackEven * uBackMix * (1.0 - uBackMix) * (lampGoes - lampComes) / (uBackMix * lampGoes + (1.0 - uBackMix) * lampComes);
+  vColor = mix(aColorA, aColorB, lampShare) * (size * size) / (radius * radius);
+  vColor *= 1.0 + dot(corner, aLean);
+  vColor *= uBackHold * pow(max(sqrt(max(lampA * lampB, 0.0)) / max(mix(lampA, lampB, lampShare), 1e-9), 1e-4), uBackEven);`
 
 const DISC = `${SLAB_SHAPE_GLSL}
 uniform vec3 uHazeTint;

@@ -886,7 +886,15 @@ describe('the cover of a change in the lens', () => {
     const text = readFileSync('src/scene/backdrop.ts', 'utf8')
     expect(text).toContain('float lampA = dot(aColorA, vec3(0.2126, 0.7152, 0.0722));')
     expect(text).toContain('float lampB = dot(aColorB, vec3(0.2126, 0.7152, 0.0722));')
-    expect(text).toContain('vColor *= uBackHold * pow(max(sqrt(max(lampA * lampB, 0.0)) / max(mix(lampA, lampB, uBackMix), 1e-9), 1e-4), uBackEven);')
+    // Its colour passes evenly as well. Mixed by the crossing's own share, a lamp that one season gives many times the light
+    // of the other had the brighter season's colour within one frame of the three: in the page's own walk from winter into
+    // summer, one sample a frame, the lamp at the right edge of a phone's picture went from blue to gold between two frames,
+    // by 55 levels of red and 51 of blue. So the share of the season that comes is weighed by the two lights.
+    expect(text).toContain('float lampGoes = max(lampA, 1e-9);')
+    expect(text).toContain('float lampComes = max(lampB, 1e-9);')
+    expect(text).toContain('float lampShare = uBackMix + uBackEven * uBackMix * (1.0 - uBackMix) * (lampGoes - lampComes) / (uBackMix * lampGoes + (1.0 - uBackMix) * lampComes);')
+    expect(text).toContain('vColor = mix(aColorA, aColorB, lampShare) * (size * size) / (radius * radius);')
+    expect(text).toContain('vColor *= uBackHold * pow(max(sqrt(max(lampA * lampB, 0.0)) / max(mix(lampA, lampB, lampShare), 1e-9), 1e-4), uBackEven);')
     // The stage names the season a change has left while its cover dies away, and the backdrop keeps that season's lamps to
     // come up from.
     expect(readFileSync('src/scene/stage.ts', 'utf8')).toContain("f.left = single && typeof moment.left === 'string' ? kitOf(moment.left) : null")
@@ -916,17 +924,30 @@ describe('the cover of a change in the lens', () => {
       const hold = u.uBackHold!.value * lensFall.dim
       const evened: number[] = []
       const plain: number[] = []
+      const share: number[] = []
+      const passed: number[] = []
+      const plainPassed: number[] = []
       for (let i = 0; i < count; i++) {
         const a = level(back.colorA.array, i)
         const b = level(back.colorB.array, i)
-        const both = a + (b - a) * mix
+        // The share of the coming season's colour, as the shader weighs it by the two lights.
+        const goes = Math.max(a, 1e-9)
+        const comes = Math.max(b, 1e-9)
+        const part = mix + (even * mix * (1 - mix) * (goes - comes)) / (mix * goes + (1 - mix) * comes)
+        const both = a + (b - a) * part
+        const crossed = a + (b - a) * mix
         evened.push(both * Math.pow(Math.max(Math.sqrt(Math.max(a * b, 0)) / Math.max(both, 1e-9), 1e-4), even) * hold)
-        plain.push(both * hold)
+        plain.push(crossed * hold)
+        share.push(part)
+        // How much of the lamp's light is the coming season's, which is how far its colour has passed.
+        passed.push((part * b) / both)
+        plainPassed.push((mix * b) / crossed)
       }
-      return { f, mix, even, held: u.uBackHold!.value, evened, plain }
+      return { f, mix, even, held: u.uBackHold!.value, evened, plain, share, passed, plainPassed }
     }
     const stops = (now: number[], before: number[]): number => Math.max(...now.map((v, i) => Math.abs(Math.log2(v / before[i]!))))
-    const worst = { evened: 0, plain: 0 }
+    const worst = { evened: 0, plain: 0, passed: 0, plainPassed: 0 }
+    let crossings = 0
     NAMES.forEach((from, s) => {
       const to = NAMES[(s + 1) % NAMES.length]!
       for (const phase of [0, 0.25, 0.5, 0.75]) {
@@ -952,6 +973,20 @@ describe('the cover of a change in the lens', () => {
             whole ??= at.evened
             expect(stops(at.evened, whole), `a lamp under the whole cover at ${c}`).toBeLessThan(1e-9)
           }
+          // Where no two seasons cross, the share of the coming season's colour is the crossing's own to the bit, so every
+          // frame outside the crossing, and every picture at rest, is drawn as it was.
+          if (at.mix === 0 || at.mix === 1) for (const part of at.share) expect(part).toBe(at.mix)
+          else {
+            // While they cross, every lamp's colour is as far across as the crossing is, whatever its two lights are.
+            crossings++
+            expect(at.even, `how far the lamps are evened while they cross at ${c}`).toBe(1)
+            for (let i = 0; i < count; i++) {
+              expect(at.share[i]!).toBeGreaterThan(0)
+              expect(at.share[i]!).toBeLessThan(1)
+              worst.passed = Math.max(worst.passed, Math.abs(at.passed[i]! - at.mix))
+              worst.plainPassed = Math.max(worst.plainPassed, Math.abs(at.plainPassed[i]! - at.mix))
+            }
+          }
           if (before) {
             worst.evened = Math.max(worst.evened, stops(at.evened, before.evened))
             worst.plain = Math.max(worst.plain, stops(at.plain, before.plain))
@@ -971,6 +1006,11 @@ describe('the cover of a change in the lens', () => {
     // What the plain crossing did, which this takes away: a lamp fell by over four stops in one frame.
     expect(worst.plain).toBeGreaterThan(4)
     expect(worst.evened).toBeLessThan(worst.plain / 6)
+    // And what the plain mixing of the colours did, which the weighing takes away: on some frame of a crossing a lamp's
+    // colour was most of the way across, or hardly begun, where the crossing itself was near its middle.
+    expect(crossings).toBeGreaterThan(8)
+    expect(worst.plainPassed).toBeGreaterThan(0.8)
+    expect(worst.passed).toBeLessThan(1e-9)
     // At rest nothing is evened and nothing held: the lamps are drawn as they always were.
     const rest = seen(0, 'winter', 'winter')
     expect(rest.even).toBe(0)
