@@ -191,11 +191,11 @@ const FOOT = { glass: 1.08, scallop: 1.2, cockle: 1.2, snail: 1.25, olive: 1.0, 
 // and has a thin shade under it, no two are as wide or as deep, and each comes and goes along its run. Right of the middle the hand has
 // dabbed more than drawn: there the ridges are short and wavy and the sand between them is pitted. The mesh holds the swells; the carve map
 // holds the ridges, the creases, the pits and the crumbs. All of it parts round the things set in the sand as water parts round a stone.
-const SWIRL = { apart: 9.5, slope: 0.46, most: 0.7, least: 0.12, crumb: 0.034, notch: 0.035, crest: 0.2 }
-const RIDGE = { apart: 2.6, deep: 0.36, peak: 0.36, pit: 0.16, gouge: 0.14, crack: 0.02 }
+const SWIRL = { apart: 9.5, slope: 0.52, most: 0.85, least: 0.12, crumb: 0.034, notch: 0.03, crest: 0.3 }
+const RIDGE = { apart: 4.4, deep: 0.5, peak: 0.56, pit: 0.1, gouge: 0.03, crack: 0.006 }
 // A roll of moulded sand in section, from the hollow under it (0) to the hollow over it (1): it stands out quickly to its crest and falls
 // back slowly, and where it meets the next roll the hollow is round, so it lies in soft shade and draws no line.
-const roll = (x, crest) => Math.max(x < crest ? Math.sin((0.5 * Math.PI * x) / crest) : Math.cos((0.5 * Math.PI * (x - crest)) / (1 - crest)), 0) ** 1.25
+const shelf = (x, crest) => (x < crest ? 0.5 - 0.5 * Math.cos((Math.PI * x) / crest) : 0.5 + 0.5 * Math.cos((Math.PI * (x - crest)) / (1 - crest)))
 const frac = (v) => v - Math.floor(v)
 const swirlLean = (az) => {
   const a = az - 360 * Math.round(az / 360)
@@ -230,10 +230,32 @@ const crustEdge = (A, a180) => 34.0 - 0.093 * (clamp(a180, -58, -6) + 10) + 3.6 
 // that fold there is at an azimuth.
 const foldAt = (az) => {
   const a = az - 360 * Math.round(az / 360)
-  return smooth(-14, -40, a) * smooth(-100, -78, a)
+  return smooth(-27, -38, a) * smooth(-66, -52, a)
+}
+// The fold in section, by the height over its slot in mm: the lip stands out to an edge just over the slot and falls back slowly above it,
+// the slot is narrow and deep, and under it the foot's roll stands out again.
+const FOLD = { lip: 1.05, at: 1.4, under: 1.15, over: 5.0, slot: 0.25, half: 0.8, foot: 1.2, footAt: -3.2, footHalf: 2.6, footLow: 4.5 }
+const foldForm = (x) => {
+  const up = (x - FOLD.at) / (x < FOLD.at ? FOLD.under : FOLD.over)
+  return FOLD.lip * Math.exp(-up * up) - FOLD.slot * Math.exp(-((x / FOLD.half) ** 2)) + FOLD.foot * Math.exp(-(((x - FOLD.footAt) / (x < FOLD.footAt ? FOLD.footLow : FOLD.footHalf)) ** 2))
+}
+// The broad swells of the mound, each a hand wide on the picture: where its middle is (degrees, mm up), its half widths and how far it stands out, in mm.
+const BULGES = [
+  { az: -64, h: 18.5, wide: 20, tall: 11, out: 1.9 },
+  { az: -22, h: 10.0, wide: 19, tall: 8.5, out: 1.6 },
+  { az: 26, h: 15.0, wide: 21, tall: 11, out: 1.9 },
+  { az: 68, h: 11.5, wide: 21, tall: 10, out: 1.6 },
+]
+const bulgeAt = (a180, h) => {
+  let out = 0
+  for (const b of BULGES) out += b.out * Math.exp(-(((a180 - b.az) / b.wide) ** 2) - ((h - b.h) / b.tall) ** 2)
+  return out
 }
 // The warm stain low on the body wanders round it and lies in that crease: its height in mm.
-const stainH = (az) => 5.2 + 1.6 * Math.sin((az * 3 + 20) * RAD) + 3.2 * foldAt(az)
+const stainH = (az) => {
+  const a = az - 360 * Math.round(az / 360)
+  return mix(5.2 + 1.6 * Math.sin((az * 3 + 20) * RAD), 10.5 - 0.036 * (a + 48), smooth(-12, -34, a) * smooth(-116, -86, a))
+}
 function bare(m, az, s) {
   const q = atS(m, s)
   const A = (((az % 360) + 360) % 360) / 360
@@ -265,7 +287,7 @@ function bare(m, az, s) {
   const rate = 1 / SWIRL.apart + (0.62 / l1) * Math.cos(psi / l1 + p1) + (0.3 / l2) * Math.cos(psi / l2 + p2)
   // Where two swirls run into each other one broad one goes on.
   const pair = smooth(0.42, 0.66, fbm(A * 6 + 7, h / 22 + 1, 6, 64, 157, 2))
-  const wave = mix(2 * roll(frac(t1), SWIRL.crest) - 1, 2 * roll(frac(0.5 * t1 + 0.0955), SWIRL.crest) - 1, pair)
+  const wave = mix(2 * shelf(frac(t1), SWIRL.crest) - 1, 2 * shelf(frac(0.5 * t1 + 0.0955), SWIRL.crest) - 1, pair)
   const across = (1 + pair) / rate
   const deep = clamp((SWIRL.slope * across) / (2 * Math.PI), SWIRL.least, SWIRL.most) * (0.72 + 0.28 * Math.sin(2 * Math.PI * 0.38 * t1 + 1.1))
   const held = smooth(3.2, 5.0, across)
@@ -282,11 +304,13 @@ function bare(m, az, s) {
   const crust = 0.45 * smooth(-0.4, 0.25, over) * crustOn
   // The sun lies on the face of the roll above the ledge, from left of the middle to the middle.
   const lipSoft = mix(0.3, 1.0, smooth(-31, -25, a180))
-  const lip = smooth(-lipSoft, lipSoft, over) * smooth(4.6, 0.6, over + 2.2 * (fbm(A * 50 + 9, h / 3, 50, 64, 207, 3) - 0.5)) * Math.max(smooth(-42, -39, a180) * smooth(-28, -31, a180), 0.8 * smooth(-27, -22, a180) * smooth(-6, -11, a180)) * (0.3 + 0.7 * flake)
+  const lip = smooth(-lipSoft, lipSoft, over) * smooth(4.6, 0.6, over + 2.2 * (fbm(A * 50 + 9, h / 3, 50, 64, 207, 3) - 0.5)) * Math.max(smooth(-42, -39, a180) * smooth(-28, -31, a180), 0.6 * smooth(-27, -20, a180) * smooth(-5, -16, a180)) * (0.3 + 0.7 * flake)
   // The trough above the foot is a real crease: the foot's roll stands out under it.
   const gh = stainH(az)
   const fold = foldAt(az)
-  const crease = -(0.4 + 1.3 * fold) * mix(1, 0.5, smooth(0, 30, a180)) * Math.exp(-(((q.h - gh) / (2.3 + 0.8 * fold)) ** 2)) * (0.55 + 0.45 * fbm(A * 12 + 3, 0.5, 12, 4, 167, 2)) + 0.9 * fold * Math.exp(-(((q.h - gh - 4.0) / 2.0) ** 2))
+  const crease = -0.4 * (1 - fold) * mix(1, 0.5, smooth(0, 30, a180)) * Math.exp(-(((q.h - gh) / 2.3) ** 2)) * (0.55 + 0.45 * fbm(A * 12 + 3, 0.5, 12, 4, 167, 2)) + fold * (0.8 + 0.4 * fbm(A * 16 + 5, 0.5, 16, 4, 171, 2)) * foldForm(q.h - gh)
+  const bulge = bulgeAt(a180, q.h) * smooth(1.5, 6, q.h) * smooth(34, 27, q.h) * fade
+  const form = crease * fade + bulge
   // Loose sand lies on the top of the roll up to the glass, thicker right of the middle, and ends over the roll's shoulder in a soft edge.
   const driftEdge = 38.6 - 2.2 * smooth(6, 30, a180) * smooth(100, 70, a180) + 1.4 * (fbm(A * 40 + 5, 0.5, 40, 4, 193, 3) - 0.5)
   const drift = smooth(driftEdge - 0.9, driftEdge + 0.9, q.h)
@@ -294,12 +318,12 @@ function bare(m, az, s) {
   const grit = fbm(A * 560 + 3, h / 0.62 + 1, 560, 128, 181, 2) - 0.5
   const underLedge = mix(1, smooth(-0.2, -1.5, over), smooth(-62, -52, a180) * smooth(-4, -14, a180)) * smooth(35.5, 33, h)
   const rpsi = psi + 1.5 * dabbed * (fbm(A * 70 + 3, h / 2.6 + 2, 70, 64, 215, 2) - 0.5)
-  const rp = rpsi / RIDGE.apart + 0.8 * Math.sin(rpsi / 6.1 + p1) + 0.35 * Math.sin(rpsi / 2.9 + p2 + 12 * Math.PI * A)
+  const rp = rpsi / RIDGE.apart + 0.4 * Math.sin(rpsi / 6.1 + p1) + 0.15 * Math.sin(rpsi / 2.9 + p2 + 12 * Math.PI * A)
   const rk = Math.floor(rp)
   const rx = rp - rk
   const rRun = smooth(0.14, 0.46, mix(fbm(A * 18 + 0.37 * rk, 0.61 * rk + 0.5, 18, 64, 219, 2), fbm(A * 46 + 0.37 * rk, 0.61 * rk + 0.5, 46, 64, 231, 2), dabbed))
-  const rOn = Math.max(0.2 * smooth(-100, -84, a180) * smooth(-10, -28, a180) * smooth(23.5, 27, h), smooth(-40, -20, a180) * smooth(44, 22, a180) * mix(0.4, 1, smooth(9, 15, h)) * smooth(5, 9, h), 0.3 * smooth(5, 9, h)) * underLedge * mix(1, 0.2, dabbed) * mix(0.25, 1, Math.max(smooth(-45, -22, a180), smooth(20, 24, h)))
-  const ridge = RIDGE.deep * (0.35 + 0.65 * hashInt(rk, 3, 217)) * rRun * roll(rx, RIDGE.peak) * rOn
+  const rOn = Math.max(0.2 * smooth(-100, -84, a180) * smooth(-10, -28, a180) * smooth(23.5, 27, h), smooth(-40, -20, a180) * smooth(44, 22, a180) * mix(0.4, 1, smooth(9, 15, h)) * smooth(5, 9, h), 0.45 * smooth(5, 9, h)) * underLedge * mix(1, 0.55, dabbed) * mix(0.5, 1, Math.max(smooth(-45, -22, a180), smooth(20, 24, h)))
+  const ridge = RIDGE.deep * (0.35 + 0.65 * hashInt(rk, 3, 217)) * rRun * shelf(rx, RIDGE.peak) * rOn
   // A pit where a grain or two fell out, a crumb where a few stand proud: each in its own cell, most where the hand dabbed.
   const pu = A * 232
   const pv = h / 1.55
@@ -322,22 +346,26 @@ function bare(m, az, s) {
   const bedH = h + 0.55 * Math.sin((a180 + 37) * 0.11) + 2.0 * (fbm(A * 13 + 5, h / 14 + 2, 13, 64, 251, 2) - 0.5)
   const beds = -0.06 * (0.5 - 0.5 * Math.cos(2 * Math.PI * frac(bedH / 1.5))) ** 2 * smooth(-88, -74, a180) * smooth(-16, -30, a180) * smooth(25.5, 27.5, h) * smooth(-0.4, -1.6, over) * (0.5 + 0.5 * smooth(0.3, 0.55, fbm(A * 9 + 1, h / 7 + 4, 9, 64, 253, 2)))
   const small = (ridge + pit + gouge + crack - notch + beds) * body * fade + crumb
-  const fine = swirl * (1 - held) * fade + small
-  const d = ((swell + ripple) * (1 - 0.55 * onTop) + swirl * held + hold + lumps + dabs + crust + crease + heap) * fade
+  // The crust's torn step is narrower than the mesh's cells: the carve map holds it, or the mesh draws it as a saw.
+  const fine = (swirl * (1 - held) + crust) * fade + small
+  const d = ((swell + ripple) * (1 - 0.55 * onTop) + swirl * held + hold + lumps + dabs + heap) * fade + form
   // What the light from above reads: every part of the relief that makes a face turned up or down.
   const rel = (swirl + dabs + crust + crease) * fade + small - crumb
-  return { d, fine, rel, lip: lip * fade, grain: 2 * grit * Math.min(crumbs, 1), drift, w, k, f, q, onTop, gh }
+  return { d, fine, rel, form, bulge, lip: lip * fade, grain: 2 * grit * Math.min(crumbs, 1), drift, w, k, f, q, onTop, gh }
 }
 export function relief(m, az, s) {
   const b = bare(m, az, s)
   const q = b.q
   let d = b.d
+  let fold = b.form - b.bulge
+  let bulge = b.bulge
   let fine = b.fine
   let rel = b.rel
   let lip = b.lip
   let grain = b.grain
   let seat = 0
   let halo = 0
+  let under = 0
   for (const it of SET) {
     let da = az - it.az
     da -= 360 * Math.round(da / 360)
@@ -346,7 +374,7 @@ export function relief(m, az, s) {
     const foot = it.r * FOOT[it.kind]
     const fan = it.kind === 'scallop' || it.kind === 'cockle'
     const long = it.kind === 'glass' || fan ? (it.long ?? 1) : 1
-    const reach = foot * long * (it.kind === 'glass' ? 1.5 : 1) + 1.6
+    const reach = foot * long * (it.kind === 'glass' ? 1.5 : 1) + 3.4
     const u = da * RAD * q.r
     const v = s - it.s
     if (Math.abs(u) > reach || Math.abs(v) > reach) continue
@@ -355,7 +383,20 @@ export function relief(m, az, s) {
     const up = -u * Math.sin(t) + v * Math.cos(t)
     const dist = Math.hypot(along * (fan ? long : 1), up / long) / (it.kind === 'glass' ? shardAt(it, Math.atan2(up / long, along)) : 1)
     // A thing lies in a dish cut into the stone where the stone is, not where the turned shape was: level with its own middle.
-    if (it.d0 === undefined) it.d0 = bare(m, it.az, it.s).d
+    if (it.d0 === undefined) {
+      const mid = bare(m, it.az, it.s)
+      it.d0 = mid.d
+      it.fold0 = mid.form - mid.bulge
+      it.bulge0 = mid.bulge
+    }
+    // The fold stops at a thing's rim and the swell eases to it from further out: under a thing the mound is as high as under its middle, so no side of it sinks and none stands off.
+    const level = 1 - smooth(0.92 * foot, foot + 1.3, dist)
+    const eased = 1 - smooth(0.6 * foot, foot + 3.2, dist)
+    const levelled = mix(fold, it.fold0, level)
+    const swelled = mix(bulge, it.bulge0, eased)
+    d += levelled - fold + swelled - bulge
+    fold = levelled
+    bulge = swelled
     const inside = 1 - smooth(0.78 * foot, 1.07 * foot, dist)
     const deep = it.kind === 'pearl' ? 0.2 * it.r : it.kind === 'glass' ? 0.1 + 0.02 * it.r : 0.07 + 0.025 * it.r
     d = mix(d, it.d0, 0.88 * inside) - deep * inside
@@ -365,7 +406,14 @@ export function relief(m, az, s) {
     grain *= 1 - inside
     seat = Math.max(seat, inside)
     halo = Math.max(halo, 1 - smooth(0.88 * foot, foot + 0.7 + 0.14 * foot, dist))
+    // The lamp stands up and to the left: each thing's own shade lies on the sand under it and to its right.
+    const us = u - 0.2 * foot
+    const vs = v + 0.28 * foot
+    const alongS = us * Math.cos(t) + vs * Math.sin(t)
+    const upS = -us * Math.sin(t) + vs * Math.cos(t)
+    const distS = Math.hypot(alongS * (fan ? long : 1), upS / long) / (it.kind === 'glass' ? shardAt(it, Math.atan2(upS / long, alongS)) : 1)
+    under = Math.max(under, 1 - smooth(0.85 * foot, 1.18 * foot + 0.5, distS))
   }
-  return { d, fine, rel, lip, grain, drift: b.drift, w: b.w, k: b.k, f: b.f, h: q.h, seat, halo, onTop: b.onTop, gh: b.gh }
+  return { d, fine, rel, lip, grain, drift: b.drift, w: b.w, k: b.k, f: b.f, h: q.h, seat, halo, under, onTop: b.onTop, gh: b.gh }
 }
 export const clamp01 = (v) => clamp(v)
