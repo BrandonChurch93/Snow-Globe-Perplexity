@@ -3,13 +3,14 @@ import { config } from '../../config'
 import { coverUniforms } from '../../core/chunks/cover'
 import { veilSettle } from '../../core/chunks/veil'
 import { handleOf, stageShader, type Rgb } from '../../core/materials'
-import type { ParticleSource } from '../../core/stage'
+import { sampleSdf } from '../../core/sdf'
+import type { ParticleSource, SdfGrid } from '../../core/stage'
 import { texture } from '../../core/textures'
 import { partBytes } from '../../diagnostics/views'
 import type { StageFrame } from '../../scene/frame'
 import { flickerOf } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
-import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SEED_RESTS, SETTLE_SHOWN, SHAPE, lookOf } from './looks'
+import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SEED_RESTS, SETTLE_SHOWN, SHAPE, STORM_BLOOM, lookOf } from './looks'
 import { BEHAVIOUR } from '../engine/kinds'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
 import { downAtlas } from './down'
@@ -18,10 +19,76 @@ export { MAX_KINDS } from './looks'
 export const SIZE_TO_RADIUS = 0.5
 /** The state the draw gives a seed that lies at one of the scene's places: between the engine's two states of rest, so the card lies, and is known. */
 const STATE_LAID = 1.5
+/** The state the draw gives a seed that is the storm's glow round one of the lights inside (looks.ts, STORM_BLOOM): afloat, and known. */
+export const STATE_GLOW = 0.25
+const NO_LIGHTS: readonly InnerLight[] = []
 const SHUTTER = (config.film.shutterDegrees / 360) * (config.sim.stepHz / config.film.fps)
 const TAU = 2 * Math.PI
 
 type KindColors = Readonly<Record<string, { color: Rgb; glow: number }>>
+
+/** The engine keeps each season's scene as it is made, a grid of distances; the draw asks it where the laid heads sit. A source that keeps no scene leaves the list as it stands. */
+type SceneSource = ParticleSource & { colliderOf?(season: string): SdfGrid }
+type Seat = readonly number[]
+const seatsMade = new WeakMap<SdfGrid, readonly Seat[]>()
+
+/** The laid heads' seats on a scene as it is made: a seat of the tree's crown is moved along its column onto the surface the collider has under it, with that surface's own slope; the others stand as listed (looks.ts, SEED_RESTS.follow). Found once for a scene. */
+export function seatsOn(g: SdfGrid): readonly Seat[] {
+  const made = seatsMade.get(g)
+  if (made) return made
+  const F = SEED_RESTS.follow
+  const half = g.sizeMm / 2
+  const cell = g.sizeMm / (g.n - 1)
+  const fine = 0.25 * cell
+  const slopeAt = (x: number, y: number, z: number): [number, number, number] => {
+    const e = 0.5 * cell
+    const gx = sampleSdf(g, x + e, y, z) - sampleSdf(g, x - e, y, z)
+    const gy = sampleSdf(g, x, y + e, z) - sampleSdf(g, x, y - e, z)
+    const gz = sampleSdf(g, x, y, z + e) - sampleSdf(g, x, y, z - e)
+    const l = Math.hypot(gx, gy, gz)
+    return l > 1e-6 ? [gx / l, gy / l, gz / l] : [0, 1, 0]
+  }
+  // the first surface down a column from the top of the liquid, or null where the column begins inside a thing or meets nothing
+  const drop = (x: number, z: number): number | null => {
+    const from = Math.sqrt(Math.max(0.96 * half * half - x * x - z * z, 0))
+    if (sampleSdf(g, x, from, z) <= 0) return null
+    for (let y = from; y > -half; y -= fine) {
+      if (sampleSdf(g, x, y - fine, z) > 0) continue
+      let free = y
+      let solid = y - fine
+      for (let k = 0; k < 8; k++) {
+        const mid = 0.5 * (free + solid)
+        if (sampleSdf(g, x, mid, z) > 0) free = mid
+        else solid = mid
+      }
+      return free
+    }
+    return null
+  }
+  const out = SEED_RESTS.at.map((place, i): Seat => {
+    if (i < F.crown[0] || i >= F.crown[1]) return place
+    let best: Seat = place
+    let most = -Infinity
+    // the column itself, a ring of six at half the reach and a ring of six at the whole of it
+    for (let c = 0; c < 13; c++) {
+      const ring = c === 0 ? 0 : c <= 6 ? 0.5 : 1
+      const turn = ((c - 1) / 6) * TAU + (c > 6 ? TAU / 12 : 0)
+      const x = place[0] + ring * F.seek * Math.cos(turn)
+      const z = place[2] + ring * F.seek * Math.sin(turn)
+      const y = drop(x, z)
+      if (y === null) continue
+      const s = slopeAt(x, y, z)
+      const level = s[1] - F.near * ring
+      if (level > most) {
+        most = level
+        best = [x, y + F.rise, z, s[0], s[1], s[2], place[6]]
+      }
+    }
+    return best
+  })
+  seatsMade.set(g, out)
+  return out
+}
 
 /** The largest point a machine must draw for the film's sprites to hold every shape: SwiftShader's, 1023 px. */
 export const SPRITE_POINT_PX = 1023
@@ -59,6 +126,9 @@ export class ParticleDraw {
   private shown = 1
   private paced = 0
   private afloat = 0
+  private seats: readonly Seat[] = SEED_RESTS.at
+  private glows: readonly InnerLight[] = NO_LIGHTS
+  private glowAt: readonly [number, number] = [0, 1]
   drawn = 0
   maxPointPx = 256
 
@@ -160,6 +230,9 @@ export class ParticleDraw {
     const gate = Math.min(1, Math.max(0, (f.turbulence - LENS_LOOK.stormFrom) / (LENS_LOOK.stormTo - LENS_LOOK.stormFrom)))
     const stormy = f.live || f.view === 'cover' || (f.sample !== null && f.view === '')
     this.storm = stormy ? gate * gate * (3 - 2 * gate) : 0
+    this.seats = this.seatsFor(source, f)
+    this.glows = this.glowsFor(source, f)
+    this.glowAt = [f.time, f.period]
     this.fill(source, f.quality.particleFraction, mesh.quads, f.moment.mix)
     this.shown = stormy ? Math.min(1, SETTLE_SHOWN / Math.max(this.afloat, 1e-3)) : 1
     this.paced = stormy ? 1 : 0
@@ -179,6 +252,22 @@ export class ParticleDraw {
         m.blendDstAlpha = cover ? THREE.OneFactor : null
       }
     }
+  }
+
+  /** Where the laid heads sit: on the scene of the season whose kind they are, as the engine has it made; as listed when the source keeps no scene. */
+  private seatsFor(source: ParticleSource, f: StageFrame): readonly Seat[] {
+    const scene = source as SceneSource
+    if (!scene.colliderOf || this.storm >= SEED_RESTS.until) return SEED_RESTS.at
+    const seed = source.kinds.find((kind) => lookOf(kind).shape === SHAPE.seed)
+    if (seed === undefined) return SEED_RESTS.at
+    return seatsOn(scene.colliderOf(seed in f.to.particles ? f.to.season : f.from.season))
+  }
+
+  /** The lights inside that the storm's haze glows round: those of the season whose kind the seeds are. */
+  private glowsFor(source: ParticleSource, f: StageFrame): readonly InnerLight[] {
+    const seed = source.kinds.find((kind) => lookOf(kind).shape === SHAPE.seed)
+    if (seed === undefined) return NO_LIGHTS
+    return (seed in f.to.particles ? f.to : f.from).innerLights
   }
 
   private fill(source: ParticleSource, fraction: number, quads: boolean, mix: number): void {
@@ -213,19 +302,83 @@ export class ParticleDraw {
       const prev3 = this.arrays[1]!
       const lift = SEED_RESTS.lift
       let laid = 0
-      for (let i = 0; i < n && laid < SEED_RESTS.at.length; i++) {
+      const seats = this.seats
+      const held = SEED_RESTS.held
+      for (let i = 0; i < n && laid < held.length; i++) {
         if (kindOf[i] !== seedKind) continue
-        const place = SEED_RESTS.at[laid++]!
+        const place = seats[held[laid++]!]!
+        const wide = place[6]! * SEED_RESTS.size
         const o3 = i * 3
         const o4 = i * 4
         for (let c = 0; c < 3; c++) {
-          const v = place[c]! + place[3 + c]! * place[6]! * lift
+          const v = place[c]! + place[3 + c]! * wide * lift
           now3[o3 + c] = v
           prev3[o3 + c] = v
         }
-        d[o4] = place[6]!
+        d[o4] = wide
         d[o4 + 2] = 1
         st[i] = STATE_LAID
+      }
+    }
+    // the storm's glow (looks.ts, STORM_BLOOM): the seeds of the list after the laid heads' are no seeds. Each stands at one of the lights inside; one with no light is not drawn
+    const glowKind = source.kinds.findIndex((kind) => lookOf(kind).shape === SHAPE.seed)
+    if (glowKind >= 0) {
+      const now3 = this.arrays[0]!
+      const prev3 = this.arrays[1]!
+      const lamps = this.glows
+      // the pool of the storm: the haze of the whole yard lit by all the lights together. It stands at their middle, each light weighed by its power
+      const pool = [0, 0, 0]
+      let weight = 0
+      for (const l of lamps) {
+        for (let c = 0; c < 3; c++) pool[c]! += l.at[c]! * l.power
+        weight += l.power
+      }
+      let seeds = 0
+      for (let i = 0, k = 0; i < n && k < STORM_BLOOM.most; i++) {
+        if (kindOf[i] !== glowKind) continue
+        if (seeds++ < SEED_RESTS.held.length) continue
+        const l = lamps[k]
+        const pooled = k === lamps.length && weight > 0
+        const lowly = k === lamps.length + 1 && weight > 0
+        k++
+        const o3 = i * 3
+        const o4 = i * 4
+        st[i] = STATE_GLOW
+        if (pooled) {
+          for (let c = 0; c < 3; c++) {
+            now3[o3 + c] = pool[c]! / weight + STORM_BLOOM.poolAtMm[c]!
+            prev3[o3 + c] = now3[o3 + c]!
+          }
+          d[o4] = STORM_BLOOM.poolMm
+          d[o4 + 2] = (opacity ? opacity[i]! : 1) * STORM_BLOOM.pool
+          // below zero: the card is the pool, one wide glow of the cream alone
+          d[o4 + 3] = -1
+          continue
+        }
+        // the low glow: the down that drifts low over the yard, lit by all the lights together. One wide flat glow before the ground
+        if (lowly) {
+          for (let c = 0; c < 3; c++) {
+            now3[o3 + c] = pool[c]! / weight + STORM_BLOOM.lowAtMm[c]!
+            prev3[o3 + c] = now3[o3 + c]!
+          }
+          d[o4] = STORM_BLOOM.lowMm
+          d[o4 + 2] = (opacity ? opacity[i]! : 1) * STORM_BLOOM.low
+          d[o4 + 3] = -2
+          continue
+        }
+        if (!l) {
+          d[o4 + 2] = 0
+          continue
+        }
+        for (let c = 0; c < 3; c++) {
+          now3[o3 + c] = l.at[c]!
+          prev3[o3 + c] = l.at[c]!
+        }
+        d[o4] = STORM_BLOOM.wide * Math.min(l.reachMm, STORM_BLOOM.reachMostMm)
+        // a light that is dim for its reach is a lit pane or a wash and no orb: it has no bloom
+        const orb = l.power / (l.reachMm * l.reachMm) < STORM_BLOOM.paneBelow ? 0 : 1
+        d[o4 + 2] = (opacity ? opacity[i]! : 1) * orb * Math.min(STORM_BLOOM.most1, Math.sqrt(Math.max(0, l.power * flickerOf(l, this.glowAt[0], this.glowAt[1]))))
+        d[o4 + 3] = l.color[1] / Math.max(l.color[0], 1e-6)
       }
     }
     for (const a of quads ? this.instanced : this.single) a.needsUpdate = true
