@@ -285,9 +285,9 @@ function leafHook(shader: Shader): void {
     float treePx = max(length(treeStep), 1e-7);
     vec2 treeCell = floor(vMapUv * 2.0) * 0.5;
     vec2 treeAt = clamp(vMapUv + max(${(0.5 * RIM.reach).toFixed(4)} / treePx, ${RIM.least.toFixed(2)}) * treeStep, treeCell + ${(0.5 / RIM.across).toFixed(4)}, treeCell + ${(0.5 - 0.5 / RIM.across).toFixed(4)});
-    float treeRim = pow(1.0 - smoothstep(${RIM.in[0].toFixed(2)}, ${RIM.in[1].toFixed(2)}, textureLod(uSprigs, treeAt, max(log2(treeSize) - ${Math.log2(2 * RIM.across).toFixed(3)}, log2(treePx * treeSize))).a), ${RIM.curve.toFixed(2)});
+    float treeRim = pow(max(1.0 - smoothstep(${RIM.in[0].toFixed(2)}, ${RIM.in[1].toFixed(2)}, textureLod(uSprigs, treeAt, max(log2(treeSize) - ${Math.log2(2 * RIM.across).toFixed(3)}, log2(treePx * treeSize))).a), 0.0), ${RIM.curve.toFixed(2)});
     vec2 treeBack = clamp(vMapUv + max(${(0.5 * RIM.far).toFixed(4)} / treePx, ${RIM.least.toFixed(2)}) * treeStep, treeCell + ${(0.5 / RIM.wide).toFixed(4)}, treeCell + ${(0.5 - 0.5 / RIM.wide).toFixed(4)});
-    float treeWash = pow(1.0 - smoothstep(${RIM.over[0].toFixed(2)}, ${RIM.over[1].toFixed(2)}, textureLod(uSprigs, treeBack, max(log2(treeSize) - ${Math.log2(2 * RIM.wide).toFixed(3)}, log2(treePx * treeSize))).a), ${RIM.bend.toFixed(2)});
+    float treeWash = pow(max(1.0 - smoothstep(${RIM.over[0].toFixed(2)}, ${RIM.over[1].toFixed(2)}, textureLod(uSprigs, treeBack, max(log2(treeSize) - ${Math.log2(2 * RIM.wide).toFixed(3)}, log2(treePx * treeSize))).a), 0.0), ${RIM.bend.toFixed(2)});
     float treeLights = treeSpots(vTreeP * ${(1 / RIM.mm).toFixed(4)}, clamp(treeFine, 0.08, 0.25));
     reflectedLight.indirectDiffuse += ${glsl3(RIM.tone)} * (${RIM.power.toFixed(2)} * treeRim * (treeBand * mix(${RIM.dark.toFixed(2)}, 1.0, treeLights) + treeFlank * treeLights)) + treeTone * ${glsl3(RIM.glow)} * (${RIM.fade.toFixed(2)} * treeBand * treeWash);
   }
