@@ -1,31 +1,28 @@
-0-ninth-form-pair-with-air-above-pair-without-air.jpg
-The ninth pass, form only, before the proofs (trial 141, built on the eighth 16a4287c, not yet merged with main). Above: the approved beside ours with the air. Below: the approved beside ours without the air, a measuring aid and not a judged picture. Six domes that overlap, the largest at the top and at the left; the two left bands narrowed to slits that are half sky and half dark leaf seen through; the fork closed to three holes with boughs across them. Not met: the upper slit is short (it closes 4 mm in from the outline, the approved's runs 9 mm), the lower slit reaches 2.3 mm at its inner half, the low left pad's underside is still close to level. No tone, gold or leaf value was touched.
-
-Summer tree, eighth pass. Head agent/p6-summer-tree 16a4287c (e3b7e889 on main b4bc96c0). All pictures drawn on the builder's machine at review, hd, hero camera unless said. The approved is always at the left.
+Summer tree, ninth pass (form only). Head agent/p6-summer-tree c35c70c8 (the ninth on main 35d00e1b). All pictures drawn on the builder's machine at review, hd, hero camera unless said. The approved is always at the left. Main in these pictures is plain main 07178847 drawn here: its tree is the sixth pass and is the same tree on 35d00e1b.
 
 1-whole-400px-approved-left.jpg
-The whole at 400 px. Approved left, eighth right. The tree reads as parted masses with sky between them and the stem seen up into the crown. It reads lighter and more tiered than the approved's full round crown.
+The whole at 400 px. Approved left, ninth right. The crown reads as one round dark mass on its stem, rounder than main's tiers. Against the approved it is less parted: the approved's pads show pale tops and dark gaps at this size, ours an even dark green. That is tone, the tenth pass.
 
-3-tree-rest-approved-sixth-eighth.jpg
-Rest, with the air, one scale. Approved, the sixth (plain main b4bc96c0 drawn here), the eighth. The eighth is parted into a top mass that leans right, an upper left pad, a long left mass, a thin low left pad and a right mass that comes down to the low right with a hole and a limb across it; the fork is open and the boughs stand clear up to the pads. Tone and shading are the seventh's. Not met: the masses are flat tiers with level undersides and wide, square bands, where the approved's are round with narrow slits; the fork is more open than the approved's.
+3-tree-rest-approved-main-ninth.jpg
+Rest, with the air, one scale. Approved, main, the ninth. Round domes in place of main's flat tiers: the largest at the top, a second at the left under it, a flank at the right that steps down, a low pad at each side. Between them dark curved slits that close at their ends, and three holes at the fork with boughs across them. Not met: the approved's pads are near black green with pale lit tops and dark undersides, ours a mid green of even speckle, so the domes do not part as its pads do. Two large seed heads of the air lie over the upper left and over the right dome in this still; they belong to the air, not to the tree. The lanterns' halo is at 0.06 in the ninth by root's ruling of 07:09 and at 0.17 in main's picture.
 
 3b-tree-pair-rest-approved-left.jpg
-The same pair, larger. The upper band of sky is taller than the approved's (about 3.7 mm against 1.6). A lobe hangs at the low right down to 16.5 mm, where the approved ends at 18.5: it holds the end of the twig that carries the last lanterns.
+The same pair, larger.
 
-4-tree-rest-no-air-approved-sixth-eighth.jpg
-Rest, the air off in ours (a measuring aid, not a judged picture). Approved, the sixth (as it was pushed, on its own main), the eighth. The leaf's dark tone, the pale tops and dark undersides of the lobes, and the few gold points at the right rim show here.
+4-tree-rest-no-air-approved-main-ninth.jpg
+Rest, the air off in ours (a measuring aid, not a judged picture). Approved, main, the ninth. The domes, the slits and the fork's holes without the seed heads in front. The gold points lie on the domes' rims toward the sun and are as dim as the eighth's.
 
 4b-tree-pair-rest-no-air-approved-left.jpg
 The same pair, larger, the air off in ours.
 
 5-tree-pair-landed-approved-left.jpg
-The landing. Approved left, eighth right. The crown is whole: the same pads and the same gaps as at rest, seen through the storm, no torn outline and no leaf let go.
+The landing. Approved left, ninth right. The crown is whole: the same domes and the same gaps as at rest, seen through the storm, no torn outline and no leaf let go.
 
 7-macro-pair-approved-left.jpg
-Macro camera, the fork. Approved left, eighth right. The underside is open from the fork to the pads and the boughs stand clear. The approved shows three closed holes of sky between thick boughs; ours shows wider openings between thinner ones.
+The macro pair. Approved left, ninth right. The fork under the crown: the boughs cross the holes and go up into the leaf.
 
-8-open-share-masks-approved-sixth-seventh-eighth.jpg
-The open share, the leaf found by the rule laid in green and the crown's outline box in magenta. Approved 57.7 percent (first rule), sixth 40.9, seventh 32.9, eighth 42.6. Ours are read on the still without the air, by colour, with the ids view taking out what is not the miniature.
+8-open-share-masks-approved-main-eighth-ninth.jpg
+The leaf as the open share reads it, green over the picture, with the crown's box: approved, main, the eighth, the ninth. Not leaf in the box: approved 57.7 percent by this first rule (53.7 by the second reading), main 40.8, the eighth 42.0, the ninth 39.4. Inside the closed outline: approved 29.4 percent, main 12.6, the eighth 13.9, the ninth 9.7.
 
 9-open-share-approved-raw-first-rule-second-reading.jpg
 The approved alone: the picture, the first rule's leaf, and a second reading. The first rule (green or yellow green under luma 200, or dark and not warm) leaves out leaf that lies under haze and under seed heads, so it reads 57.7 percent. The second reading takes as leaf what lies within 1.6 mm of the first rule's leaf and is grey to green, not warm and under luma 118, and fills the specks the leaf closes all round: 53.7 percent.
