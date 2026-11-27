@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { lightUniforms } from '../../core/chunks/light'
-import { stageMaterial, stageShader, type Rgb } from '../../core/materials'
+import { baseRoom, stageMaterial, stageShader, type Rgb } from '../../core/materials'
 import { geometry, prepareModel } from '../../core/models'
 import { stream } from '../../core/rng'
 import { texture } from '../../core/textures'
@@ -622,15 +622,18 @@ export function faceLevel(index: number, seconds: number): number {
 
 export function update(moment: KitMoment): void {
   const f = moment.frame
+  // Under the cover of a change the base keeps the room's own light through the fall of the exposure (materials.ts,
+  // `baseRoom`): what this base reads of the room by its own names is held as much. arrival.ts holds its candles.
+  const hold = baseRoom.hold
   baseUniforms.uBaseKeyDir.value.copy(f.keyDir)
-  baseUniforms.uBaseKeyCol.value.copy(f.keyCol)
+  baseUniforms.uBaseKeyCol.value.copy(f.keyCol).multiplyScalar(hold)
   baseUniforms.uBaseRimDir.value.copy(f.rimDir)
-  baseUniforms.uBaseRimCol.value.copy(f.rimCol)
-  baseUniforms.uBaseSky.value.copy(f.sky).multiplyScalar(f.fill)
+  baseUniforms.uBaseRimCol.value.copy(f.rimCol).multiplyScalar(hold)
+  baseUniforms.uBaseSky.value.copy(f.sky).multiplyScalar(f.fill * hold)
   const card = lightUniforms.uRigCardCol.value
   const lift = (FLOOR_SHARE / Math.PI) * Math.max(lightUniforms.uRigCardDir.value.y, 0)
   const down = (FLOOR_SHARE / Math.PI) * Math.max(f.keyDir.y, 0)
-  baseUniforms.uBaseFloor.value.setRGB(f.keyCol.r * down + card.r * lift, f.keyCol.g * down + card.g * lift, f.keyCol.b * down + card.b * lift)
+  baseUniforms.uBaseFloor.value.setRGB(f.keyCol.r * down + card.r * lift, f.keyCol.g * down + card.g * lift, f.keyCol.b * down + card.b * lift).multiplyScalar(hold)
 }
 
 /** The candles on this frame: `seconds` since the landing they answer (0 and under: none lit yet; Infinity: all lit). */
