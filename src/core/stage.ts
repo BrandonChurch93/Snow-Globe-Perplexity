@@ -69,6 +69,8 @@ export interface Stage {
   resize(width: number, height: number): void
   drawSample(target: THREE.WebGLRenderTarget, pose: Pose, sample: Sample | null, moment: Moment, shadows: boolean): void
   setDiagnostic(view: string): void
+  /** Off for the one still that is a measuring aid: the same picture with no particle and no haze in it. Never off in a picture that is judged. */
+  setAir?(on: boolean): void
   setQuality?(level: StageQuality): void
   prepare?(season: string): Promise<void>
   /** A shake has been asked that goes into `season`: until it has landed, nothing is made ready for any other season. */

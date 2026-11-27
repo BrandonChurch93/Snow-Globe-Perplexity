@@ -1,45 +1,49 @@
 {
-  "number": 181,
-  "time": "2026-11-26 23:08 UTC",
+  "number": 186,
+  "time": "2026-11-27 01:16 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 181 · 2026-11-26 23:08 UTC · Phase 6",
-    "Main is `57503019`, pushed 23:06 UTC: the hand's last pass is in (a twist of up to 10 degrees after each turn, a deeper arched dip, uneven strokes with a heavy start). Read before the push: `npx tsc --noEmit` clean, the build green, the whole test run 58 files passed and 1 skipped, 799 tests passed and 4 skipped, and the eight draft stills of the four seasons at rest and at the landing byte for byte equal with it and without it. The inertia's builder took it up at 23:07 UTC with 60 minutes.",
-    "Waiting here for the test run's last word, not yet on origin: summer's base, first push, and the standstill (local main `8aabc817`). On that tree summer's detail line is green for the first time: \"pass M3 summer-rest: 0.8159 (threshold 0.75, detail.minSharpnessRatio)\", base 1.041 against 0.621 before, miniature 0.816. Picture 1 says what that is worth: the number is green and the look is still below the bar. Left the approved base, in the middle main before, right with the first push: sand grain and grooves are there now, the form is still thin even rings where the approved picture has broad carved swirls, and the shade is still warm where the approved one is blue grey. The base's builder works on; in the storm the base follows the approved shake picture (decision 172).",
-    "The standstill: where the live page draws one sample a frame, a part that gives way to another now does so through a fixed fine pattern instead of a flicker. Decision 171 restates the grain file's size rule that came with it.",
-    "Fall's air has its builder since 22:57 UTC (`tools/briefs/p6/fall-air.md`). Picture 2, approved left and build right at draft tier, below the bar: the build draws its sparks as golden blobs of 6 to 14 px spread evenly where the approved picture has fine points in drifts; by the widest of three counts warm pixels fill 14.4 in 100 of the glass against 9.9; between cottage and tree the build stands at 32, 33, 29 against 69, 71, 60 (the fog at rest, granted to the same builder).",
-    "Summer at 3840 in motion, final tier, drawn by a farm machine on `708c31cd` (film frames 1860 to 1889, the pull back; 77 to 79 s a frame). Picture 4 is a window of frame 1860 at full size. It holds almost everywhere: the base, shells, lamps, leaves, roof, fence, the air and the glass's film. Two faults found and sent to their builders at 23:04 UTC: the sand that pours over the lip at the right of the base is drawn anew in every frame and steps; the ball's outline at upper left is a band of 2 to 3 px of alternating pixels that shimmers as it moves.",
-    "Picture 3 is summer at the landing at review tier on the merged tree.",
-    "No rough draft since draft 4 and no frame of the 4K masters drawn yet: the masters wait until the motion faults of winter, spring and summer are mended. Open item 249 is new: this machine's disk (20 GB, 4.3 GB free) is too small to join the masters as it stands.",
+    "Status 186 · 2026-11-27 01:16 UTC · Phase 6",
+    "Main moved to `b2faf0a1` at 01:04 UTC (6:04 PM MT): summer's tree, fifth pass, and winter's pond and frond at 3840, with their checks read on the merged tree: tsc exit 0, M3 summer 0.8818 and winter 0.9218, gate G15 passing with 8,675 triangles to spare at high (fall holds the most, 1,791,325 of 1,800,000), the whole vitest 834 passed and 4 skipped. Passing M3 is not the bar: summer's tree still reads as tiers with a stout dark trunk.",
+    "Four more merges stand here since 01:04 UTC (`04e98255`) and their chain runs since 01:04:57: spring's base (`df49a7e6`), fall's air (`ce0a8387`), two clamps in the ring's shader by the strict check (`29ec9904`), and my two guards (`1300aae7`). Read so far: tsc exit 0, spring's base made, build exit 0 (engine `04d60c2dcdbccaa1`), \"pass M3 spring-rest: 0.8298\" with the base at 0.830 from 0.431, \"FAIL M3 fall-rest: 0.6996\" with the base at 0.700 and the miniature at 0.789, draft stills: spring's two and fall's two changed, winter's and summer's four byte equal, film frames 1644, 1646 and 1648 drawn for open item 244 with no blue patch at the left of the glass (about 100 strongly blue pixels a frame remain, single dots along the glass's right outline, the dotted outline that has its own mend). The season counts at high read winter 1,490,555, spring 1,470,770 (1,422,446 before its base), summer 1,716,044 and fall 1,791,325 of 1,800,000. The whole vitest still runs. Nothing is pushed before it is read.",
+    "Picture 1, spring at rest on the merged tree, the approved picture left and the build right (the measure's own comparison, drawn 01:08:04 UTC). The base passes the measure and is below the bar: measured on this picture the flank's green share is 0.05 against the approved's 0.27, its median luminance 27 against 18, its warm bright share 0.24 against 0.12. A second list is out to its builder since 01:09 UTC (moss over the whole flank, thicker darker curved roots, calmer flecks at 3840 with proof in motion, the trickle as a wet sheen, the lip), limit 03:00 UTC.",
+    "Picture 2, fall at rest on the merged tree with its air's last pass, the approved picture left and the build right (drawn 01:09:16 UTC). Below the bar: twice the approved's specks under 15 px (431 and 208 against 207 and 111 in my count of orange blobs inside the ball), fewer leaves of a size that reads as a leaf (32 against 43), about fifteen round discs of one size, long straight pale strokes at the upper left, a flat mist. A second list is written (`out/work/orders/p6/fall-air-2.txt`) and goes out when a place among the 16 is free.",
+    "Picture 3, rough draft 5 in the making, winter into spring in twelve frames (film frames 600 to 718, from the chunks of a helper machine, head `f4df90d1`). Below the bar: a pale wash lies over the whole picture for some frames and the base changes under it. The change's finisher reworks all four shakes (shakes 1 and 2 about 01:50 UTC).",
+    "Rough draft 5: 8 of 12 chunks are in at 01:15 UTC, none with a page message; the rest by about 01:30 UTC, then joined, scanned and looked at.",
+    "Fall's miniature, first push of its second list at 01:00 UTC (`3f8a931d`): the rows of white glints on the water, the pale streaks on the bark and the flat orange are out, and with them its M3 line fell to 0.6174 from main's 0.722. Not merged: the merge waits for the push that brings the number back from true form (bark ridges, shingle edges).",
+    "The strict check, final at 01:02 UTC: two calls in the ring mesh's shader stood open (`src/globe/shell.ts` lines 583 and 584, an asin fed from outside -1 to 1 and a root fed below zero, in a branch that is not taken on the ring but stands in the shader); both closed; its eight draft stills byte equal before and after; \"strict: pass, 5 keys through the app's own path at high under all+smooth+noguard+asunit\". By its own words the row passing is not the proof, the source is, and no real graphics card was seen.",
+    "A new builder mends the rows of copies in fast motion at 3840 (order `out/work/orders/p6/shutter.md`): the final tier asks a sample every 0.75 px of travel and at most 96 a frame, and I took the cap for the cause. Its first numbers at 01:16 UTC say the cap never bites: by the rule's two marks no frame of film B travels over 72 px (the most is 67.97 px in frame 2118, drawn with 91 samples; 347 frames over the base of 24; 93,508 samples in all), so the rows of copies have another cause. With marks all over the glass, the base and their mirror images in the table the travel reaches 74 to 76 px, and 142 px for the table's mirror image in frames 0 to 27 where the camera moves. It is drawing three frames at 3840 to read the comb's pitch and name the cause, next word before 01:50 UTC, the mend by 03:30 UTC.",
+    "16 agents are at work: summer (tree, miniature, air, glass, sand, stone), fall (base, miniature), spring (base), the change of season, the controls, the shutter, one farm machine sending crops, and three machines on the draft.",
+    "Render counts. Drawn here since the last status: 8 draft stills and 2 review stills for the checks, 3 film frames at the draft tier. On helper machines: 8 of the 12 chunks of rough draft 5 (1,200 of 1,800 frames at 960x540). No frame of the masters yet.",
     "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
-    "phase 6: 20.32 h used of its 12.00 h box",
-    "allowance (after the review): 20.32 h used of 12.00 h allowed",
+    "phase 6: 22.45 h used of its 12.00 h box",
+    "allowance (after the review): 22.45 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-181-1.jpg",
-      "caption": "Summer's base: approved picture left, main before in the middle, with the first push right, still below the bar",
+      "file": "out/stills/status/status-186-1.jpg",
+      "caption": "Spring at rest with the new base, the approved picture left and the build right, below the bar",
       "w": 1200,
-      "h": 175
+      "h": 591
     },
     {
-      "file": "out/stills/status/status-181-2.jpg",
-      "caption": "Fall's air: approved picture left and build right at draft tier, below the bar",
+      "file": "out/stills/status/status-186-2.jpg",
+      "caption": "Fall at rest with its air's last pass, the approved picture left and the build right, below the bar",
       "w": 1200,
-      "h": 463
+      "h": 591
     },
     {
-      "file": "out/stills/status/status-181-3.jpg",
-      "caption": "Summer at the landing at review tier on the merged tree",
+      "file": "out/stills/status/status-186-3.jpg",
+      "caption": "Rough draft 5 in the making, winter into spring in twelve frames, below the bar",
       "w": 1200,
-      "h": 675
+      "h": 225
     },
     {
-      "file": "out/stills/status/status-181-4.jpg",
-      "caption": "Summer at 4K in motion: a window of frame 1860 at full size",
+      "file": "out/stills/status/status-186-4.jpg",
+      "caption": "Still: fall landed hero, hd, draft",
       "w": 1200,
       "h": 675
     }

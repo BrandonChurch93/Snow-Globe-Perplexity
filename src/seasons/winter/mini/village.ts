@@ -7,7 +7,7 @@ import { stageMaterial, type Rgb } from '../../../core/materials'
 import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial } from '../../../miniature/glow'
-import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
+import { MIRROR_GLSL, MIRROR_MAX, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { hangPoints, lampFlame, lampFoot, pitch, ridgeY, roofLength, shrubDistance, slopeLength } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
@@ -32,6 +32,11 @@ const BULB = { power: 0.6, reachMm: 4.5, flicker: 0.07, cycles: 2 }
 const NEAR = { bulb: { power: 0.6, reachMm: 1.2, ends: 3 }, lamp: { power: 4, reachMm: 7 }, pane: { power: 0.7, reachMm: 2.4 } }
 const NEAR_WALL = { bulb: { power: 12, reachMm: 1.7, ends: 3 }, lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 1.7, reachMm: 5, ends: 3 } }
 const MIRROR = { lamp: 9, pane: 1.2, bulb: 0.2, tight: 0.002, wide: 0.03, wideShare: 0.008, bump: 0.65, lowMm: 3.4, sparkle: 0.8 }
+// Where a pixel holds a texel or more of the ice map its bump is finer than the picture: each sample of a pixel met another
+// facet and the lamp was drawn as dots anew in every frame. There the bump and the grain are read `lod` levels up, and what
+// the lost facets scattered goes into wider lobes, each by how far the normal turns across the pixel (`turn` the mirror's
+// over `spread`, `lobe` the lamp's own over `rough`), with `hold` and `dim` keeping the two no brighter than the dots were.
+const CALM = { lod: 3, stepPx: 6, bump: 0.45, spread: 0.0015, turn: 0.5, lobe: 4, lobeMost: 0.18, hold: 0.86, rough: 0.0002, dim: 0.5, fromTexels: 0.25, toTexels: 1 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { bulb: { size: 1.05, rest: 0.42, hot: 6, bloom: 0.2 }, lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const THROUGH = 6
@@ -244,10 +249,27 @@ function iceMaterial(): THREE.MeshStandardMaterial {
 ${BUMP_GLSL}
 ${MIRROR_GLSL}
 vec3 iceFlat = vec3(0.0, 0.0, 1.0);
+float iceFine = 0.0;
 float iceShade = 0.0;
+float iceLamp(vec3 r, float spread) {
+  float t = ${MIRROR.tight.toFixed(5)} + spread;
+  float w = ${MIRROR.wide.toFixed(5)} + spread;
+  float sum = 0.0;
+  for (int i = 0; i < ${MIRROR_MAX}; i++) {
+    if (i >= uMirrorCount) break;
+    vec3 to = uMirror[i].xyz - vStageLocal;
+    float miss = 1.0 - dot(r, to / max(length(to), 1e-4));
+    sum += uMirror[i].w * (${MIRROR.tight.toFixed(5)} / t * exp(-miss / t) + ${(MIRROR.wideShare * MIRROR.wide).toFixed(6)} / w * exp(-miss / w));
+  }
+  return sum;
+}
 float iceHeight(vec2 uv) {
   vec3 t = texture2D(map, uv).rgb;
   return t.g * 0.05 + t.b * 0.035 - t.r * 0.05 + texture2D(map, uv * 3.1 + 0.17).g * 0.012;
+}
+float iceCalm(vec2 uv) {
+  vec3 t = texture2D(map, uv, ${CALM.lod.toFixed(1)}).rgb;
+  return t.g * 0.05 + t.b * 0.035 - t.r * 0.05;
 }`,
         )
         .replace(
@@ -272,8 +294,14 @@ float iceRough = mix(0.09, 0.72, iceFrost);
 {
   float iceH = iceHeight(vMapUv);
   vec2 iceDh = vec2(iceHeight(vMapUv + dFdx(vMapUv)) - iceH, iceHeight(vMapUv + dFdy(vMapUv)) - iceH);
+  float iceC = iceCalm(vMapUv);
+  vec2 iceDc = vec2(iceCalm(vMapUv + ${CALM.stepPx.toFixed(1)} * dFdx(vMapUv)) - iceC, iceCalm(vMapUv + ${CALM.stepPx.toFixed(1)} * dFdy(vMapUv)) - iceC) / ${CALM.stepPx.toFixed(1)};
+  vec2 iceSize = vec2(textureSize(map, 0));
+  iceFine = smoothstep(${CALM.fromTexels.toFixed(2)}, ${CALM.toTexels.toFixed(2)}, max(length(dFdx(vMapUv) * iceSize), length(dFdy(vMapUv) * iceSize)));
   iceFlat = normal;
-  normal = villageBump(-vViewPosition, normal, iceDh, faceDirection);
+  normal = villageBump(-vViewPosition, normal, mix(iceDh, iceDc, iceFine), faceDirection);
+  float iceTurn = min(${CALM.lobe.toFixed(2)} * (dot(dFdx(normal), dFdx(normal)) + dot(dFdy(normal), dFdy(normal))), ${CALM.lobeMost.toFixed(2)});
+  roughnessFactor = sqrt(sqrt(max(roughnessFactor * roughnessFactor * roughnessFactor * roughnessFactor + (${CALM.rough.toFixed(5)} + iceTurn) * iceFine, 1e-12)));
 }
 `,
         )
@@ -284,15 +312,18 @@ float iceRough = mix(0.09, 0.72, iceFrost);
   vec3 iceN = villageInside(normal);
   vec3 iceSight = villageSight();
   float iceFresnel = 0.03 + 0.97 * pow(abs(1.0 - clamp(dot(iceN, iceSight), 0.0, 1.0)), 5.0);
-  float iceGlitter = 0.6 + 1.4 * smoothstep(0.45, 0.85, texture2D(map, vMapUv * 2.3 + 0.37).g);
-  vec3 iceMirror = villageInside(normalize(mix(iceFlat, normal, ${MIRROR.bump.toFixed(2)})));
-  float iceGlint = iceGlitter * villageMirror(iceMirror, iceSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
+  vec3 iceSoft = texture2D(map, vMapUv, ${CALM.lod.toFixed(1)}).rgb;
+  float iceHaze = max(clamp(iceRim * iceRim * 0.9 + smoothstep(0.4, 0.8, iceWide.g) * (0.35 + 0.4 * iceRim) + (iceSoft.g - 0.5) * 0.24, 0.0, 1.0), iceSoft.r * 0.75) * (1.0 - iceWet);
+  float iceGlitter = 0.6 + 1.4 * smoothstep(0.45, 0.85, texture2D(map, vMapUv * 2.3 + 0.37, ${CALM.lod.toFixed(1)}).g);
+  vec3 iceMirror = villageInside(normalize(mix(iceFlat, normal, ${MIRROR.bump.toFixed(2)} * (1.0 - ${(1 - CALM.bump).toFixed(2)} * iceFine))));
+  vec3 iceBack = reflect(-iceSight, iceMirror);
+  float iceGlint = iceGlitter * (1.0 - ${(1 - CALM.hold).toFixed(2)} * iceFine) * iceLamp(iceBack, ${CALM.spread.toFixed(5)} * iceFine + ${CALM.turn.toFixed(2)} * (dot(dFdx(iceBack), dFdx(iceBack)) + dot(dFdy(iceBack), dFdy(iceBack))));
   iceShade = max(${POST.lamp.toFixed(2)} * villagePost(iceMirror, iceSight, ${glsl(postFoot)}, ${POST.lampMm.toFixed(2)}, ${POST.lampTall.toFixed(1)}), ${POST.trunk.toFixed(2)} * villagePost(iceMirror, iceSight, ${glsl(trunkFoot)}, ${POST.trunkMm.toFixed(2)}, ${POST.trunkTall.toFixed(1)}));
-  totalEmissiveRadiance += ${glsl(tones.lamp)} * iceGlint * iceFresnel * (1.0 - 0.55 * iceFrost) * (1.0 + ${MIRROR.sparkle.toFixed(2)} * (iceT.g - 0.5 + iceT.r)) * uGlowGain * vColor.r;
+  totalEmissiveRadiance += ${glsl(tones.lamp)} * iceGlint * iceFresnel * (1.0 - 0.55 * iceHaze) * (1.0 + ${MIRROR.sparkle.toFixed(2)} * (iceSoft.g - 0.5 + iceSoft.r)) * uGlowGain * vColor.r;
 }
 `,
         )
-      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${ICE_NEAR.toFixed(2)}) * material.diffuseContribution;\nreflectedLight.directSpecular *= vColor.r;\nreflectedLight.indirectSpecular *= vColor.r * (1.0 - iceShade);\nreflectedLight.directDiffuse *= 1.0 - ${POST.body.toFixed(2)} * iceShade;\nreflectedLight.indirectDiffuse *= 1.0 - ${POST.body.toFixed(2)} * iceShade;`)
+      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${ICE_NEAR.toFixed(2)}) * material.diffuseContribution;\nreflectedLight.directSpecular *= vColor.r * (1.0 - ${CALM.dim.toFixed(2)} * iceFine);\nreflectedLight.indirectSpecular *= vColor.r * (1.0 - iceShade);\nreflectedLight.directDiffuse *= 1.0 - ${POST.body.toFixed(2)} * iceShade;\nreflectedLight.indirectDiffuse *= 1.0 - ${POST.body.toFixed(2)} * iceShade;`)
     },
   })
 }

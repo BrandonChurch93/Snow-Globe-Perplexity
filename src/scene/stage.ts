@@ -17,6 +17,7 @@ import { ParticleDraw } from '../particles/draw/points'
 import { kitOf, kits } from '../seasons'
 import type { SeasonKit } from '../seasons/kit'
 import { changeBloom, partChange } from '../shake/change'
+import { AirHold, clearVeil } from './air'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
 import { newFrame, type StageFrame } from './frame'
@@ -129,6 +130,8 @@ export class GlobeStage implements Stage {
   private readonly colliders = new Map<string, SdfGrid>()
   private readonly prepared = new Map<string, Promise<void>>()
   private diag = ''
+  private air = true
+  private readonly airHeld = new AirHold()
   private quality: StageQuality = { particleFraction: 1, shadowMapPx: config.live.quality.high.shadowMapPx, surfaceReflection: 'planar' }
   private readonly reflect = new ReflectMix()
   private readonly clear = new THREE.Color()
@@ -416,6 +419,11 @@ export class GlobeStage implements Stage {
     this.diag = view === 'none' ? '' : view
   }
 
+  setAir(on: boolean): void {
+    this.air = on
+    this.airHeld.back()
+  }
+
   setQuality(level: StageQuality): void {
     this.lighting.setShadowMap(level.shadowMapPx)
     this.quality = { ...level }
@@ -444,7 +452,7 @@ export class GlobeStage implements Stage {
   }
 
   particleCount(): number {
-    return Math.floor(this.source.count * Math.min(1, Math.max(0, this.quality.particleFraction)))
+    return this.air ? Math.floor(this.source.count * Math.min(1, Math.max(0, this.quality.particleFraction))) : 0
   }
 
   textureBytes(): number {
@@ -528,6 +536,7 @@ export class GlobeStage implements Stage {
     f.planar = f.reflect > 0
     f.focalPx = h / (2 * Math.tan((pose.fovDeg * Math.PI) / 360))
     f.blurMm = f.lensOn ? pose.apertureMm : 0
+    f.air = this.air
 
     const g = moment.globe
     f.globe = g
@@ -567,6 +576,7 @@ export class GlobeStage implements Stage {
         if (l && m) m.emissiveIntensity = flickerOf(l, moment.time, period)
       })
     }
+    if (!this.air) this.airOut(single ? [a] : [a, b])
     this.slab.visible = !sliceOnly
     this.slice.visible = sliceOnly
 
@@ -619,14 +629,27 @@ export class GlobeStage implements Stage {
     }
     renderer.autoClear = auto
     renderer.setClearColor(this.clear, alpha)
+    this.airHeld.back()
+  }
+
+  /**
+   * The frame with the air left out, for the still that is a measuring aid: no particle, nothing in the shared veil, and what
+   * the seasons on show hang in the liquid hidden until the frame is drawn. The particles and the veil need no giving back:
+   * every frame sets them anew.
+   */
+  private airOut(sets: SeasonSet[]): void {
+    this.draw.points.visible = false
+    clearVeil()
+    for (const s of sets) this.airHeld.hide(s.glass)
   }
 
   /**
    * The lens fill's map, once a picture: the blur radius of the front surface at every pixel, from
    * the sample in hand (the lens point nearest the centre). The materials write it as their texel
    * view does. The backdrop and the glass are left out: their pixels keep the clear value and take
-   * the blur of what stands next to them, and so are the flakes. Then the guide: the backdrop's
-   * discs and the flakes afloat, alone.
+   * the blur of what stands next to them, and so are the flakes. A glass dressing that asks for it
+   * (`inBlurMap`) is drawn in after all. Then the guide: the backdrop's discs and the flakes afloat,
+   * alone.
    */
   private drawBlur(fill: LensFill, target: THREE.WebGLRenderTarget, pose: Pose, f: StageFrame, sets: SeasonSet[]): void {
     const { renderer } = this.gfx
@@ -648,6 +671,17 @@ export class GlobeStage implements Stage {
     this.floor.visible = true
     renderer.render(this.scene, this.camera)
     this.globe.visible = true
+    // Frost is a surface of its own: left out, it takes the blur of what stands behind it, and before
+    // an undrawn backdrop that is the reach of a neighbour, which comes and goes from frame to frame.
+    for (const o of hidden) {
+      const own = o.userData.inBlurMap as ((on: boolean) => void) | undefined
+      if (!own) continue
+      own(true)
+      o.visible = true
+      renderer.render(o, this.camera)
+      o.visible = false
+      own(false)
+    }
     // A globe that is itself in focus is the front surface of the picture: what is seen in the glass
     // is seen at the glass, so nothing inside its outline is filled and its rim stays as it is. Seen
     // from close by through the near wall (the macro) the glass is far out of focus and no surface
