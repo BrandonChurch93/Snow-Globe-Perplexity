@@ -7,9 +7,10 @@ import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial
 import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, villageGeometry, villageGrain } from '../../../miniature/model'
 import { isIvy, lampFlame, lampFoot, shrubs } from '../../../miniature/roof'
-import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
-import { anchors, cottage, cottageFrame, fence, groundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
+import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, surfacing, type Cover, type GlowSource } from '../../../miniature/surface'
+import { anchors, cottage, cottageFrame, cottagePoint, fence, groundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
+import { ROW } from '../../../scene/steps'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
 import { PUMPKINS, ROCKS, STONES, atticAt, boardDistance, fenceBoards, pumpkinCentre, pumpkinFace, pumpkinTall, rockCentre, stoneBase, type Point } from './props'
@@ -26,8 +27,8 @@ const SIDE = { power: 0.75, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.2 }
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
-const NEAR = { lamp: { power: 12, reachMm: 10 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 20, reachMm: 5.5, ends: 4 } }
-const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 2.2, reachMm: 4.2, ends: 3 }, pumpkin: { power: 8, reachMm: 4.5, ends: 3 } }
+const NEAR = { lamp: { power: 12, reachMm: 10 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 10, reachMm: 5.5, ends: 4 }, door: { power: 7, reachMm: 4.5 } }
+const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 3.6, reachMm: 4.2, ends: 3 }, pumpkin: { power: 8, reachMm: 4.5, ends: 3 }, door: { power: 6, reachMm: 5, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.16, hot: 0, bloom: 0.2 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
@@ -48,10 +49,14 @@ const CHIMNEY = { tone: [0.9, 0.95, 0.9] as Rgb, top: 0.26, knee: 0.5, power: 2.
 // The shared slates run from 0.02 (a slate's shadowed top edge) to 0.12 (its lit lower edge). The approved roof is big warm
 // slates with bright lower edges over black gaps, so the tone is bent about `mid` and weathered in patches a few slates wide.
 const ROOF = { tone: [1.65, 1.22, 0.95] as Rgb, grey: 0.55, mid: 0.045, bend: 1.6, patch: [0.6, 1.7] as [number, number] }
-const DOOR: Rgb = [0.055, 0.078, 0.066]
+const DOOR: Rgb = [0.15, 0.31, 0.33]
 // The shared stones are a few large blocks; the approved wall is small chipped stones. Upright stone is broken up by the
 // grain map read coarser, through its levels, so the chips hold their size at any distance.
 const CHIP = { scale: 0.4, low: 0.4, span: 1.2, edges: [0.3, 0.7] as [number, number] }
+// The shared door is one smooth leaf. The approved one is planks: each a tone of its own, a dark groove between them,
+// drawn across the door with the groove's edge held one pixel soft.
+const PLANK = { wideMm: 0.84, groove: 0.16, dark: 0.92, tone: [0.4, 1.35] as [number, number], grain: [0.55, 0.9] as [number, number] }
+const doorFrame = cottageFrame()
 const chipped: Cover = {
   uniforms: {},
   pars: '',
@@ -60,6 +65,16 @@ const chipped: Cover = {
   float fallChip = texture2D(map, vMapUv * ${CHIP.scale.toFixed(2)} + 0.61).r;
   float fallUpright = 1.0 - smoothstep(0.3, 0.6, abs(vObjN.y) / max(length(vObjN), 1e-4));
   diffuseColor.rgb *= mix(1.0, ${CHIP.low.toFixed(2)} + ${CHIP.span.toFixed(2)} * smoothstep(${CHIP.edges[0].toFixed(2)}, ${CHIP.edges[1].toFixed(2)}, fallChip), villageStone * fallUpright);
+  vec2 fallAt = vStageLocal.xz - vec2(${cottage.x.toFixed(3)}, ${cottage.z.toFixed(3)});
+  float fallAcross = dot(fallAt, vec2(${doorFrame.v[0].toFixed(5)}, ${doorFrame.v[1].toFixed(5)})) - ${cottage.door.across.toFixed(3)};
+  float fallAlong = dot(fallAt, vec2(${doorFrame.u[0].toFixed(5)}, ${doorFrame.u[1].toFixed(5)})) - ${cottage.halfLength.toFixed(3)};
+  float fallDoor = villageWood * step(abs(fallAcross), ${(cottage.door.width / 2 + 0.6).toFixed(3)}) * step(abs(fallAlong), 1.4) * step(vStageLocal.y, ${(doorFrame.floor + cottage.wall).toFixed(3)});
+  float fallPlank = fallAcross / ${PLANK.wideMm.toFixed(3)};
+  float fallSoft = max(fwidth(fallPlank), 1e-4);
+  float fallGroove = smoothstep(${(0.5 - PLANK.groove).toFixed(3)} - fallSoft, ${(0.5 - PLANK.groove).toFixed(3)} + fallSoft, abs(fract(fallPlank) - 0.5));
+  float fallBoard = ${PLANK.tone[0].toFixed(2)} + ${PLANK.tone[1].toFixed(2)} * fract(sin(floor(fallPlank) * 12.9898) * 43758.5453);
+  float fallGrain = ${PLANK.grain[0].toFixed(2)} + ${PLANK.grain[1].toFixed(2)} * texture2D(map, vec2(fallAcross * 0.5, vStageLocal.y * 0.05) + 0.37).r;
+  diffuseColor.rgb *= mix(1.0, fallBoard * fallGrain * (1.0 - ${PLANK.dark.toFixed(2)} * fallGroove), fallDoor);
 }
 `,
 }
@@ -67,8 +82,8 @@ const TIMBER: Rgb = [0.4, 0.42, 0.34]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 // The shared shrubs are one soft mass. Dry leaves stand apart: each takes its own tone and its own depth of shade.
 const BUSH = { gain: 5.2, cap: 2, low: 0.35 }
-const GROUND = { soil: 1.7, leaf: 1.9, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
-const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 10, pane: 1.6, pumpkin: 4.5, tight: 0.0008, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.8, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
+const GROUND = { soil: 1.7, leaf: 1.15, leafScale: 0.85, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
+const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 4.5, pane: 1.6, pumpkin: 4.5, tight: 0.003, wide: 0.012, wideShare: 0.03, calm: 0.3, lowMm: 3.4, fog: 0.42, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
 
 const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
 const foot = lampFoot()
@@ -92,7 +107,7 @@ function stretched(source: THREE.BufferGeometry): THREE.BufferGeometry {
 }
 
 const flame = tallLamp(lampFlame())
-const STACK = { fromMm: 17.6, keep: 0.7, reachMm: 0.5 }
+const STACK = { fromMm: 17.6, keep: 0.84, reachMm: 0.5 }
 const BUSHES = shrubs().filter((s) => !isIvy(s.r))
 const IVY = shrubs().filter((s) => isIvy(s.r))
 const inIvy = (x: number, y: number, z: number): boolean => IVY.some((s) => Math.hypot((x - s.centre[0]) / s.r[0], (y - s.centre[1]) / s.r[1], (z - s.centre[2]) / s.r[2]) < 1.5)
@@ -108,6 +123,8 @@ function bushDistance(x: number, y: number, z: number): number {
 const mirrored: Point = [flame[0], flame[1] - WATER.lowMm, flame[2]]
 const attic = atticAt()
 const pumpkinLights = PUMPKINS.map((p) => pumpkinFace(p, 0.55, 0.05))
+// The approved door has warm light at its foot, on the step and up the planks.
+const doorFoot: Point = cottagePoint(cottage.door.across + 1.2, 1.2, cottage.halfLength + 2.2)
 const pumpkinPools = PUMPKINS.map((p): Point => {
   const f = pumpkinFace(p, 1.45)
   return [f[0], groundAt(f[0], f[2]) + 1.1, f[2]]
@@ -132,6 +149,7 @@ const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb): GlowSource[
   { at: anchors.sideWindow, color: tones.greenLight, ...on.pane },
   { at: attic, color: tones.greenLight, ...on.pane },
   ...pumpkinPools.map((at): GlowSource => ({ at, color: tones.pumpkinLight, ...on.pumpkin })),
+  { at: doorFoot, color: tones.pumpkinLight, ...on.door },
 ]
 
 // Light the glass and the lit fog throw back: on the faces of the fence the viewer sees, on the cottage's side wall and
@@ -195,13 +213,14 @@ function cottageLocal(x: number, z: number): { across: number; along: number } {
   return { across: dx * frame.v[0] + dz * frame.v[1], along: dx * frame.u[0] + dz * frame.u[1] }
 }
 
-function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
+function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeometry> {
   const g = source.clone()
   const P = g.getAttribute('position')
   const N = g.getAttribute('normal')
   const C = g.getAttribute('color')
   const S = g.getAttribute('uv1')
   for (let i = 0; i < P.count; i++) {
+    if (i % ROW === 0) yield
     const x = P.getX(i)
     const y = P.getY(i)
     const z = P.getZ(i)
@@ -409,10 +428,12 @@ diffuseColor.rgb = mix(${glsl(tones.water)}, ${glsl(tones.moss)} * 0.5, pondShor
   vec3 pondN = villageInside(normal);
   vec3 pondSight = villageSight();
   float pondFresnel = 0.03 + 0.97 * pow(abs(1.0 - clamp(dot(pondN, pondSight), 0.0, 1.0)), 5.0);
-  float pondGlint = villageMirror(pondN, pondSight, ${WATER.tight.toFixed(5)}, ${WATER.wide.toFixed(5)}, ${WATER.wideShare.toFixed(3)});
-  float pondLap = 0.4 * (texture2D(map, vMapUv * 0.11 + 0.2).a + texture2D(map, vMapUv * 0.07 + 0.6).a) + 0.2 * texture2D(map, vMapUv * vec2(0.9, 0.3) + 0.13).a;
+  vec3 pondStill = mix(pondFlat, normal, ${WATER.calm.toFixed(2)});
+  vec3 pondCalm = villageInside(dot(pondStill, pondStill) > 0.0 ? normalize(pondStill) : normal);
+  float pondGlint = villageMirror(pondCalm, pondSight, ${WATER.tight.toFixed(5)}, ${WATER.wide.toFixed(5)}, ${WATER.wideShare.toFixed(3)});
+  float pondLap = 0.5 * (texture2D(map, vMapUv * 0.11 + 0.2).a + texture2D(map, vMapUv * 0.07 + 0.6).a);
   float pondPosts = max(villagePost(pondN, pondSight, ${vec(trunkFoot)}, ${WATER.trunkMm.toFixed(1)}, 80.0), villagePost(pondN, pondSight, ${vec(foot)}, 0.8, ${(flame[1] - foot[1] + 2).toFixed(1)}));
-  totalEmissiveRadiance += (${glsl(tones.lamp)} * pondGlint * pondFresnel + ${glsl(tones.fogGlint)} * (${WATER.fog.toFixed(2)} * pondFresnel * (0.3 + 1.4 * smoothstep(0.35, 0.7, pondLap)) * (1.0 - ${WATER.dim.toFixed(2)} * pondPosts))) * uGlowGain * (1.0 - pondShore);
+  totalEmissiveRadiance += (${glsl(tones.lamp)} * pondGlint * pondFresnel + ${glsl(tones.fogGlint)} * (${WATER.fog.toFixed(2)} * pondFresnel * (0.55 + 0.9 * smoothstep(0.3, 0.75, pondLap)) * (1.0 - ${WATER.dim.toFixed(2)} * pondPosts))) * uGlowGain * (1.0 - pondShore);
 }
 `,
         )
@@ -427,12 +448,17 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
   return m
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const stone = surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: chipped, key: 'village-solid-fall', fill: WALL_FILL })
-  const walls = shadowed(new THREE.Mesh(withSurface(autumn(villageGeometry('solid')), sources(NEAR_WALL, tones.lampLight)), stone))
-  const decor = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'decor').clone(), sources(NEAR_WALL, tones.lampLight)), stone))
-  const earth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ground').clone(), sources(NEAR, tones.lampLight)), groundMaterial()), false)
-  const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water').clone(), sources(NEAR, tones.lampLight)), waterMaterial()), false)
+  const turned = yield* autumn(villageGeometry('solid'))
+  yield
+  const walls = shadowed(new THREE.Mesh(yield* surfacing(turned, sources(NEAR_WALL, tones.lampLight)), stone))
+  yield
+  const decor = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'decor').clone(), sources(NEAR_WALL, tones.lampLight)), stone))
+  yield
+  const earth = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'ground').clone(), sources(NEAR, tones.lampLight)), groundMaterial()), false)
+  yield
+  const water = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'water').clone(), sources(NEAR, tones.lampLight)), waterMaterial()), false)
   return new THREE.Group().add(walls, decor, earth, water)
 }
 
