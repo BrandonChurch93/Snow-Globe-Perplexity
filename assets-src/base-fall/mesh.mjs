@@ -142,7 +142,7 @@ function addStrands() {
     push({ a0, span, h0: r(4, 32), slope: Math.tan((rng() < 0.5 ? -1 : 1) * r(4, 30) * RAD) * span * RAD * 53, bend: r(-4, 4), amp: r(1.2, 3.2), k: r(2, 5), ph: r(0, 6.28), rad: r(0.45, 0.7), lift: r(1.2, 6.5), sprawl: 0.6, wander: 2.2, thorn: [3.5, 6.5], every: 40, layer: 3, open: true, reach: r(2, 6) })
   }
   // The twigs: the left of the ring is a tangle of thin steep lengths that stand out from the drum.
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 30; i++) {
     const a0 = r(-128, -72)
     const span = r(18, 48)
     push({ a0, span, h0: r(3, 31), slope: Math.tan((rng() < 0.5 ? -1 : 1) * r(14, 55) * RAD) * span * RAD * 53, bend: r(-5, 5), amp: r(0.8, 2.4), k: r(2, 6), ph: r(0, 6.28), rad: r(0.3, 0.52), lift: r(2.5, 9), sprawl: 1.2, wander: 2.4, thorn: [2.5, 5], every: 30, layer: 3, open: true, reach: r(3, 8) })
@@ -514,7 +514,7 @@ export function buildWax() {
       if (outs[i] === null) outs[i] = held - 0.2
       held = outs[i]
     }
-    for (let pass = 0; pass < 3; pass++) {
+    for (let pass = 0; pass < 7; pass++) {
       const prev = outs.slice()
       for (let i = 0; i <= n; i++) outs[i] = Math.max(0.25 * prev[Math.max(i - 1, 0)] + 0.5 * prev[i] + 0.25 * prev[Math.min(i + 1, n)], prev[i] - 0.3)
     }
@@ -522,7 +522,7 @@ export function buildWax() {
       const t = i / n
       const h = mix(h0, d.h1, t)
       const sway = (fbm(t * 3 + d.az, 0.4, 64, 4, 17, 2) - 0.5) * (d.h1 < 26 ? 1.6 : 0.9) * t
-      const neck = mix(Math.min(d.wide, 2.3), 0.7, smooth(0, 0.42, t) ** 0.6)
+      const neck = mix(Math.min(d.wide, 2.3), 0.5, smooth(0, 0.42, t) ** 0.6)
       const bulb = 1 + 0.45 * Math.exp(-(((t - 0.88) / 0.09) ** 2))
       const cap = Math.sqrt(Math.max(1 - Math.max((t - 0.93) / 0.07, 0) ** 2, 0.0004))
       const rad = d.w * neck * bulb * cap * (0.84 + 0.34 * fbm(t * 2.2 + d.az * 1.7, 0.2, 64, 4, 47, 1))

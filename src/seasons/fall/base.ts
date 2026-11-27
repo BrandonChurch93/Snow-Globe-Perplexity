@@ -65,8 +65,8 @@ const baseUniforms = {
 const FLOOR_SHARE = 0.1
 // The brambles' tones, measured against the approved image in boxes at the review tier (the band of brambles under the
 // lip is 18, 18, 18 there; the tangle at the left 61, 37, 27).
-const BRAMBLE = { ALBEDO: 0.5, SPILL: 24, RIM: 0.1, KEY: 0.16, KEY_EAST: 3, CARD: 0.2, WARM: 0.3, WARM_FRONT: 0.4, WARM_WEST: 14, CARD_WEST: 5, TOP: 0.26, BARK: 0.8, LIFT: 0.03, FILL: 0.03 }
-const DRUM_SHEEN = 0.75
+const BRAMBLE = { ALBEDO: 0.5, SPILL: 24, RIM: 0.1, KEY: 0.16, KEY_EAST: 4.5, CARD: 0.2, WARM: 0.3, WARM_FRONT: 0.4, WARM_WEST: 14, CARD_WEST: 5, TOP: 0.26, BARK: 1.8, LIFT: 0.03, FILL: 0.03 }
+const DRUM_SHEEN = 0.65
 const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}`
 const flicker: { a: number; b: number; c: number }[] = []
 let faceList: Face[] = []
@@ -282,7 +282,7 @@ const IRON_AFTER = `
   float ironEast = smoothstep(14.0, 44.0, vBasePos.x);
   vec3 ironRimC = mix(vec3(dot(uBaseRimCol, vec3(0.3, 0.5, 0.2))), uBaseRimCol, mix(0.35, 1.0, ironWest));
   reflectedLight.directSpecular += ironRimC * (0.03 * pow(abs(ironRh), 7.0) + mix(0.3 * pow(abs(ironRh), 40.0), BRAMBLE_RIM * pow(abs(ironRh), 16.0), baseStrand) * (1.0 - baseDrum)) * ironRl * ironSheen;
-  vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65 * (1.0 - ironWest)) * mix(vec3(1.0), vec3(1.0, 0.72, 0.5), ironWest);
+  vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65 * (1.0 - ironWest)) * mix(vec3(1.0), vec3(1.0, 0.56, 0.34), ironWest);
   reflectedLight.directSpecular += (mix(ironKeyC, ironKeyOpen * baseAo, baseDrum) * vec3(0.8, 0.9, 1.0) * (mix(0.03, 0.4 * baseDim, baseDrum) * pow(abs(ironKh), mix(8.0, 9.0, baseDrum)) + mix(0.5 * pow(abs(ironKh), 40.0) * baseThorn, BRAMBLE_KEY * (1.0 + BRAMBLE_KEY_EAST * ironEast) * pow(abs(ironKh), 14.0) * ironGrain, baseStrand)) * ironKl + ironCardC * (0.03 * pow(abs(ironCh), 10.0) + mix(0.2 * pow(abs(ironCh), 40.0) * baseThorn, BRAMBLE_CARD * (1.0 + BRAMBLE_CARD_WEST * ironWest) * pow(abs(ironCh), mix(16.0, 36.0, ironWest)), baseStrand)) * ironCl) * ironSheen;
   // The key rakes the bare leather of the right flank: a broad grey sheen, grained by the hide.
   reflectedLight.directSpecular += ironKeyOpen * vec3(0.8, 0.9, 1.0) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * ironKl * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.7 + 0.45 * basePebble) * baseAo;
@@ -340,7 +340,7 @@ vec3 faceLight = mix(faceWall * mix(0.3, 1.0, faceBevel), faceCave, faceThrough 
 float faceRidge = smoothstep(0.25, 0.85, baseAo);
 // The rind is thin enough to carry the candle: the skin glows round the openings and holds a low ember all over,
 // deeper in the ribs' ridges than in their grooves.
-vec3 faceSkin = faceGlowing * (vec3(1.0, 0.3, 0.04) * 0.2 * faceNear + vec3(1.0, 0.2, 0.02) * (0.1 * faceSoft * faceSoft + 0.012 * faceSoft + 0.004) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib)) * (1.0 - faceStem);
+vec3 faceSkin = faceGlowing * (vec3(1.0, 0.3, 0.04) * 0.14 * faceNear + vec3(1.0, 0.2, 0.02) * (0.06 * faceSoft * faceSoft + 0.008 * faceSoft + 0.002) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib)) * (1.0 - faceStem);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.006, 0.002), faceOpen);
 totalEmissiveRadiance += mix(faceSkin, faceLight, faceOpen);
 float baseWrap = 0.3;
@@ -351,7 +351,7 @@ roughnessFactor = mix(0.42 + 0.2 * faceRib, 0.9, faceOpen);
 metalnessFactor = 0.0;
 `
 const PUMPKIN_TILT = `
-vec2 baseTilt = (vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.3 + 47.0)) - 0.5) * 0.5 * (1.0 - faceOpen);
+vec2 baseTilt = ((vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.3 + 47.0)) - 0.5) * 0.7 + (vec2(baseNoise(vBasePos.yzx * 6.1 + 23.0), baseNoise(vBasePos.zxy * 6.1 + 59.0)) - 0.5) * 0.5) * (1.0 - faceOpen);
 `
 
 // The wax: pale, soft, thick where it has gathered. Light enters it and comes out again round the edges.
