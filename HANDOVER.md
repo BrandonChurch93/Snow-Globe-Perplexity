@@ -31,3 +31,19 @@ Reads at hd, review tier, 7a5fd873 to c13801a0, approved in brackets: smallest o
 Tried on the way: the same points left orange (smallest 375, outside 1007); dimmer and more of them (395, 1067); a whiter tint (290, 1075) which read as snow by eye and was dropped.
 
 Open: the fine points are paler and cooler than the approved's. Bats stay 44 px and 32 px off, accepted by the root. Next list: the leaves' lengths in three boxes.
+
+## Fifth list: the leaves' size and the open air (88d314f5)
+
+Whose leaves: the air's. With the air's leaf count at 1 the tree is bare and the glass holds no leaf.
+
+The measure (`/tmp/w/s4/leaflen.py`, not in the repo): orange blobs at hd with no hot core, a hard edge, 36 px or more and longer than wide by 1.3; length is four standard deviations along the long axis. It finds few leaves and it also takes soft spark discs and clusters of leaves for large ones, so read it as a pointer. Boxes in hd pixels: left of the crown x 700 to 930, y 130 to 330; over the roof x 660 to 900, y 330 to 440; over the fence x 640 to 830, y 560 to 700 (blobs that lie on the bare scene's orange ground are left out there).
+
+The approved's lengths, median (count, largest): left 12.9 px (4, 14.1); roof 12.7 px (6, 29.4); fence 11.7 px (5, 24.0). Large is over 19.3, 19.1 and 17.5 px: the approved holds 0, 2 and 1.
+
+Mine before to after: left 23.4 to 15.4 (1.82 to 1.20 of the approved's); roof 18.3 to 14.5 (1.44 to 1.13); fence 15.4 to 13.9 (1.32 to 1.19). Large: 6 to 6, 3 to 2, 0 to 0. The six in the left box are, by eye at three times, a cluster of four leaves, three soft discs and two pairs; not one single leaf over 19 px was seen there.
+
+How: `leafRestMm` [0.9, 1.8, 6]; `leafRestPx` 11 caps a leaf's half length at rest (the ball's lens swelled the deep ones); `leafLieSize` 0.6 for a leaf that lies. One line in the card's vertex stage.
+
+The open air (aligned pair, medians, approved then before then after): upper right 62 68 65, 41 52 48, 46 48 49; right of the tree 50 49 47, 38 60 47, 52 53 48; upper left 64 55 42, 57 68 51, 66 59 52; low right 101 123 90, 74 102 70, 86 99 72. It is the mist of `glass.ts` (mine by grant): `mistTop`, `mistLow`, `mistHigh`. `mistHigh` moved nothing that I could read.
+
+Open: the approved holds more leaves; upper right and low right are still short of the approved's red; the smallest orange class rose 318 to 396 with this list.
