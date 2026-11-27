@@ -469,14 +469,15 @@ vec2 baseTilt = ((vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.
 `
 
 
-// The wax: pale, soft, thick where it has gathered. Light enters it and comes out again round the edges.
+// The wax: amber, thin, glossy. Light enters it and comes out again round the edges.
+const WAX = { R: 0.5, G: 0.47, B: 0.3 }
 const WAX_PAINT = `
 float baseAo = vBasePaint.x * mix(0.25, 1.0, smoothstep(39.7, 39.25, vBasePos.y));
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
-diffuseColor.rgb = mix(vec3(0.95, 0.88, 0.66), vec3(0.88, 0.72, 0.42), smoothstep(0.15, 0.8, waxDeep) * (0.5 + 0.5 * waxMottle)) * mix(0.92, 1.06, waxMottle);
+diffuseColor.rgb = mix(vec3(0.95, 0.88, 0.66), vec3(0.88, 0.72, 0.42), smoothstep(0.15, 0.8, waxDeep) * (0.5 + 0.5 * waxMottle)) * mix(0.7, 1.25, smoothstep(0.25, 0.75, waxMottle));
 // A run thins toward its tip, and the thin wax is the warmer for the light in it.
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.98, 0.82, 0.54), 0.55 * smoothstep(0.5, 1.0, vBasePaint.z));
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.98, 0.82, 0.54), 0.55 * smoothstep(0.5, 1.0, vBasePaint.z)) * vec3(${WAX.R.toFixed(3)}, ${WAX.G.toFixed(3)}, ${WAX.B.toFixed(3)});
 float baseWrap = 0.55;
 float baseNear = 0.0;
 float baseCandle = 0.5;
@@ -509,13 +510,13 @@ const WAX_AFTER = `
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * vec3(dot(waxKeyC * 0.5 + uRigCardCol * 0.15 + uRigSky * 3.2, vec3(0.3, 0.5, 0.2))) * mix(0.1, 1.0, waxEdge) * baseAo;
   vec3 waxTop = normalize(mat3(viewMatrix) * vec3(0.25, 1.0, 0.35));
   float waxTh = max(dot(geometryNormal, normalize(waxTop + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 5.0 + waxKeyC * 0.1) * (1.6 * pow(abs(waxTh), 90.0) + 0.12 * pow(abs(waxTh), 9.0)) * baseAo;
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 5.0 + waxKeyC * 0.1) * (2.8 * pow(abs(waxTh), 90.0) + 0.05 * pow(abs(waxTh), 9.0)) * baseAo;
   vec3 waxSide = normalize(mat3(viewMatrix) * vec3(-0.7, 0.45, 0.55));
   float waxSh = max(dot(geometryNormal, normalize(waxSide + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 9.0 * pow(abs(waxSh), 120.0) + waxKeyC * (1.6 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 90.0) + 0.2 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 14.0))) * baseAo;
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 15.0 * pow(abs(waxSh), 120.0) + waxKeyC * (2.6 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 90.0) + 0.2 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 14.0))) * baseAo;
   float waxH = max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0);
   float waxHc = max(dot(geometryNormal, normalize(waxCard + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (waxKeyC * (0.9 * pow(abs(waxH), 40.0) + 0.14 * pow(abs(waxH), 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(abs(waxHc), 60.0) + 0.03 * pow(abs(waxHc), 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
+  reflectedLight.directSpecular += (waxKeyC * (1.5 * pow(abs(waxH), 40.0) + 0.06 * pow(abs(waxH), 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(abs(waxHc), 60.0) + 0.03 * pow(abs(waxHc), 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
 }
 `
 

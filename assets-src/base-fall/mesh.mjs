@@ -568,7 +568,7 @@ export function buildWax() {
     const beadDy = h - (L.CROWN[1] - 0.79)
     const beadR = Math.abs(beadDy) < 0.8 ? L.CROWN[0] - 0.14 + Math.sqrt(0.64 - beadDy * beadDy) + 0.14 : 0
     const inner = h > 38.75 ? Math.max(L.sphereRadiusAt(h) + 0.3, beadR) : Math.max(drumR(Math.min(h, 38.3)), 45.1 + 0.9 * smooth(38.75, 38.3, h), beadR)
-    const rr = inner + Math.max(thick, 0) * 0.7 * bulge + mix(mix(0.02, -1.6, smooth(0.08, 0.3, t)), 0.02, smooth(-0.3, 0.04, thick))
+    const rr = inner + Math.max(thick, 0) * 0.6 * bulge + mix(mix(0.02, -1.6, smooth(0.08, 0.3, t)), 0.02, smooth(-0.3, 0.04, thick))
     const nr = norm3([Math.sin(Math.PI * (0.25 + 0.5 * t)) + 0.2, Math.cos(Math.PI * (0.1 + 0.9 * t)) * 0.9, 0])
     const s = Math.sin(az * RAD)
     const c = Math.cos(az * RAD)
@@ -602,7 +602,7 @@ export function buildWax() {
       const neck = mix(Math.min(d.wide, 2.3), 0.5, smooth(0, 0.42, t) ** 0.6)
       const bulb = 1 + 0.45 * Math.exp(-(((t - 0.88) / 0.09) ** 2))
       const cap = Math.sqrt(Math.max(1 - Math.max((t - 0.93) / 0.07, 0) ** 2, 0.0004))
-      const rad = d.w * neck * bulb * cap * (0.84 + 0.34 * fbm(t * 2.2 + d.az * 1.7, 0.2, 64, 4, 47, 1))
+      const rad = 0.72 * d.w * neck * bulb * cap * (0.84 + 0.34 * fbm(t * 2.2 + d.az * 1.7, 0.2, 64, 4, 47, 1))
       pts.push(place(mix(drumR(clamp(h, 0, 38.3)) + 1.2, outs[i] + rad * 0.55, smooth(0, 0.18, t)), h, d.az + sway))
       radii.push(rad)
     }
@@ -611,7 +611,7 @@ export function buildWax() {
   }
   for (const run of L.RUNS) {
     const start = L.onCylinder(run.x, run.y0, 55)
-    const w = (run.w / 9.3) * 1.0
+    const w = (run.w / 9.3) * 0.78
     weaveOut(start.az, 5, 2)
     // A run at the foot fell on the outermost vine that passes above it, and lies over it and down to the slab.
     let over = null
