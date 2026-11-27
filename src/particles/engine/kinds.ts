@@ -96,7 +96,7 @@ export const BEHAVIOUR: Record<string, Behaviour> = {
   firefly: { ...base, heft: 0.3, mode: 'steer', followSeconds: 0.1, turnRadS: [0.6, 1.3], sizeMm: [0.16, 0.58], sizeSkew: 2.6, cruiseMmS: 9, reachMm: 9, clearanceMm: 4, nestMm: 98, nestPower: 1.1 },
   leaf: { ...base, heft: 0.9, sinkMmS: [0.3, 1.8], settleMmS: [35, 65], floats: 0.12, followSeconds: 0.08, swayMmS: 13, crossMmS: 6, dip: 0.5, turnRadS: [3.5, 5.5], spinPerMm: 0.05, rest: 'lies', slope: 0.5, restSpeedMmS: 18, gripPerSecond: 5, liftMmS: [50, 160], kick: 0.5, layerMm: [0.15, 1], renew: 0.05, dwellSeconds: [4, 16], renewMmS: [4, 8], sizeMm: [1.2, 3.8], sizeSkew: 1.7 },
   ember: { ...base, heft: 0.4, mode: 'cycle', sinkMmS: [-5.5, -2.2], followSeconds: 0.05, swayMmS: 20, crossMmS: 5, turnRadS: [3, 6], sizeMm: [0.12, 0.75], sizeSkew: 3, lifeSeconds: [4, 8] },
-  bat: { ...base, heft: 0, mode: 'steer', followSeconds: 0.25, turnRadS: [40, 55], sizeMm: [5, 6.6], cruiseMmS: 26, reachMm: 32, clearanceMm: 7, orbit: true },
+  bat: { ...base, heft: 0, mode: 'steer', followSeconds: 0.25, turnRadS: [40, 55], sizeMm: [4.6, 6.1], cruiseMmS: 5.7, reachMm: 13.5, clearanceMm: 7, orbit: true },
 }
 
 export const SEASONS: readonly string[] = config.seasons
