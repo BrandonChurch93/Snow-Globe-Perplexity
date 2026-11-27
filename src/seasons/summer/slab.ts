@@ -28,7 +28,7 @@ const HEAP = {
 }
 // The light on the sand. The stage's lit material is made for the stone of the base; this takes its paint (every grain's
 // own colour and tilt) and the stage's key, sky and card, and lights the sand as dry sand is lit by a low sun from behind.
-export const SAND_LIT = { tilt: 0.25, ramp: [0.02, 0.26], gain: [0.45, 1.4], sun: 4.3, back: 1.0, sky: [3.6, 5.2, 8.0], card: 0.05, knee: 1.8, high: 3.2, pale: 0.75, tint: [1.0, 0.98, 0.93], thin: [0.5, 0.3, 4.0], lone: [1.0, 0.92, 0.84], speck: 1.8, finer: 1.6, rows: 1080, pit: [0.8, 0.33], pitTint: [1.0, 0.75, 0.5], warm: [0.22, 0.45], lean: [0.15, 0.45], tone: [0.6, 1.25], fade: 0.14, fill: [0.5, 1.0], soft: [0.8, 0.05], cast: [0.3, 0.1], blur: [1.5, 2.5], small: [0.5, 0.6], crest: { mm: [7.0, 9.5], tint: [0.88, 0.72, 0.6] } }
+export const SAND_LIT = { tilt: 0.25, ramp: [0.02, 0.26], gain: [0.45, 1.4], sun: 4.3, back: 1.0, sky: [3.6, 5.2, 8.0], card: 0.05, knee: 1.8, high: 3.2, pale: 0.75, tint: [1.0, 0.98, 0.93], thin: [0.5, 0.3, 4.0], lone: [1.0, 0.92, 0.84], speck: 1.8, finer: 1.6, rows: 1080, pit: [0.8, 0.33], pitTint: [1.0, 0.75, 0.5], warm: [0.22, 0.45], lean: [0.15, 0.45], tone: [0.6, 1.25], fade: 0.14, fill: [0.5, 1.0], soft: [0.8, 0.05], cast: [0.3, 0.15, 0.4, 60], shade: [1.2, 0.93, 0.74], ragged: [0.75, 0.5, 5.3], blur: [1.5, 2.5], unsharp: [0.75, 1.25], small: [0.5, 0.6], crest: { mm: [7.0, 9.5], tint: [0.88, 0.72, 0.6] } }
 export const SPRINKLE = { softMm: 5.0 } as const
 export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 0.5, skin: 2, bare: 0.0019, x: [-150, 142], z: [-232, 216], heap: { x: [-8, 132], z: [-78, 74] } } as const
 
@@ -210,6 +210,8 @@ interface Field {
 let made: Field | undefined
 
 // The heap on a grid: its height, the shade its own lumps and crest throw along the key, and the sun each place takes.
+// The shade is thrown as by a sun lower than the room's, so the near face lies in it from the crest to the floor and a
+// little way out on the floor, where it ends softly and not in a line.
 function field(): Field {
   if (made) return made
   const step = SLAB.stepMm
@@ -245,11 +247,10 @@ function field(): Field {
   for (let j = 0; j < nz; j++) {
     for (let i = 0; i < nx; i++) {
       const o = j * nx + i
-      if (h[o]! > 0) {
-        let least = 1
-        for (let s = step; s < 34 && least > 0; s += step) least = Math.min(least, 0.5 - (soft(i + ((key[0] / plan) * s) / step, j + ((key[2] / plan) * s) / step) - h[o]! - (key[1] / plan) * s) / (C[0]! + C[1]! * s))
-        cast[o] = Math.max(least, 0)
-      }
+      let least = 1
+      const low = C[2]! * (SAND_LIT.ragged[0]! + SAND_LIT.ragged[1]! * noise((x0 + i * step) / SAND_LIT.ragged[2]! + 1.7, (z0 + j * step) / SAND_LIT.ragged[2]! + 4.1, 23)) * (key[1] / plan)
+      for (let s = step; s < C[3]! && least > 0; s += step) least = Math.min(least, 0.5 - (soft(i + ((key[0] / plan) * s) / step, j + ((key[2] / plan) * s) / step) - h[o]! - low * s) / (C[0]! + C[1]! * s))
+      cast[o] = Math.max(least, 0)
       const gx = (at(i + 1, j) - at(i - 1, j)) / (2 * step)
       const gz = (at(i, j + 1) - at(i, j - 1)) / (2 * step)
       lit[o] = faceOf((key[1] - gx * key[0] - gz * key[2]) / Math.hypot(gx, 1, gz)) * cast[o]!
@@ -388,6 +389,9 @@ vec3 sandTone(vec3 paint, vec3 sun, vec3 sky) {
   float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
   return mix(c, vec3(l), ${f(SAND_LIT.pale)} * smoothstep(${f(SAND_LIT.knee * 0.5)}, ${f(SAND_LIT.high)}, l));
 }
+vec3 sandShade(float sun) {
+  return mix(vec3(${SAND_LIT.shade.map(f).join(', ')}), vec3(1.0), clamp(sun, 0.0, 1.0));
+}
 vec3 sandCrest(float y) {
   return mix(vec3(1.0), vec3(${SAND_LIT.crest.tint.map(f).join(', ')}), smoothstep(${f(SAND_LIT.crest.mm[0]!)}, ${f(SAND_LIT.crest.mm[1]!)}, y));
 }
@@ -400,6 +404,8 @@ vec3 sandKnee(vec3 c) {
 const SLAB_PARS = `
 varying vec3 vSlab;
 uniform vec4 uSlabLens;
+uniform vec2 uSlabFocus;
+uniform float uSlabPx;
 uniform float uSandDown;
 uniform vec2 uSandFoot;
 ${SAND_GLSL}
@@ -444,12 +450,17 @@ float slabAlpha = 1.0;
   float slabStone = mix(stageKeyS, sandBaseShade(vStageWorld - vec3(uSandFoot.x, 0.0, uSandFoot.y), uRigKeyDir), uSandDown);
   float slabSun = sandFace(dot(slabN, stageKeyL)) * vSlab.z * slabStone;
   float slabBack = clamp(dot(-geometryViewDir, stageKeyL) * 0.5 + 0.5, 0.0, 1.0);
-  vec3 slabSky = (mix(uRigGround, uRigSky, 0.5 + 0.5 * slabUp.y) + uRigCardCol * (${f(SAND_LIT.card)} * clamp(dot(slabN, normalize(mat3(viewMatrix) * uRigCardDir)) * 0.5 + 0.5, 0.0, 1.0))) * vSlab.y;
+  vec3 slabSky = (mix(uRigGround, uRigSky, 0.5 + 0.5 * slabUp.y) + uRigCardCol * (${f(SAND_LIT.card)} * clamp(dot(slabN, normalize(mat3(viewMatrix) * uRigCardDir)) * 0.5 + 0.5, 0.0, 1.0))) * vSlab.y * sandShade(slabSun);
   // Where the sand thins out, and where the skin turns from the eye, it is single grains with the table between them;
   // and a grain that lies alone is darker and more of its own colour than sand that lies deep, which is lit by its neighbours too.
   float slabKeep = vSlab.x * smoothstep(0.0, ${f(SAND_LIT.fade)}, dot(normalize(nonPerturbedNormal), geometryViewDir));
+  // A grain that lies alone and out of focus is not painted. Paint cannot be blurred as the lens blurs a grain: it is
+  // drawn again from each of the lens's points, a row of beads. The grains of arrival.ts lie there, each one soft disc.
+  float slabFar = max(-(viewMatrix * vec4(vStageWorld, 1.0)).z, 1.0);
+  float slabBlur = uSlabFocus.x * abs(slabFar * uSlabFocus.y - 1.0) * uSlabPx / slabFar * ${f(SAND_LIT.rows / 2)} / min(uSlabLens.x, uSlabLens.y);
+  slabKeep *= 1.0 - smoothstep(${f(SAND_LIT.unsharp[0]!)}, ${f(SAND_LIT.unsharp[1]!)}, slabBlur) * (1.0 - smoothstep(${f(SAND_LIT.fill[0]!)}, ${f(SAND_LIT.fill[1]!)}, slabKeep));
   float slabDeep = smoothstep(${f(SAND_LIT.thin[1]!)}, ${f(SAND_LIT.thin[2]!)}, vStageWorld.y - ${f(SLAB.liftMm)});
-  vec3 slabC = sandTone(diffuseColor.rgb * vec3(${SAND_LIT.tint.map(f).join(', ')}) * sandCrest(vStageWorld.y) * mix(vec3(${SAND_LIT.lone.map(f).join(', ')}) * ${f(SAND_LIT.thin[0]!)}, vec3(1.0), slabDeep), stageKeyC * (slabSun * (1.0 + ${f(SAND_LIT.back)} * slabBack * slabBack)), slabSky);
+  vec3 slabC = sandTone(diffuseColor.rgb * vec3(${SAND_LIT.tint.map(f).join(', ')}) * sandCrest(vStageWorld.y) * mix(vec3(${SAND_LIT.lone.map(f).join(', ')}) * ${f(SAND_LIT.thin[0]!)}, vec3(1.0), max(slabDeep, 1.0 - clamp(slabSun, 0.0, 1.0))), stageKeyC * (slabSun * (1.0 + ${f(SAND_LIT.back)} * slabBack * slabBack)), slabSky);
   // The lens parts red from blue toward the frame's edge (post.ts), and a grain a pixel wide would come out of it as a
   // red, a green and a blue one. The grain of the sand is laid for each of the three as arrival.ts lays its grains: on the
   // pixels the post reads them from, with its weights.
@@ -532,6 +543,8 @@ function slabSand(): THREE.Material {
   m.onBeforeCompile = (shader, renderer) => {
     inner.call(m, shader, renderer)
     shader.uniforms.uSlabLens = arrivalPart.grainLens
+    shader.uniforms.uSlabFocus = arrivalPart.grainFocus
+    shader.uniforms.uSlabPx = arrivalPart.grainPx
     shader.uniforms.uSandDown = arrivalPart.sandDown
     shader.uniforms.uSandGrow = arrivalPart.sandGrow
     shader.uniforms.uSandLift = arrivalPart.sandLift
