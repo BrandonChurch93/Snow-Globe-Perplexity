@@ -9,10 +9,10 @@ import { rig } from './rig'
 const PART = 'surface-dressing-summer'
 
 // Where the sand lies on the slab, in mm from the globe's axis (x to the right of the hero camera, z toward it), measured
-// from the approved image: one low heap under the stream, a fifth of the base's height where it leans on the foot. To the
-// right it falls to nothing over a long run; toward the camera it stands at the angle sand lies at, and that face is in
-// its own shade. Round it lies an apron a grain or two deep that thins out into single grains, and a low bank along the
-// foot. Everywhere else the table is bare.
+// from the approved image: one low heap under the stream, three tenths of the base's height where it leans on the foot.
+// To the right it falls to nothing over a long run; toward the camera it stands at the angle sand lies at, and that face
+// is in its own shade. Round it lies an apron a grain or two deep that thins out into single grains, and a low bank
+// along the foot. Everywhere else the table is bare.
 const HEAP = {
   cone: { x: 59.3, z: 17.2, mm: 10.2, tip: 0.1, foot: 0.2, round: [[-180, 1.05], [-18, 1.05], [14, 1.35], [150, 1.35], [180, 1.05]], reach: [[-180, 20], [-90, 21], [-50, 21], [-20, 21], [12, 31], [40, 26], [90, 27], [125, 29], [155, 26], [180, 20]] },
   apron: { mm: 2.0, from: 0.6, lean: 2.5, extra: [[-180, 6], [-90, 6], [-30, 30], [0, 34], [25, 30], [50, 12], [90, 6], [130, 5], [180, 6]], patch: [-0.6, 0.3, 0.5] },
@@ -30,7 +30,7 @@ const HEAP = {
 // own colour and tilt) and the stage's key, sky and card, and lights the sand as dry sand is lit by a low sun from behind.
 export const SAND_LIT = { tilt: 0.25, ramp: [0.02, 0.26], gain: [0.45, 1.4], sun: 4.3, back: 1.0, sky: [3.6, 5.2, 8.0], card: 0.05, knee: 1.8, high: 3.2, pale: 0.75, tint: [1.0, 0.98, 0.93], thin: [0.5, 0.3, 4.0], lone: [1.0, 0.92, 0.84], speck: 1.8, finer: 1.6, rows: 1080, pit: [0.8, 0.33], pitTint: [1.0, 0.75, 0.5], warm: [0.22, 0.45], lean: [0.15, 0.45], tone: [0.6, 1.25], fade: 0.14, fill: [0.5, 1.0], soft: [0.8, 0.05], cast: [0.3, 0.1], blur: [1.5, 2.5], small: [0.5, 0.6], crest: { mm: [7.0, 9.5], tint: [0.88, 0.72, 0.6] } }
 export const SPRINKLE = { softMm: 5.0 } as const
-export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 0.5, x: [-150, 142], z: [-232, 216], heap: { x: [-8, 132], z: [-78, 74] } } as const
+export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 0.5, skin: 2, bare: 0.0019, x: [-150, 142], z: [-232, 216], heap: { x: [-8, 132], z: [-78, 74] } } as const
 
 const hash = (x: number, y: number, s: number): number => {
   let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(s | 0, 1274126177)) | 0
@@ -294,6 +294,8 @@ export function sandLitAt(x: number, z: number): number {
   return (F.lit[o]! * (1 - fu) + F.lit[o + 1]! * fu) * (1 - fv) + (F.lit[o + F.nx]! * (1 - fu) + F.lit[o + F.nx + 1]! * fu) * fv
 }
 
+// The skin is drawn from every second node of the field, each with the slope the fine field has there. A cell none of
+// whose corners has cover enough for one grain, whole or growing (slabGrain draws none under 0.002), is not drawn.
 function heapGeometry(): THREE.BufferGeometry {
   const F = field()
   const step = SLAB.stepMm
@@ -321,13 +323,18 @@ function heapGeometry(): THREE.BufferGeometry {
     slot[o] = position.length / 3 - 1
     return slot[o]!
   }
-  for (let j = 0; j < nz - 1; j++) {
-    for (let i = 0; i < nx - 1; i++) {
-      if (Math.max(at(i, j), at(i + 1, j), at(i, j + 1), at(i + 1, j + 1)) <= HEAP.cover[0]!) continue
+  const m = SLAB.skin
+  const shows = (i: number, j: number): boolean => {
+    const o = j * nx + i
+    return Math.max(coverAt(h[o]!), keepAt(SLAB.heap.x[0] + i * step, SLAB.heap.z[0] + j * step, h[o]!)) >= SLAB.bare
+  }
+  for (let j = 0; j + m < nz; j += m) {
+    for (let i = 0; i + m < nx; i += m) {
+      if (!shows(i, j) && !shows(i + m, j) && !shows(i, j + m) && !shows(i + m, j + m)) continue
       const a = vertex(i, j)
-      const b = vertex(i + 1, j)
-      const c = vertex(i, j + 1)
-      const d = vertex(i + 1, j + 1)
+      const b = vertex(i + m, j)
+      const c = vertex(i, j + m)
+      const d = vertex(i + m, j + m)
       index.push(a, c, b, b, c, d)
     }
   }

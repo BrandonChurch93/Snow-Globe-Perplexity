@@ -31,7 +31,7 @@ const LOOK = {
   ledge: { r: [46.5, 52.0], h: 42.6 },
   jump: { count: 8600, thin: 0.24, shade: 0.3, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
   fall: { count: 24000, gravity: 7000, az: 80, spread: 2.5, most: 2.0, off: [0.35, 1.6], h: [29.0, 30.5], outMmS: [60, 150], lean: 1.7, fliers: { share: 0, far: [1.2, 1.6] }, fanDeg: 1.5, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.03, 0.07], fine: 2.5, core: [0.3, 70, 160], edge: [95, 130, 0.85], thinPx: 0.6, sizes: [0.7, 0.9], soft: { share: 0.5, wide: 2.2 }, cover: 2.7, rise: 0.012, low: [0.66, 0.6, 0.56], shine: [0.4, 1.0], pale: 0.4, least: [0.03, 0.12], bright: [0.75, 1.0], lit: 1.8, shaded: 0.08, mist: { seconds: 0.07, outMmS: [5, 40], upMmS: [5, 45], cover: 0.012, mm: [0.25, 0.5], turn: 0.45 } },
-  loose: { x: [16, 136], z: [-70, 112], kind: { proud: [0.26, 0.08] }, thinPx: 1.0, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, under: 7000, radiusMm: [0.07, 0.17, 0.45], small: 0.6, lean: 1.6, thin: 0.45, sunk: 0.3, vary: [0.6, 1.2] }, dust: { count: 14000, radiusMm: [0.03, 0.07], reach: 0.13, cover: 0.6 }, grain: { count: 1000, radiusMm: [0.07, 0.22], lean: 2.5, reach: 0.15 }, crumb: { count: 40, radiusMm: [0.3, 0.8], lean: 1.6, reach: 0.35 }, vary: [0.1, 0.42], warm: [1.0, 0.8, 0.56] },
+  loose: { x: [16, 136], z: [-70, 112], kind: { proud: [0.26, 0.08] }, thinPx: 1.0, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, under: 3500, radiusMm: [0.07, 0.17, 0.45], small: 0.6, lean: 1.6, thin: 0.45, sunk: 0.3, vary: [0.6, 1.2] }, dust: { count: 14000, radiusMm: [0.03, 0.07], reach: 0.13, cover: 0.6 }, grain: { count: 1000, radiusMm: [0.07, 0.22], lean: 2.5, reach: 0.15 }, crumb: { count: 40, radiusMm: [0.3, 0.8], lean: 1.6, reach: 0.35 }, vary: [0.1, 0.42], warm: [1.0, 0.8, 0.56] },
   sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 1.0, round: [1.6, 4.0], clear: 6 },
   slope: { clearMm: 0.25, keeps: 0.75, roll: 0.5, bulge: 0.0038, crestMm: [60.6, 66], crestLean: 1.6, offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
@@ -573,7 +573,8 @@ export function grainRows(): Rows {
       const pick = from.next()
       const id = from.next()
       const phase = from.next()
-      if (Math.hypot(x, z) < 61.5 !== under || keep > want(x, z)) continue
+      const r = Math.hypot(x, z)
+      if (r < 61.5 !== under || r < SLAB.footMm || keep > want(x, z)) continue
       const radius = size(pick) * (kind < 0 ? O.proud.thin + (1 - O.proud.thin) * sandDeep(x, z) : 1)
       const at = [x, SLAB.liftMm + sandHeight(x, z) + radius * (1 - sunk), z]
       put(at, at, [sandLitAt(x, z), 0, 0, radius], [id, 2, phase, kind === 0 && (id * 977 + phase * 131) % 1 < 1 / O.glint.one ? 2 : kind < 0 ? O.kind.proud[0]! + O.kind.proud[1]! * sandDeep(x, z) : kind])
@@ -587,7 +588,8 @@ export function grainRows(): Rows {
   lie(O.grain.count, 0, (x, z) => sandStrewn(x, z, O.grain.reach), (pick) => O.grain.radiusMm[0]! + (O.grain.radiusMm[1]! - O.grain.radiusMm[0]!) * pick ** O.grain.lean, 0.3)
   lie(O.crumb.count, 0.1, (x, z) => sandStrewn(x, z, O.crumb.reach), (pick) => O.crumb.radiusMm[0]! + (O.crumb.radiusMm[1]! - O.crumb.radiusMm[0]!) * pick ** O.crumb.lean, 0.3)
   // The heap's sand under the belly of the stone, as thick with proud grains as the rest: out of sight while the globe
-  // stands, and the heap's outline on that side when it is lifted.
+  // stands, and the heap's outline on that side when it is lifted. None inside the foot's own circle: the sand there
+  // slides into the print as the foot leaves (slab.ts), and a grain laid at the heap's height would hang over it.
   lie(O.proud.under, -1, sandProud, proudSize, O.proud.sunk, true, stream(`${PART}/loose-under`), tried)
   // The sprinkle beside the foot on the left (slab.ts): single grains, laid where they are for good.
   const rs = stream(`${PART}/sprinkle`)
