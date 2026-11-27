@@ -142,10 +142,18 @@ function addStrands() {
     push({ a0, span, h0: r(4, 32), slope: Math.tan((rng() < 0.5 ? -1 : 1) * r(4, 30) * RAD) * span * RAD * 53, bend: r(-4, 4), amp: r(1.2, 3.2), k: r(2, 5), ph: r(0, 6.28), rad: r(0.45, 0.7), lift: r(1.2, 6.5), sprawl: 0.6, wander: 2.2, thorn: [3.5, 6.5], every: 40, layer: 3, open: true, reach: r(2, 6) })
   }
   // The twigs: the left of the ring is a tangle of thin steep lengths that stand out from the drum.
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 9; i++) {
     const a0 = r(-128, -72)
     const span = r(18, 48)
     push({ a0, span, h0: r(3, 31), slope: Math.tan((rng() < 0.5 ? -1 : 1) * r(14, 55) * RAD) * span * RAD * 53, bend: r(-5, 5), amp: r(0.8, 2.4), k: r(2, 6), ph: r(0, 6.28), rad: r(0.3, 0.52), lift: r(2.5, 9), sprawl: 1.2, wander: 2.4, thorn: [2.5, 5], every: 30, layer: 3, open: true, reach: r(3, 8) })
+  }
+  // Three pairs of thick vines stand out of that tangle, the two of a pair wound round each other.
+  for (let i = 0; i < 3; i++) {
+    const a0 = r(-134, -108)
+    const span = r(42, 60)
+    const pair = { a0, span, h0: 9 + 8 * i + r(-2, 2), slope: Math.tan((i % 2 ? -1 : 1) * r(16, 38) * RAD) * span * RAD * 53, bend: r(-5, 5), k: r(7, 10), ph: r(0, 6.28), lift: r(5.5, 9), sprawl: 1.2, wander: 1.4, thorn: [5, 9], layer: 3, open: true, reach: r(2, 6), gnarl: 0.4, seed: 9001 + i * 17 }
+    push({ ...pair, amp: 1.5, rad: r(2.2, 2.7), every: 34 })
+    push({ ...pair, amp: -1.5, rad: r(1.4, 1.62), every: 90 })
   }
 }
 addStrands()
@@ -312,7 +320,7 @@ export function buildIron() {
         const depth = smooth(0, 5, Math.hypot(p[0], p[2]) - drumR(clamp(p[1], 0, 38)))
         return [(0.32 + 0.68 * open) * (0.5 + 0.5 * depth) * (0.75 + 0.25 * smooth(0, 5, p[1])), 0.5, fbm(i * 0.09, a, 64, 8, s.seed + 3, 2)]
       }
-      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), !far && s.rad < 0.55 ? 4 : far || s.rad < 0.85 ? 5 : s.rad > 1.65 ? 8 : s.rad > 1.25 ? 7 : 6, shade, 1, s.seed * 0.37, far ? 0 : 0.2, s.seed)
+      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), !far && s.rad < 0.55 ? 4 : far || s.rad < 0.85 ? 5 : s.rad > 1.65 ? 8 : s.rad > 1.25 ? 7 : 6, shade, 1, s.seed * 0.37, far ? 0 : (s.gnarl ?? 0.2), s.seed)
       from = to
     }
     let next = r(4, s.every)
@@ -386,6 +394,25 @@ export function buildIron() {
     // The counted thorns are blades seen broadside from the front.
     const line = thorn(soup, root, dir, t.len * 1.08, t.rad * 0.8, add3([0, t.dir[1] > 0.3 ? 0.9 : -0.3, 0], along(t.az), t.dir[0] > 0 ? -0.7 : 0.7), 10, 0.95, cross3(dir, [0, 0, 1]))
     heroTips.push(line[line.length - 1])
+    thorns++
+  }
+  // Long thorns that stand up over the lip in front of the glass, each leaning out far enough to clear it.
+  for (const t of L.LIP_THORNS) {
+    const root = place(drumR(clamp(t.h, 0, 38)) + 2.0, t.h, t.az)
+    let dir = null
+    for (let k = 0; k < 10 && !dir; k++) {
+      const d = norm3(add3(add3([along(t.az)[0] * t.dir[0], 0, along(t.az)[2] * t.dir[0]], [0, 1, 0], t.dir[1]), radial(t.az), t.dir[2] + 0.1 * k))
+      const clear = [0.2, 0.4, 0.6, 0.8, 1].every((q) => {
+        const p = add3(root, d, t.len * q)
+        return p[1] < 38.6 || Math.hypot(p[0], p[2]) > L.sphereRadiusAt(Math.min(p[1], L.CENTRE_H)) + t.rad + 0.6
+      })
+      if (clear) dir = d
+    }
+    if (!dir) {
+      refused++
+      continue
+    }
+    thorn(soup, root, dir, t.len, t.rad, add3([0, 0.3, 0], radial(t.az), 0.5), 8, 0.95, cross3(dir, [0, 0, 1]))
     thorns++
   }
   return { soup, drumTriangles, thorns, refused, strands: STRANDS.length, heroTips, twigs }
