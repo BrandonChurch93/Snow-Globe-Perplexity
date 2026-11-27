@@ -213,7 +213,7 @@ for (let y = 0; y < H; y++) {
     const pillow = smooth(0, 2.7, cob.f2[k] - cob.f1[k])
     const lump = fbm((x / W) * 60, (y / H) * 9, 60, 9, 31, 4) - 0.5
     const dome = Math.max(0, 1 - (cob.f1[k] / 4.8) ** 2)
-    rock[k] = (1.3 + 1.5 * dome) * Math.sin(1.5708 * pillow) + (cob.id[k] - 0.5) * 2.0 + 1.1 * lump - 1.6
+    rock[k] = (1.3 + 1.5 * dome) * Math.sin(1.5708 * pillow) + (cob.id[k] - 0.5) * 2.0 + 1.1 * lump - 2.9
     let tongue = 0
     for (const d of DRIPS) {
       const da = ((az - d[0] + 540) % 360) - 180
@@ -475,20 +475,20 @@ function outside(p) {
 function surf(az, s, field, liftMm = 0) {
   const m = atS(s)
   const d = sample(field, az, s) * seatOf(s) + liftMm
-  const q = cushion(az)
-  return { p: outside(place(m.r + m.nr * d + swell(az, m.h) + Math.exp(-(((m.h - 38 - 8 * (fbm(((az + 180) / 360) * 13, 0.5, 13, 1, 449, 2) - 0.5)) / 4.5) ** 2)) * (0.1 + 4.8 * q), m.h + m.nh * d + smooth(36, 41, m.h) * 3.2 * q * (0.55 + 0.9 * fbm(((az + 180) / 360) * 23, 0.5, 23, 1, 443, 2)), az)), n: turn(m.nr, m.nh, az), r: m.r }
+  const q = dip(az)
+  return { p: outside(place(m.r + m.nr * d + swell(az, m.h), m.h + m.nh * d - q * smooth(35, 41, m.h), az)), n: turn(m.nr, m.nh, az), r: m.r }
 }
-// The top is no level collar: moss cushions of unequal size stand on the shoulder, hang over the rim and rise against the glass.
-function cushion(az) {
+// The top is no level collar: the moss roll is worn down in dips of unequal depth, deepest at the front under the glass.
+function dip(az) {
   const u = (az + 180) / 360
-  return smooth(0.34, 0.68, 0.65 * fbm(u * 11, 0.5, 11, 1, 431, 3) + 0.35 * fbm(u * 29, 0.5, 29, 1, 437, 2))
+  return 2.2 * Math.exp(-(((az - 4) / 40) ** 2)) + 2.6 * smooth(0.34, 0.68, 0.65 * fbm(u * 11, 0.5, 11, 1, 431, 3) + 0.35 * fbm(u * 29, 0.5, 29, 1, 437, 2))
 }
 // The mound is no drum: it swells unevenly at its middle and spreads unevenly at the table, measured outward only so the foot stays on the table.
 function swell(az, h) {
   const u = (az + 180) / 360
   const belly = Math.exp(-(((h - 15) / 11) ** 2))
   const foot = smooth(16, 0, h)
-  return belly * (7 * fbm(u * 5, 0.5, 5, 1, 401, 3) - 1.5) - 0.8 * Math.exp(-(((h - 33) / 5) ** 2)) + foot * (0.4 + 9 * Math.max(0, fbm(u * 7, 0.5, 7, 1, 409, 3) - 0.36)) + smooth(40, 6, h) * 4.6 * (fbm(u * 17, h / 14, 17, 64, 419, 3) - 0.5)
+  return belly * (7 * fbm(u * 5, 0.5, 5, 1, 401, 3) - 1.5) - 1.8 * Math.exp(-(((h - 33) / 5) ** 2)) + foot * (5 * fbm(u * 9, 0.5, 9, 1, 409, 3) - 3.4) + smooth(40, 6, h) * 4.6 * (fbm(u * 17, h / 14, 17, 64, 419, 3) - 0.5)
 }
 function seatOf(s) {
   return 1 - smooth(S_MAP - 3, S_MAP, s)

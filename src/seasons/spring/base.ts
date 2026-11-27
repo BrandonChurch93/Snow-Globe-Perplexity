@@ -241,11 +241,11 @@ ${SHADE}
   reflectedLight.directSpecular += vec3(0.85, 0.92, 1.0) * dot(liveSunC, vec3(0.3333)) * (${ROCK.lustre.toFixed(2)} * (0.6 * pow(max(dot(geometryNormal, normalize(liveSkyDir + geometryViewDir)), 0.0), 26.0) + 0.15 * pow(max(dot(geometryNormal, normalize(liveSkyDir + geometryViewDir)), 0.0), 5.0)) * liveDamp * (0.4 + 0.6 * baseStoneD.b));
   // The collar stands up into the light that comes over the glass: its rounded top is lit whichever way it faces.
   float liveCrown = smoothstep(34.0, 42.5, vBasePos.y) * mix(0.35, 1.0, liveUp);
-  float liveLip = smoothstep(41.3, 42.7, vBasePos.y) * mix(0.4, 1.2, smoothstep(0.35, 0.65, baseBlotch));
+  float liveLip = smoothstep(37.5, 41.0, vBasePos.y) * mix(0.4, 1.2, smoothstep(0.35, 0.65, baseBlotch));
   // The sun is behind and to the right, and the glass stands between it and the left of the collar.
-  float liveEast = smoothstep(-0.7, 0.8, vBasePos.x / 52.0);
-  vec3 liveTip = vec3(0.5, 0.5, 0.34) * vec3(1.0, 0.8, 0.66) * mix(0.35, 1.5, liveEast) * RECIPROCAL_PI * baseMoss * baseAo;
-  reflectedLight.directDiffuse += liveTip * (liveKeyC * ((1.7 + 2.1 * liveTuft + 1.5 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim * mix(0.15, 1.0, liveLip) + 2.2 * liveUp * liveUp * liveLip + 0.08 * liveCrown) * max(liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh), liveCrown)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
+  float liveEast = smoothstep(0.1, 0.8, vBasePos.x / 52.0);
+  vec3 liveTip = mix(vec3(0.34, 0.44, 0.26), vec3(0.5, 0.447, 0.198), liveEast) * mix(0.33 + 0.75 * exp(-vBasePos.x * vBasePos.x / 400.0), 2.4, liveEast) * RECIPROCAL_PI * baseMoss * baseAo;
+  reflectedLight.directDiffuse += liveTip * (liveKeyC * ((1.7 + 2.1 * liveTuft + 1.5 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim * mix(0.15, 1.0, liveLip) + 2.2 * liveUp * liveUp * liveLip + mix(0.6, 0.08, liveEast) * liveCrown) * max(liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh), liveCrown)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
   // A grain of dew and the pixel it falls in are together no narrower than a cell and a fifth, with the same light in all.
   vec3 liveAt = vBasePos * 7.5;
   float liveWide = clamp((1.22 - max(length(dFdx(liveAt)), length(dFdy(liveAt)))) / 0.42, 1.0, 2.9);
@@ -317,7 +317,7 @@ ${SHADE}
   vec2 liveOut = vBasePos.xz;
   vec3 liveSide = dot(liveOut, liveOut) > 1e-6 ? normalize(normalMatrix * vec3(liveOut.x, 0.0, liveOut.y)) : geometryNormal;
   float liveGrazeM = clamp((dot(liveSide, liveGrazeDir) + 0.14) / 1.14, 0.0, 1.0);
-  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.78, 0.66) * (${ROCK.flank.toFixed(2)} * 6.0 * liveGraze * liveGraze * liveGraze * (0.008 + 1.25 * liveGrazeM * liveGrazeM) * smoothstep(0.2, 0.55, dot(liveSide, liveGrazeDir)) * mix(1.0, mix(0.6, 1.4, baseRidge * baseRidge), baseBark) * baseAo);
+  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.78, 0.66) * (${ROCK.flank.toFixed(2)} * 7.0 * liveGraze * liveGraze * liveGraze * smoothstep(0.4, 0.9, liveGraze) * (0.008 + 1.25 * liveGrazeM * liveGrazeM) * smoothstep(0.2, 0.55, dot(liveSide, liveGrazeDir)) * mix(1.0, mix(0.6, 1.4, baseRidge * baseRidge), baseBark) * baseAo);
   vec3 liveSkin = diffuseColor.rgb * RECIPROCAL_PI * (1.0 - baseBark) * baseAo;
   reflectedLight.directDiffuse += liveSkin * (liveKeyC * 0.1 * liveWrap * liveWrap + uRigCardCol * 0.12 * liveCardWrap * liveCardWrap) * mix(0.4, 1.0, liveOpen);
   reflectedLight.directSpecular += (liveKeyC * pow(abs(liveNh), 60.0) * 0.5 + uRigCardCol * pow(abs(liveCh), 50.0) * 0.4) * baseAo * mix(0.6, 0.1, baseBark);
@@ -424,16 +424,16 @@ void main() {
   float hr = max(dot(n, normalize(v + uWaterRimDir)), 0.0);
   float hc = max(dot(n, normalize(v + uRigCardDir)), 0.0);
   vec3 col = mirror * min(fres, 0.3) * 0.11;
-  col += uWaterKeyCol * (pow(abs(hk), 380.0) * 2.2 + pow(abs(hk), 40.0) * 0.01);
-  col += uWaterRimCol * (pow(abs(hr), 260.0) * 0.9 + pow(abs(hr), 30.0) * 0.01);
-  col += uRigCardCol * (pow(abs(hc), 300.0) * 0.9 + pow(abs(hc), 26.0) * 0.01);
+  col += uWaterKeyCol * (pow(abs(hk), 380.0) * 1.65 + pow(abs(hk), 40.0) * 0.01);
+  col += uWaterRimCol * (pow(abs(hr), 260.0) * 0.68 + pow(abs(hr), 30.0) * 0.01);
+  col += uRigCardCol * (pow(abs(hc), 300.0) * 0.68 + pow(abs(hc), 26.0) * 0.01);
   float run = uWater.y * ${FLOW.speedMm.toFixed(1)};
   float streak = smoothstep(0.52, 0.86, baseNoise(vec3(u * 2.6, (mm - run) * 0.3, 7.0)));
   float core = body * body;
   vec3 glow = (uWaterKeyCol * 0.5 + uRigCardCol * 0.3 + uWaterSky * 1.2) * RECIPROCAL_PI;
   float fine = smoothstep(0.58, 0.92, baseNoise(vec3(u * 9.0, (mm - run) * 0.14, 3.0))) * smoothstep(0.35, 0.7, baseNoise(vec3(u * 3.0, (mm - run) * 0.9, 11.0)));
   float foam = smoothstep(0.93, 1.0, front) * smoothstep(0.9, 1.0, t) * smoothstep(0.3, 0.75, baseNoise(vec3(u * 5.0, (mm - run) * 1.6, 17.0)));
-  col += glow * vec3(0.86, 0.94, 1.0) * (body * 0.02 + core * (0.1 * streak + mix(0.8, 1.5, smoothstep(0.7, 0.97, t)) * fine + 0.9 * head + 0.6 * foam));
+  col += glow * vec3(0.86, 0.94, 1.0) * (body * 0.02 + core * (0.1 * streak + mix(0.6, 1.1, smoothstep(0.7, 0.97, t)) * fine + 0.9 * head + 0.6 * foam));
   float edge = smoothstep(0.0, 0.6, body);
   col *= edge * 1.15;
   col *= uWater.w;
