@@ -69,3 +69,9 @@ Eleventh pass, first pair (trial 163, the lace). Stills drawn on the tree merged
 11a2-tree-pair-rest-approved-left.jpg: the tree at one scale, approved left, eleventh right. Seven windows are cut and four pads stand in the tenth's large openings.
 11a3-tree-rest-approved-tenth-eleventh.jpg: approved, tenth (524cc65b), eleventh at one scale.
 11a4-patches-of-sky-counted-approved-left-eleventh-right.jpg: the patches of sky of 0.25 mm2 or more inside the closed outline, outlined and numbered by one rule on both judged pictures: approved 38, eleventh 37 (tenth 28). In the approved some patches are seed heads and haze in front of leaf, so the rule counts more than the eye.
+
+11b1-whole-400px-approved-left.jpg: Eleventh pass, second pair (trial 169), drawn on main 3170155e merged. The whole at 400 px, approved left, ours right. No round window is left in any pad; the thin pads are thickened into bodies and each carries a lit cap.
+11b2-tree-pair-rest-approved-left.jpg: The tree at one scale, approved left, ours right.
+11b3-pads-measured-approved-left-eleventh-right.jpg: The six strips the pads are measured on (luma of the top third against the bottom third; the yellow line is where the lit part ends). Approved left, ours right.
+11b4-crop-upper-left-approved-left-ours-right.jpg: The 1:1 crop of the upper left, approved left, ours right at three times its pixels: the slit under the upper left pad and the lit top of the large left pad under it.
+11b5-crop-right-approved-left-ours-right.jpg: The 1:1 crop of the right side, approved left, ours right at three times its pixels.
