@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { tierSamples } from '../src/config'
 import { finalVideoArgs, masterVideoArgs } from '../tools/lib/encode.mjs'
 import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
@@ -13,8 +13,9 @@ import { heldLine, heldRanges, parseTake } from '../tools/lib/master.mjs'
 import { firstPlace, markedHolder, notNumberFrames } from '../tools/lib/master.mjs'
 import { NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, shipTitle, shippedLine } from '../tools/lib/master.mjs'
 import { limitsLine, limitsRecord, localProblem, machineLimits, procsGainLine, procsMemoryHolds, readLimits, sameCommand, stoppedAt, stoppedLine } from '../tools/lib/master.mjs'
+import { OVERDUE, SHORT_FLAG, availableBytes, cgroupAvailable, memoryShortLine, memoryStart, overdueLine, watchFrame } from '../tools/lib/master.mjs'
 import { bestRun, bigSha, butCrf, crfLadder, crfOf, encodeProofRows, finalKbps, hashFolder, intermediateVideo, masterConfigProblems, partName, partPlan, psnrFacts, sendGroups, splitFile, takeFiles, unsplitFile } from '../tools/lib/master.mjs'
-import { flatValue, refuseFlat } from '../tools/lib/page.mjs'
+import { flatValue, lockWaitLine, refuseFlat, waitForLock } from '../tools/lib/page.mjs'
 import { frameLevels } from '../tools/lib/encode.mjs'
 import sharp from 'sharp'
 
@@ -1140,6 +1141,135 @@ describe('what the machine may really use', () => {
     expect(procsProblem(2, 'hd', small)).toBeNull()
     expect(procsProblem(3, 'uhd', readLimits({ totalmem: 15.6 * GIB, cpus: 4 }))).toBeNull()
     expect(procsProblem(4, 'uhd', readLimits({ totalmem: 15.6 * GIB, cpus: 4 }))).not.toBeNull()
+  })
+
+  it('reads the memory that is free from the kernel and from the cgroup, the file pages given back', () => {
+    expect(availableBytes('MemTotal:        8148272 kB\nMemFree:         7400000 kB\nMemAvailable:     941056 kB\nBuffers:           10000 kB\n')).toBe(941056 * 1024)
+    expect(availableBytes('MemTotal: 8148272 kB\n')).toBeNull()
+    expect(availableBytes('')).toBeNull()
+    const stat = (inactive: number, active: number) => `anon 5\nfile 9\ninactive_anon 7\nactive_anon 7\ninactive_file ${inactive}\nactive_file ${active}\nshmem 3\n`
+    const pod = files({
+      '/sys/fs/cgroup/kubepods/pod1/c/memory.max': 'max',
+      '/sys/fs/cgroup/kubepods/pod1/c/memory.current': String(23 * GIB),
+      '/sys/fs/cgroup/kubepods/pod1/memory.max': String(24 * GIB),
+      '/sys/fs/cgroup/kubepods/pod1/memory.current': String(23 * GIB),
+      '/sys/fs/cgroup/kubepods/pod1/memory.stat': stat(6 * GIB, 4 * GIB),
+      '/sys/fs/cgroup/kubepods/memory.max': String(64 * GIB),
+      '/sys/fs/cgroup/kubepods/memory.current': String(60 * GIB),
+      '/sys/fs/cgroup/kubepods/memory.stat': stat(GIB, GIB),
+    })
+    expect(cgroupAvailable({ cgroup: '0::/kubepods/pod1/c', read: pod })).toBe(6 * GIB)
+    expect(cgroupAvailable({ cgroup: '0::/kubepods/pod1', read: files({ '/sys/fs/cgroup/kubepods/pod1/memory.max': String(24 * GIB), '/sys/fs/cgroup/kubepods/pod1/memory.current': String(23 * GIB), '/sys/fs/cgroup/kubepods/pod1/memory.stat': stat(6 * GIB, 4 * GIB) }) })).toBe(11 * GIB)
+    expect(cgroupAvailable({ cgroup: '0::/p', read: files({ '/sys/fs/cgroup/p/memory.max': String(2 * GIB), '/sys/fs/cgroup/p/memory.current': String(3 * GIB) }) })).toBe(0)
+    expect(cgroupAvailable({ cgroup: '0::/p', read: files({ '/sys/fs/cgroup/p/memory.max': 'max', '/sys/fs/cgroup/p/memory.current': String(3 * GIB) }) })).toBeNull()
+    expect(cgroupAvailable({ cgroup: '0::/p', read: files({ '/sys/fs/cgroup/p/memory.max': String(2 * GIB) }) })).toBeNull()
+    expect(cgroupAvailable({ cgroup: '', read: pod })).toBeNull()
+    expect(cgroupAvailable({ cgroup: '7:memory:/docker/x\n3:cpu,cpuacct:/docker/x', read: files({ '/sys/fs/cgroup/memory/docker/x/memory.limit_in_bytes': String(16 * GIB), '/sys/fs/cgroup/memory/docker/x/memory.usage_in_bytes': String(12 * GIB), '/sys/fs/cgroup/memory/docker/x/memory.stat': `total_inactive_file ${GIB}\ntotal_active_file ${2 * GIB}\ninactive_file 5\n` }) })).toBe(7 * GIB)
+  })
+
+  it('refuses a run at the size of the master when less memory is free than its renders hold, and starts it only by a flag nobody sets by habit', () => {
+    const line = 'SHORT OF MEMORY: 0.9 GiB are free on this machine now, and one uhd render holds about 6.1 GB with the encoder. A machine short of memory does not fail, it crawls. Look at what else runs here (ps -eo rss,etime,args --sort=-rss | head).'
+    expect(memoryShortLine(1, 'uhd', 7.1 * GIB)).toBeNull()
+    expect(memoryShortLine(1, 'uhd', 6.1 * GIB)).toBeNull()
+    expect(memoryShortLine(1, 'uhd', 0.9 * GIB)).toBe(line)
+    expect(memoryShortLine(2, 'uhd', 9.5 * GIB)).toMatch(/^SHORT OF MEMORY: 9\.5 GiB are free on this machine now, and 2 uhd renders hold about 10\.2 GB with the encoder\./)
+    expect(memoryShortLine(2, 'uhd', 10.2 * GIB)).toBeNull()
+    expect(memoryShortLine(12, 'preview', 0.5 * GIB)).toBeNull()
+    expect(memoryShortLine(1, 'uhd', null)).toBeNull()
+    expect(SHORT_FLAG).toBe('start-short-of-memory')
+    expect(memoryStart(1, 'uhd', 7.1 * GIB, false)).toBeNull()
+    expect(memoryStart(1, 'uhd', 7.1 * GIB, true)).toBeNull()
+    expect(memoryStart(1, 'uhd', null, false)).toBeNull()
+    expect(memoryStart(4, 'hd', 0.5 * GIB, false)).toBeNull()
+    expect(memoryStart(1, 'uhd', 0.9 * GIB, false)).toEqual({ refuse: true, line: `${line} Nothing was drawn. Free the memory and start again. --start-short-of-memory starts all the same, and is only for a run that somebody watches.` })
+    expect(memoryStart(1, 'uhd', 0.9 * GIB, true)).toEqual({ refuse: false, line: `${line} Started all the same, by --start-short-of-memory.` })
+    expect(memoryStart(2, 'uhd', 10.1 * GIB, false)?.refuse).toBe(true)
+    expect(memoryStart(2, 'uhd', 10.2 * GIB, false)).toBeNull()
+    const tool = fs.readFileSync(rel('tools', 'master.mjs'), 'utf8')
+    expect(tool).toContain("const tight = ctx.engine && !ctx.standIn && worker === null ? memoryStart(ctx.procs, ctx.format.id, memoryAvailable(), args[SHORT_FLAG] === true) : null\n  if (tight?.refuse) throw new Error(tight.line)\n  if (tight) say(tight.line)\n")
+    expect(tool.indexOf('if (tight?.refuse) throw')).toBeLessThan(tool.indexOf('this machine has no calibration for this build'))
+    expect(tool.indexOf('if (tight?.refuse) throw')).toBeLessThan(tool.indexOf('const todo = stillToDo('))
+  })
+
+  it('waits on the lock of another render with a line at once and one a minute, the pid and the minutes in it, and gives up nothing', async () => {
+    const holder = { pid: 4321, what: 'master --what film-b --first 2340 --last 2369' }
+    expect(lockWaitLine(holder, 0)).toBe("waiting for the render that holds this clone's lock: master --what film-b --first 2340 --last 2369 (pid 4321), from now. Nothing is drawn here meanwhile and no time ends the wait. If pid 4321 is not a render of this clone, stop this and remove out/work/render.lock.")
+    expect(lockWaitLine(holder, 59.9)).toMatch(/\(pid 4321\), from now\./)
+    expect(lockWaitLine(holder, 60)).toMatch(/\(pid 4321\), 1 min so far\./)
+    expect(lockWaitLine(holder, 7260.4)).toMatch(/\(pid 4321\), 121 min so far\./)
+    vi.useFakeTimers()
+    try {
+      const said: string[] = []
+      let held = true
+      let over = false
+      const wait = waitForLock({ busy: () => (held ? holder : null), say: (l: string) => said.push(l) }).then(() => (over = true))
+      await vi.advanceTimersByTimeAsync(0)
+      expect(said.length).toBe(1)
+      expect(said[0]).toMatch(/\(pid 4321\), from now\./)
+      await vi.advanceTimersByTimeAsync(59 * 1000)
+      expect(said.length).toBe(1)
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(said.length).toBe(2)
+      expect(said[1]).toMatch(/\(pid 4321\), 1 min so far\./)
+      await vi.advanceTimersByTimeAsync(58 * 60 * 1000)
+      expect(said.length).toBe(60)
+      expect(said[59]).toMatch(/\(pid 4321\), 59 min so far\./)
+      expect(over).toBe(false)
+      held = false
+      await vi.advanceTimersByTimeAsync(1000)
+      await wait
+      expect(over).toBe(true)
+      await vi.advanceTimersByTimeAsync(3600 * 1000)
+      expect(said.length).toBe(60)
+      const none: string[] = []
+      await waitForLock({ busy: () => null, say: (l: string) => none.push(l) })
+      expect(none).toEqual([])
+      await expect(waitForLock({ busy: () => holder, wait: false, say: (l: string) => none.push(l) })).rejects.toThrow('a render job is running in this VM: master --what film-b --first 2340 --last 2369 (pid 4321)')
+      expect(none).toEqual([])
+    } finally {
+      vi.useRealTimers()
+    }
+    const page = fs.readFileSync(rel('tools', 'lib', 'page.mjs'), 'utf8')
+    expect(page).toContain('await waitForLock({ wait, say })')
+    expect(fs.readFileSync(rel('tools', 'master.mjs'), 'utf8')).toContain("Session.open({ local, what: `master ${process.argv.slice(2).join(' ')}`, say })")
+  })
+
+  it('says a frame is overdue once it takes three times what the frames before give it and five minutes at least, again when that doubles, and ends nothing', () => {
+    expect(overdueLine({ frame: 215, seconds: 1900, expected: 590.2, available: 0.9 * GIB })).toBe('OVERDUE: frame 215 has been drawing for 31.7 min, 3.2 times the 590.2 s the frames so far give it. Nothing has failed and nothing was given up. 0.9 GiB of memory are free now. A machine short of memory crawls without an error: look at free -m and at what else runs here.')
+    expect(overdueLine({ frame: 3, seconds: 400, expected: 2, available: null })).toBe('OVERDUE: frame 3 has been drawing for 6.7 min, 200.0 times the 2.0 s the frames so far give it. Nothing has failed and nothing was given up. A machine short of memory crawls without an error: look at free -m and at what else runs here.')
+    vi.useFakeTimers()
+    try {
+      const said: string[] = []
+      const watch = (expected: number | null) => watchFrame({ frame: 215, expected, say: (l: string) => said.push(l), available: () => 0.9 * GIB })
+      const end = watch(600)
+      vi.advanceTimersByTime(1799 * 1000)
+      expect(said).toEqual([])
+      vi.advanceTimersByTime(2 * 1000)
+      expect(said.length).toBe(1)
+      expect(said[0]).toMatch(/^OVERDUE: frame 215 has been drawing for 30\.0 min, 3\.0 times the 600\.0 s the frames so far give it\. .* 0\.9 GiB of memory are free now\./)
+      vi.advanceTimersByTime(1790 * 1000)
+      expect(said.length).toBe(1)
+      vi.advanceTimersByTime(20 * 1000)
+      expect(said.length).toBe(2)
+      expect(said[1]).toMatch(/^OVERDUE: frame 215 has been drawing for 60\.0 min, 6\.0 times/)
+      end()
+      vi.advanceTimersByTime(24 * 3600 * 1000)
+      expect(said.length).toBe(2)
+      const quick = watch(0.02)
+      vi.advanceTimersByTime((OVERDUE.leastSeconds - 1) * 1000)
+      expect(said.length).toBe(2)
+      vi.advanceTimersByTime(OVERDUE.everySeconds * 1000)
+      expect(said.length).toBe(3)
+      quick()
+      const first = watch(null)
+      const none = watch(0)
+      vi.advanceTimersByTime(24 * 3600 * 1000)
+      expect(said.length).toBe(3)
+      first()
+      none()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('promises nothing about more processes and says to measure them', () => {
