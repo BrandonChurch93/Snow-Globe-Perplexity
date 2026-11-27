@@ -64,7 +64,7 @@ const baseUniforms = {
 }
 const FLOOR_SHARE = 0.1
 // The brambles' tones, measured against the approved image in boxes at the review tier.
-const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 55, CARD_WEST: 36, TOP: 0, BARK: 0.7, LIFT: 0.005, LIFT_WEST: 75, FILL: 0.08, SOFT: 1.18, SOFT_EAST: 8, KNOB: 9, FISSURE: 1.8, BODY: 5, THORN: 0.2, SHEAF: 1.6 }
+const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 55, CARD_WEST: 36, TOP: 0, BARK: 0.7, LIFT: 0.005, LIFT_WEST: 75, FILL: 0.08, SOFT: 1.18, SOFT_EAST: 8, KNOB: 9, FISSURE: 1.8, BODY: 5, THORN: 0.2, SHEAF: 2.2 }
 const DRUM_SHEEN = 1.7
 const DRUM_FOLD = 5
 const DRUM_CRINKLE = 0.8
@@ -383,7 +383,7 @@ const IRON_AFTER = `
   // The wood is never quite black: the sky lifts it, and at the left the lamps behind fill it warm.
   reflectedLight.indirectDiffuse += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.9, 0.96, 1.15) * BRAMBLE_LIFT * (1.0 + BRAMBLE_LIFT_WEST * ironWest) + uBaseRimCol * vec3(1.0, 0.45, 0.4) * BRAMBLE_FILL * ironWest * (0.4 + 0.6 * ironLeft)) * mix(0.35, 1.0, baseAo) * mix(1.0, 0.8, baseDrum) * mix(1.0, 0.15, baseThorn) * mix(1.0, lineFace * lineFace, baseStrand);
   // A fibre of the sheaf is lit gold from behind along its whole length.
-  reflectedLight.directSpecular = mix(reflectedLight.directSpecular, ironBefore + uBaseRimCol * mix(vec3(0.8, 0.46, 0.4), vec3(1.0, 0.78, 0.8), vBasePaint.x * vBasePaint.x) * (BRAMBLE_SHEAF * vBasePaint.x * vBasePaint.x * mix(0.3, 1.0, smoothstep(7.0, 16.0, vBasePos.y))), baseFibre);
+  reflectedLight.directSpecular = mix(reflectedLight.directSpecular, ironBefore + uBaseRimCol * mix(vec3(0.8, 0.46, 0.4), vec3(1.0, 0.88, 1.25), vBasePaint.x * vBasePaint.x) * (BRAMBLE_SHEAF * vBasePaint.x * vBasePaint.x * vBasePaint.x * mix(0.3, 1.0, smoothstep(7.0, 16.0, vBasePos.y))), baseFibre);
   reflectedLight.directSpecular = ironBefore + (reflectedLight.directSpecular - ironBefore) * baseDim;
   ironEdge *= baseDim;
   reflectedLight.indirectSpecular += (uRigSky * 0.35 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen * (1.0 - 0.7 * baseThorn);
