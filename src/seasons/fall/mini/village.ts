@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { afterLight } from '../../../core/chunks/light'
-import { stageMaterial, type Rgb } from '../../../core/materials'
+import { stageMaterial, stageShader, type Rgb } from '../../../core/materials'
 import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial, type GlowLook } from '../../../miniature/glow'
@@ -79,6 +79,7 @@ const chipped: Cover = {
 `,
 }
 const TIMBER: Rgb = [0.4, 0.42, 0.34]
+const CASING = { tone: [0.1, 0.085, 0.1] as Rgb, reachMm: 1.1, deepMm: 1.4 }
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 // The shared shrubs are one soft mass. Dry leaves stand apart: each takes its own tone and its own depth of shade.
 const BUSH = { gain: 5.2, cap: 2, low: 0.35 }
@@ -213,6 +214,15 @@ function cottageLocal(x: number, z: number): { across: number; along: number } {
   return { across: dx * frame.v[0] + dz * frame.v[1], along: dx * frame.u[0] + dz * frame.u[1] }
 }
 
+
+function inCasing(across: number, up: number, along: number): boolean {
+  const w = cottage.window
+  const s = cottage.sideWindow
+  const gable = Math.abs(across - w.across) < w.width / 2 + CASING.reachMm && Math.abs(along - cottage.halfLength) < CASING.deepMm && up > w.sill - CASING.reachMm && up < w.sill + w.height + CASING.reachMm
+  const side = Math.abs(along - s.along) < s.width / 2 + CASING.reachMm && Math.abs(across + cottage.halfWidth) < CASING.deepMm && up > s.sill - CASING.reachMm && up < s.sill + s.height + CASING.reachMm
+  return gable || side
+}
+
 function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeometry> {
   const g = source.clone()
   const P = g.getAttribute('position')
@@ -282,7 +292,12 @@ function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeom
       }
     } else if (kind === 1) {
       const c = cottageLocal(x, z)
-      if (Math.abs(c.across - cottage.door.across) < cottage.door.width / 2 + 0.6 && Math.abs(c.along - cottage.halfLength) < 1.4 && y - frame.floor < cottage.wall) {
+      if (inCasing(c.across, y - frame.floor, c.along)) {
+        const lum = 0.3 * r + 0.6 * gr + 0.1 * b
+        r = lum * CASING.tone[0]
+        gr = lum * CASING.tone[1]
+        b = lum * CASING.tone[2]
+      } else if (Math.abs(c.across - cottage.door.across) < cottage.door.width / 2 + 0.6 && Math.abs(c.along - cottage.halfLength) < 1.4 && y - frame.floor < cottage.wall) {
         r *= DOOR[0]
         gr *= DOOR[1]
         b *= DOOR[2]
@@ -464,12 +479,76 @@ export function* making(): Generator<void, THREE.Object3D> {
 
 const scaled = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k]
 
-// The jury read the panes as flat lit colour. The shared pane gives a room, drapes, a hot centre and a frost at the
-// corners and the sill: fall dims the room, keeps the hot centre, and uses the frost slot as dark grime on the glass.
-const PANE = { room: 0.45, drape: 0.3, hot: 1.0, grime: [0.014, 0.013, 0.009] as Rgb, grimeAmount: 0.7 }
+// The shared pane gives a room, a hot centre and a frost at the corners and the sill: fall dims the room and uses the
+// frost slot as dark grime on the glass. The approved panes have four lights each and pale drapes hanging in folds.
+const PANE = { drape: 0.3, grime: [0.014, 0.013, 0.009] as Rgb, grimeAmount: 0.7, lights: [2, 2] as [number, number] }
+const PURPLE_PANE = { room: 0.24, hot: 0.4 }
+const GREEN_PANE = { room: 0.22, hot: 0.3 }
+const DRAPE = { folds: 3.4, bend: 0.22, gain: 1, flicker: 0.07, cycles: 3 }
 
-function paneLook(room: Rgb, drape: Rgb): GlowLook {
-  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.4), flame: tones.flame, room: scaled(room, PANE.room), curtain: scaled(drape, PANE.drape), frost: PANE.grime, frostAmount: PANE.grimeAmount, flicker: 0.07, cycles: 3, through: THROUGH, paneHot: PANE.hot }
+function paneLook(room: Rgb, drape: Rgb, level: { room: number; hot: number }): GlowLook {
+  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.4), flame: tones.flame, room: scaled(room, level.room), curtain: scaled(drape, PANE.drape), frost: PANE.grime, frostAmount: PANE.grimeAmount, flicker: DRAPE.flicker, cycles: DRAPE.cycles, through: THROUGH, paneHot: level.hot, lights: PANE.lights }
+}
+
+const glsl3 = (c: Rgb): string => `vec3(${c[0].toFixed(4)}, ${c[1].toFixed(4)}, ${c[2].toFixed(4)})`
+
+function drapeMaterial(tone: Rgb): THREE.ShaderMaterial {
+  const lights = `vec2(${PANE.lights[0].toFixed(1)}, ${PANE.lights[1].toFixed(1)})`
+  return stageShader({
+    part: LIGHT,
+    standIn: false,
+    inside: true,
+    change: 'light',
+    uniforms: { uClock: clock },
+    params: { side: THREE.DoubleSide, transparent: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 },
+    vertexPars: `
+attribute vec4 aKind;
+varying vec4 vKind;
+varying vec2 vUv;
+`,
+    vertexMain: `
+vKind = aKind;
+vUv = uv;
+`,
+    fragment: `
+uniform float uClock;
+varying vec4 vKind;
+varying vec2 vUv;
+float drapeHash(float n) {
+  vec3 q = fract(vec3(n, n + 0.37, n + 0.71) * vec3(0.1031, 0.1030, 0.0973));
+  q += dot(q, q.yzx + 33.33);
+  return fract((q.x + q.y) * q.z);
+}
+float drapeNoise(float x) {
+  float i = floor(x);
+  float f = fract(x);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(drapeHash(i), drapeHash(i + 1.0), f);
+}
+void main() {
+  if (uDiag != 0) discard;
+  float c = stageChange();
+  if (stageGone(c)) discard;
+  #ifdef STAGE_INSIDE
+  if (stageOutside()) discard;
+  #endif
+  float seed = vKind.w * 17.0;
+  float u = vUv.x * ${DRAPE.folds.toFixed(2)} + ${DRAPE.bend.toFixed(2)} * sin(vUv.y * 2.6 + seed) + 0.5 * drapeNoise(vUv.y * 1.7 + seed);
+  float wide = 0.5 + 0.5 * sin(6.2831853 * u);
+  float fine = 0.5 + 0.5 * sin(6.2831853 * (u * 1.73 + drapeNoise(seed + 5.0)));
+  float hang = 0.4 + 0.6 * drapeNoise(vUv.y * 3.1 + floor(u + 0.25) * 7.3 + seed);
+  float crest = wide * wide * wide * wide;
+  float thread = fine * fine * fine * fine;
+  float fold = 1.3 * crest * crest * hang + 0.2 * thread * thread;
+  vec2 bars = (0.5 - abs(fract(vUv * ${lights}) - 0.5)) * vKind.yz / ${lights};
+  float open = smoothstep(0.14, 0.34, min(bars.x, bars.y));
+  float beat = 1.0 + ${DRAPE.flicker.toFixed(3)} * sin(6.2831853 * (${DRAPE.cycles.toFixed(1)} * uClock + vKind.y)) * (0.6 + 0.4 * sin(6.2831853 * (${(DRAPE.cycles * 3 + 1).toFixed(1)} * uClock + vKind.y * 5.0)));
+  float fog = stageVeil(vStageAux.x);
+  vec3 col = ${glsl3(tone)} * (1.0 + 0.5 * (beat - 1.0)) * min(1.0, ${THROUGH.toFixed(2)} * (1.0 - fog)) / max(1.0 - fog, 1e-3);
+  gl_FragColor = vec4(stageFogged(col, stageGrid(vStageLocal), fog), clamp(${DRAPE.gain.toFixed(3)} * fold * open, 0.0, 1.0));
+}
+`,
+  })
 }
 
 export function lights(): THREE.Object3D {
@@ -478,11 +557,14 @@ export function lights(): THREE.Object3D {
     glowPiece(stretched(villageGeometry('lamp-glass')), (_i, isFlame) => [isFlame > 0.5 ? GLOW.flame : GLOW.glass, LAMP.phase, 0, 0]),
     glowPiece(geometry(MODEL, 'glow'), (_i, _inner, index) => [GLOW.bulb, 0.27 + 0.41 * index, index, 0]),
   ]
-  const purple = new THREE.Mesh(glowGeometry([glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1])]), glowMaterial(LIGHT, paneLook(tones.purple, tones.purpleDrape), clock))
-  const green = new THREE.Mesh(
-    glowGeometry([glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]), glowPiece(geometry(MODEL, 'pane-attic'), (_i, w, h) => [GLOW.pane, w, h, 3])]),
-    glowMaterial(LIGHT, paneLook(tones.green, tones.greenDrape), clock),
-  )
+  const purpleGlass = glowGeometry([glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1])])
+  const greenGlass = glowGeometry([glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]), glowPiece(geometry(MODEL, 'pane-attic'), (_i, w, h) => [GLOW.pane, w, h, 3])])
+  const purple = new THREE.Mesh(purpleGlass, glowMaterial(LIGHT, paneLook(tones.purple, tones.purpleDrape, PURPLE_PANE), clock))
+  const green = new THREE.Mesh(greenGlass, glowMaterial(LIGHT, paneLook(tones.green, tones.greenDrape, GREEN_PANE), clock))
+  const purpleFolds = new THREE.Mesh(purpleGlass, drapeMaterial(tones.purpleFold))
+  const greenFolds = new THREE.Mesh(greenGlass, drapeMaterial(tones.greenFold))
+  purpleFolds.renderOrder = 2
+  greenFolds.renderOrder = 2
   const lit = (x: number, z: number): Point => [x, groundAt(x, z) + 1.5, z]
   const pools = [lit(flame[0] + 0.4, flame[2] + 1.6)]
   const faces = PUMPKINS.map((p) => pumpkinFace(p, 0.95, -0.1))
@@ -495,7 +577,7 @@ export function lights(): THREE.Object3D {
   purpleHalo.renderOrder = 3
   const greenHalo = new THREE.Mesh(haloGeometry([anchors.sideWindow, attic], PANE_HALO.radiusMm, [PANE_SIZE, PANE_SIZE], PANE_HALO.wide), haloMaterial(LIGHT, scaled(tones.green, 0.5), tones.greenLight, PANE_HALO, clock))
   greenHalo.renderOrder = 3
-  return new THREE.Group().add(new THREE.Mesh(glowGeometry(warmPieces), glowMaterial(LIGHT, warm, clock)), purple, green, halos, purpleHalo, greenHalo)
+  return new THREE.Group().add(new THREE.Mesh(glowGeometry(warmPieces), glowMaterial(LIGHT, warm, clock)), purple, green, purpleFolds, greenFolds, halos, purpleHalo, greenHalo)
 }
 
 const keep = (role: string): boolean => !isTree(role) && role !== 'ground' && role !== 'pond' && role !== 'fence'

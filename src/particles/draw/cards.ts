@@ -143,6 +143,8 @@ export const CARD_VERT = `
       float outK = max(${n(CARD.spark.restOutField)} * (1.0 - exp(-0.5 * dot(upK, upK))), ${n(CARD.spark.restOutScene)} * max(exp(-0.5 * dot(crownK, crownK)), exp(-0.5 * dot(cotK, cotK))));
       outK = max(outK, ${n(CARD.spark.restOutRim)} * smoothstep(${n(CARD.spark.restRim[0])}, ${n(CARD.spark.restRim[1])}, length(atK)));
       keepC *= mix(1.0, smoothstep(outK - ${n(CARD.spark.restEdge)}, outK, fract(own * 211.0)), afloat * (1.0 - gustC));
+      // a spark that is going out is gone sooner than its light falls: a crowd of half lit ones reads as dust, not as sparks
+      keepC *= mix(1.0, aData.z * aData.z * aData.z * aData.z, afloat * (1.0 - gustC));
       nearC *= step(fract(own * 97.0), mix(${n(CARD.spark.nearField)}, 1.0, exp(-0.5 * dot(upK, upK))));
       keepC = mix(keepC, 1.0, nearC);
     }
@@ -484,7 +486,8 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
     q.x -= vL4.y * tt * tt;
     float lead = 0.1 + 0.24 * smoothstep(0.0, 0.4, tt) - 0.52 * pow(smoothstep(0.4, 1.0, tt), 1.4);
     float trail = -0.3 + 0.12 * tt + 0.17 * abs(sin(9.42478 * tt));
-    vec3 e = q.x - lead > trail - q.x ? vec3(q.x - lead, 1.0, side * (0.05 + 0.9 * tt * tt)) : vec3(trail - q.x, -1.0, side * 0.25);
+    float wq = (q.x - 0.1) * ${n(CARD.batSlim)} + 0.1;
+    vec3 e = wq - lead > trail - wq ? vec3(wq - lead, 1.0, side * (0.05 + 0.9 * tt * tt)) : vec3(trail - wq, -1.0, side * 0.25);
     float tip = tt - 1.0;
     if (tip > e.x) e = vec3(tip, 0.0, side);
     vec2 bq = vec2(q.x / 0.36, q.y / 0.1);
@@ -664,7 +667,7 @@ vec4 cardTint(float shape, vec2 q, vec2 own) {
     fine = smoothstep(0.1, 0.0, abs(ribs - 0.5)) * (1.0 - smoothstep(0.75, 1.0, out1));
     if (u < stem) return vec4(vec3(0.5, 0.36, 0.26), 0.0);
   }
-  t *= mix(1.05, 0.72, smoothstep(0.35, 1.0, out1) * mix(0.4, 1.0, own.x));
+  t *= mix(${n(CARD.leafEdge[0])}, ${n(CARD.leafEdge[1])}, smoothstep(0.35, 1.0, out1) * mix(0.4, 1.0, own.x));
   float veins = max(rib, 0.6 * fine);
   return vec4(t * (1.0 - 0.38 * veins), 1.0 - 0.6 * veins);
 }
@@ -783,7 +786,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
   float fade = spark && !run ? 1.0 - 0.75 * clamp((-t - vStreak.z) / max(tailC, 1e-3) + 0.3, 0.0, 1.0) : 1.0;
   // no two lights alike: the point of each and the glow round it are each of their own size, most points tiny and sharp
   float rc = (spark ? mix(${n(CARD.spark.restCore)}, ${n(CARD.spark.core)}, vL2.w) : ${n(CARD.glow.core)} * mix(${n(CARD.glow.coreVary[0])}, ${n(CARD.glow.coreVary[1])}, pow(fract(vL3.x * 113.0), ${n(CARD.glow.coreSkew)}))) * r;
-  float rh = (spark ? mix(${n(CARD.spark.restHalo)}, ${n(CARD.spark.halo)}, vL2.w) : ${n(CARD.glow.halo)} * mix(${n(CARD.glow.haloVary[0])}, ${n(CARD.glow.haloVary[1])}, pow(fract(vL3.w * 71.0), ${n(CARD.glow.haloSkew)}))) * r;
+  float rh = (spark ? mix(${n(CARD.spark.restHalo)} * mix(${n(CARD.spark.restHaloVary[0])}, ${n(CARD.spark.restHaloVary[1])}, pow(fract(vL3.w * 71.0), ${n(CARD.spark.restHaloVary[2])})), ${n(CARD.spark.halo)}, vL2.w) : ${n(CARD.glow.halo)} * mix(${n(CARD.glow.haloVary[0])}, ${n(CARD.glow.haloVary[1])}, pow(fract(vL3.w * 71.0), ${n(CARD.glow.haloSkew)}))) * r;
   float rw = ${n(CARD.glow.wide)} * r;
   float vc = rc * rc + vStreak.w;
   float vh = rh * rh + vStreak.w;
@@ -821,8 +824,8 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
   if (spark) {
     float part = vL3.z / 6.2831853;
     float sharp = 1.0 - smoothstep(${n(CARD.spark.hotFrom[0])}, ${n(CARD.spark.hotFrom[1])}, sg / max(rc, 0.6));
-    tint = mix(k.rgb, vec3(${CARD.spark.dying.map(n).join(', ')}), smoothstep(0.55, 1.0, part));
-    tint = mix(tint, mix(vec3(${CARD.spark.restHot.map(n).join(', ')}), vec3(${CARD.spark.hot.map(n).join(', ')}), vL2.w), mix(${n(CARD.spark.restHotCore)}, ${n(CARD.spark.hotCore)}, vL2.w) * sharp * (1.0 - disc) * exp(-0.5 * d2 / (mix(${n(CARD.spark.restHotWide)}, ${n(CARD.spark.hotWide)}, vL2.w) * vc)) * (1.0 - 0.7 * part));
+    tint = mix(mix(vec3(${CARD.spark.restEmber.map(n).join(', ')}), k.rgb, vL2.w), vec3(${CARD.spark.dying.map(n).join(', ')}), smoothstep(0.55, 1.0, part));
+    tint = mix(tint, mix(vec3(${CARD.spark.restHot.map(n).join(', ')}), vec3(${CARD.spark.hot.map(n).join(', ')}), vL2.w), mix(${n(CARD.spark.restHotCore)}, ${n(CARD.spark.hotCore)}, vL2.w) * sharp * (1.0 - disc) * exp(-0.5 * d2 / (mix(${n(CARD.spark.restHotWide)}, ${n(CARD.spark.hotWide)}, vL2.w) * vc)) * (1.0 - 0.7 * part * vL2.w));
   }
   vec3 col = tint * (k.a * lum) * (1.0 - vFog.a * uTone.z);
   gl_FragColor = vec4(col, cover);
