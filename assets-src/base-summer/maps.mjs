@@ -5,7 +5,7 @@ import { FIELD } from './field.mjs'
 export const GRAIN = { px: 512 }
 export const SAND = { px: 512, grains: 2600 }
 // A slope of the relief of FACE.slope (mm out per mm up) reads as fully turned up or down; a crumb that stands out takes the light as well.
-const FACE = { slope: 0.24, gain: 0.8, broad: 0.5, form: 0.4, grain: 0.25, wide: 2.4, hollow: 0.25, deep: 0.35, steep: 0.6 }
+const FACE = { slope: 0.24, gain: 0.8, rim: 0.3, broad: 0.5, form: 0.15, grain: 0.25, wide: 2.4, hollow: 0.25, deep: 0.25, steep: 0.6, edge: 1.2, reach: 1.9, over: 0.6, cast: 0.9 }
 
 // Row 0 of a picture is its top; the maps are worked out from the foot up.
 const up = (bytes, w, h, ch) => {
@@ -33,6 +33,23 @@ export async function carveMap(dir, f) {
   const near = blur(f.rel, W, H, 0.4 / stepV, true, false)
   const soft = blur(f.rel, W, H, 0.8 / stepV, true, false)
   const far = blur(f.rel, W, H, FACE.wide / stepV, true, false)
+  // The light comes down the wall from above. An edge that stands out throws its shade on the sand under it: deepest right under the edge
+  // and gone a roll's width below it, deeper the further the edge stands out. Only an edge throws one; a broad swell does not.
+  const edge = blur(f.rel, W, H, FACE.edge / stepV, true, false)
+  const reach = Math.ceil(FACE.reach / stepV)
+  const cast = new Float32Array(W * H)
+  for (let j = 0; j < H; j++) {
+    for (let i = 0; i < W; i++) {
+      const o = j * W + i
+      const here = f.rel[o] - edge[o]
+      let most = 0
+      for (let k = 1; k <= reach && j + k < H; k++) {
+        const over = (f.rel[o + k * W] - edge[o + k * W] - here) * (1 - k / reach)
+        if (over > most) most = over
+      }
+      cast[o] = most
+    }
+  }
   for (let j = 0; j < H; j++) {
     for (let i = 0; i < W; i++) {
       const o = j * W + i
@@ -50,9 +67,12 @@ export async function carveMap(dir, f) {
       const [rb, gb] = slopeByte(((hp(r) - hp(l)) / (2 * stepU)) * flat, ((hp(t) - hp(d)) / (2 * stepV)) * flat)
       out[o * 3] = rb
       out[o * 3 + 1] = gb
-      const face = FACE.gain * Math.tanh(-(f.rel[t] - soft[t] - f.rel[d] + soft[d]) / run / FACE.slope) + FACE.form * Math.tanh(-(soft[t] - soft[d]) / run / FACE.broad)
+      const shady = smooth(-34, -22, P.azOfU(u))
+      const turned = FACE.gain * Math.tanh(-(f.rel[t] - soft[t] - f.rel[d] + soft[d]) / run / FACE.slope)
+      // In the ball's shade the sand over an edge is a lit facet like any other, not a bright rim.
+      const face = (turned > 0 ? mix(1, FACE.rim, shady) : 1) * turned + FACE.form * Math.tanh(-(soft[t] - soft[d]) / run / FACE.broad)
       const hollow = Math.tanh((far[o] - near[o]) / FACE.hollow)
-      out[o * 3 + 2] = Math.round(clamp(0.5 + 0.5 * clamp(face - FACE.deep * hollow + f.lip[o] + FACE.grain * flat * f.grain[o], -1, 1) * (1 - f.halo[o]) ** 2) * 255)
+      out[o * 3 + 2] = Math.round(clamp(0.5 + 0.5 * clamp(face - FACE.deep * hollow - FACE.cast * clamp(cast[o] / FACE.over) * shady + f.roll[o] + f.lip[o] + FACE.grain * flat * f.grain[o], -1, 1) * (1 - f.halo[o]) ** 2) * 255)
     }
   }
   return [await writePng(`${dir}/base-carve.lin.w2048.png`, W, H, 3, up(out, W, H, 3))]
@@ -73,14 +93,18 @@ export async function toneMap(dir, f) {
       const o = j * W + i
       const A = P.azOfU((i + 0.5) / W) / 360 + 0.5
       const h = f.hgt[o]
-      // The warm stain in the trough is deep on the sunlit left and faint in the ball's shade.
-      const stain = Math.exp(-(((h - f.groove[o] - 0.4) / 2.1) ** 2)) * (0.55 + 0.45 * fbm(A * 14, h / 5, 14, 64, 307, 3)) * mix(1, 0.35, smooth(-12, 18, P.azOfU((i + 0.5) / W)))
+      const az = P.azOfU((i + 0.5) / W)
+      // The warm stain in the trough is deep on the sunlit left and faint in the ball's shade. Read on the approved: just left of the
+      // middle it stands higher up the wall and is deeper, one patch of rust under the shells.
+      const more = smooth(-26, -15, az) * smooth(-1, -8, az)
+      const above = h - f.groove[o] - 0.4
+      const stain = Math.exp(-((above / (above > 0 ? mix(2.1, 3.4, more) : 2.1)) ** 2)) * (0.55 + 0.45 * fbm(A * 14, h / 5, 14, 64, 307, 3)) * mix(1, 0.35, smooth(-12, 18, az))
       const low = smooth(13, 3, h) * 0.3
       const blotch = fbm(A * 9, h / 9, 9, 64, 309, 3)
       const top = smooth(30, 37, h) * 0.5
       let c = [0, 1, 2].map((q) => mix(cream[q], ochre[q], clamp(low + 0.5 * (blotch - 0.5))))
       c = c.map((v, q) => mix(v, pale[q], top))
-      c = c.map((v, q) => mix(v, rust[q], clamp(0.35 * stain)))
+      c = c.map((v, q) => mix(v, rust[q], clamp(mix(0.35, 0.6, more) * stain)))
       c = c.map((v, q) => mix(v, loose[q], 0.75 * f.drift[o]))
       const speck = 0.94 + 0.12 * hashInt(i, j, 311) * hashInt(i >> 1, j >> 1, 313) + 0.05 * (fbm(A * 400, h * 2.2, 400, 512, 315, 2) - 0.5)
       // Round each thing set into the sand the sand is in its shade.
