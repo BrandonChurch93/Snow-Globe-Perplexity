@@ -66,7 +66,7 @@ const LANTERN = { rib: 0.3, gores: 12, ring: 0.16, ribs: 26, gain: 0.95, body: 0
 // The sky a leaf looks for stands up and to the right of the crown, a little toward the lens. A clump counts as a rounded body a
 // little inside its leaves (`side`, `top` and `under` are what it keeps of the leaves' reach beyond the clump's own size).
 const OPEN = { toward: [0.4575, 0.8642, 0.2087] as Vec3, side: 0.3, top: 1.2, under: 1.4, skinMm: 0.25, fromMm: 0.4, toMm: 2.4 }
-const HALO = { radius: 2.9, strength: 0.17, hot: 0.0 }
+const HALO = { radius: 2.9, strength: 0.06, hot: 0.0 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
 const HALO_CORE: Rgb3 = [1, 0.7, 0.34]
 
