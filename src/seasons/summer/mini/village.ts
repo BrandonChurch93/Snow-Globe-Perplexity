@@ -243,7 +243,7 @@ const palingLength = Math.hypot(paling.to[0] - paling.from[0], paling.to[1] - pa
 const palingU: [number, number] = [(paling.to[0] - paling.from[0]) / palingLength, (paling.to[1] - paling.from[1]) / palingLength]
 const palingAt = (x: number, z: number): [number, number] => [(x - paling.from[0]) * palingU[0] + (z - paling.from[1]) * palingU[1], -(x - paling.from[0]) * palingU[1] + (z - paling.from[1]) * palingU[0]]
 const palingPost = (along: number): number => Math.min(paling.posts - 1, Math.max(0, Math.round((along / palingLength) * (paling.posts - 1))))
-const WATER = { spark: 0.5, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.1, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.84, shoreTo: 1.0, sky: 1.25, skyFrom: -0.75, skyTo: 0.35, skyAt: -2.3, skyWide: 22.0, skyLow: 0.4, bankMm: 0.5, bankVary: 0.4, bankFine: 0.25, bankEdge: 0.3, bankTuft: 0.1, bankTuftPerMm: 0.19, bankDark: 0.8, env: 0.1, glint: 0.65, squash: 0.14, paperGlint: 0.03, paperMm: 0.9, paperTall: 0.5, post: 0.975, postMm: 0.5, postTall: 11.5, trunk: 0.975, trunkMm: 4.8, trunkTall: 26, body: 0.4, soft: 0.45, postSoft: 0.12, bankBlur: 2.5, floor: [0.012, 0.0105, 0.0085] as Rgb, deep: 0.4, deepFrom: 0.72, deepTo: 1.0, deepNear: 0.8, nearFromMm: -2.0, nearToMm: 3.0, ring: 0.12, ringPer: 19.0, ringFrom: 0.55, ringTo: 0.95, edgeWave: 0.35 }
+const WATER = { spark: 0.5, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.1, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.84, shoreTo: 1.0, sky: 1.25, skyFrom: -0.75, skyTo: 0.35, skyAt: -2.3, skyWide: 22.0, skyLow: 0.4, bankMm: 0.5, bankVary: 0.4, bankFine: 0.25, bankEdge: 0.3, bankTuft: 0.1, bankTuftPerMm: 0.19, bankDark: 0.8, env: 0.1, glint: 0.65, squash: 0.14, paperGlint: 0.03, paperMm: 0.9, paperTall: 0.5, post: 0.975, postMm: 0.5, postTall: 11.5, trunk: 0.975, trunkMm: 4.8, trunkTall: 26, body: 0.4, soft: 0.45, postSoft: 0.12, bankBlur: 2.5, floor: [0.012, 0.0105, 0.0085] as Rgb, deep: 0.4, deepFrom: 0.72, deepTo: 1.0, deepNear: 0.8, nearFromMm: -2.0, nearToMm: 3.0, ring: 0.12, ringPer: 19.0, ringFrom: 0.55, ringTo: 0.95, edgeWave: 0.35, stirBeats: 0.5, calmSeconds: 1.0, restEdgeMm: 0.15, restBankEdge: 0.15, veilMean: 0.474, ringMean: 0.32, flare: 0.6, flareFromMm: 12.0, flareMm: 7.0, restWide: 0.73 }
 
 const flame = lampFlame()
 const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
@@ -548,6 +548,8 @@ const gain = { value: 1 }
 const since = { value: 100 }
 const clock = { value: 0 }
 const storm = { value: 0 }
+// How far a shake has stirred the pond, nought to one: nought once the globe has stood a moment, and the water is a mirror then.
+const stir = { value: 0 }
 // How far the lens resolves a blade, nought to one: one number for the whole picture, set from the frame's camera.
 const lens = { value: 0 }
 
@@ -777,7 +779,7 @@ function waterMaterial(): THREE.MeshStandardMaterial {
     change: 'miniature',
     key: 'village-water-summer',
     hook: (shader) => {
-      Object.assign(shader.uniforms, { uGlowGain: gain }, mirrorUniforms(sources))
+      Object.assign(shader.uniforms, { uGlowGain: gain, uPondStir: stir }, mirrorUniforms(sources))
       shader.vertexShader = shader.vertexShader.replace('#include <uv_pars_vertex>', `#include <uv_pars_vertex>\n${SURFACE_VERT_PARS}`).replace('#include <uv_vertex>', `#include <uv_vertex>\n${SURFACE_VERT_MAIN}`)
       shader.fragmentShader = shader.fragmentShader
         .replace(
@@ -785,6 +787,7 @@ function waterMaterial(): THREE.MeshStandardMaterial {
           `#include <map_pars_fragment>
 ${BUMP_GLSL}
 ${MIRROR_GLSL}
+uniform float uPondStir;
 vec3 waterFlat = vec3(0.0, 0.0, 1.0);
 float waterShade = 0.0;
 float waterBank = 0.0;
@@ -817,15 +820,18 @@ float waterShoreline(vec3 r) {
   vec2 at = vStageLocal.xz + dir * hit;
   // Tufts stand on the bank, each wider than a pixel of the picture: the mirror shows their outline against the sky.
   float tall = ${WATER.bankMm.toFixed(2)} + ${WATER.bankVary.toFixed(2)} * texture2D(map, at * 0.021 + 0.3, ${WATER.bankBlur.toFixed(1)}).g + ${WATER.bankFine.toFixed(2)} * texture2D(map, at * 0.083, ${WATER.bankBlur.toFixed(1)}).r + ${WATER.bankTuft.toFixed(2)} * smoothstep(0.5, 0.6, texture2D(map, at * ${WATER.bankTuftPerMm.toFixed(3)} + 0.61, ${WATER.bankBlur.toFixed(1)}).g);
-  return 1.0 - smoothstep(tall - ${WATER.bankEdge.toFixed(2)}, tall + ${WATER.bankEdge.toFixed(2)}, hit * rise);
+  float edge = mix(${WATER.restBankEdge.toFixed(2)}, ${WATER.bankEdge.toFixed(2)}, uPondStir);
+  return 1.0 - smoothstep(tall - edge, tall + edge, hit * rise);
 }
-float waterPost(vec3 r, vec3 foot, float radius, float tall, float soft) {
+float waterPost(vec3 r, vec3 foot, float radius, float tall, float soft, float spread) {
   vec2 to = foot.xz - vStageLocal.xz;
   float along = dot(to, r.xz) / max(dot(r.xz, r.xz), 1e-5);
-  // The outline of what stands in the water is not ruled: the surface that carries it is never quite still.
-  float miss = length(vStageLocal.xz + r.xz * along - foot.xz) + radius * soft * ${(WATER.edgeWave / WATER.soft).toFixed(3)} * (texture2D(map, vStageLocal.xz * 0.045 + 0.23).g - 0.5);
+  // The outline of what stands in a stirred pond is not ruled; in the pond at rest it stands straight.
+  float miss = length(vStageLocal.xz + r.xz * along - foot.xz) + uPondStir * radius * soft * ${(WATER.edgeWave / WATER.soft).toFixed(3)} * (texture2D(map, vStageLocal.xz * 0.045 + 0.23).g - 0.5);
   float up = vStageLocal.y + r.y * along - foot.y;
-  return step(0.0, along) * (1.0 - smoothstep(radius * (1.0 - soft), radius * (1.0 + soft), miss)) * (1.0 - smoothstep(tall * 0.85, tall, up));
+  // The foot of what stands in the mirror may spread, as a trunk does into its roots: widest where the water meets its bank.
+  float wide = radius * (1.0 + spread * exp(-max(along - ${WATER.flareFromMm.toFixed(1)}, 0.0) / ${WATER.flareMm.toFixed(1)}));
+  return step(0.0, along) * (1.0 - smoothstep(wide * (1.0 - soft), wide * (1.0 + soft), miss)) * (1.0 - smoothstep(tall * 0.85, tall, up));
 }
 vec3 waterLights(vec3 r) {
   vec3 sum = vec3(0.0);
@@ -859,7 +865,7 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, vec3(0.08, 0.085, 0.05), waterS
   float waterH = waterHeight(vMapUv);
   vec2 waterDh = vec2(waterHeight(vMapUv + dFdx(vMapUv)) - waterH, waterHeight(vMapUv + dFdy(vMapUv)) - waterH);
   waterFlat = normal;
-  normal = villageBump(-vViewPosition, normal, waterDh * ${tileMm().toFixed(2)}, faceDirection);
+  normal = villageBump(-vViewPosition, normal, waterDh * (${tileMm().toFixed(2)} * uPondStir), faceDirection);
 }
 `,
         )
@@ -876,19 +882,19 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, vec3(0.08, 0.085, 0.05), waterS
   vec2 waterAway = normalize(vStageLocal.xz - (uGlobeInv * vec4(cameraPosition, 1.0)).xz);
   vec3 waterLow = normalize(vec3(waterAway.x, ${WATER.flat.toFixed(2)}, waterAway.y) + ${WATER.wobble.toFixed(2)} * vec3(waterN.x, 0.0, waterN.z));
   vec3 waterGlint = waterLights(waterLow);
-  waterShade = max(${WATER.post.toFixed(2)} * waterPost(waterLow, ${glsl(postFoot)}, ${WATER.postMm.toFixed(2)}, ${WATER.postTall.toFixed(1)}, ${WATER.postSoft.toFixed(2)}), ${WATER.trunk.toFixed(2)} * waterPost(waterLow, ${glsl(trunkFoot)}, ${WATER.trunkMm.toFixed(2)}, ${WATER.trunkTall.toFixed(1)}, ${WATER.soft.toFixed(2)}));
-  waterShade = max(waterShade, ${WATER.mass.toFixed(2)} * waterPost(waterLow, ${glsl(houseFoot)}, ${WATER.houseMm.toFixed(2)}, ${WATER.houseTall.toFixed(1)}, ${WATER.soft.toFixed(2)}));
+  waterShade = max(${WATER.post.toFixed(2)} * waterPost(waterLow, ${glsl(postFoot)}, ${WATER.postMm.toFixed(2)}, ${WATER.postTall.toFixed(1)}, ${WATER.postSoft.toFixed(2)}, 0.0), ${WATER.trunk.toFixed(2)} * waterPost(waterLow, ${glsl(trunkFoot)}, ${WATER.trunkMm.toFixed(2)} * mix(${WATER.restWide.toFixed(2)}, 1.0, uPondStir), ${WATER.trunkTall.toFixed(1)}, mix(${(WATER.restEdgeMm / (WATER.restWide * WATER.trunkMm)).toFixed(4)}, ${WATER.soft.toFixed(2)}, uPondStir), ${WATER.flare.toFixed(2)} * (1.0 - uPondStir)));
+  waterShade = max(waterShade, ${WATER.mass.toFixed(2)} * waterPost(waterLow, ${glsl(houseFoot)}, ${WATER.houseMm.toFixed(2)} * mix(${WATER.restWide.toFixed(2)}, 1.0, uPondStir), ${WATER.houseTall.toFixed(1)}, mix(${(WATER.restEdgeMm / (WATER.restWide * WATER.houseMm)).toFixed(4)}, ${WATER.soft.toFixed(2)}, uPondStir), 0.0));
   waterBank = ${WATER.bankDark.toFixed(2)} * waterShoreline(waterLow);
   waterShade = max(waterShade, waterBank);
   float waterSky = smoothstep(${WATER.skyFrom.toFixed(2)}, ${WATER.skyTo.toFixed(2)}, waterR.x * 0.75 - waterR.z * 0.5 + 0.2);
   // Toward its banks the pond mirrors them and not the sky: dark at its ends and along the far shore, open toward the lens.
   float waterNear = smoothstep(${WATER.nearFromMm.toFixed(1)}, ${WATER.nearToMm.toFixed(1)}, -dot(vStageLocal.xz - vec2(${pond.x.toFixed(2)}, ${pond.z.toFixed(2)}), waterAway));
   float waterDepth = 1.0 - ${WATER.deep.toFixed(2)} * smoothstep(${WATER.deepFrom.toFixed(2)}, ${WATER.deepTo.toFixed(2)}, vSurf.x + 0.12 * (texture2D(map, vMapUv * 0.5 + 0.7).g - 0.5)) * (1.0 - ${WATER.deepNear.toFixed(2)} * waterNear);
-  // Faint rings run in from the banks, each wider than a pixel of the picture; they stand still, as the water does at rest.
-  waterDepth *= 1.0 - ${WATER.ring.toFixed(2)} * smoothstep(${WATER.ringFrom.toFixed(2)}, ${WATER.ringTo.toFixed(2)}, 0.5 + 0.5 * sin(vSurf.x * ${WATER.ringPer.toFixed(1)} + 3.0 * texture2D(map, vMapUv * 0.35 + 0.19).g));
+  // A stirred pond carries faint rings in from the banks, each wider than a pixel of the picture; at rest it keeps their mean.
+  waterDepth *= 1.0 - ${WATER.ring.toFixed(2)} * mix(${WATER.ringMean.toFixed(2)}, smoothstep(${WATER.ringFrom.toFixed(2)}, ${WATER.ringTo.toFixed(2)}, 0.5 + 0.5 * sin(vSurf.x * ${WATER.ringPer.toFixed(1)} + 3.0 * texture2D(map, vMapUv * 0.35 + 0.19).g)), uPondStir);
   // Held low: one glint alone on the pond, clipped to white, reads as a fault and not as a ripple.
   float waterSpark = min(pow(abs(texture2D(map, vMapUv * 2.3 + 0.41).r * texture2D(map, vMapUv * 5.9 + 0.13).r * 2.2), 5.0), 0.35);
-  totalEmissiveRadiance += waterGlint * (uGlowGain * ${WATER.glint.toFixed(2)}) * (1.0 - 0.6 * waterShore) * (1.0 - 0.5 * waterBank) + ${glsl(tones.waterSky)} * (${WATER.sky.toFixed(2)} * waterSky * (0.55 + 0.45 * waterFresnel) * (0.86 + 0.14 * texture2D(map, vMapUv * vec2(0.9, 2.2)).b + ${WATER.spark.toFixed(2)} * waterSpark)) * (1.0 - waterShade) * waterDepth * (1.0 - 0.75 * waterShore) * (${WATER.skyLow.toFixed(2)} + ${(1 - WATER.skyLow).toFixed(2)} * exp(-pow(abs((vStageLocal.x + 14.0 * waterN.x - ${(pond.x + WATER.skyAt).toFixed(2)}) / ${WATER.skyWide.toFixed(2)}), 2.0)));
+  totalEmissiveRadiance += waterGlint * (uGlowGain * ${WATER.glint.toFixed(2)}) * (1.0 - 0.6 * waterShore) * (1.0 - 0.5 * waterBank) + ${glsl(tones.waterSky)} * (${WATER.sky.toFixed(2)} * waterSky * (0.55 + 0.45 * waterFresnel) * (0.86 + 0.14 * mix(${WATER.veilMean.toFixed(3)}, texture2D(map, vMapUv * vec2(0.9, 2.2)).b, uPondStir) + ${WATER.spark.toFixed(2)} * uPondStir * waterSpark)) * (1.0 - waterShade) * waterDepth * (1.0 - 0.75 * waterShore) * (${WATER.skyLow.toFixed(2)} + ${(1 - WATER.skyLow).toFixed(2)} * exp(-pow(abs((vStageLocal.x + 14.0 * waterN.x - ${(pond.x + WATER.skyAt).toFixed(2)}) / ${WATER.skyWide.toFixed(2)}), 2.0)));
   // What the pond mirrors is dark, not black: the bank, the bark and the wall in shade.
   totalEmissiveRadiance += ${glsl(WATER.floor)};
 }
@@ -1239,6 +1245,8 @@ export function update(moment: KitMoment): void {
   since.value = Number.isFinite(moment.sinceLanding) ? Math.min(100, Math.max(0, moment.sinceLanding)) : 100
   const t = Number.isFinite(moment.sinceLanding) ? Math.min(1, Math.max(0, moment.sinceLanding / config.shake.settleCheckSeconds)) : 1
   storm.value = 1 - t * t * (3 - 2 * t)
+  // The shake stirs the pond within its first half beat; the landing calms it, most of it at once and the last of it within a second.
+  stir.value = moment.beat !== null ? eased(0, WATER.stirBeats, moment.beat) : Number.isFinite(moment.sinceLanding) ? (1 - eased(0, WATER.calmSeconds, moment.sinceLanding)) ** 3 : 0
   // A frame that has no camera yet resolves nothing.
   const pose = moment.frame.pose as typeof moment.frame.pose | null
   lens.value = pose ? eased(BLADE.lens[0], BLADE.lens[1], moment.frame.focalPx / Math.max(pose.position.distanceTo(pose.aim), 1)) : 0
