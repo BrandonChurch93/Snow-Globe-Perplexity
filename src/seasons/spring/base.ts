@@ -240,7 +240,7 @@ ${SHADE}
   vec3 liveLowSun = liveDry * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.66, 0.5) * (${ROCK.flank.toFixed(2)} * liveGraze * mix((0.04 + 0.46 * baseStoneD.b) * mix(0.35, 1.8, baseStoneF.b), (1.0 + 1.2 * liveTuft) * mix(0.5, 1.9, baseClump) * 2.6 * smoothstep(0.1, 0.75, mix(dot(liveMacro, liveGrazeDir), dot(geometryNormal, liveGrazeDir), 0.5)), baseMoss) * baseAo);
   vec3 liveOver = liveLowSun / ${SUN_TOP};
   float liveBlade = mix(1.0, mix(0.12, 1.0, smoothstep(0.35, 0.75, baseMossD.b)), baseMoss);
-  reflectedLight.directDiffuse += liveBlade * liveLowSun / pow(1.0 + abs(liveOver * liveOver * liveOver), vec3(0.3333));
+  reflectedLight.directDiffuse += liveBlade * liveLowSun / pow(max(1.0 + abs(liveOver * liveOver * liveOver), 1.0), vec3(0.3333));
   // Stone that is never quite dry: a soft cool lustre off the room on every face that looks up or toward the camera.
   float liveDamp = (1.0 - baseMoss) * (1.0 - 0.7 * baseFilm) * (1.0 - 0.7 * baseWet) * baseAo;
   vec3 liveSkyDir = normalize(mat3(viewMatrix) * vec3(-0.2, 0.75, 0.6));
@@ -255,7 +255,7 @@ ${SHADE}
   vec3 liveCrest = liveTip * (liveKeyC * ((1.7 + 2.1 * liveTuft + 1.5 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim * mix(0.15, 1.0, liveLip) + 2.2 * liveUp * liveUp * liveLip + mix(0.6, 0.08, liveEast) * liveCrown) * max(liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh), liveCrown)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
   liveCrest *= 1.6;
   liveOver = liveCrest / ${SUN_TOP};
-  reflectedLight.directDiffuse += mix(0.4, 1.0, liveBlade) * liveCrest / pow(1.0 + abs(liveOver * liveOver * liveOver), vec3(0.3333));
+  reflectedLight.directDiffuse += mix(0.4, 1.0, liveBlade) * liveCrest / pow(max(1.0 + abs(liveOver * liveOver * liveOver), 1.0), vec3(0.3333));
   // A grain of dew and the pixel it falls in are together no narrower than a cell and a fifth, with the same light in all.
   vec3 liveAt = vBasePos * 7.5;
   float liveWide = clamp((1.22 - max(length(dFdx(liveAt)), length(dFdy(liveAt)))) / 0.42, 1.0, 2.9);
@@ -329,7 +329,7 @@ ${SHADE}
   float liveGrazeM = clamp((dot(liveSide, liveGrazeDir) + 0.14) / 1.14, 0.0, 1.0);
   vec3 liveLowSun = diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.78, 0.66) * (${ROCK.flank.toFixed(2)} * 2.4 * liveGraze * liveGraze * smoothstep(0.1, 0.7, liveGraze) * (0.008 + 1.25 * liveGrazeM * liveGrazeM) * smoothstep(0.2, 0.55, dot(liveSide, liveGrazeDir)) * mix(0.3, mix(0.3, 1.5, baseRidge * baseRidge) * mix(0.65, 1.2, baseDetail.b) * (1.0 - 0.6 * baseCrack), baseBark) * baseAo);
   vec3 liveOver = liveLowSun / ${SUN_TOP};
-  reflectedLight.directDiffuse += liveLowSun / pow(1.0 + abs(liveOver * liveOver * liveOver), vec3(0.3333));
+  reflectedLight.directDiffuse += liveLowSun / pow(max(1.0 + abs(liveOver * liveOver * liveOver), 1.0), vec3(0.3333));
   vec3 liveSkin = diffuseColor.rgb * RECIPROCAL_PI * (1.0 - baseBark) * baseAo;
   reflectedLight.directDiffuse += liveSkin * (liveKeyC * 0.1 * liveWrap * liveWrap + uRigCardCol * 0.12 * liveCardWrap * liveCardWrap) * mix(0.4, 1.0, liveOpen);
   reflectedLight.directSpecular += (liveKeyC * pow(abs(liveNh), 60.0) * 0.5 + uRigCardCol * pow(abs(liveCh), 50.0) * 0.4) * baseAo * mix(0.6, 0.1, baseBark);
