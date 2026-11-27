@@ -27,9 +27,9 @@ const LAMP_SHIFT: Vec3 = [-4, 0, -8]
 const PUMPKIN_ON_WOOD = { power: 8, reachMm: 6, wrap: 0.1 }
 const POND_ON_WOOD = { power: 2, reachMm: 22, wrap: 0.2 }
 const FILL_ON_WOOD = { power: 36, reachMm: 9, wrap: 0.5 }
-const EDGE_ON_WOOD = { power: 70, reachMm: 6, wrap: 0.3 }
+const EDGE_ON_WOOD = { power: 70, reachMm: 4, wrap: 0.3 }
 const FILL_FROM: Vec3 = [7, 6, 10]
-const EDGE_FROM: Vec3 = [9, 4, -3]
+const EDGE_FROM: Vec3 = [5, 14, -3]
 const SKY: [number, number, number] = [0, 1, 1.1]
 const EDGE_TONE: [number, number, number] = [0.5, 1, 0.8]
 const GROUP = { power: 0.06, reachMm: 5.5, along: 0.72 }
@@ -49,8 +49,8 @@ const GLINT_PUMPKIN = { power: 0.9, reachMm: 8 }
 const GLINT_POND = { power: 0.05, reachMm: 24 }
 // The approved bark is black and wet: on the side turned from the lamp the trunk's edge takes a soft grey green line from
 // the air. It is read off the limb's own round, not the bark's relief, so it is one even edge and not a row of bright
-// ridges, and it stays on the trunk: the boughs above keep their warm ember rims.
-const RIM = { tone: [0.55, 0.66, 0.6] as [number, number, number], power: 0.5, sharp: 3, relief: 0.08, ridge: [0.9, 0.7] as [number, number], axis: [2, 12] as [number, number], far: [0, 0.6] as [number, number], at: [3, 7, 3] as Vec3, reachMm: 7 }
+// ridges. Below the first fork it fades out over `fade` (heights on the trunk), so the foot's far side is as dark as the body.
+const RIM = { tone: [0.55, 0.66, 0.6] as [number, number, number], power: 0.5, sharp: 3, relief: 0.08, ridge: [0.9, 0.7] as [number, number], axis: [2, 12] as [number, number], far: [0, 0.6] as [number, number], at: [3, 7, 3] as Vec3, reachMm: 7, fade: [10, 13] as [number, number] }
 
 const clock = { value: 0 }
 const emberGain = { value: EMBER_GAIN }
@@ -102,11 +102,12 @@ function barkHook(shader: Shader): void {
   const [low, high] = RIM.axis.map((h): Vec3 => placePoint([trunkAxis(h)[0], h, trunkAxis(h)[1]])) as [Vec3, Vec3]
   const span = Math.hypot(high[0] - low[0], high[1] - low[1], high[2] - low[2])
   const along: Vec3 = [(high[0] - low[0]) / span, (high[1] - low[1]) / span, (high[2] - low[2]) / span]
+  const fade = RIM.fade.map((h) => ((h - RIM.axis[0]) / (RIM.axis[1] - RIM.axis[0])) * span) as [number, number]
   shader.vertexShader = shader.vertexShader
-    .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\nvarying vec3 vRound;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
-    .replace('#include <project_vertex>', `#include <project_vertex>\nvRim = (modelViewMatrix * vec4(${vec3(placePoint(RIM.at))}, 1.0)).xyz;\nvec3 rimOut = transformed - ${vec3(low)};\nvRound = normalMatrix * (rimOut - ${vec3(along)} * dot(rimOut, ${vec3(along)}));\n${lit.map((l, i) => `vGlint${i} = (modelViewMatrix * vec4(${vec3(l.at)}, 1.0)).xyz;`).join('\n')}`)
+    .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\nvarying vec3 vRound;\nvarying float vRimUp;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
+    .replace('#include <project_vertex>', `#include <project_vertex>\nvRim = (modelViewMatrix * vec4(${vec3(placePoint(RIM.at))}, 1.0)).xyz;\nvec3 rimOut = transformed - ${vec3(low)};\nvRimUp = dot(rimOut, ${vec3(along)});\nvRound = normalMatrix * (rimOut - ${vec3(along)} * dot(rimOut, ${vec3(along)}));\n${lit.map((l, i) => `vGlint${i} = (modelViewMatrix * vec4(${vec3(l.at)}, 1.0)).xyz;`).join('\n')}`)
   shader.fragmentShader = shader.fragmentShader
-    .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\nvarying vec3 vRound;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
+    .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\nvarying vec3 vRound;\nvarying float vRimUp;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
     .replace(
       '#include <lights_fragment_end>',
       `#include <lights_fragment_end>
@@ -131,7 +132,7 @@ ${lit
   rimN *= inversesqrt(max(dot(rimN, rimN), 1e-6));
   vec3 rimOff = vRim + vViewPosition;
   float rimNear = dot(rimOff, rimOff) / ${(RIM.reachMm * RIM.reachMm).toFixed(1)};
-  float rimEdge = pow(clamp(1.0 - dot(rimN, glintV), 0.0, 1.0), ${RIM.sharp.toFixed(1)}) * smoothstep(${RIM.far[0].toFixed(2)}, ${RIM.far[1].toFixed(2)}, -dot(rimN, rimL));
+  float rimEdge = pow(clamp(1.0 - dot(rimN, glintV), 0.0, 1.0), ${RIM.sharp.toFixed(1)}) * smoothstep(${RIM.far[0].toFixed(2)}, ${RIM.far[1].toFixed(2)}, -dot(rimN, rimL)) * smoothstep(${fade[0].toFixed(3)}, ${fade[1].toFixed(3)}, vRimUp);
   reflectedLight.directSpecular += ${vec3(RIM.tone)} * (${RIM.power.toFixed(3)} * rimEdge * uTwinkle.z * (${RIM.ridge[0].toFixed(2)} + ${RIM.ridge[1].toFixed(2)} * smoothstep(${GLINT.ridge[0].toFixed(2)}, ${GLINT.ridge[1].toFixed(2)}, dot(vColor.rgb, vec3(0.3333)))) / (1.0 + rimNear * rimNear));
 }`,
     )
