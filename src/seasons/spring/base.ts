@@ -229,7 +229,9 @@ ${SHADE}
   // The dusk in the room is cool and comes from in front and above: it is what the stones and the moss in the base's own
   // shade are seen by, and it falls on each grain and tuft by the way that one faces, so the shade keeps its grain.
   float liveFill = clamp(dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(-0.25, 0.62, 0.74))) * 0.6 + 0.4, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * mix(vec3(0.8, 1.0, 0.9), vec3(1.08, 0.96, 0.84), baseMoss * smoothstep(30.0, 38.0, vBasePos.y)) * dot(liveSunC, vec3(0.3333)) * (mix(${ROCK.fill.toFixed(2)}, ${ROCK.mossFill.toFixed(2)}, baseMoss) * mix(0.2 + 0.8 * liveFill * liveFill, (0.3 + 0.7 * liveFill * liveFill) * (mix(0.55, 0.85, smoothstep(30.0, 38.0, vBasePos.y)) + 0.9 * smoothstep(0.45, 0.85, baseMossD.b)) * mix(0.9, mix(7.0, 4.4, smoothstep(-45.0, -5.0, vBasePos.x)), smoothstep(30.0, 38.0, vBasePos.y)), baseMoss) * mix(0.25 + 0.75 * baseAo, 0.3 + 0.7 * baseAo, baseMoss) + mix(0.45, 1.0, baseMoss));
+  float liveRoll = baseMoss * smoothstep(30.0, 38.0, vBasePos.y);
+  vec3 liveOlive = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.6, 0.1))) * vec3(1.0, 0.95, 0.8), liveRoll * mix(0.55, 0.3, smoothstep(-45.0, -5.0, vBasePos.x)));
+  reflectedLight.indirectDiffuse += liveOlive * RECIPROCAL_PI * mix(vec3(0.8, 1.0, 0.9), vec3(1.0, 0.95, 0.95), liveRoll) * dot(liveSunC, vec3(0.3333)) * (mix(${ROCK.fill.toFixed(2)}, ${ROCK.mossFill.toFixed(2)}, baseMoss) * mix(0.2 + 0.8 * liveFill * liveFill, (0.3 + 0.7 * liveFill * liveFill) * (mix(0.55, 0.85, smoothstep(30.0, 38.0, vBasePos.y)) + 0.9 * smoothstep(0.45, 0.85, baseMossD.b)) * mix(0.9, mix(6.5, 3.0, smoothstep(-45.0, -5.0, vBasePos.x)), smoothstep(30.0, 38.0, vBasePos.y)), baseMoss) * mix(0.25 + 0.75 * baseAo, 0.3 + 0.7 * baseAo, baseMoss) + mix(0.45, 1.0, baseMoss));
   // The low sun behind comes through the blossom and grazes the right flank: warm, and strongest on whatever stands out.
   vec3 liveGrazeDir = normalize(mat3(viewMatrix) * vec3(0.9, 0.25, -0.2));
   float liveGrazeM = clamp((dot(liveMacro, liveGrazeDir) + 0.14) / 1.14, 0.0, 1.0);
