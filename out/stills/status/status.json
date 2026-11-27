@@ -1,45 +1,46 @@
 {
-  "number": 220,
-  "time": "2026-11-27 17:01 UTC",
+  "number": 223,
+  "time": "2026-11-27 18:41 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 220 · 2026-11-27 17:01 UTC · Phase 6",
+    "Status 223 · 2026-11-27 18:41 UTC · Phase 6",
     "Phases 1 to 5 complete. Phase 6 in progress.",
-    "Landed since Status 219: chain 34 is on origin main (63914740, pushed 16:56 UTC). Fall's base carries its three cut and lit pumpkin faces and the shutter's fine motion is in. Measured on it: fall at rest M3 0.9354 at review against 0.8835 before, the base's part 0.970 against 0.883; M4 of shakes 1 to 4 0.9694, 0.8957, 0.9567, 0.9597; the whole test run 954 passed, 4 skipped; triangles at high 1,759,623 of 1,800,000 for fall, the largest of the four.",
-    "Chain 35 runs since 16:59 UTC with three parts: the mend of summer's pale patches under the glass (open item 255; its builder's pictures looked at, the patches are gone in them), the change of season's first reworked item (bases, rim and lamps dissolve smoothly at 4K) and the thirteenth pass of summer's tree. Its checks are not read yet and nothing of it is on origin.",
-    "Decision 200: the first item of the tree's fourteenth list (shade inside the crown) is a real step in the crown's depth by my look and is held for its second item, because by its builder's own rows the top over the core and the wing fell.",
-    "Open and below the bar: winter's ferns torn at film frame 668, summer's heap torn at 2108, the petals' fringes at 680 (with the change's builder); spring's dots under the mushrooms' rims (open item 259); summer's flame and star in the glass; a white round patch behind the lamp post at summer's close camera (open item 260).",
+    "Landed since Status 222: the eighth publish went live at 18:38:46 UTC from 948de11e, chain 35's head with 40 new first pictures of summer and fall. Read before it: in a clean copy of that commit the type check at exit 0, the whole test run 962 passed and 9 skipped in 68 files passed and 1 skipped, the build at exit 0 (engine 6d99d3a9aebc3136), the first pictures' check a pass; a fresh security reviewer on the same commit, no block and no warning, its 17 file hashes equal to a build made here without the sound files; a live check on a quiet helper machine, the plain address and fall, each in sight at 23 s with 0 console messages and 33 buttons, both pictures looked at; the upload read back through its own address, equal to the built files. Visibility: Organization. After it an unsigned request gets 401, as that visibility should. It carries chains 32 to 35 (summer's miniature, stone, tree and the mend of the pale patches under its glass; fall's base and air; the change of season's rework, item A; the shutter). It does not carry chain 36 or 37. Not verified: the published page on a real graphics card, on a phone, in Safari or Firefox, with its sound heard.",
+    "Chain 36 reached origin main at 18:25 UTC as bd0b2fcb, after the engine's hash and the sound tests were read on this machine (46 of 46) and the made files' commit was checked. Chain 37 was ordered at 18:27 UTC on the helper machine: fall's base with the sheaf (decision 204), the shutter's wait for a master's lock, the eighth publish's first pictures; not on origin main before its checks are read here.",
+    "Decision 207: fall's tree may leave the layout's 42 pad twigs undrawn in fall and grow its own from the same forks, in its own file with a test; the mark for sky ringed by wood is 4, what the trunk's nine limbs ring by themselves (its builder counted 1 to 4 in the approved). Decision 208, summer's falling sand: its builder found a shutter smear in its own two trial forms that nobody ordered and that dims the lines; it goes. Bar (a) of decision 205 counts the sheet alone, and loose grains are read apart on the strip, since a flying grain is bright for one frame at any one place by its nature; a change of the bar, not a pass of the old reading, by which the faster trial was over by 4 and 5 px. The rate becomes 3, 4, 5 turns if the form without the smear holds the bars, because the slower trial shows no travel in the hero view. By my eye the trial is still an orange band of cream strokes with dark gaps, a hank of straw; the rate does not mend that, the lists that follow have to.",
+    "Looked at: the fall tree's pictures with its builder's counts on the approved. The build's tree is a thicket of long straight sticks around a large ringed patch of sky; the approved has few boughs in S curves with hooked ends. The eleventh list goes at exactly that; its builder estimates about 36,000 triangles, inside the tree's present 37,058. Summer's air moves its push to about 19:45 UTC: in its calm film one far puff left in a single frame, which the rule forbids; it mends that first.",
+    "Open and below the bar: winter's ferns torn at film frame 668, summer's heap torn at 2108, the petals' fringes at 680; spring's dots under the mushrooms' rims (item 259); summer's flame and star in the glass; a white round patch behind the lamp post at summer's close camera (item 260); summer's falling sand; fall's tree; spring's base, a tall cake where the approved sinks the glass into a mound.",
     "All four seasons remain below the bar. Sound credits 7,420 of 10,000.",
-    "phase 6: 38.20 h used of its 12.00 h box",
-    "allowance (after the review): 38.20 h used of 12.00 h allowed",
+    "phase 6: 39.86 h used of its 12.00 h box",
+    "allowance (after the review): 39.86 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-220-1.jpg",
-      "caption": "Fall at rest on chain 34 with the base's cut faces, approved picture left and build right, on origin now, below the bar",
+      "file": "out/stills/status/status-223-1.jpg",
+      "caption": "The four seasons as the app opens in the eighth publish",
       "w": 1200,
-      "h": 536
+      "h": 677
     },
     {
-      "file": "out/stills/status/status-220-2.jpg",
-      "caption": "Fall after its landing on chain 34, on origin now, below the bar",
+      "file": "out/stills/status/status-223-2.jpg",
+      "caption": "The live page of the eighth publish opened at fall with its controls, read on a helper machine",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-220-3.jpg",
-      "caption": "Summer after its landing, the pale patches on the base above and gone with the mend below, in chain 35, not on origin yet",
+      "file": "out/stills/status/status-223-3.jpg",
+      "caption": "Fall's tree, approved picture left and build right, a thicket where the approved has few curved boughs, below the bar",
       "w": 1200,
-      "h": 660
+      "h": 900
     },
     {
-      "file": "out/stills/status/status-220-4.jpg",
-      "caption": "Summer's tree, approved picture left, main in the middle, the fourteenth list's first item right, held for its second item, below the bar",
-      "w": 1197,
-      "h": 311
+      "file": "out/stills/status/status-223-4.jpg",
+      "caption": "Summer's falling sand at 4K at four times, film frames 1754 to 1757, a trial its builder draws again without its smear, below the bar",
+      "w": 1200,
+      "h": 297
     }
   ]
 }
