@@ -73,8 +73,8 @@ export interface Stage {
   setAir?(on: boolean): void
   setQuality?(level: StageQuality): void
   prepare?(season: string): Promise<void>
-  /** A shake has been asked that goes into `season`: until it has landed, nothing is made ready for any other season. */
-  expect?(season: string): void
+  /** A shake has been asked that goes into `season`: until it has landed, nothing is made ready for any other season. Gives what the shake waits for where the season is built and not yet in the GPU's hands. */
+  expect?(season: string): Promise<void> | void
   /** Whether the page worked on the season last asked for with `expect` in the time the frame drawn last took to come. It gave that time up itself: the frame says nothing of the machine's pace. Only a stage that has been pressed has this. */
   awaited?(): boolean
   /** Resolves when every season asked for so far is ready down to the GPU, so that the first frame of it makes nothing. */

@@ -1,12 +1,13 @@
 import * as THREE from 'three'
 import { config } from '../../config'
-import { stageShader, stageUniforms } from '../../core/materials'
+import { MODE, setPresence, stageShader, stageUniforms } from '../../core/materials'
 import { resolveBehind } from '../../core/accumulator'
 import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
 import { setGlass, shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
-import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
+import { LUMPS_LEAVE, SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
+import { LEAVE_OUT, leaveOut } from '../../shake/change'
 import type { KitMoment } from '../kit'
 import { season } from './base'
 
@@ -43,6 +44,8 @@ const frostUniforms = {
   uGlint: { value: new THREE.Vector4(look.glass.glint, look.slab.glint, 0.3, look.glass.light) },
   uGlassThru: { value: new THREE.Vector4(look.glass.through, look.glass.thin, look.glass.thick, look.glass.viewCut) },
   uTravel: { value: 0 },
+  uGone: { value: new THREE.Vector4(0, 0, 0, 0) },
+  uGoneAt: { value: new THREE.Vector4(0, 0, 1, 1) },
 }
 
 export const behindUniforms = {
@@ -277,11 +280,61 @@ float frostSlabGrow(vec2 xz) {
 }
 `
 
+// How the frost leaves the table in a change of season (change.ts, `leaveOut`). It is not thinned where it lies: every
+// piece of it goes out along the table on its own line from the stage's axis, all by the same length. A fern keeps its
+// length and its place round the foot, the ring of rime opens round the foot, and in every sample the frost is the whole
+// frost a little further out. `uGone.x` is that length in mm, 0 everywhere but in the leaving, and at 0 nothing below is
+// read. What is drawn at a place is the frost that lay `uGone.x` nearer the axis (`frostFrom`); the light falls on it where
+// it is now. From `thinFromMm` out it thins, all of it alike, and at `reachMm` it is gone: the pieces that go to the sides
+// are out of the film's frame by then, those that go behind the foot are not, and no piece is seen to stop.
+// In a frame whose samples join, every piece is moved along its own way by the sample's place in its pixel (`uGoneAt`,
+// `frostSlip`), so that its copies lie at even steps on the picture, and the map of each copy is drawn out along the way
+// (`uGone.yz`, the reach behind and ahead; one reading every `tapPx` pixels, at most `taps`, each pixel and sample at its
+// own places). What cannot be drawn out is made no finer than the step: the grain is read that much coarser and the glints
+// fade as the glass's do.
+// The map holds no frost nearer the axis than 37.8 mm (it begins under the foot), and its softest reading reaches 6.2 mm
+// further in: nothing that lay nearer than `bareMm` is worked out.
+const LEAVE = { ...LUMPS_LEAVE, bareMm: 30, tapPx: 1.5, taps: 16, glintFade: [0.1, 0.4] } as const
+// `uGone`: how far out the frost is (mm), how far its map is drawn out behind that and ahead of it (mm), and the samples of
+// the frame (0 where they do not join). `uGoneAt`: the sample's place in its pixel (x to the right, y up), the focal
+// length, all three in pixels, and the share of the frost that is left.
+const LEAVE_WAY_GLSL = `
+uniform vec4 uGone;
+uniform vec4 uGoneAt;
+// A millimetre of the way out from the axis at a place, on the picture, in pixels (x to the right, y up).
+vec2 frostWay(vec3 at) {
+  vec2 out2 = at.xz / max(length(at.xz), 1e-3);
+  vec4 a = projectionMatrix * (viewMatrix * vec4(at, 1.0));
+  vec4 b = projectionMatrix * (viewMatrix * vec4(at.x + out2.x, at.y, at.z + out2.y, 1.0));
+  if (a.w <= 0.0 || b.w <= 0.0) return vec2(0.0);
+  return (b.xy / b.w - a.xy / a.w) * uGoneAt.z / vec2(projectionMatrix[0][0], projectionMatrix[1][1]);
+}
+// The step from one sample to the next on the picture, in pixels.
+float frostStep(vec2 way) {
+  return (uGone.y + uGone.z) * ${(0.5 / LEAVE_OUT.tent).toFixed(6)} * length(way);
+}
+// The sample's place in its pixel, taken out along the way once the piece's travel in the frame fills a pixel of itself: mm.
+float frostSlip(vec2 way) {
+  float w2 = dot(way, way);
+  if (!(w2 > 0.0)) return 0.0;
+  return clamp(uGone.w * frostStep(way) - 1.0, 0.0, 1.0) * dot(uGoneAt.xy, way) / w2;
+}
+`
+const LEAVE_GLSL = `
+uniform mat4 projectionMatrix;
+${LEAVE_WAY_GLSL}
+vec2 frostFrom(vec2 at, float gone) {
+  float r = length(at);
+  return at * (max(r - gone, 0.0) / max(r, 1e-3));
+}
+`
+
 const SLAB_GLSL = `
 ${FROST_GLSL}
 uniform sampler2D uSlabMap;
 uniform vec4 uField;
 uniform vec4 uSlabLook;
+${LEAVE_GLSL}
 ${SLAB_LIGHT_GLSL}
 vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo, float open, float piled) {
   vec3 keyDir;
@@ -347,10 +400,20 @@ void main() {
   if (stageGone(c)) discard;
   if (frostHidden(uGrow.w)) discard;
   vec2 xz = vStageWorld.xz;
+  // The leaving (LEAVE, above): the frost drawn here lay nearer the axis, and rush is how much coarser its grain is read.
+  vec2 way = vec2(0.0);
+  float rush = 0.0;
+  if (uGone.x > 0.0) {
+    way = frostWay(vStageWorld);
+    rush = log2(max(frostStep(way), 1.0));
+    xz = frostFrom(xz, uGone.x + frostSlip(way));
+    if (length(xz) + uGone.y < ${LEAVE.bareMm.toFixed(1)}) discard;
+  }
+  vec3 lay = vec3(xz.x, vStageWorld.y, xz.y);
   vec2 uv = frostSlabUv(xz);
   vec2 guv = xz * uField.w;
-  vec3 grain = texture(uGrain, guv).rgb;
-  vec3 fine = texture(uGrain, guv * 3.0 + 0.37).rgb;
+  vec3 grain = texture(uGrain, guv, rush).rgb;
+  vec3 fine = texture(uGrain, guv * 3.0 + 0.37, rush).rgb;
   float fw = max(length(dFdx(uv)), length(dFdy(uv)));
   float blur = frostBlur(vStageWorld);
   float soft = clamp(blur * 0.5, 0.0, 1.0);
@@ -368,12 +431,39 @@ void main() {
   float h0 = m0.r * on;
   float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g) * max(frostStay(uGrow.w, m1.r, grain.r, m1.g), crumb);
   float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g) * max(frostStay(uGrow.w, m2.r, grain.r, m2.g), crumb);
+  // The leaving: the map is read at places along the way, most where the frost is in this sample and none past uGone.y
+  // behind it and uGone.z ahead of it, each pixel and sample at its own places.
+  float span = (uGone.y + uGone.z) * length(way);
+  float tapPx = ${LEAVE.tapPx.toFixed(2)} * exp2(blur);
+  int taps = int(clamp(ceil(span / tapPx), 1.0, ${LEAVE.taps.toFixed(1)}));
+  if (taps > 1) {
+    float wider = exp2(blur) * max(span / (float(taps) * tapPx), 1.0);
+    vec2 gx = dFdx(uv) * wider;
+    vec2 gy = dFdy(uv) * wider;
+    vec2 along = vec2(-vStageWorld.x, vStageWorld.z) / (max(length(vStageWorld.xz), 1e-3) * 2.0 * uField.x);
+    float turn = stageHash(vec3(gl_FragCoord.xy, uSeed + 0.37));
+    float behind = uGone.y / (uGone.y + uGone.z);
+    vec3 drawn = vec3(0.0);
+    for (int tap = 0; tap < taps; tap++) {
+      float q = (float(tap) + turn) / float(taps);
+      vec2 at = uv + along * (q < behind ? -uGone.y * (1.0 - sqrt(q / behind)) : uGone.z * (1.0 - sqrt((1.0 - q) / (1.0 - behind))));
+      vec3 t0 = textureGrad(uSlabMap, at, gx, gy).rgb;
+      vec3 t1 = textureGrad(uSlabMap, at + vec2(e, 0.0), gx, gy).rgb;
+      vec3 t2 = textureGrad(uSlabMap, at - vec2(0.0, e), gx, gy).rgb;
+      drawn.x += t0.r * smoothstep(0.0, FROST_SOFT, lvl - t0.g) * max(frostStay(uGrow.w, t0.r, grain.r, t0.g), crumb);
+      drawn.y += t1.r * smoothstep(0.0, FROST_SOFT, lvl - t1.g) * max(frostStay(uGrow.w, t1.r, grain.r, t1.g), crumb);
+      drawn.z += t2.r * smoothstep(0.0, FROST_SOFT, lvl - t2.g) * max(frostStay(uGrow.w, t2.r, grain.r, t2.g), crumb);
+    }
+    h0 = drawn.x / float(taps);
+    h1 = drawn.y / float(taps);
+    h2 = drawn.z / float(taps);
+  }
   float s0 = b0.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b0.g + 0.03) * frostStay(uGrow.w, b0.r, grain.r, b0.g);
   float s1 = b1.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b1.g + 0.03) * frostStay(uGrow.w, b1.r, grain.r, b1.g);
   float s2 = b2.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b2.g + 0.03) * frostStay(uGrow.w, b2.r, grain.r, b2.g);
-  float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
-  float sugar = mix(smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31)), 0.5, 0.9 * soft);
-  float clot = mix(smoothstep(0.3, 0.7, frostSugar(vStageWorld, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47)), 0.5, 0.6 * soft);
+  float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld))) * exp2(rush);
+  float sugar = mix(smoothstep(0.26, 0.74, frostSugar(lay, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31)), 0.5, 0.9 * soft);
+  float clot = mix(smoothstep(0.3, 0.7, frostSugar(lay, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47)), 0.5, 0.6 * soft);
   // The foot's image lies on the slab in front of the foot (the hero camera looks down at 12 degrees: a thing 1 mm up the foot
   // is mirrored 5 mm nearer the eye). There the thin film of rime gives way and the lumps stay, so the image of the gilt band
   // and the rope is broken by snow and not buried under it.
@@ -393,7 +483,7 @@ void main() {
   float open = 0.55 + 0.45 * smoothstep(-0.12, 0.2, h0 - s0 + 0.35 * thick);
   // Snow lies in lumps a few millimetres across, some of them in the shade of their neighbours: without that the frost is one
   // flat white (round 5: "flatter, sharper-edged white patches" where the approved image has "softer snowy thickness").
-  float lump = smoothstep(0.3, 0.75, frostSugar(vStageWorld, pxMm, ${look.slab.lumpMm.toFixed(3)}, 0.83));
+  float lump = smoothstep(0.3, 0.75, frostSugar(lay, pxMm, ${look.slab.lumpMm.toFixed(3)}, 0.83));
   vec3 col = frostSlabLight(n, vStageWorld, albedo, open, 0.0) * (0.7 + 0.6 * sugar) * (1.0 - ${look.slab.lumpSheet.toFixed(3)} * (1.0 - lump));
   vec3 spark = frostGlints(xz, pxMm, vec3(0.0, 1.0, 0.0), v, ${look.slab.room.toFixed(3)}) * uGlint.y * (0.05 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha) * thick * (1.0 - 0.9 * soft) * (1.0 - frostShade(xz));
   // Melt water round the frost: a few millimetres past its edge the slab is wet and darker, so the frost does not end on dry wood.
@@ -401,6 +491,10 @@ void main() {
   float wet = smoothstep(0.012, 0.09, w0.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - w0.g + 0.03) * frostStay(uGrow.w, w0.r, grain.r, w0.g)) * ${look.slab.wet.toFixed(3)};
   float cover = alpha + wet * (1.0 - ${IMAGE_CLEAR.toFixed(2)} * imageZone) * (1.0 - alpha);
   gl_FragColor = vec4(col * alpha + spark, cover);
+  if (uGone.x > 0.0) {
+    cover *= uGoneAt.w;
+    gl_FragColor = vec4((col * alpha + spark * (1.0 - smoothstep(${LEAVE.glintFade[0].toFixed(2)}, ${LEAVE.glintFade[1].toFixed(2)}, frostStep(way)))) * uGoneAt.w, cover);
+  }
   if (uDiag != 0) {
     if (alpha < 0.3) discard;
     gl_FragColor = stageDiag(albedo, n, 0.0, c, fw / uField.y);
@@ -412,23 +506,32 @@ ${SLAB_GLSL}
 varying vec3 vFrostN;
 varying vec4 vFrostOn;
 varying float vFrostT;
+varying vec4 vFrostLay;
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
   if (frostHidden(uGrow.w)) discard;
   if (vFrostOn.x < 0.03) discard;
   vec2 xz = vStageWorld.xz;
+  // The leaving (LEAVE, above): where this piece lay, and how much coarser its grain is read.
+  vec3 lay = vStageWorld;
+  float rush = 0.0;
+  if (uGone.x > 0.0) {
+    lay = vFrostLay.xyz;
+    xz = lay.xz;
+    rush = log2(max(vFrostLay.w, 1.0));
+  }
   vec2 guv = xz * uField.w;
-  vec3 grain = texture(uGrain, guv).rgb;
-  vec3 coarse = texture(uGrain, guv * 0.31 + 0.61).rgb;
-  vec3 fern = texture(uSlabMap, frostSlabUv(xz), 1.0).rgb;
+  vec3 grain = texture(uGrain, guv, rush).rgb;
+  vec3 coarse = texture(uGrain, guv * 0.31 + 0.61, rush).rgb;
+  vec3 fern = texture(uSlabMap, frostSlabUv(xz), 1.0 + rush).rgb;
   float lvl = frostSlabGrow(xz) - FROST_START + (grain.r - 0.33) * 0.07;
   float leaf = fern.r * smoothstep(0.0, FROST_SOFT, lvl - fern.g);
-  float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
+  float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld))) * exp2(rush);
   float soft = clamp(frostBlur(vStageWorld) * 0.5, 0.0, 1.0);
-  float sugar = mix(smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31)), 0.5, 0.9 * soft);
-  float sugar2 = mix(smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.63)), 0.5, 0.9 * soft);
-  float clot = mix(smoothstep(0.3, 0.7, frostSugar(vStageWorld, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47)), 0.5, 0.6 * soft);
+  float sugar = mix(smoothstep(0.26, 0.74, frostSugar(lay, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31)), 0.5, 0.9 * soft);
+  float sugar2 = mix(smoothstep(0.26, 0.74, frostSugar(lay, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.63)), 0.5, 0.9 * soft);
+  float clot = mix(smoothstep(0.3, 0.7, frostSugar(lay, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47)), 0.5, 0.6 * soft);
   float edge = vFrostOn.z * vFrostOn.x;
   float from = ${look.slab.edge.toFixed(3)} * (0.55 * sugar + 0.45 * clot) * (1.0 - 0.5 * leaf) * (1.0 - 0.6 * soft);
   float alpha = smoothstep(from, from + 0.42 + 0.5 * soft, edge);
@@ -441,10 +544,14 @@ void main() {
   float open = vFrostOn.w * (0.86 + 0.14 * alpha);
   float deep = (0.22 + 0.78 * vFrostOn.y) * smoothstep(0.1, 0.75, alpha);
   vec3 albedo = mix(${vec(SNOW.thin)}, ${vec(SNOW.body)}, deep) * (0.9 + 0.16 * leaf);
-  float lump = smoothstep(0.3, 0.75, frostSugar(vStageWorld, pxMm, ${look.slab.lumpMm.toFixed(3)}, 0.83));
+  float lump = smoothstep(0.3, 0.75, frostSugar(lay, pxMm, ${look.slab.lumpMm.toFixed(3)}, 0.83));
   vec3 col = frostSlabLight(n, vStageWorld, albedo, open, deep) * (0.58 + 0.62 * sugar + 0.22 * clot) * (1.0 - ${look.slab.lump.toFixed(3)} * (1.0 - lump));
   vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v, ${look.slab.room.toFixed(3)}) * uGlint.y * ${(1.3 * look.slab.heapGlint).toFixed(3)} * alpha * open * (1.0 - 0.9 * soft) * (1.0 - frostShade(xz));
   gl_FragColor = vec4(col * alpha + spark, alpha);
+  if (uGone.x > 0.0) {
+    if (alpha * uGoneAt.w < 0.012) discard;
+    gl_FragColor = vec4(col * alpha + spark * (1.0 - smoothstep(${LEAVE.glintFade[0].toFixed(2)}, ${LEAVE.glintFade[1].toFixed(2)}, vFrostLay.w)), alpha) * uGoneAt.w;
+  }
   if (uDiag != 0) {
     if (alpha < 0.3) discard;
     gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);
@@ -453,6 +560,7 @@ void main() {
 
 let glass: THREE.Mesh | null = null
 let surface: THREE.Group | null = null
+let onSlab: { sheet: THREE.Mesh; shapes: THREE.Mesh } | null = null
 
 export async function prepare(): Promise<void> {
   await prepareModel(MODEL)
@@ -540,7 +648,7 @@ function makeGlass(): THREE.Mesh {
 }
 
 function makeSurface(): THREE.Group {
-  const shared = { ...roomUniforms, ...lightUniforms, uSlabMap: frostUniforms.uSlabMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uTouch: frostUniforms.uTouch, uField: frostUniforms.uField, uSlabLook: frostUniforms.uSlabLook, uGlint: frostUniforms.uGlint, ...slabLightUniforms }
+  const shared = { ...roomUniforms, ...lightUniforms, uSlabMap: frostUniforms.uSlabMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uTouch: frostUniforms.uTouch, uField: frostUniforms.uField, uSlabLook: frostUniforms.uSlabLook, uGlint: frostUniforms.uGlint, uGone: frostUniforms.uGone, uGoneAt: frostUniforms.uGoneAt, ...slabLightUniforms }
   const sheet = new THREE.Mesh(
     geometry(MODEL, 'sheet'),
     stageShader({ part: SLAB_PART, standIn: false, change: 'surface-dressing', textured: true, texels: 1 / frostUniforms.uField.value.y, uniforms: shared, fragment: SHEET, params: { ...veil } }),
@@ -555,7 +663,7 @@ function makeSurface(): THREE.Group {
       standIn: false,
       change: 'surface-dressing',
       uniforms: shared,
-      vertexPars: `attribute vec2 uv1;\nuniform vec4 uGrow;\nuniform vec4 uFoot;\nuniform vec4 uLean;\nvarying vec3 vFrostN;\nvarying vec4 vFrostOn;\nvarying float vFrostT;\n${SLAB_GROW_GLSL}`,
+      vertexPars: `attribute vec2 uv1;\nuniform vec4 uGrow;\nuniform vec4 uFoot;\nuniform vec4 uLean;\nvarying vec3 vFrostN;\nvarying vec4 vFrostOn;\nvarying float vFrostT;\nvarying vec4 vFrostLay;\n${SLAB_GROW_GLSL}${LEAVE_WAY_GLSL}`,
       vertexMain: `
 float frostLoose = step(1.5, uv1.y);
 float frostLvl = frostSlabGrow((modelMatrix * vec4(position, 1.0)).xz) - 0.07 - uv.x;
@@ -567,6 +675,14 @@ float frostOn = mix(smoothstep(0.0, 0.14, frostLvl), smoothstep(0.0, 0.06, frost
 vec3 frostAt = vec3(position.x, position.y * frostOn + 3.2 * frostToGo * frostGo, position.z);
 frostAt.xz -= (dot(position.xz, position.xz) > 0.0 ? normalize(position.xz) : vec2(1.0, 0.0)) * ((uv1.y - 2.0) * 64.0 * frostToGo);
 vec4 frostW = modelMatrix * vec4(frostAt, 1.0);
+vFrostLay = vec4(frostW.xyz, 0.0);
+if (uGone.x > 0.0) {
+  vec2 frostOut = dot(frostW.xz, frostW.xz) > 0.0 ? normalize(frostW.xz) : vec2(1.0, 0.0);
+  frostW.xz += frostOut * uGone.x;
+  vec2 frostMm = frostWay(frostW.xyz);
+  frostW.xz += frostOut * frostSlip(frostMm);
+  vFrostLay.w = frostStep(frostMm);
+}
 vec4 frostV = viewMatrix * frostW;
 gl_Position = projectionMatrix * frostV;
 vStageWorld = frostW.xyz;
@@ -582,6 +698,7 @@ vFrostT = uv.x;`,
   )
   shapes.renderOrder = 3
   shapes.frustumCulled = false
+  onSlab = { sheet, shapes }
   return new THREE.Group().add(shapes, sheet)
 }
 
@@ -606,6 +723,7 @@ export function setGrowth(glassLevel: number, slabLevel: number, keepGlass: numb
 const FAR_MM = 1e3
 const before = { seed: NaN, index: -1, of: 0, t: 0, at: [0, 0, 0, 0, 0, 0] }
 export function update(moment: KitMoment): void {
+  leave(moment)
   const s = moment.frame.sample
   if (s === null) {
     frostUniforms.uTravel.value = 0
@@ -625,4 +743,22 @@ export function update(moment: KitMoment): void {
   before.of = s.of ?? 0
   before.t = s.t
   before.at = at
+}
+
+// The leaving on the table (`LEAVE`): how far out the frost is drawn in this sample, and in a frame whose samples join, how
+// far its map is drawn out behind that and ahead of it. The sheet is drawn that much wider, to hold it, and while the frost
+// goes the table's front does not thin it.
+function leave(moment: KitMoment): void {
+  const f = moment.frame
+  const s = f.sample
+  const go = leaveOut(f.from !== f.to && f.from.season === season, f.change, s, LEAVE.reachMm, LEAVE.thinFromMm)
+  frostUniforms.uGone.value.set(go.out, go.behind, go.ahead, go.of)
+  frostUniforms.uGoneAt.value.set(s?.px ?? 0, -(s?.py ?? 0), f.focalPx, go.kept)
+  if (!onSlab) return
+  const wide = (frostUniforms.uField.value.x + go.out) / frostUniforms.uField.value.x
+  onSlab.sheet.scale.set(wide, 1, wide)
+  for (const mesh of [onSlab.sheet, onSlab.shapes]) {
+    mesh.visible = go.run < 1
+    if (go.run > 0) setPresence(mesh.material as THREE.Material, MODE.always, 1)
+  }
 }
