@@ -12,14 +12,17 @@ import { holdStorm, veil } from './veil'
 // 1. The flare: the reflection of the one strong warm light (the rig's key) on the outside of the glass. It sits where a sphere
 //    mirrors that light toward the eye (the half vector between the eye and the light), which from the hero camera is the upper
 //    right shoulder, at the limb. It is a white patch on the outline, drawn out along it, with the soft bloom and the
-//    warm glow a lens draws round it, and a star of seven thin rays that stand out from it into the dark of the room. It
-//    kindles on the landing.
+//    warm glow a lens draws round it, and a star of thin rays that stand out from it into the room: seven wedges and
+//    a needle along each, four needles more between them. The rays lift what lies behind them, so they stand on the
+//    room's pale lights as on its dark. All of that is the lens's and is drawn last of all; the hot line the sun leaves
+//    down the limb is the glass's and is drawn with the globe. It kindles on the landing.
 // 2. The pool: the same light focused by the globe onto the slab, in front of the globe and to its left, inside the globe's own
 //    shadow: a soft pool of warm light, brightest at a knot by the foot, and inside it a few broad curved bands of the water's
 //    light, soft edged and never a net or a star. There is no pool before the landing; after it the pool swells, its bands
 //    slide into place and come to rest, and they breathe a little while the water is still.
-// 3. The wall: the sun, bent by the globe, burns on the inside of the glass low on the far side: a sheaf of threads of
-//    light that follow the limb, one white mass where they begin and fraying up the limb into single threads. The same
+// 3. The wall: the sun, bent by the globe, burns on the inside of the glass low on the far side: a sheaf of hairs of
+//    light that follow the limb, one white body without a gap along their middles, which ends up the limb in pointed
+//    tongues of unequal length, thins to a round foot and dies away into the warm halo round it. The same
 //    billboard carries the warm haze of the liquid at rest, which lies low and behind
 //    the miniature; above the roof line it is no more than a thin even veil, so the dark room reads through the whole
 //    upper half of the glass. And it carries the glass's own reflections: one cream ribbon in lanes under the top, one cool slab
@@ -75,24 +78,47 @@ export const look = {
     // the star: seven thin rays stand out from the middle of the patch into the dark of the room, counted on the
     // approved picture, and none into the ball. Each: its angle from the outline's outward normal (degrees, counter
     // clockwise), how far it reaches (in the quad's half width), the tangent of half the angle it opens by, how bright
-    // beside the longest. A ray is a needle: brightest and thinnest where it leaves the patch, and it falls off along
-    // its reach as the approved's do, by `rayFall` to the reach (the power of e) over its growing width, which
-    // `rayRoot` keeps from nothing at the root. `ray` is how bright the longest is, `rayThin` half the width a ray has
-    // at its root, `rayHue` its colour, copper as the approved's are
+    // beside the longest, and how strong its lift is beside the strongest. A ray is a wedge of light: brightest and
+    // thinnest where it leaves the patch, and it falls off along its reach as the approved's do, by `rayFall` to the
+    // reach (the power of e) over its growing width, which `rayRoot` keeps from nothing at the root. `ray` is how
+    // bright the longest is, `rayThin` half the width a ray has at its root, `rayHue` its colour, copper as the
+    // approved's are. That light is dealt to the approved picture, where the room behind the star is dark. Where a
+    // pale light of the room lies behind the star, light of that strength is lost on it, so a ray besides lifts what
+    // lies behind it: `lift` is by how many times its own strength the strongest lifts it at its root, falling along
+    // the reach half as fast as the light does and over `liftRoot`. On a dark room that is next to nothing, on a
+    // pale light it is the ray. The flare's own light is not lifted: it is added after the lift, in the one pass.
+    // The lift has the wedge's shape by the share `liftWedge` and, whole, the shape of a
+    // needle along the ray's middle: `needle` is half its width at the root and what it gains to one half width of
+    // the quad along the ray; it is never drawn thinner than `needleLeast` pixels, only fainter, so it melts into
+    // its wedge in a small picture and stands in a large one. The needle adds a little light of its own too
+    // (`needleAdd`, `needleHue`). `needles` are four more that have no wedge, between the seven: angle, reach, lift
     rays: [
-      [-65.8, 0.9, 0.065, 1],
-      [-83.8, 0.85, 0.035, 0.84],
-      [-27.3, 0.9, 0.07, 0.3],
-      [-8.8, 1.6, 0.07, 0.042],
-      [13.7, 0.35, 0.07, 0.3],
-      [39.2, 0.6, 0.12, 1],
-      [68.2, 0.9, 0.06, 0.5],
+      [-65.8, 0.9, 0.065, 1, 1],
+      [-83.8, 0.85, 0.035, 0.84, 0.6],
+      [-27.3, 0.9, 0.07, 0.3, 0.5],
+      [-8.8, 1.6, 0.07, 0.042, 0.14],
+      [13.7, 0.35, 0.07, 0.3, 0.3],
+      [39.2, 0.6, 0.12, 1, 0.5],
+      [68.2, 0.9, 0.06, 0.5, 0.6],
+    ] as const,
+    needles: [
+      [-46, 0.7, 0.35],
+      [2, 0.75, 0.35],
+      [26, 0.55, 0.3],
+      [52, 0.8, 0.4],
     ] as const,
     ray: 0.33,
     rayFall: 5.5,
     rayRoot: 0.05,
     rayThin: 0.005,
     rayHue: [1, 0.72, 0.42] as const,
+    lift: 2.5,
+    liftRoot: 0.15,
+    liftWedge: 0.6,
+    needle: [0.0012, 0.008] as const,
+    needleLeast: 1,
+    needleAdd: 0.04,
+    needleHue: [1, 0.9, 0.75] as const,
     // down the limb from the patch the outline itself is hot: one thin line just inside it (`line`: how strong, how far
     // inside the outline it lies and half its width, how far down the limb its middle lies and half its length there,
     // all in the quad's half width)
@@ -114,84 +140,159 @@ export const look = {
     peak: 0.95,
     color: [1, 0.74, 0.44] as const,
     // the hot patch: the sun, bent by the globe, lands on the inside of the glass low on the far side and burns there.
-    // It is a sheaf of threads of light that follow the limb, dealt to the approved picture, where a cut across the
-    // sheaf crosses up to eleven separate lines (seven at the bearing 208, eleven at 195 and at 189) and the white
-    // frays into nine ends between the bearings 201 and 193. `hot` is how strong the white ones are, `hotAt` where
-    // the amber glow round the sheaf has its middle (share of the radius, radians up the limb from the wall's middle).
-    // Each thread (`threads`) is thirteen numbers: the bearing of its foot and of its tip (degrees from the right,
-    // counter clockwise: it runs up the limb), how deep inside the outline it stands at its foot and at its tip (share
-    // of the radius), half its width, how bright, 1 if it is a warm thread and 0 if a white one, over how many degrees
-    // it draws to a point at its tip and over how many it comes in at its foot, how bright it is at its tip beside its
-    // foot, what share of its light lies beside it in a skirt three times as wide, the share of a steep side (1: its
-    // light stands across it as a flat top with steep sides, 0: as a bell), and how many times longer than the others
-    // it comes in over at its foot in the storm. None is drawn thinner than a pixel, only fainter. In their order:
-    // nine beside the outline (the knot where the lines meet below, the copper between them, a second line, one that
-    // rises to a dash, short ones up the limb and one broad faint one under them); two cream margins of the mass
-    // toward the outline, drawn out to long points; the shoulder (a thin line, a block under it and a bar that leaves
-    // the block slanting inward) and the tongue with the cream before it; six broad white ones that lie so close that
-    // they are one body, each ending at its own bearing, and the heart over them; nine fingers that begin inside the
-    // white as one sheet and run on past its nose, each to its own end, so they part only at their points; three
-    // bright hairs that ride on the fingers near their ends; one thin thread under the mass's lower corner; six hairs
-    // past the first finger and past the upper end; three hairs inward of the mass and the faint light they stand in;
-    // and the glow below the foot, one broad warm one that runs on under the white ones' feet. No filled body lies
-    // under them. A white thread's colour goes by how much white lies at the place: `flameWarm` where it is faint,
-    // `hotColor` where it is strong, half way between them at `flameWarmHalf`; the warm ones are `threadWarm`. In the
-    // storm the liquid scatters the burn: every thread is 1 + `threadStorm` times as wide and as bright at its middle
-    // as at rest, its steep sides go, and each comes in over its own longer stretch (the thirteenth number, times
-    // 1 + `threadStorm`), so the sheaf swells into one torn cloud whose foot is ragged
+    // It is light drawn out along the limb in hairs, and no filled body lies under them. `hot` is how strong the white
+    // ones are, `hotAt` where the amber glow round them has its middle (share of the radius, radians up the limb from
+    // the wall's middle). The mass is the sheaf (`sheaf`, below): lanes side by side, each a hair. Round it stand single
+    // threads (`threads`), dealt to the approved picture. Each is thirteen numbers: the bearing of its foot and of its
+    // tip (degrees from the right, counter clockwise: it runs up the limb), how deep inside the outline it stands at
+    // its foot and at its tip (share of the radius), half its width, how bright, 1 if it is a warm thread and 0 if a
+    // white one, over how many degrees it draws to a point at its tip and over how many it comes in at its foot, how
+    // bright it is at its tip beside its foot, what share of its light lies beside it in a skirt three times as wide,
+    // the share of a steep side (1: its light stands across it as a flat top with steep sides, 0: as a bell), and how
+    // many times longer than the others it comes in over at its foot in the storm. A thread is a spindle: it thins to
+    // a needle toward its foot as toward its tip, so neither end is cut. None is drawn thinner than a pixel, only
+    // fainter. In their order: thirteen beside the outline (the knot where the lines meet below, two short spindles;
+    // the tan between the lines; a copper line and a cream streak beside it; one that rises to the mass and one that
+    // leaves it; copper and cream further up the limb, a dash at their end, and two broad faint ones under them); the
+    // cream margin of the mass toward the outline in two long ones, the tongue past its upper end and a hair before
+    // it; four hairs that leave the ragged upper edge; and three hairs inward of the mass with the faint light they
+    // stand in. The glow below the foot is the halo's (`sheaf`). A white thread's colour goes by how much white lies at the
+    // place: `flameWarm` where it is faint, `hotColor` where it is strong, half way between them at `flameWarmHalf`;
+    // the warm ones are `threadWarm`. In the storm the liquid scatters the burn: every thread is 1 + `threadStorm`
+    // times as wide and as bright at its middle as at rest, its steep sides go, and each comes in over its own longer
+    // stretch (the thirteenth number, times 1 + `threadStorm`), so the burn swells into one torn cloud whose foot is
+    // ragged
     hot: 11,
     hotAt: [0.9, -0.09] as const,
     threads: [
-      [214.2, 212.2, 0.0125, 0.0135, 0.005, 0.814, 0, 0.6, 0.6, 1, 0, 0, 1],
-      [212.5, 198, 0.016, 0.0149, 0.009, 0.295, 0, 3, 1.5, 0.4, 0, 0, 1],
-      [212.2, 201.5, 0.0278, 0.0263, 0.0032, 0.45, 0, 3, 0.6, 0.55, 0, 0, 1],
-      [204.5, 195, 0.0369, 0.0296, 0.0028, 0.067, 0, 0.8, 3, 1.7, 0, 0, 1],
-      [196.5, 188.5, 0.0222, 0.025, 0.0025, 0.146, 0, 2, 3, 1.4, 0, 0, 1],
-      [188, 185, 0.0235, 0.026, 0.0022, 0.357, 0, 1, 1, 1, 0, 0, 1],
-      [187.6, 184.4, 0.0139, 0.0169, 0.002, 0.224, 0, 1, 1, 1, 0, 0, 1],
-      [188.7, 182.8, 0.017, 0.0115, 0.002, 0.07, 1, 2, 1, 1, 0, 0, 1],
-      [200, 184, 0.0195, 0.026, 0.011, 0.034, 0, 1.5, 4, 1, 0, 0, 1],
-      [211.6, 201.6, 0.042, 0.0411, 0.009, 0.35, 0, 2.5, 2.2, 1.2, 0.1, 0, 1],
-      [211.8, 199.9, 0.059, 0.0575, 0.01, 0.35, 0, 2.5, 1.8, 1.4, 0.1, 0, 1],
-      [199.3, 195.2, 0.0406, 0.041, 0.003, 1.33, 0, 0.5, 0.5, 1, 0, 0, 1],
-      [198.4, 194.3, 0.0528, 0.0542, 0.0058, 1.299, 0, 0.5, 0.8, 1, 0, 1, 1],
-      [198.8, 192.3, 0.0588, 0.071, 0.0053, 1.299, 0, 0.6, 0.6, 1, 0, 1, 1],
-      [196.5, 189.6, 0.0588, 0.0584, 0.0075, 0.814, 0, 1, 1.5, 1, 0.1, 0, 1],
-      [191.6, 186.3, 0.0574, 0.0497, 0.0041, 1.33, 0, 0.9, 1.4, 1, 0, 1, 1],
-      [210.6, 205.6, 0.075, 0.0751, 0.0055, 1.2, 0, 1.2, 1.5, 0.8, 0.1, 0, 4],
-      [211.2, 201.4, 0.0888, 0.0872, 0.009, 0.95, 0, 1.2, 1.2, 0.6, 0.1, 0, 1.5],
-      [211.2, 199.4, 0.1034, 0.1016, 0.009, 0.95, 0, 1, 1.6, 0.4, 0.1, 0, 5],
-      [211.1, 199.2, 0.1175, 0.1157, 0.009, 0.95, 0, 1, 2, 0.4, 0.1, 0, 2.5],
-      [210.8, 200.6, 0.131, 0.1294, 0.009, 0.9, 0, 1.2, 1.4, 0.45, 0.1, 0, 4.5],
-      [210, 202.8, 0.1442, 0.1428, 0.009, 0.9, 0, 1.2, 1.8, 0.45, 0.1, 0, 2],
-      [208.5, 202.4, 0.096, 0.0949, 0.012, 0.4, 0, 1.5, 2, 1, 0, 0, 3.5],
-      [209, 191.4, 0.077, 0.0741, 0.0072, 0.9, 0, 1, 3, 1, 0.05, 1, 1.6],
-      [207, 192.3, 0.0893, 0.0855, 0.006, 0.85, 0, 1, 3.5, 1, 0.05, 1, 1],
-      [206.5, 193.6, 0.0967, 0.0944, 0.0074, 0.8, 0, 1, 4, 1, 0.05, 1, 2],
-      [205, 192.5, 0.107, 0.1038, 0.005, 0.85, 0, 1, 4, 1, 0.05, 1, 1.2],
-      [205, 194.3, 0.1155, 0.1137, 0.0076, 0.75, 0, 1, 4, 1, 0.05, 1, 1.8],
-      [205.5, 194.6, 0.1281, 0.1252, 0.0066, 0.85, 0, 1, 3.5, 1, 0.05, 1, 1],
-      [206.5, 195.9, 0.1367, 0.1349, 0.0064, 0.9, 0, 1, 3.5, 1, 0.05, 1, 1.5],
-      [208, 198.5, 0.1497, 0.1468, 0.0056, 0.85, 0, 1, 3, 1, 0.05, 1, 1],
-      [208.5, 200.4, 0.1582, 0.1564, 0.005, 0.6, 0, 1, 2.5, 1, 0.05, 1, 1.3],
-      [196.4, 195, 0.1048, 0.1046, 0.0028, 0.3, 0, 0.4, 0.5, 1, 0, 0, 1],
-      [197, 195.4, 0.1126, 0.112, 0.003, 0.3, 0, 0.4, 0.5, 1, 0, 0, 1],
-      [199, 196.2, 0.1262, 0.1253, 0.0035, 0.3, 0, 0.6, 0.8, 1, 0, 0, 1],
-      [210.4, 205.5, 0.171, 0.168, 0.0035, 0.55, 0, 1.2, 1.2, 0.8, 0, 0, 1],
-      [193.8, 189.6, 0.0768, 0.0749, 0.003, 0.435, 0, 0.5, 1, 1.8, 0, 0, 1],
-      [188, 183.8, 0.0885, 0.0874, 0.0026, 0.814, 0, 1, 1.2, 1.2, 0, 0, 1],
-      [187.3, 185.3, 0.0789, 0.0782, 0.002, 0.224, 0, 0.8, 0.8, 1, 0, 0, 1],
-      [188.2, 185.7, 0.0623, 0.06, 0.0022, 0.435, 0, 1, 1, 0.8, 0, 0, 1],
-      [188.9, 186.5, 0.1051, 0.105, 0.0024, 0.357, 0, 0.8, 0.8, 1, 0, 0, 1],
-      [196, 183.3, 0.0971, 0.0862, 0.002, 0.1, 1, 3, 2, 1, 0, 0, 1],
-      [202, 190.4, 0.1715, 0.1672, 0.0031, 0.8, 0, 1.5, 1.5, 0.7, 0, 1, 1],
-      [200.8, 193.2, 0.1838, 0.1795, 0.0032, 0.8, 0, 0.8, 0.8, 0.9, 0, 1, 1],
-      [200.2, 190.5, 0.1925, 0.1927, 0.0038, 0.4, 0, 0.6, 1.5, 0.9, 0, 1, 1],
-      [202.5, 196, 0.1919, 0.1914, 0.01, 0.134, 0, 2, 2, 0.8, 0, 0, 1],
-      [216.5, 208.5, 0.085, 0.1, 0.04, 0.03, 1, 1.5, 5.9, 5, 0, 0, 1],
+      [213.5, 212.3, 0.016, 0.016, 0.003, 0.6, 0, 0.5, 0.5, 1, 0.15, 0, 1],
+      [213.7, 212.4, 0.025, 0.025, 0.003, 0.7, 0, 0.5, 0.5, 1, 0.15, 0, 1],
+      [212.5, 198, 0.016, 0.0149, 0.009, 0.12, 0, 4, 3, 0.4, 0, 0, 1],
+      [211.5, 199, 0.0195, 0.0185, 0.002, 0.3, 1, 4, 3, 1, 0, 0, 1],
+      [212, 200, 0.0265, 0.0255, 0.003, 0.3, 0, 4, 4, 1, 0.2, 0, 1],
+      [212, 204, 0.0335, 0.032, 0.0024, 0.5, 0, 3, 3, 0.8, 0.2, 0, 1],
+      [204.5, 198.5, 0.0445, 0.041, 0.0025, 0.7, 0, 3, 3, 1, 0.15, 0, 1],
+      [203, 190, 0.0295, 0.028, 0.002, 0.15, 1, 4, 4, 1, 0, 0, 1],
+      [197.5, 186, 0.0255, 0.024, 0.0022, 0.3, 0, 4, 4, 1, 0.2, 0, 1],
+      [189, 184.8, 0.0235, 0.0215, 0.0022, 0.4, 0, 1.6, 1.6, 1, 0.1, 0, 1],
+      [200, 188, 0.039, 0.037, 0.002, 0.15, 1, 4, 4, 1, 0, 0, 1],
+      [198, 183, 0.032, 0.04, 0.012, 0.07, 1, 4, 5, 1, 0, 0, 1],
+      [200, 184, 0.0195, 0.026, 0.011, 0.034, 0, 3, 4, 1, 0, 0, 1],
+      [211.4, 198.5, 0.047, 0.046, 0.004, 0.45, 0, 4, 3, 0.9, 0.2, 0, 1],
+      [211.6, 196, 0.0565, 0.0545, 0.0045, 0.7, 0, 4, 3, 1, 0.2, 0, 1],
+      [198, 185.8, 0.053, 0.044, 0.0048, 1, 0, 5, 4, 0.9, 0.15, 0, 1],
+      [188.2, 186.4, 0.0612, 0.0606, 0.0018, 0.4, 0, 0.8, 0.8, 1, 0, 0, 1],
+      [195.5, 189.3, 0.0765, 0.0745, 0.0028, 0.8, 0, 3, 3, 1, 0.1, 0, 1],
+      [193, 183.8, 0.0905, 0.0845, 0.0024, 0.7, 0, 4, 4, 1.3, 0.1, 0, 1],
+      [194.2, 186, 0.096, 0.091, 0.0025, 0.15, 1, 3, 3, 1, 0.1, 0, 1],
+      [194.6, 192.6, 0.1075, 0.1075, 0.002, 0.4, 0, 0.9, 0.9, 1, 0, 0, 1],
+      [200.2, 191.4, 0.1665, 0.165, 0.0028, 0.6, 0, 4, 4, 0.9, 0.3, 0, 1],
+      [200, 192, 0.1745, 0.173, 0.0028, 0.5, 0, 3.5, 3.5, 1, 0.3, 0, 1],
+      [199.5, 194, 0.184, 0.183, 0.0025, 0.3, 0, 2.5, 2.5, 1, 0.3, 0, 1],
+      [201.5, 191.5, 0.171, 0.17, 0.012, 0.1, 0, 4, 4, 1, 0, 0, 1],
     ] as const,
+    // the sheaf: the mass of the burn, lanes of light side by side that follow the limb, each `lane` of the radius
+    // wide. Where the lanes are whole they close into one white body without a gap. A lane is a hair: it comes in
+    // softly at its foot, is as wide as its lane along its middle and draws out to a needle at its tip. The body's
+    // edge is ragged and never a comb: where a lane ends goes by its count across the sheaf in three waves, tongues,
+    // locks and curls (`tongue`, `lock`, `curl`, each: how many degrees, how many radians of the wave to a lane, where
+    // the wave begins), every wave a row of peaks with points, so neighbours end near one another and the edge
+    // stands in pointed tongues of unequal length; each lane ends within `fray` degrees of that besides, and of the
+    // lanes the share above the first of `far` runs on alone as a long hair, by up to the second in degrees, its
+    // point longer by the third and bright sooner along it by `farBright`. `lean` is how far a lane moves toward the outline to a degree up the limb, `wave`
+    // how the lanes swing about that, so that no two stretches run quite the same way (how far, how many radians to
+    // a degree up the limb and to the radius), `warp` how far they wander from even spacing (two waves: how many
+    // lanes, how many radians to the radius), `soft` the share of a lane its edge is soft over (and never less than
+    // a pixel), `bright` how bright a lane is beside a white thread and `dim` what the dimmest keeps of that. `tip`
+    // and `foot` are where the lanes end and begin: the bearing by the depth inside the outline (pairs: depth,
+    // bearing). The foot is round: the lanes of the middle reach furthest down and those of both flanks begin
+    // further up, so the body thins to its foot and no line crosses it. `side` is the share of the sheaf by the
+    // depth at its two flanks. The body is many times brighter than white, so only the last twentieth of a fall
+    // shows as one: the inner flank falls steeply to a quarter and runs out from a twentieth over a broad stretch,
+    // and it reads as a fade and never as a line. A tip draws to its point over `point` degrees, times a share
+    // between the two in `pointBy`, dealt by lane; a foot comes in over `come` degrees (`comeBy`), within
+    // `footTongue` (a wave as the tongues are) and `footFray` degrees of its line, and `come` is long for the same
+    // reason: the lanes' feet then die away side by side and do not stand as blunt fingers along the inner flank,
+    // which their starts make. `needle` is the share of its lane a hair keeps at its very
+    // end, `part` over how many point lengths it thins to that (a foot `footThin` times sooner, so it fades more
+    // than it thins), `wander` how far a thinning hair strays from the middle of its lane. Round the body lies its
+    // halo, the lens's bloom: `halo` of warm light (`haloColor`), whole inside the body (between the two depths of
+    // `haloIn`, and from `haloTip` degrees past the tips' line to `haloFoot` degrees short of the feet's) and falling
+    // off outside it by the distance alone, with no edge: across the limb to a third over `haloAcross` (toward the
+    // outline, inward), along it over `haloAlong` degrees (past the tips, past the feet). `haloEnd` is where it is
+    // gone whatever the distance: between two depths inward, and between two pairs of bearings at its ends. So the
+    // foot dies away into it and no patch stands apart under it. In
+    // the storm (`storm`) the tongues are longer by the first, the feet stray further by the second and come in over
+    // a stretch longer by the third, so the mass tears as the threads do
+    sheaf: {
+      lane: 0.0046,
+      lean: 0.0006,
+      wave: [0.003, 0.45, 40] as const,
+      warp: [0.3, 190, 0.2, 73] as const,
+      soft: 0.4,
+      bright: 2,
+      dim: 0.85,
+      tip: [
+        [0.058, 190.5],
+        [0.085, 192.2],
+        [0.105, 194],
+        [0.125, 196.5],
+        [0.145, 198.5],
+        [0.17, 199.5],
+        [0.195, 199.5],
+        [0.215, 201],
+        [0.23, 203],
+      ] as const,
+      foot: [
+        [0.054, 208.3],
+        [0.066, 210.8],
+        [0.078, 214.3],
+        [0.086, 215.3],
+        [0.11, 215.3],
+        [0.12, 214.1],
+        [0.133, 212.9],
+        [0.15, 211.7],
+        [0.17, 210.5],
+        [0.195, 209.1],
+        [0.215, 207.9],
+        [0.23, 206.8],
+      ] as const,
+      side: [
+        [0.054, 0],
+        [0.066, 1],
+        [0.2, 1],
+        [0.212, 0.25],
+        [0.225, 0.05],
+        [0.245, 0],
+      ] as const,
+      tongue: [2.2, 0.324, 0.7] as const,
+      lock: [1.4, 0.593, 2.1] as const,
+      curl: [0.8, 1.083, 4] as const,
+      fray: 0.7,
+      far: [0.75, 6, 1.6] as const,
+      farBright: 0.6,
+      point: 2.5,
+      pointBy: [0.6, 0.8] as const,
+      come: 6,
+      comeBy: [0.8, 0.4] as const,
+      footTongue: [0.5, 0.83, 1.9] as const,
+      footFray: 0.3,
+      footThin: 4,
+      needle: 0.2,
+      part: 1.3,
+      wander: 0.3,
+      halo: 0.36,
+      haloColor: [1, 0.6, 0.28] as const,
+      haloIn: [0.075, 0.19] as const,
+      haloAcross: [0.045, 0.07] as const,
+      haloTip: -3,
+      haloFoot: 5,
+      haloAlong: [4, 3.5] as const,
+      haloEnd: [0.2, 0.35, 175, 185, 222, 237] as const,
+      storm: [0.6, 1, 0.5] as const,
+    },
     threadStorm: 0.5,
-    // the share of its width a thread keeps at its very tip: it draws to a needle, so the lanes part before they end
+    // the share of its width a thread keeps at its very tip and at its very foot: it draws to a needle at both
     threadPoint: 0.2,
     hotColor: [1, 0.94, 0.8] as const,
     flameWarm: [1, 0.6, 0.33] as const,
@@ -466,9 +567,9 @@ export const look = {
     // the limb to where the flame ends (`rimFlame`: how strong, where in the radius, half its width; `rimFlameEnds`:
     // the heights of the bearing between which it comes in above the base and between which it goes out up the limb).
     // It dulls in the storm as the glow round the flame does
-    rimFlame: [1.6, 0.996, 0.0026] as const,
+    rimFlame: [1.8, 0.9945, 0.0035] as const,
     rimFlameEnds: [-0.55, -0.52, -0.2, -0.06] as const,
-    rimFlameColor: [1, 0.72, 0.42] as const,
+    rimFlameColor: [1, 0.5, 0.24] as const,
     rimTopWide: [72, 0.927, 0.99] as const,
     rimInner: [0.94, 0.008, 0.04] as const,
     rimInnerColor: [1, 0.8, 0.62] as const,
@@ -602,8 +703,10 @@ export const look = {
   // the seat: where the glass goes down into the base, its foot stands in the base's own shade and takes no light of the
   // room. A band on the glass, in millimetres above the base's foot: nothing of it above `top`, all of it from `full`
   // down to `foot`, which lies under the base's crest; `dark` of the light behind the glass is taken away in it. It lies
-  // `proud` of the glass, so the glass's own lines are under it
-  seat: { foot: 40.2, full: 43, top: 45, dark: 0.8, proud: 0.2 },
+  // `proud` of the glass, so the glass's own lines are under it. On the sun's side of the picture the foot of the glass
+  // stands in the sun's light, as the approved picture has it, and the band thins to nothing there: `thin` is between
+  // which shares of the radius, counted sideways from the globe's middle toward the sun, it goes
+  seat: { foot: 40.2, full: 43, top: 45, dark: 0.8, proud: 0.2, thin: [0.55, 0.72] as const },
 }
 
 const vec = (v: readonly number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
@@ -623,37 +726,80 @@ const uniforms = {
 }
 
 const F = look.flare
-const FLARE = `
+// The flare is drawn twice. What the sun leaves on the glass itself, the hot line down the limb, is drawn with the globe.
+// What the lens makes of the sun (the patch, its bloom and glow, the star) is drawn last of all, with the pool: the
+// star lifts what lies behind it, and the stage draws the room's lights after the globe, so a lift drawn with the
+// globe would miss them. What both begin with: what the vertex hands on, and where the pixel lies on the quad (q:
+// along the outline's outward normal and along the outline, edge: the quad's soft end, off: how far off the
+// outline, which bends away under a patch this long)
+const FLARE_VARY = `
 uniform vec4 uFlareSun;
 varying vec2 vFl;
 varying vec2 vFlOut;
 varying float vFlGain;
-varying float vFlBend;
-// one ray of the star: a thin wedge that stands out from the middle of the patch, brightest where it leaves it and gone
-// at its reach. u: its direction, f: how far it reaches, the tangent of half the angle it opens by, how bright
-float flRay(vec2 q, vec2 u, vec3 f) {
-  float ax = dot(q, u);
-  if (ax <= 0.0 || ax >= f.x) return 0.0;
-  float cr = q.x * u.y - q.y * u.x;
-  float t = ax / f.x;
-  return f.z * exp(-cr * cr / (f.y * f.y * ax * ax + ${(F.rayThin * F.rayThin).toFixed(6)}) - ${n(F.rayFall)} * t) * (1.0 - smoothstep(0.6, 1.0, t)) / (t + ${n(F.rayRoot)});
-}
-void main() {
+varying float vFlBend;`
+const FLARE_AT = `
   float c = stageChange();
   if (stageGone(c)) discard;
   if (uDiag != 0) discard;
   float lit = uFlareSun.w * vFlGain;
   if (lit <= 0.0) discard;
   vec2 p = vFl;
-  float r = length(p);
   vec2 q = vec2(dot(p, vFlOut), dot(p, vec2(-vFlOut.y, vFlOut.x)));
-  float edge = 1.0 - smoothstep(0.62, 1.0, r);
-  // how far off the outline, which bends away under a patch this long, and how far along it: both squared
-  float off = length(vec2(vFlBend + q.x, q.y)) - vFlBend;
-  // the hot line down the limb from the patch, just inside the outline
+  float edge = 1.0 - smoothstep(0.62, 1.0, length(p));
+  float off = length(vec2(vFlBend + q.x, q.y)) - vFlBend;`
+// the hot line down the limb from the patch, just inside the outline
+const FLARE_LINE = `${FLARE_VARY}
+void main() {${FLARE_AT}
   float lineOff = (off + ${n(F.line[1])}) / ${n(F.line[2])};
   float lineUp = (q.y + ${n(F.line[3])}) / ${n(F.line[4])};
   float line = exp(-lineOff * lineOff - lineUp * lineUp);
+  gl_FragColor = vec4(${vec(F.hot)} * (${n(F.line[0])} * line * lit * edge), 0.0);
+}`
+const FLARE_RAYS = `
+// a ray's needle: the thin line along its middle. ax: how far along the ray, cr: how far off it, squared, px: the
+// least half width, f: the reach and how strong the lift is. One exponential along the ray serves the light (its
+// square) and the lift. First what the lift has of the needle, second how wide the needle is drawn, squared, third
+// the lift's strength along the ray, fourth the light's fall along it
+vec4 flNeedle(float ax, float cr, float px, vec2 f) {
+  float t = ax / f.x;
+  float w = ${n(F.needle[0])} + ${n(F.needle[1])} * ax;
+  float wd = max(w, px);
+  float fall = exp(${n(-F.rayFall / 2)} * t);
+  float end = 1.0 - smoothstep(0.6, 1.0, t);
+  float g = f.y * fall * end / (t + ${n(F.liftRoot)});
+  return vec4(g * (w / wd) * exp(-cr / (wd * wd)), wd * wd, g, fall * fall * end / (t + ${n(F.rayRoot)}));
+}
+// one ray of the star: a thin wedge that stands out from the middle of the patch, brightest where it leaves it and gone
+// at its reach, with its needle. u: its direction, f: how far it reaches, the tangent of half the angle it opens by,
+// how bright, how strong its lift. First the light its wedge adds, second its lift, third its needle alone
+vec3 flRay(vec2 q, float px, vec2 u, vec4 f) {
+  float ax = dot(q, u);
+  if (ax <= 0.0 || ax >= f.x) return vec3(0.0);
+  float cr = q.x * u.y - q.y * u.x;
+  cr *= cr;
+  float wide = f.y * f.y * ax * ax + ${(F.rayThin * F.rayThin).toFixed(6)};
+  // nothing of it this far off its middle
+  if (cr > 12.0 * max(wide, px * px)) return vec3(0.0);
+  vec4 nd = flNeedle(ax, cr, px, f.xw);
+  float wedge = exp(-cr / wide);
+  return vec3(f.z * nd.w * wedge, nd.z * ${n(F.liftWedge)} * wedge + nd.x, nd.x);
+}
+// a needle without a wedge. f: how far it reaches and how strong its lift. Its lift, and the same again
+vec2 flPin(vec2 q, float px, vec2 u, vec2 f) {
+  float ax = dot(q, u);
+  if (ax <= 0.0 || ax >= f.x) return vec2(0.0);
+  float cr = q.x * u.y - q.y * u.x;
+  cr *= cr;
+  float w = max(${n(F.needle[0])} + ${n(F.needle[1])} * ax, px);
+  if (cr > 12.0 * w * w) return vec2(0.0);
+  return flNeedle(ax, cr, px, f).xx;
+}`
+const FLARE_LENS = `${FLARE_VARY}${FLARE_RAYS}
+void main() {
+  // the least half width of a needle: what that many pixels span on the quad, read before anything is discarded
+  float px = ${n(F.needleLeast)} * max(abs(dFdx(vFl.x)), abs(dFdy(vFl.y)));${FLARE_AT}
+  // across the outline and along it: both squared
   off *= off;
   float along = q.y * q.y;
   // the core: the light itself, mirrored; the sphere squeezes it across the outline and draws it out along it
@@ -661,11 +807,15 @@ void main() {
   // the lens's bloom round it, brightest on the rim, and the warm glow round that as its tail: no edge
   float bloom = exp(-(off / ${n(F.bloomAcross * F.bloomAcross)} + along / ${n(F.bloomAlong * F.bloomAlong)}));
   float glow = exp(-sqrt(off / ${n(F.glowAcross * F.glowAcross)} + along / ${n(F.glowAlong * F.glowAlong)}));
-  // the star: the rays stand out from the patch on the side away from the ball
-  float rays = 0.0;
-${F.rays.map((b) => `  rays += flRay(q, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), vec3(${n(b[1])}, ${n(b[2])}, ${n(b[3])}));`).join('\n')}
-  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom + ${n(F.line[0])} * line) + ${vec(F.amber)} * (${n(F.glow)} * glow) + ${vec(F.rayHue)} * (${n(F.ray)} * rays);
-  gl_FragColor = vec4(col * (lit * edge), 0.0);
+  // the star: the rays stand out from the patch on the side away from the ball. x: the light the wedges add, y: the
+  // lift, z: the needles alone
+  vec3 star = vec3(0.0);
+${F.rays.map((b) => `  star += flRay(q, px, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), vec4(${n(b[1])}, ${n(b[2])}, ${n(b[3])}, ${n(b[4])}));`).join('\n')}
+${F.needles.map((b) => `  star.yz += flPin(q, px, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), vec2(${n(b[1])}, ${n(b[2])}));`).join('\n')}
+  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom) + ${vec(F.amber)} * (${n(F.glow)} * glow) + ${vec(F.rayHue)} * (${n(F.ray)} * star.x) + ${vec(F.needleHue)} * (${n(F.needleAdd)} * star.z);
+  // what is there is kept and lifted along the rays (the fourth number is what it is kept by, 1 and more), and the
+  // lens's own light is added to that, itself not lifted
+  gl_FragColor = vec4(col * (lit * edge), 1.0 + ${n(F.lift)} * star.y * lit * edge);
 }`
 
 const W = look.wall
@@ -681,6 +831,10 @@ const arcLine = (b: readonly number[]): string =>
 const wallMid = Math.PI + Math.atan(W.low)
 const threadLine = (t: readonly number[]): string =>
   `  ${t[6] ? 'warm' : 'white'} += wlThread(a, r, wlPx, vec4(${n(wallMid - t[0] * RAD)}, ${n((t[0] - t[1]) * RAD)}, ${n(1 - t[2])}, ${n(t[2] - t[3])}), vec4(${n(t[4])}, ${n(t[5])}, ${n(Math.max(t[7] / (t[0] - t[1]), 0.01))}, ${n(Math.max(t[8] / (t[0] - t[1]), 0.01))}), vec4(${n(t[9])}, ${n(t[10])}, ${n(t[11])}, ${n((1 + W.threadStorm) * t[12])}));`
+// a line through the points k (pairs: where, how much), level before the first and past the last, as the shader takes it
+const broken = (k: readonly (readonly number[])[], x: string): string =>
+  n(k[0][1]) + k.slice(1).map((p, i) => ` + ${n((p[1] - k[i][1]) / (p[0] - k[i][0]))} * clamp(${x} - ${n(k[i][0])}, 0.0, ${n(p[0] - k[i][0])})`).join('')
+const SH = W.sheaf
 // how far up and down the limb from the glow's middle anything of the flame lies: the glow's own reach or a thread's end
 const flameReach = Math.max(2.8 * W.glowSize[2], ...W.threads.map((t) => Math.max(Math.abs(wallMid - t[0] * RAD - W.hotAt[1]), Math.abs(wallMid - t[1] * RAD - W.hotAt[1])) + 0.02))
 // The wall's light is drawn three times: behind the miniature all of it but the glare, in front of the miniature the
@@ -751,7 +905,8 @@ float wlEdged(vec2 e, float r, vec2 u, float span, vec4 f) {
   return smoothstep(-f.w, f.w, off) * exp(-1.4 * max(off, 0.0)) * (1.0 - along) * (1.0 - along);
 }
 ${front && !rim ? `// one thread of the flame: it runs up the limb from its foot to its tip, comes in over the first of its length and
-// draws to a short point at its tip, where it goes out. g: the angle up the limb at its foot and its length, where in
+// draws to a point at its tip, where it goes out, and it is a spindle: as thin at its foot as at its tip, so neither
+// end is cut. g: the angle up the limb at its foot and its length, where in
 // the radius it stands at the foot and how far it moves to the tip; h: half its width, how bright, the share of its
 // length its point takes and the share it comes in over; last: how bright it is at its tip beside its foot, the
 // share of its light that lies beside it in a skirt three times as wide, which falls off slowly, the share of a steep
@@ -763,13 +918,53 @@ float wlThread(float a, float r, vec3 px, vec4 g, vec4 h, vec4 last) {
   float t = (a - g.x) / g.y;
   if (t <= 0.0 || t >= 1.0) return 0.0;
   float tip = (1.0 - t) / (h.z * px.y);
-  float thin = h.x * px.y * (${n(W.threadPoint)} + ${n(1 - W.threadPoint)} * smoothstep(0.0, 2.5, tip));
+  float foot = t / (h.w * mix(last.w, 1.0, px.z));
+  float thin = h.x * px.y * (${n(W.threadPoint)} + ${n(1 - W.threadPoint)} * smoothstep(0.0, 2.5, min(tip, foot)));
   float wide = max(thin, px.x);
   float off = (r - g.z - g.w * t) / wide;
   float across = off * off;
   float steep = last.z * px.z * clamp(wide / (1.5 * px.x) - 1.0, 0.0, 1.0);
   float skirt = 1.0 + across / 9.0;
-  return h.y * mix(1.0, last.x, t) * (exp(-across * (1.0 + steep * (across - 1.0))) + last.y / (skirt * skirt)) * (thin / wide) * smoothstep(0.0, h.w * mix(last.w, 1.0, px.z), t) * smoothstep(0.0, 1.0, tip);
+  return h.y * mix(1.0, last.x, t) * (exp(-across * (1.0 + steep * (across - 1.0))) + last.y / (skirt * skirt)) * (thin / wide) * smoothstep(0.0, 1.0, foot) * smoothstep(0.0, 1.0, tip);
+}
+// the mass of the flame: lanes of light side by side along the limb, each a hair that comes in softly at its foot,
+// fills its lane along its middle and draws out to a needle at its tip. bear: the bearing in degrees, depth: how far
+// inside the outline, px as the threads take it. A pixel lies between the middles of two lanes and takes the light of
+// both. Each lane has its own numbers by its count across the sheaf: where it ends (three waves with pointed peaks
+// and its own share) and begins, how long its points are, how bright it is. No lane is drawn thinner than its soft
+// edge, only fainter. First the lanes' light, second the halo round the body
+vec2 wlSheaf(float bear, float depth, vec3 px, float storm) {
+  float dt = depth - ${n(SH.lean)} * (bear - 200.0) + ${n(SH.wave[0])} * sin((bear - 200.0) * ${n(SH.wave[1])} + depth * ${n(SH.wave[2])});
+  if (dt >= ${n(SH.haloEnd[1])} || bear <= ${n(SH.haloEnd[2])} || bear >= ${n(SH.haloEnd[5])}) return vec2(0.0);
+  float tipAt = ${broken(SH.tip, 'dt')};
+  float footAt = ${broken(SH.foot, 'dt')};
+  // the halo: whole inside the body's own box, and it falls off outside it by how far off, with no edge
+  float haloOff = max(${n(SH.haloIn[0])} - dt, 0.0) * ${n(1 / SH.haloAcross[0])} + max(dt - ${n(SH.haloIn[1])}, 0.0) * ${n(1 / SH.haloAcross[1])};
+  float haloPast = max(tipAt - bear - ${n(SH.haloTip)}, 0.0) * ${n(1 / SH.haloAlong[0])} + max(bear - footAt + ${n(SH.haloFoot)}, 0.0) * ${n(1 / SH.haloAlong[1])};
+  float halo = ${n(SH.halo)} * exp(-length(vec2(haloOff, haloPast))) * (1.0 - smoothstep(${n(SH.haloEnd[0])}, ${n(SH.haloEnd[1])}, dt)) * smoothstep(${n(SH.haloEnd[2])}, ${n(SH.haloEnd[3])}, bear) * (1.0 - smoothstep(${n(SH.haloEnd[4])}, ${n(SH.haloEnd[5])}, bear)) * smoothstep(0.002, 0.025, depth);
+  float side = clamp(${broken(SH.side, 'dt')}, 0.0, 1.0);
+  if (side <= 0.0) return vec2(0.0, halo);
+  float q = dt / ${n(SH.lane)} + ${n(SH.warp[0])} * sin(dt * ${n(SH.warp[1])} + 0.9) + ${n(SH.warp[2])} * sin(dt * ${n(SH.warp[3])} + 2.3) + 53.0;
+  float j0 = floor(q - 0.5);
+  float y = q - j0 - 0.5;
+  float soft = max(${n(SH.soft)}, ${n(4 / 3)} * px.x / ${n(SH.lane)});
+  float sum = 0.0;
+  for (int i = 0; i < 2; i++) {
+    float lane = j0 + float(i);
+    float h = stageHash(vec3(lane, 13.0, 0.0));
+    float hb = fract(64.0 * h);
+    float hc = fract(4096.0 * h);
+    float far = smoothstep(${n(SH.far[0])}, 1.0, hb);
+    float reach = ${n(SH.tongue[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.tongue[1])} + ${n(SH.tongue[2])}))) + ${n(SH.lock[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.lock[1])} + ${n(SH.lock[2])}))) + ${n(SH.curl[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.curl[1])} + ${n(SH.curl[2])}))) + ${n(SH.fray)} * (2.0 * h - 1.0) + ${n(SH.far[1])} * far;
+    float tip = (bear - tipAt + reach * (1.0 + ${n(SH.storm[0])} * storm)) / (${n(SH.point)} * (${n(SH.pointBy[0])} + ${n(SH.pointBy[1])} * hc) * (1.0 + ${n(SH.far[2])} * far) * px.y);
+    float stray = ${n(SH.footTongue[0])} * (1.0 - 2.0 * abs(sin(lane * ${n(SH.footTongue[1])} + ${n(SH.footTongue[2])}))) + ${n(SH.footFray)} * (2.0 * hb - 1.0);
+    float foot = (footAt + stray * (1.0 + ${n(SH.storm[1])} * storm) - bear) / (${n(SH.come)} * (${n(SH.comeBy[0])} + ${n(SH.comeBy[1])} * hc) * (1.0 + ${n(SH.storm[2])} * storm));
+    float share = ${n(SH.needle)} + ${n(1 - SH.needle)} * smoothstep(0.0, ${n(SH.part)}, min(tip, ${n(SH.footThin)} * foot));
+    float box = clamp((0.5 * share - abs(y - float(i) - ${n(SH.wander)} * (hb - 0.5) * (1.0 - share))) / soft + 0.5, 0.0, 1.0) * min(share / soft, 1.0);
+    float ends = smoothstep(0.0, 1.0 - ${n(SH.farBright)} * far, tip) * smoothstep(0.0, 1.0, foot);
+    sum += box * ends * ends * (${n(SH.dim)} + ${n(1 - SH.dim)} * hc);
+  }
+  return vec2(${n(SH.bright)} * sum * side, halo);
 }
 ` : ''}void main() {
 ${front && !rim ? `  // what one pixel spans on the sheet, read before anything is discarded
@@ -878,20 +1073,22 @@ ${front ? `  if (r > 1.0 || ((dr < ${n(-2.8 * W.glowSize[0])} || abs(da) > ${n(f
   float stormOff = (r - ${n(W.edgeStorm[2])}) / ${n(W.edgeStorm[3])};
   float stormUp = (a - ${n(W.edgeStorm[0])}) / ${n(W.edgeStorm[1])};
   vec3 edge = ${vec(W.edgeColor)} * (exp(-edgeOff * edgeOff - edgeUp * edgeUp) * (1.0 - smoothstep(0.996, 1.004, r)) * (1.0 - storm)) + ${vec(W.edgeStormColor)} * (exp(-stormOff * stormOff - stormUp * stormUp) * (1.0 - smoothstep(${n(W.edgeStormEnds[0])}, ${n(W.edgeStormEnds[1])}, r)) * storm);
-${front && !rim ? `  // the flame: a sheaf of threads that follow the limb. The lanes of the mass stand side by side where they begin and
-  // are one white body there; each ends at its own height in a point, so the mass frays up the limb into single
-  // threads and its inner edge is ragged. Beside the outline, below the mass and past its upper end a few stand
-  // alone. In the storm every thread is wider and as bright at its middle, its steep sides go and each comes in over
-  // a longer stretch of its own, so they run together into one torn cloud with a ragged foot
+${front && !rim ? `  // the flame: hairs of light that follow the limb. The lanes of the mass stand side by side and are one white body
+  // along their middles; each begins and ends at its own height in a needle, so the mass frays into points up the
+  // limb and down it and has no cut edge. Beside the outline, past its upper end and inward of it single threads
+  // stand alone. In the storm every thread is wider and as bright at its middle, its steep sides go and each comes in
+  // over a longer stretch of its own, so they run together into one torn cloud with a ragged foot
   float white = 0.0;
   float warm = 0.0;
   wlPx.y = 1.0 + ${n(W.threadStorm)} * storm;
   wlPx.z = 1.0 - storm;
 ${W.threads.map(threadLine).join('\n')}
+  vec2 sheaf = wlSheaf(${n(wallMid / RAD)} - a * ${n(1 / RAD)}, 1.0 - r, wlPx, storm);
+  white += sheaf.x;
   float glow = exp(-dr * dr / ${n(W.glowSize[0] * W.glowSize[0])} - da * da / (da < 0.0 ? ${n(W.glowSize[1] * W.glowSize[1])} : ${n(W.glowSize[2] * W.glowSize[2])}));
   // in the storm the liquid scatters the sun: the amber glow round the sheaf is duller. The threads are not
   float clear = 1.0 - ${n(W.stormDulls)} * storm;
-  vec3 glare = ${vec(W.color)} * (${n(W.glow)} * glow * inside * clear) + (mix(${vec(W.flameWarm)}, ${vec(W.hotColor)}, white / (white + ${n(W.flameWarmHalf)})) * white + ${vec(W.threadWarm)} * warm) * ${n(W.hot)};
+  vec3 glare = ${vec(W.color)} * (${n(W.glow)} * glow * inside * clear) + (mix(${vec(W.flameWarm)}, ${vec(W.hotColor)}, white / (white + ${n(W.flameWarmHalf)})) * white + ${vec(W.threadWarm)} * warm + ${vec(SH.haloColor)} * sheaf.y) * ${n(W.hot)};
   gl_FragColor = vec4((glare + edge * ${n(W.edge * W.edgeFront)}) * (${n(W.gain)} * lit), 0.0);
   return;` : ''}
   vec3 col = ${vec(W.color)} * (${n(W.band)} * band) + edge * ${n(W.edge)};
@@ -1053,11 +1250,12 @@ ${Number(P.grains) > 0 ? `  vec2 cell = floor(h / ${n(P.grainCellMm)});
 const S = look.seat
 const SEAT = `
 varying float vSeatY;
+varying float vSeatX;
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
   if (uDiag != 0) discard;
-  float dark = ${n(S.dark)} * (1.0 - smoothstep(${n(S.full)}, ${n(S.top)}, vSeatY));
+  float dark = ${n(S.dark)} * (1.0 - smoothstep(${n(S.full)}, ${n(S.top)}, vSeatY)) * (1.0 - smoothstep(${n(S.thin[0])}, ${n(S.thin[1])}, vSeatX));
   gl_FragColor = vec4(vec3(1.0 - dark), 1.0);
 }`
 
@@ -1072,14 +1270,9 @@ const added = {
   blendDstAlpha: THREE.OneFactor,
 } as const
 
-function makeFlare(): THREE.Mesh {
-  const m = stageShader({
-    part: PART,
-    standIn: false,
-    change: 'glass-dressing',
-    uniforms: { uFlareSun: uniforms.uFlareSun },
-    vertexPars: 'uniform vec4 uFlareSun;\nvarying vec2 vFl;\nvarying vec2 vFlOut;\nvarying float vFlGain;\nvarying float vFlBend;',
-    vertexMain: `
+// where the flare's quad stands: both of its passes place themselves from the eye and the light, wherever they hang
+const FLARE_VERT_PARS = 'uniform vec4 uFlareSun;\nvarying vec2 vFl;\nvarying vec2 vFlOut;\nvarying float vFlGain;\nvarying float vFlBend;'
+const FLARE_VERT = `
 vec3 flV = normalize(cameraPosition - uLensCentre);
 vec3 flH = normalize(flV + uFlareSun.xyz);
 vec3 flP = uLensCentre + flH * ${n(RS + 0.6)};
@@ -1099,12 +1292,23 @@ gl_Position = projectionMatrix * flAt;
 vStageWorld = flP;
 vStageLocal = (uGlobeInv * vec4(flP, 1.0)).xyz;
 vStagePlaced = flP;
-vStageAux = vec3(0.0, -flAt.z, length(flAt.xyz));`,
-    fragment: FLARE,
-    params: { ...added, depthTest: false },
+vStageAux = vec3(0.0, -flAt.z, length(flAt.xyz));`
+
+function makeFlare(lens: boolean): THREE.Mesh {
+  const m = stageShader({
+    part: PART,
+    standIn: false,
+    change: 'glass-dressing',
+    uniforms: { uFlareSun: uniforms.uFlareSun },
+    vertexPars: FLARE_VERT_PARS,
+    vertexMain: FLARE_VERT,
+    fragment: lens ? FLARE_LENS : FLARE_LINE,
+    // the lens keeps what is there by its fourth number and adds its own light to that
+    params: lens ? { ...added, blendDst: THREE.SrcAlphaFactor, depthTest: false } : { ...added, depthTest: false },
   })
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m)
-  mesh.renderOrder = 14
+  // the line after the glass and its rim; the lens after everything the stage draws last, the room's lights too
+  mesh.renderOrder = lens ? 30 : 14
   mesh.frustumCulled = false
   return mesh
 }
@@ -1162,9 +1366,8 @@ function makePool(): THREE.Mesh {
 }
 
 let flare: THREE.Object3D | undefined
-let pool: THREE.Mesh | undefined
+let pool: THREE.Object3D | undefined
 
-/** What the season puts on the glass: the flare and the light on the far wall. It rides in the globe's group and places itself from the eye and the light. */
 // The seat's band: a strip of the sphere just outside the glass, drawn after the glass and its ring and multiplied into what
 // is there, so everything seen through the foot of the glass is in shade. The base's crest stands in front of its lower part
 function makeSeat(): THREE.Mesh {
@@ -1172,8 +1375,11 @@ function makeSeat(): THREE.Mesh {
     part: PART,
     standIn: false,
     change: 'glass-dressing',
-    vertexPars: 'varying float vSeatY;',
-    vertexMain: `vSeatY = position.y + ${n(centreHeightMm)};`,
+    uniforms: { uFlareSun: uniforms.uFlareSun },
+    vertexPars: 'uniform vec4 uFlareSun;\nvarying float vSeatY;\nvarying float vSeatX;',
+    // how high above the base's foot, and how far sideways from the globe's middle in the picture, toward the sun, in radii
+    vertexMain: `vSeatY = position.y + ${n(centreHeightMm)};
+vSeatX = ((viewMatrix * vec4(uFlareSun.xyz, 0.0)).x < 0.0 ? -1.0 : 1.0) * (mvPosition.x - (viewMatrix * vec4(uLensCentre, 1.0)).x) / ${n(RS)};`,
     fragment: SEAT,
     params: {
       transparent: true,
@@ -1194,17 +1400,21 @@ function makeSeat(): THREE.Mesh {
   mesh.renderOrder = 12.5
   return mesh
 }
+/** What the season puts on the glass: the light on the far wall, the seat's band and the sun's line. It rides in the globe's group and places itself from the eye and the light. */
 export function dressing(): THREE.Object3D {
   if (!flare) {
     flare = new THREE.Group()
-    flare.add(makeWall(false), makeSeat(), makeWall(true), makeWall(true, true), makeFlare())
+    flare.add(makeWall(false), makeSeat(), makeWall(true), makeWall(true, true), makeFlare(false))
   }
   return flare
 }
 
-/** The pool of light on the slab. It lies in the floor's group: `slab.ts` adds it to what it lays on the surface. */
+/** The pool of light on the slab, and with it what the lens makes of the sun. They lie in the floor's group, which the stage draws last: `slab.ts` adds them to what it lays on the surface. */
 export function surfacePool(): THREE.Object3D {
-  pool ??= makePool()
+  if (!pool) {
+    pool = new THREE.Group()
+    pool.add(makePool(), makeFlare(true))
+  }
   return pool
 }
 
