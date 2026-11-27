@@ -84,6 +84,8 @@ describe('how the storm is drawn', () => {
     // the storm's leaves are few and dark and ride in the strokes' own draw (the landing list asked for about a dozen): under one stroke in a hundred, at less than a stroke's own light, and nothing bright, green and flat
     expect(CARD.line.stormLeaves).toBeGreaterThanOrEqual(0)
     expect(CARD.line.stormLeaves).toBeLessThanOrEqual(0.01)
+    // the settled line of summer's shake: the crown is whole and no leaves fly, so none of the strokes is a leaf
+    expect(CARD.line.stormLeaves).toBe(0)
     expect(CARD.line.stormLeafGain).toBeLessThanOrEqual(0.5)
     expect(CARD.line.stormLeafGain).toBeLessThan(CARD.line.stormGain)
     expect(CARD_VERT).toContain('float bitC = storming &&')
@@ -328,6 +330,12 @@ describe('how the storm is drawn', () => {
     const glow = CARD.glow
     expect(glow.stormStreakPx[0]).toBeLessThan(glow.stormStreakPx[1])
     expect(glow.stormStreakSkew).toBeGreaterThan(1)
+    // in the storm the lights are few fine streaks, not many short thick ones: three in ten of them at the most, a core finer than at rest, and none under 8 px long
+    expect(glow.stormShare).toBeLessThanOrEqual(0.3)
+    expect(glow.stormCorePx).toBeLessThanOrEqual(0.3)
+    expect(glow.stormCorePx).toBeLessThan(glow.corePx)
+    expect(glow.stormStreakPx[0]).toBeGreaterThanOrEqual(8)
+    expect(glow.stormSize).toBeLessThan(0.3)
     expect(glow.stormTail).toBeLessThan(1)
     // no ring and no edge on a light out of focus, and the wide faint glows are few
     expect(glow.discRim).toBe(0)
