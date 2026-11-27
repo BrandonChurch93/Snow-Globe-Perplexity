@@ -419,7 +419,7 @@ vec2 slabLumps(vec3 at, vec3 toEye, float blurMm) {
   for (int i = 0; i < ${LUMPS.length}; i++) {
     vec4 c = slabLumpAt[i];
     // In a change that takes the lumps away each is drawn uLumpsOut.x mm further out on its line from the stage's axis.
-    vec2 place = uLumpsOut.x > 0.0 ? c.xy + normalize(c.xy) * uLumpsOut.x : c.xy;
+    vec2 place = uLumpsOut.x > 0.0 ? c.xy + (dot(c.xy, c.xy) > 0.0 ? normalize(c.xy) : vec2(1.0, 0.0)) * uLumpsOut.x : c.xy;
     vec3 rel = vec3(at.x - place.x, 0.0, at.z - place.y);
     vec2 s = vec2(dot(rel, across), dot(rel, upward));
     vec2 size = vec2(c.z, 0.5 * c.w) + blurMm;
