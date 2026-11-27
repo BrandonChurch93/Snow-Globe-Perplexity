@@ -407,32 +407,37 @@ vec2 faceIn = faceUv - faceLine.xy / faceLine.z * uFaceRind;
 float faceInside = step(0.02, faceUv.x) * step(faceUv.x, 0.98) * step(0.02, faceUv.y) * step(faceUv.y, 0.98) * (1.0 - faceStem);
 float faceD = (texture2D(uFaceMap, vec2((faceOrigin.x + faceUv.x) * 0.5, 1.0 - (faceOrigin.y + 1.0 - faceUv.y) * 0.5)).r - 0.5) * 2.0 * uFaceRange;
 float faceD2 = (texture2D(uFaceMap, vec2((faceOrigin.x + clamp(faceIn.x, 0.02, 0.98)) * 0.5, 1.0 - (faceOrigin.y + 1.0 - clamp(faceIn.y, 0.02, 0.98)) * 0.5)).r - 0.5) * 2.0 * uFaceRange;
-float faceAa = max(fwidth(faceD), 0.005);
+float faceAa = max(0.6 * fwidth(faceD), 0.002);
 float faceOpen = smoothstep(-faceAa, faceAa, faceD) * faceInside;
-float faceThrough = smoothstep(-faceAa, faceAa, faceD2) * faceInside;
+float faceThrough = smoothstep(-faceAa, faceAa, min(faceD, faceD2) - 0.008) * faceInside;
 float faceGlowing = uFaceGlow[faceId];
 float baseAo = vBasePaint.x;
 float faceRib = baseNoise(vBasePos * 1.7) * 0.6 + baseNoise(vBasePos * 5.0) * 0.4;
 float faceShade = smoothstep(15.0, 21.0, vBasePos.x) * step(0.0, vBasePos.z);
 float faceWest = smoothstep(-15.0, -21.0, vBasePos.x) * step(0.0, vBasePos.z);
-diffuseColor.rgb = mix(mix(vec3(0.07, 0.026, 0.01), vec3(0.16, 0.06, 0.022), faceRib), mix(vec3(0.02, 0.022, 0.028), vec3(0.05, 0.054, 0.066), faceRib), 0.8 * faceShade) * mix(0.35, 1.0, smoothstep(0.1, 0.8, baseAo)) * mix(1.0, 0.5, faceStem);
-float faceNear = exp(-max(-faceD, 0.0) / 0.03);
-float faceSoft = exp(-max(-faceD, 0.0) / 0.13);
-vec3 faceCandle = uFaceCol * faceGlowing;
-float faceLow = smoothstep(0.75, 0.2, faceUv.y);
+// The ribs of the gourd run from stalk to foot: narrow grooves, and between them the fine streaks of the skin.
+vec3 faceFrom = vBasePos - uFaceAt[faceId];
+float faceTall = clamp(faceFrom.y / (uFaceOut[faceId].z + 0.45), -0.98, 0.98);
+float faceLon = asin(clamp(dot(faceFrom, faceRight) / ((uFaceOut[faceId].z + 0.45) * sqrt(1.0 - faceTall * faceTall)), -1.0, 1.0));
+float faceTurn = faceLon * 8.0 + float(faceId) * 1.3;
+float faceGroove = pow(abs(sin(faceTurn)), 10.0) * (1.0 - faceStem);
+float faceFineOn = 1.0 - smoothstep(0.35, 0.8, fwidth(faceLon) * 24.0);
+float faceStreak = smoothstep(0.25, 0.8, mix(0.5, baseNoise(vec3(faceLon * 24.0, faceTall * 1.6, float(faceId) * 5.0)), faceFineOn) * 0.8 + baseNoise(vec3(faceLon * 10.8, faceTall * 1.1, float(faceId) * 3.0 + 9.0)) * 0.2) * (1.0 - 0.2 * faceGroove);
+diffuseColor.rgb = mix(mix(vec3(0.06, 0.022, 0.008), vec3(0.26, 0.1, 0.038), faceStreak), mix(vec3(0.016, 0.018, 0.024), vec3(0.06, 0.066, 0.082), faceStreak), 0.8 * faceShade) * mix(0.35, 1.0, smoothstep(0.1, 0.8, baseAo)) * mix(1.0, 0.5, faceStem);
 // Each candle stands where it was set down: the hot place of a face is its own.
 vec2 faceWick = vec2(0.5 + 0.13 * sin(float(faceId) * 2.4 + 0.7), 0.3 + 0.09 * cos(float(faceId) * 1.7));
 float faceHot = exp(-dot(faceIn - faceWick, faceIn - faceWick) / 0.13);
-vec3 faceCave = mix(vec3(1.0, 0.4, 0.07), vec3(1.0, 0.66, 0.28), faceHot) * (1.1 + 1.3 * faceHot) * (0.75 + 0.5 * baseNoise(vec3(faceUv * 9.0, 3.0)));
-vec3 faceWall = vec3(1.0, 0.24, 0.02) * (0.5 + 0.6 * baseNoise(vec3(faceUv * 40.0, 7.0)));
-float faceBevel = smoothstep(0.0, 0.03, faceD);
-vec3 faceLight = mix(faceWall * mix(0.3, 1.0, faceBevel), faceCave, faceThrough * smoothstep(0.0, 0.018, faceD)) * faceGlowing * uFacePower;
+float faceFlesh = baseNoise(vec3(faceIn * 30.0, 3.0)) * 0.6 + baseNoise(vec3(faceIn * 69.0, 8.0)) * 0.4;
+vec3 faceCave = mix(vec3(1.0, 0.24, 0.035) * 0.44, vec3(1.0, 0.7, 0.12) * 1.6, smoothstep(0.32, 0.58, 0.75 * faceFlesh + 0.2 * faceHot));
+vec3 faceWall = vec3(1.0, 0.17, 0.012) * (0.2 * (0.6 + 0.8 * baseNoise(vec3(faceUv * 46.0, 7.0))));
+vec3 faceLight = mix(faceWall, faceCave, faceThrough) * faceGlowing * uFacePower;
 float faceRidge = smoothstep(0.25, 0.85, baseAo);
-// The rind is thin enough to carry the candle: the skin glows round the openings and holds a low ember all over,
-// deeper in the ribs' ridges than in their grooves.
-float faceStreak = baseNoise(vec3(faceUv.x * 30.0 + 3.0 * faceRib, faceUv.y * 2.2, float(faceId) * 5.0));
+// The cut wall of the rind is darker than the lit hollow. The skin carries a low ember of the candle in its streaks,
+// and a thin line of it where the gourd turns away or meets the iron.
 float faceBody = exp(-dot(faceUv - vec2(0.5, 0.45), faceUv - vec2(0.5, 0.45)) / 0.26);
-vec3 faceSkin = faceGlowing * (vec3(1.0, 0.3, 0.04) * 0.2 * faceNear + vec3(1.0, 0.2, 0.02) * (0.06 * faceSoft * faceSoft + 0.008 * faceSoft + 0.002) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib) + vec3(1.0, 0.28, 0.09) * (PUMPKIN_BODY * faceBody * (1.0 - 0.8 * faceShade) * (1.0 - 0.68 * faceWest)) * (0.35 + 0.65 * faceRidge) * (0.3 + 0.5 * faceRib + 0.9 * faceStreak)) * (1.0 - faceStem);
+float faceSink = length(vBasePos.xz) - (length(uFaceAt[faceId].xz) - 3.4 - 0.155 * faceFrom.y);
+float faceRim = max(pow(abs(clamp(1.0 - dot(normalize(vBaseNormal), faceEye), 0.0, 1.0)), 8.0), smoothstep(0.85, 0.65, faceSink) * mix(0.3, 1.0, smoothstep(0.25, 0.55, faceSink)) * smoothstep(0.85, 0.45, abs(faceTall)) * step(0.0, faceLon * faceOutward.x));
+vec3 faceSkin = faceGlowing * (vec3(1.0, 0.28, 0.09) * (PUMPKIN_BODY * faceBody * (1.0 - 0.8 * faceShade) * (1.0 - 0.68 * faceWest)) * (0.35 + 0.65 * faceRidge) * (0.15 + 1.9 * faceStreak) + vec3(1.0, 0.17, 0.018) * (3.0 * faceRim * (0.3 + 0.7 * faceStreak) * (1.0 - 0.7 * faceShade))) * (1.0 - faceStem);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.006, 0.002), faceOpen);
 totalEmissiveRadiance += mix(faceSkin + vec3(0.6, 0.4, 0.3) * (0.008 * faceWest * (0.4 + 0.6 * faceRib) * (1.0 - faceStem)), faceLight, faceOpen);
 float baseWrap = 0.3;
@@ -444,8 +449,9 @@ roughnessFactor = mix(0.42 + 0.2 * faceRib, 0.9, faceOpen);
 metalnessFactor = 0.0;
 `
 const PUMPKIN_TILT = `
-vec2 baseTilt = ((vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.3 + 47.0)) - 0.5) * 0.7 + (vec2(baseNoise(vBasePos.yzx * 6.1 + 23.0), baseNoise(vBasePos.zxy * 6.1 + 59.0)) - 0.5) * 0.5) * (1.0 - faceOpen);
+vec2 baseTilt = ((vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.3 + 47.0)) - 0.5) * 0.7 + (vec2(baseNoise(vBasePos.yzx * 6.1 + 23.0), baseNoise(vBasePos.zxy * 6.1 + 59.0)) - 0.5) * 0.5 + vec2(0.6 * pow(abs(sin(faceTurn)), 9.0) * cos(faceTurn) * sign(sin(faceTurn)) * (1.0 - faceStem), 0.0)) * (1.0 - faceOpen);
 `
+
 
 // The wax: pale, soft, thick where it has gathered. Light enters it and comes out again round the edges.
 const WAX_PAINT = `
@@ -618,7 +624,7 @@ export function base(): THREE.Object3D {
     key: `${PART}-pumpkin`,
     physical: true,
     hook: hookOf(
-      { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.2 }, uFacePower: { value: 3.1 } },
+      { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.035 }, uFacePower: { value: 3.1 } },
       { pars: `uniform sampler2D uFaceMap;\nuniform float uFaceRange;\nuniform float uFaceRind;\nuniform float uFacePower;\n#define PUMPKIN_BODY ${PUMPKIN_BODY.toFixed(4)}`, paint: PUMPKIN_PAINT, rough: PUMPKIN_ROUGH, tilt: PUMPKIN_TILT, after: SHADE },
     ),
   })
