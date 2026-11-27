@@ -22,3 +22,6 @@ The trunk at five times, without the air on ours, with a grid in millimetres (he
 
 7-macro-pair-approved-left.jpg
 The macro camera, with the air. Several winding boughs leave the fork and end in leaf; the long thin one at the right carries two lanterns and ends in the low right lobe. The approved has two heavy boughs and rounded holes of sky between them.
+
+8-frames-1990-1991-difference-sixth-above-seventh-below.jpg
+Not a pair with the approved. The measured box of film frames 1990 and 1991 (final tier, hd), and at the right their difference: the sixth pass above, drawn again on this main, the seventh below. Marked are the pixels that differ by more than 32: magenta where leaf is in one frame only, green inside the leaf, orange elsewhere. In the seventh the marks lie on two seed heads that now stand in the box in front of the crown, and on motes; the leaf and its gold points stay unmarked.
