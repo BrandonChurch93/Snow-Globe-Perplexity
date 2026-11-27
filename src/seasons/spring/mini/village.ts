@@ -30,14 +30,14 @@ const NEAR_GROWTH = { lamp: { power: 5, reachMm: 8 }, pane: { power: 2.2, reachM
 const MIRROR = { lamp: 3, pane: 1.4, tight: 0.0022, wide: 0.035, wideShare: 0.03, bump: 1, lowMm: 3.4 }
 const STREAK = { strength: 20, side: 0.045, along: 0.6, bump: 0.06, rings: 0.9 }
 const MOSS_FROM = [-16.8, -15]
-const SKIRT_FILL = 1.7
+const SKIRT_FILL = 60
 const BANK = { wide: 0.21, wideMm: 0.9, cushion: 0.46, cushionMm: 0.7, tuft: 1.25, tuftMm: 0.26, grain: 4.2, grainMm: 0.05, deep: 0.05, lip: 0.95, fall: [0.05, 0.5], sun: [0.0, 0.24] }
 const BANK_SPAN = BANK.cushionMm + BANK.tuftMm
 const BANK_EARTH: Rgb = [0.03, 0.021, 0.012]
 // Under the mounds the bank is a cut of soil: bands of earth, pebbles and fine roots that hang from the mounds' feet, and at the
 // glass foot a narrow dark seam where the bank meets the collar (roots: one place in 1.7 mm around the rim, a share of them filled).
 // Below a mound's foot the mesh's colour is grey: how much light the soil keeps at that depth.
-const SOIL = { tone: [0.36, 0.22, 0.12] as Rgb, pebble: [0.6, 0.54, 0.46] as Rgb, root: [0.75, 0.55, 0.36] as Rgb, fill: 2.6, roots: 26, share: 0.5, seam: [collarY + 4.4, collarY + 6.0] }
+const SOIL = { tone: [0.07, 0.06, 0.045] as Rgb, pebble: [0.6, 0.54, 0.46] as Rgb, root: [0.75, 0.55, 0.36] as Rgb, fill: 1.0, roots: 26, share: 0.5, seam: [collarY + 4.4, collarY + 6.0] }
 const SLATE = { tint: [1.7, 2.4, 3.0] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
 const ROCK_FILL = 2.4
 const POT: Rgb = [0.5, 0.2, 0.1]
@@ -230,7 +230,7 @@ if (turfBankA > 0.01) {
   float bankCrest = smoothstep(${(0.12 * BANK_SPAN).toFixed(3)}, ${(0.8 * BANK_SPAN).toFixed(3)}, bankRelief(bankQ));
   float bankPatch = bankNoise(bankQ * 0.33 + 9.1);
   float bankSpeck = bankNoise(bankQ.yzx * ${BANK.grain.toFixed(2)} + 3.1);
-  vec3 bankMoss = diffuseColor.rgb * ${glsl(BANK_TINT)} * (0.36 + 1.2 * bankCrest) * (0.7 + 0.6 * bankPatch) * (0.8 + 0.4 * bankFine * bankSpeck);
+  vec3 bankMoss = diffuseColor.rgb * ${glsl(BANK_TINT)} * (0.18 + 0.6 * bankCrest) * (0.7 + 0.6 * bankPatch) * (0.8 + 0.4 * bankFine * bankSpeck);
   vec3 bankSoil = ${glsl(BANK_EARTH)} * (0.6 + 0.8 * bankPatch);
   vec3 bankTone = mix(bankSoil, bankMoss, smoothstep(0.04, 0.34, bankCrest) * (0.55 + 0.45 * smoothstep(0.25, 0.6, bankPatch + 0.3 * bankCrest)));
   bankTone *= mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y));
@@ -280,7 +280,14 @@ if (turfBankA > 0.01) {
   float turfCatch = smoothstep(-0.15, 0.9, dot(geometryNormal, vec3(0.0, 0.76, 0.65)));
   float turfRock = smoothstep(2.5, 2.9, vSurf.x);
   float turfLift = normalize(vObjN).y;
-  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.04 + 0.96 * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.94 * smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * (1.0 + ${STEP_FILL.toFixed(2)} * vSurf.y) * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
+  // Moss in the shade of the glass's foot is seen by its fuzz, which scatters the room's light whatever the green under it,
+  // and as much at the bank's foot as at its lip.
+  float turfDeep = mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y));
+  float turfPale = (1.0 - smoothstep(0.4, 0.5, vSurf.y)) * dot(material.diffuseContribution, vec3(0.3, 0.6, 0.1)) / turfDeep;
+  vec3 turfRoom = dot(stageKeyC, vec3(0.3333)) * vec3(1.0, 0.95, 0.7);
+  reflectedLight.directDiffuse += turfRoom * (RECIPROCAL_PI * ${SKIRT_FILL.toFixed(2)} * turfBank * turfPale * (0.05 + 2.1 * turfCatch * turfCatch * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)));
+  reflectedLight.directDiffuse += stageKeyC * vec3(1.0, 0.72, 0.5) * (RECIPROCAL_PI * 420.0 * turfBank * turfPale * (1.0 - smoothstep(0.0, 0.22, vSurf.y)) * (1.0 - smoothstep(0.0, 0.22, vSurf.y)) * turfCatch * turfCatch * turfCatch);
+  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${ROCK_FILL.toFixed(2)} * (1.0 + ${STEP_FILL.toFixed(2)} * vSurf.y) * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift))) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${SOIL.fill.toFixed(2)} * turfBank * turfSoil * turfSeam) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fuzz.toFixed(2)} * turfFuzz * stageWrap(dot(geometryNormal, stageKeyL), 1.0)) * material.diffuseContribution;
 }`,

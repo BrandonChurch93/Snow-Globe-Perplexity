@@ -49,9 +49,31 @@ const SKIP_BUDGET_MS = 14
 const FILMS: Playing[] = ['film-a', 'film-b']
 const MEASURE_EVERY = 20
 const SHAKE_CONTROL = '[data-control="shake"]'
-/** How long the page may take to bring the canvas in over the still before the still is dropped anyway. */
+/** How long the canvas may take to come in over the still before its fade is cut short. */
 const REVEAL_MS = 1500
 const CONTROL = 'button, a[href], input, select, textarea, summary, [role="button"], [contenteditable=""], [contenteditable="true"]'
+
+/**
+ * The canvas is out of sight until its first whole picture (index.html). Over the still it comes in softly, a picture over a
+ * picture of itself; a film or the loop has no still under it and starts at once, on its first frame. The still goes only
+ * from under a canvas in full sight. A fade keeps the time of the page's frames and the wait the time of the wall: where
+ * frames are few the wait is over on a canvas that has hardly begun to show, so the fade is cut short as the still goes.
+ */
+export function reveal(canvas: HTMLCanvasElement, page: Pick<Window, 'firstStill' | 'setTimeout'>, gone: () => void): void {
+  let over = false
+  const done = (): void => {
+    if (over) return
+    over = true
+    canvas.style.transition = 'none'
+    gone()
+    page.firstStill?.end()
+  }
+  if (page.firstStill) {
+    canvas.addEventListener('transitionend', done, { once: true })
+    page.setTimeout(done, REVEAL_MS)
+  } else done()
+  canvas.dataset.live = ''
+}
 
 export function startApp(d: AppDeps): AppBridge {
   const { gfx, stage, sim, params } = d
@@ -236,26 +258,6 @@ export function startApp(d: AppDeps): AppBridge {
     first.place(framingOfRig(liveRig(aspect, 0, 0, roomUnder(h, bar, w)), w, h).globe)
   }
 
-  // The canvas is out of sight until its first whole picture (index.html). Over the still it comes in softly, a picture over a
-  // picture of itself; a film or the loop has no still under it and starts at once, on its first frame.
-  const reveal = (): void => {
-    let over = false
-    const done = (): void => {
-      if (over) return
-      over = true
-      window.removeEventListener('resize', placeStill)
-      window.firstStill?.end()
-    }
-    if (window.firstStill) {
-      canvas.addEventListener('transitionend', done, { once: true })
-      window.setTimeout(done, REVEAL_MS)
-    } else {
-      canvas.style.transition = 'none'
-      done()
-    }
-    canvas.dataset.live = ''
-  }
-
   const muted = (): boolean => !soundOn || playing !== 'live'
 
   const unlock = (): void => {
@@ -319,7 +321,7 @@ export function startApp(d: AppDeps): AppBridge {
     if (playing !== 'live' || !ready) return false
     const season = to === null ? session.shake() : session.goTo(to)
     if (!season) return false
-    d.stage.expect?.(season)
+    loader.hold(season, d.stage.expect?.(season))
     if (!loader.ready(season)) void loader.want(season).catch(() => undefined)
     told = season
     if (session.reduced) engine?.setSeason(season)
@@ -477,7 +479,7 @@ export function startApp(d: AppDeps): AppBridge {
     if (drawn === 2) {
       ready = true
       doc.dataset.firstPicture = '1'
-      reveal()
+      reveal(canvas, window, () => window.removeEventListener('resize', placeStill))
       markFirst()
       governor.rest()
     } else if (ready && dt > 0) {

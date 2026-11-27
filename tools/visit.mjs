@@ -18,7 +18,8 @@ import { parseArgs, rel, loadConfig } from './lib/paths.mjs'
  *     --quality low     the level of quality asked for by parameter (low: most frames on a machine without a GPU). `--quality none`
  *                       opens the app with no parameter, as a visitor gets it.
  *     --only 1,2,7      runs only these steps of the walk (1 first paint, 2 Shake control, 3 space bar, 4 stir, 5 look around,
- *                       6 season marks, 7 sound control, 8 keyboard and menu, 9 reduced motion, 10 season links, 11 look of the
+ *                       6 season marks, 7 sound control, 8 keyboard and menu, 9 reduced motion, 10 season links and links
+ *                       that name what the app does not know, 11 look of the
  *                       controls, 12 four shakes in a row with pictures across the first, 13 the screen turned or the window
  *                       resized at rest and in a shake, 14 the probe, autopilot and loop modes, 15 the level of quality picked
  *                       by the app and forced from the menu, 16 the first look: the still, then the live picture over it,
@@ -89,15 +90,40 @@ const context = await browser.newContext({
 const page = await context.newPage()
 const errors = watchPage(page)
 // Every line the console holds and every request that did not come, for the reader. A request cut off by the tool leaving
-// the page is kept apart: it is the tool's doing.
+// the page is kept apart, under the browser's own word for it (ERR_ABORTED): it is the tool's doing. It is one that was
+// asked for before the tool went to another page or before that page came, or one that ends while the tool is on its way.
+// A request cut off on a page that stays is the page's doing and is written without that word, so it counts with the
+// requests that did not come (here, and in tools/walk.mjs, which reads the word).
 const consoleLines = []
 const failed = []
+const askedOn = new WeakMap()
+let pageNo = 0
+let leaving = false
 page.on('console', (m) => consoleLines.push(`${m.type()}: ${m.text()}`))
-page.on('requestfailed', (r) => failed.push(`${r.failure()?.errorText ?? 'failed'} ${r.url()}`))
+page.on('framenavigated', (f) => {
+  if (f !== page.mainFrame()) return
+  pageNo++
+  leaving = false
+})
+page.on('requestfailed', (r) => {
+  const text = r.failure()?.errorText ?? 'failed'
+  const cut = /ERR_ABORTED/.test(text)
+  const byTool = cut && (leaving || (askedOn.get(r) ?? pageNo) < pageNo)
+  failed.push(`${cut && !byTool ? 'cut off on a page that stayed (the browser calls it aborted)' : text} ${r.url()}`)
+})
 page.on('response', (r) => r.status() >= 400 && failed.push(`${r.status()} ${r.url()}`))
 const cdp = await context.newCDPSession(page)
 const requests = []
-page.on('request', (r) => requests.push({ url: r.url(), at: Date.now() }))
+page.on('request', (r) => {
+  askedOn.set(r, pageNo)
+  requests.push({ url: r.url(), at: Date.now() })
+})
+/** Goes to another page. What the page before it was still fetching ends cut off, by the tool. */
+const go = (address, options) => {
+  pageNo++
+  leaving = true
+  return page.goto(address, options)
+}
 
 // A frame counter and a log of what changes on the controls, set up before the app starts.
 await page.addInitScript(() => {
@@ -109,6 +135,14 @@ await page.addInitScript(() => {
     requestAnimationFrame(tick)
   }
   requestAnimationFrame(tick)
+  // When the page laid its first still: a page that lays none is black until the live picture comes.
+  window.__stillAt = null
+  const laid = new MutationObserver(() => {
+    if (!document.querySelector('#first img')) return
+    window.__stillAt = performance.now()
+    laid.disconnect()
+  })
+  laid.observe(document, { childList: true, subtree: true })
   new MutationObserver((list) => {
     for (const m of list) {
       const el = m.target
@@ -129,9 +163,17 @@ await page.addInitScript(() => {
   const brought = new WeakSet()
   let dimAt = -Infinity
   let framesSince = 0
-  new MutationObserver(() => {
+  // When each thing that wakes the controls reached the page and when they dimmed, by the page's own clock. The tool's
+  // clock would add the time its own questions take, and a frame takes seconds here.
+  window.__wakes = []
+  window.__dims = []
+  for (const type of ['pointermove', 'pointerdown', 'wheel', 'keydown'])
+    window.addEventListener(type, (e) => window.__wakes.length < 4000 && window.__wakes.push({ type, made: Math.round(e.timeStamp), taken: Math.round(performance.now()) }), true)
+  new MutationObserver((list) => {
     dimAt = performance.now()
     framesSince = 0
+    const el = list[list.length - 1].target
+    if (window.__dims.length < 4000) window.__dims.push({ at: Math.round(dimAt), dim: el instanceof Element && el.hasAttribute('data-dim') })
   }).observe(document, { attributes: true, subtree: true, attributeFilter: ['data-dim'] })
   // What the browser is doing with a control's opacity. A fade it was told to run and has not begun (pending), or began long
   // after the bar changed, is the browser late with its own picture; a fade that has run its time and left the control short
@@ -371,7 +413,7 @@ async function open(extra = {}) {
   await gather()
   requests.length = 0
   const t0 = Date.now()
-  await page.goto(urlOf(extra), { waitUntil: 'domcontentloaded' })
+  await go(urlOf(extra), { waitUntil: 'domcontentloaded' })
   const first = await until('the first complete picture', (s) => s.firstPicture)
   const firstAt = Date.now()
   const shown = await until('the controls', (s) => s.shown, 60000)
@@ -526,10 +568,25 @@ if (want(11)) {
 
   // Dimming: after the pointer has moved once and then been still, the controls dim; they return when it moves.
   const awakePicture = (await read()).dim ? null : await grab()
+  const seen = await page.evaluate(() => ({ wakes: window.__wakes.length, dims: window.__dims.length }))
   if (!touch) await page.mouse.move(fmt.width * 0.3, fmt.height * 0.3)
   else await press(fmt.width * 0.5, fmt.height * 0.06)
-  if (!touch) await page.mouse.move(fmt.width * 0.31, fmt.height * 0.31)
+  // The page counts a move of the pointer only when it was made a fifth of a second or more after the last it counted.
+  // The second move is made later than that, so it is the one the controls stay awake from.
+  if (!touch) {
+    await sleep(400)
+    await page.mouse.move(fmt.width * 0.31, fmt.height * 0.31)
+  }
   const dimmed = await until('the controls to dim', (x) => x.dim, 40000)
+  // How long that took by the page's clock: from the last thing that woke the controls reaching the page to the bar being
+  // told to dim. What the tool counts beside it starts at its own second move and ends at the first answer that says dim.
+  const clock = await page.evaluate((from) => {
+    const dim = window.__dims.slice(from.dims).find((d) => d.dim) ?? null
+    const wakes = window.__wakes.slice(from.wakes).filter((w) => !dim || w.taken <= dim.at)
+    const last = wakes[wakes.length - 1] ?? null
+    const before = wakes[wakes.length - 2] ?? null
+    return { seconds: dim && last ? (dim.at - last.taken) / 1000 : null, woke: wakes.map((w) => w.type), madeApartMs: last && before ? last.made - before.made : null }
+  }, seen)
   const op = () => page.evaluate(() => getComputedStyle(document.querySelector('[data-control="shake"]')).opacity)
   // `awake` keeps the pointer moving while the value is read: a frame can take seconds here, and a pointer that is still for
   // `idleSeconds` dims the controls again before the fade back has been drawn. On touch that is a tap every two seconds by the
@@ -565,7 +622,7 @@ if (want(11)) {
   const low = await settle((v) => Math.abs(v - floor) <= 0.02)
   const [lit, quiet] = [await brightest(awakePicture, s.boxes.shake), await brightest(await grab(), s.boxes.shake)]
   const drawn = lit && quiet !== null ? Math.round((quiet / lit) * 100) / 100 : null
-  await note(11, 'dimmed', { dimmed: dimmed.ok, afterSeconds: dimmed.seconds, opacity: low, floor, drawnShare: drawn }, dimmed.ok && Math.abs(Number(low) - floor) <= 0.02 && floor >= 0.5 && floor <= 0.8 && drawn !== null && drawn >= floor - 0.05 && drawn <= 0.9)
+  await note(11, 'dimmed', { dimmed: dimmed.ok, afterSecondsByThePagesClock: clock.seconds, countedByTheTool: dimmed.seconds, woke: clock.woke, madeApartMs: clock.madeApartMs, opacity: low, floor, drawnShare: drawn }, dimmed.ok && Math.abs(Number(low) - floor) <= 0.02 && floor >= 0.5 && floor <= 0.8 && drawn !== null && drawn >= floor - 0.05 && drawn <= 0.9)
   // The same state photographed a second time: a control drawn in one and not in the other is the renderer, not the page.
   await note(11, 'dimmed-again', { opacity: await page.evaluate(() => getComputedStyle(document.querySelector('#ui > div')).opacity) })
   if (!touch) await page.mouse.move(fmt.width * 0.4, fmt.height * 0.4)
@@ -595,7 +652,25 @@ if (want(4)) {
   const d = await grab()
   const back = await apart(a, d)
   await note(4, 'stir', { restApart: rest, afterStirApart: stirred, laterApart: back, seasonBefore: s.lit.join(), ...brief(after) }, after.lit.join() === s.lit.join() && !after.busy && stirred !== null && stirred > Math.max(rest * 1.5, rest + 0.3))
-  await frames(12)
+  // What a stir lifts is in the air for many seconds, and the look around that follows reads the picture at rest. So the
+  // step ends when the picture has stopped changing, not a count of frames after the stir. On a slow machine what was
+  // lifted drifts so little from one picture to the next that it passes for rest: at rest the picture is also back near
+  // the one from before the stir.
+  const still = Math.max(rest * 2, rest + 0.6)
+  const t0 = Date.now()
+  const changing = []
+  let last = d
+  let settled = false
+  while (!settled && Date.now() - t0 < WAIT) {
+    await frames(6)
+    const next = await grab()
+    const moved = await apart(last, next)
+    const from = await apart(a, next)
+    changing.push([Math.round((Date.now() - t0) / 100) / 10, moved, from])
+    settled = moved !== null && moved < still && from !== null && from < still * 2
+    last = next
+  }
+  await note(4, 'stir-settled', { restApart: rest, cameToRest: settled, afterSeconds: Math.round((Date.now() - t0) / 100) / 10, secondsThenApartFromTheLastThenFromBeforeTheStir: changing.slice(-12), ...brief(await read()) }, settled)
 }
 
 if (want(5)) {
@@ -884,6 +959,55 @@ if (want(10)) {
     const x = opened.shown.state
     await note(10, `link-${id}`, { link: urlOf({ season: id }), firstPictureSeconds: opened.seconds, lit: x.lit.join(), busy: x.busy, shown: x.shown }, opened.first.ok && opened.shown.ok && x.lit.join() === id && !x.busy)
   }
+
+  // A link that names what the app does not know. A visitor is never left with a dead page: a capture address with an
+  // unknown format, an unknown view and an unknown shot open the globe as the plain address does, with the still the
+  // plain address lays before its live picture comes. The capture interface is not there after the fallback, so no tool
+  // draws in a format it did not name.
+  const stillOf = async () => {
+    const at = await page.evaluate(() => ({ still: window.__stillAt, live: window.__firstAt })).catch(() => ({ still: null, live: null }))
+    return { laidMs: at.still === null ? null : Math.round(at.still), livePictureMs: at.live === null ? null : Math.round(at.live), first: at.still !== null && at.live !== null && at.still < at.live }
+  }
+  opened = await open()
+  const plainStill = await stillOf()
+  const plainPicture = await grab()
+  await frames(4)
+  const rest = await apart(plainPicture, await grab())
+  for (const [name, extra] of [
+    ['unknown-format', { mode: 'capture', format: 'no-such-format' }],
+    ['unknown-view', { diag: 'no-such-view' }],
+  ]) {
+    const had = errors.length
+    opened = await open(extra)
+    const x = opened.shown.state
+    const from = await apart(plainPicture, await grab())
+    const face = await page.evaluate(() => typeof window.showcase).catch(() => 'not read')
+    const near = from !== null && rest !== null && from <= Math.max(rest * 3, rest + 1.5)
+    const still = await stillOf()
+    await note(10, `link-${name}`, { link: urlOf(extra), firstPictureSeconds: opened.seconds, firstStill: still, firstStillOfThePlainPage: plainStill, lit: x.lit.join(), busy: x.busy, shown: x.shown, captureInterface: face === 'undefined' ? 'absent' : face, pageErrors: errors.slice(had), restApart: rest, fromThePlainPage: from }, opened.first.ok && opened.shown.ok && x.lit.join() === opens && !x.busy && face === 'undefined' && errors.length === had && near && plainStill.first && still.first)
+  }
+
+  // The film from a shot it does not have is the whole film, and the whole film has its sound. A build without sound
+  // files asks for none, and the line says so.
+  const index = await fetch(new URL('audio/index.json', base)).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+  const track = index ? (index.loops?.['film-b'] ?? index.sprites?.['film-b'])?.file : null
+  const asked = () => (track ? requests.some((r) => new URL(r.url).pathname.endsWith(`/audio/${track}`)) : null)
+  const film = async (extra) => {
+    await gather()
+    requests.length = 0
+    const had = errors.length
+    const link = plain({ mode: 'autopilot', ...extra, ...(quality !== 'none' ? { quality } : {}) })
+    await go(link, { waitUntil: 'domcontentloaded' })
+    const first = await until('the first complete picture', (x) => x.firstPicture)
+    const f0 = (await read()).frames
+    const a = await grab()
+    await frames(6)
+    const x = await read()
+    return { link, first, frames: x.frames - f0, moved: await apart(a, await grab()), sound: asked(), errors: errors.slice(had) }
+  }
+  const whole = await film({ shot: 'no-such-shot' })
+  const sound = whole.sound === null ? 'this build has no sound for the film' : whole.sound ? 'asked for' : 'not asked for'
+  await note(10, 'link-unknown-shot', { link: whole.link, firstPicture: whole.first.ok, framesDrawn: whole.frames, movedApart: whole.moved, filmSound: sound, pageErrors: whole.errors }, whole.first.ok && whole.frames >= 6 && whole.errors.length === 0 && whole.sound !== false)
 }
 
 if (want(16)) {
@@ -899,7 +1023,7 @@ if (want(16)) {
   // out before its first paint. A visitor comes from nothing, so each time the tool leaves for an empty page first.
   const leave = async () => {
     await gather()
-    await page.goto('about:blank')
+    await go('about:blank')
     await sleep(500)
   }
   await leave()
@@ -949,8 +1073,8 @@ if (want(16)) {
           still: imgs.some((i) => i.complete && i.naturalWidth > 0),
           sharp: files.some((i) => i.complete && i.naturalWidth > 0 && Number(getComputedStyle(i).opacity) >= 0.999),
           stillFile: [...new Set(files.map((i) => (i.currentSrc || i.src).split('/').pop()))].join(','),
-          // Where the page has put the still, as it wrote it: left, top, width and height in CSS pixels.
-          box: top && top.style.width ? [px(top.style.left), px(top.style.top), px(top.style.width), px(top.style.height)] : null,
+          // Where the page has put the still: its box on the screen in CSS pixels, however the page wrote it there.
+          box: top && top.style.width ? (({ x, y, width, height }) => [px(x), px(y), px(width), px(height)])(top.getBoundingClientRect()) : null,
           live: view?.hasAttribute('data-live') ?? false,
           canvasOpacity: view ? Number(getComputedStyle(view).opacity) : null,
           shown: document.getElementById('ui')?.dataset.interface === 'shown',
@@ -1028,7 +1152,7 @@ if (want(16)) {
 
   // As it comes.
   const t0 = Date.now()
-  await page.goto(plain(), { waitUntil: 'commit' })
+  await go(plain(), { waitUntil: 'commit' })
   const shots = []
   await take(shots, t0, () => whole(shots) >= 3, WAIT)
   const firstStill = shots.findIndex((x) => x.still && !x.live)
@@ -1110,7 +1234,7 @@ if (want(16)) {
   }
   let [pageAt, appAt, liveAt] = [-1, -1, -1]
   try {
-    await page.goto(plain(), { waitUntil: 'commit' })
+    await go(plain(), { waitUntil: 'commit' })
     await take(held, h0, () => twice(byPage), 60000, 'page')
     pageAt = twice(byPage) ? held.length - 1 : -1
     scripts.open()
@@ -1174,7 +1298,7 @@ if (want(16)) {
 if (want(15)) {
   // The level of quality the app picks by itself, as a visitor gets it (no parameter), and each level forced from the menu.
   await gather()
-  await page.goto(plain(), { waitUntil: 'domcontentloaded' })
+  await go(plain(), { waitUntil: 'domcontentloaded' })
   const first = await until('the first complete picture', (x) => x.firstPicture)
   const shown = await until('the controls', (x) => x.shown, 60000)
   const row = () =>
@@ -1233,7 +1357,7 @@ if (want(14)) {
   // The other ways the page opens: the probe to its end and its block of text, the film by itself, the loop.
   await gather()
   const t0 = Date.now()
-  await page.goto(plain({ mode: 'probe' }), { waitUntil: 'domcontentloaded' })
+  await go(plain({ mode: 'probe' }), { waitUntil: 'domcontentloaded' })
   const probe = () =>
     page.evaluate(() => {
       const ui = document.getElementById('ui')
@@ -1250,7 +1374,7 @@ if (want(14)) {
   for (const mode of ['autopilot', 'loop']) {
     const extra = quality !== 'none' ? { mode, quality } : { mode }
     const t1 = Date.now()
-    await page.goto(plain(extra), { waitUntil: 'domcontentloaded' })
+    await go(plain(extra), { waitUntil: 'domcontentloaded' })
     const first = await until('the first complete picture', (x) => x.firstPicture)
     const seconds = (Date.now() - t1) / 1000
     const a = await grab()
