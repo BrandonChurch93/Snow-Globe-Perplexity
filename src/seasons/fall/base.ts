@@ -69,9 +69,8 @@ const DRUM_SHEEN = 1.8
 const DRUM_FOLD = 6
 const DRUM_CRINKLE = 1.5
 const DRUM_GRAIN = 2
-const BARK_GRAIN = 1.8
 const PUMPKIN_BODY = 0.042
-const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}\n#define DRUM_FOLD ${DRUM_FOLD.toFixed(3)}\n#define DRUM_CRINKLE ${DRUM_CRINKLE.toFixed(3)}\n#define DRUM_GRAIN ${DRUM_GRAIN.toFixed(3)}\n#define BARK_GRAIN ${BARK_GRAIN.toFixed(3)}`
+const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}\n#define DRUM_FOLD ${DRUM_FOLD.toFixed(3)}\n#define DRUM_CRINKLE ${DRUM_CRINKLE.toFixed(3)}\n#define DRUM_GRAIN ${DRUM_GRAIN.toFixed(3)}`
 const flicker: { a: number; b: number; c: number }[] = []
 let faceList: Face[] = []
 export const faces = (): Face[] => faceList
@@ -273,7 +272,7 @@ roughnessFactor = clamp(mix(0.38 + 0.22 * fibreHere - 0.06 * baseThorn * vBasePa
 metalnessFactor = mix(0.2, mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust), baseDrum);
 `
 const IRON_TILT = `
-vec2 baseTilt = (vec2(baseNoise(vBasePos * 0.3 + 3.0), baseNoise(vBasePos * 0.3 + 31.0)) - 0.5) * 0.5 * baseDrum + vec2(foldHere - foldOn, foldHere - foldUp) * (DRUM_FOLD * baseDrum) + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * (DRUM_CRINKLE * baseDrum) + vec2(grainHere - grainOn, grainHere - grainUp) * (DRUM_GRAIN * baseDrum) + vec2(knobHere - knobOn, knobHere - knobUp) * (BRAMBLE_KNOB * baseStrand) + vec2(grainHere - grainOn, grainHere - grainUp) * (BARK_GRAIN * baseStrand * mix(0.25, 1.0, smoothstep(-18.0, -44.0, vBasePos.x))) + vec2(fibreOn - fibreHere, fibreNext - fibreHere) * (BRAMBLE_BARK * baseStrand * mix(1.0, 0.25, smoothstep(-22.0, -47.0, vBasePos.x)));
+vec2 baseTilt = (vec2(baseNoise(vBasePos * 0.3 + 3.0), baseNoise(vBasePos * 0.3 + 31.0)) - 0.5) * 0.5 * baseDrum + vec2(foldHere - foldOn, foldHere - foldUp) * (DRUM_FOLD * baseDrum) + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * (DRUM_CRINKLE * baseDrum) + vec2(grainHere - grainOn, grainHere - grainUp) * (DRUM_GRAIN * baseDrum) + vec2(knobHere - knobOn, knobHere - knobUp) * (BRAMBLE_KNOB * baseStrand) + vec2(fibreOn - fibreHere, fibreNext - fibreHere) * (BRAMBLE_BARK * baseStrand * mix(1.0, 0.25, smoothstep(-22.0, -47.0, vBasePos.x)));
 `
 const IRON_AFTER = `
 {
@@ -318,8 +317,8 @@ const IRON_AFTER = `
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
   float ironLeft = clamp(dot(ironUp, normalize(vec3(-0.8, 0.25, 0.55))), 0.0, 1.0);
-  // Only the ridge of a vine that faces the lamps is lit, a third of its width; the knobs and the grain break it there.
-  float ironRidge = mix(1.0, pow(abs(clamp(dot(inverseTransformDirection(ironRound, viewMatrix), normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0)), 26.0), baseStrand * ironWest);
+  // Only the ridge of a vine that faces the lamps is lit, a third of its width; the knobs break it there.
+  float ironRidge = mix(1.0, pow(abs(clamp(dot(inverseTransformDirection(ironRound, viewMatrix), normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0)), 16.0), baseStrand * ironWest);
   reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.72, 0.5), mix(vec3(1.0, 0.6, 0.36), vec3(1.0, 0.86, 1.0), ironWest), baseStrand) * (mix(0.45 * baseDrum, BRAMBLE_WARM, baseStrand) * pow(abs(ironWarm), mix(5.0, mix(26.0, 110.0, ironWest), baseStrand)) + mix(0.1 * baseDrum, 0.05 * BRAMBLE_WARM, baseStrand) * pow(abs(ironLeft), mix(5.0, 20.0, baseStrand))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch) * mix(1.0, ironGrain, baseStrand * (1.0 - ironWest)) * mix(1.0, BRAMBLE_WARM_FRONT + BRAMBLE_WARM_WEST * ironWest * mix(1.0, 0.4, smoothstep(20.0, 34.0, vBasePos.y)), baseStrand) * ironRidge;
   vec3 ironTop = normalize(mat3(viewMatrix) * vec3(0.0, 1.0, 0.0));
   float ironTh = max(dot(geometryNormal, normalize(ironTop + geometryViewDir)), 0.0);
