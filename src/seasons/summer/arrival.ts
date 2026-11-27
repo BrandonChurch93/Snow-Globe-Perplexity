@@ -862,7 +862,8 @@ function* grainGeometry(): Generator<void, THREE.BufferGeometry> {
   let firstLoose = firstStand
   while (firstLoose < firstLie && !(data[firstLoose * GRAIN_ROW + 13]! < 0)) firstLoose++
 
-  // The grains that lie are first in the list and then the fall, so that at rest they alone are drawn; then the threads
+  // First in the list are the surge's rows at the back, which lie behind all else of the fall and which the rest draw
+  // begins after; then the grains that lie and the fall that stands, which at rest are all that is drawn; then the face
   // only the surge runs, then the jumping grains. The grains that lie and those that jump are shuffled. The fall is
   // drawn in the order of its rows, thread by thread from the stone outward: the outer threads lie over the inner.
   function* order(first: number, count: number, at: number, stride: number): Generator<void, void> {
@@ -890,15 +891,16 @@ function* grainGeometry(): Generator<void, THREE.BufferGeometry> {
     }
     yield
   }
-  yield* order(firstLie, n - firstLie, 0, LOOK.stride)
-  yield* order(firstSurge, behind, n - firstLie, 1)
+  yield* order(firstSurge, behind, 0, 1)
+  yield* order(firstLie, n - firstLie, behind, LOOK.stride)
   yield* order(firstFall, firstStand - firstFall, n - firstLie + behind, 1)
   yield* paler(firstStand, firstLoose - firstStand, n - firstLie + behind + firstStand - firstFall)
   yield* order(firstLoose, firstLie - firstLoose, n - firstLie + behind + firstLoose - firstFall, 1)
   yield* paler(firstFace, firstFall - firstFace, n - firstFall + behind)
   yield* order(0, firstSurge, n - firstSurge, LOOK.stride)
   // Said after the last stop, so that no other making of the grains stands between the saying and the reading (`grains`).
-  still = n - firstFall + behind
+  still = n - firstFall
+  ahead = behind
   aloft = n - firstSurge
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.BufferAttribute(to, 3))
@@ -911,6 +913,7 @@ function* grainGeometry(): Generator<void, THREE.BufferGeometry> {
 }
 
 let still = 0
+let ahead = 0
 let aloft = 0
 
 // Which share of the fall a thread belongs to, as the shader reads it, and the largest share that still runs when the
@@ -952,12 +955,14 @@ export const grains = inSteps(function* (): Generator<void, THREE.Mesh> {
   mesh.frustumCulled = false
   const whole = mesh.geometry.index!.count / 6
   const fall = still
+  const before = ahead
   const flying = aloft
   mesh.onBeforeRender = () => {
     const share = LOOK.share[meshLevel()] ?? 1
     grainUniforms.uGrainLevel.value = share
-    const drawn = mesh.matrixWorld.determinant() < 0 ? 0 : grainUniforms.uGrain.value.y < 1 ? flying + Math.floor((whole - flying) * share) : fall
-    mesh.geometry.setDrawRange(0, 6 * drawn)
+    const rest = !(grainUniforms.uGrain.value.y < 1)
+    const drawn = mesh.matrixWorld.determinant() < 0 ? 0 : rest ? fall : flying + Math.floor((whole - flying) * share)
+    mesh.geometry.setDrawRange(rest ? 6 * before : 0, 6 * drawn)
   }
   mesh.onAfterRender = () => {
     mesh.geometry.setDrawRange(0, Infinity)
