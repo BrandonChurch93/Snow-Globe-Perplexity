@@ -107,10 +107,10 @@ describe('a still without the air: the stage', () => {
     expect(partsOf(rest)).toEqual(['glass-dressing-spring'])
   })
 
-  it("takes fall's pooled fog and its lip out of the liquid and leaves the crack in its glass", () => {
+  it("takes fall's pooled fog, its lip and its mist out of the liquid and leaves the crack in its glass", () => {
     const root = fall.dressing()
     const air = seasonAir([root])
-    expect(orders(air)).toEqual([5.4, 5.5])
+    expect(orders(air)).toEqual([4.5, 5.4, 5.5])
     const rest = meshes(root).filter((o) => !air.includes(o))
     expect(orders(rest)).toEqual([11])
   })

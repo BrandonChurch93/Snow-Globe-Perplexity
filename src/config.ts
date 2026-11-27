@@ -55,6 +55,8 @@ export const formats: FormatSpec[] = Object.values(raw.formats)
 export interface TierMotion {
   spacingPx: number
   maxSamplesPerFrame: number
+  /** The travel, in px a shutter, from which a frame is drawn with even sample times (film/motion.ts, `evenSet`). */
+  evenFromPx: number
 }
 export const tiers = raw.tiers as Record<string, { samplesPerFrame: number; motion?: TierMotion }>
 export const pictures: PictureSpec[] = [...raw.keys, ...raw.stills]
@@ -71,18 +73,25 @@ export function cameraById(id: string): CameraSpec {
   return c
 }
 
-const COUNTED_TIER = /^samples-([1-9]\d{0,2})$/
+const COUNTED_TIER = /^(samples|final)-([1-9]\d{0,2})$/
 
 export function tierSamples(id: string): number {
   const t = tiers[id]
   if (t) return t.samplesPerFrame
   const counted = COUNTED_TIER.exec(id)
   if (!counted) throw new Error(`no such tier: ${id}`)
-  return Number(counted[1])
+  return Number(counted[2])
 }
 
 /** The tier's own motion rule, or none for a tier of a fixed count and for a counted tier, whose count is asked for. */
 export const tierMotion = (id: string): TierMotion | undefined => tiers[id]?.motion
+
+/**
+ * The travel from which a frame of this tier is drawn with even sample times, or none. The final tier has it, and so has
+ * `final-N`: the final tier's picture with a count that was asked for, which is how the masters draw a frame whose count
+ * they have read from the page beforehand. `samples-N` is N samples and nothing else.
+ */
+export const tierEvenFromPx = (id: string): number | undefined => (/^final-/.test(id) && COUNTED_TIER.test(id) ? tiers.final?.motion?.evenFromPx : tiers[id]?.motion?.evenFromPx)
 
 export function particleKinds(season: string): ParticleKind[] {
   const list = (raw.particles as unknown as Record<string, ParticleKind[]>)[season]

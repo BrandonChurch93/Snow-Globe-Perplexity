@@ -74,6 +74,7 @@ export const look = {
     paleMm: 2.5,
     paleGain: 0.1,
     air: 0.0003,
+    airRest: 0.5,
     airStirred: 0.3,
     airTint: [0.3, 0.24, 0.1],
     airGrid: 0.6,
@@ -105,7 +106,28 @@ export const look = {
     hazeLumpMm: 16,
     hazeBankMm: 150,
     hazeBillowMm: 64,
-    hazeTint: [0.45, 1.0, 0.55],
+    hazeTint: [0.78, 0.92, 0.76],
+    hazeWarm: 0.3,
+    // At rest a pale mist stands in the liquid behind the scene, from the ground to about half the height of the ball,
+    // brightest behind the right side of the trunk, and thins to a dark blue green at the top. It is laid on the far half of the
+    // wall and drawn before the air, so the bats, the leaves and the sparks stand before it at their full strength.
+    mist: 0.74,
+    mistAir: 0.34,
+    mistMm: 15,
+    mistLumpMm: 9,
+    mistTrunk: 2.6,
+    mistAtMm: 14,
+    mistWideMm: 13,
+    mistBillowMm: 120,
+    mistPatchMm: 62,
+    mistPatch: [0.34, 0.58] as const,
+    mistLow: [0.08, 0.135, 0.078],
+    mistTop: [0.056, 0.074, 0.058],
+    mistHigh: [0.04, 0.06, 0.064],
+    mistLeft: 0.3,
+    mistLeftMm: [-24, 4] as const,
+    mistEven: [0.55, 1.1] as const,
+    mistHighMm: [44, 78] as const,
     hazeFrontMm: -9,
     hazeBackMm: -24,
     pour: 0.006,
@@ -122,7 +144,7 @@ export const look = {
     bigMm: 96,
     fineMm: 37,
   },
-  crack: { widthMm: 0.09, edgeMm: 0.055, shade: 0.3, bright: 3.6, sky: 0.3, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.14, bowMm: 0.5, stepMm: 1.6, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.07, warm: [1.0, 0.74, 0.46] },
+  crack: { widthMm: 0.09, edgeMm: 0.055, shade: 0.3, bright: 1.5, sky: 0.3, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.14, bowMm: 1.5, stepMm: 1.6, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.22, spreadPx: 1.25, warm: [0.95, 0.95, 0.95] },
 }
 
 // The crack's path in the pixels of `references/approved/fall-rest.png` (glass circle centre (1417.1, 662.2), radius 564.3 px,
@@ -358,7 +380,7 @@ void main() {
   float span = smoothstep(-2.0, 7.0, h) * (1.0 - smoothstep(34.0, 76.0, h));
   float bound = amp * exp(-max(h - ${f((F.lumpMm + F.lumpFineMm) * F.backTall)}, 0.0) / (deepMm * ${f(F.backTall)})) + hazeAmp * hazeBack * 3.0 * exp(-max(h - ${f(F.hazeLumpMm)}, 0.0) / ${f(F.hazeMm)}) + uFog.z * ${f(F.pour)} * span;
   // The liquid itself is not clear: fine dust in it takes the orange of the lights, most in the upper dome and near the wall.
-  float air = ${f(F.air)} * (1.0 + ${f(F.airStirred)} * lift) * smoothstep(${f(GROUND + 14)}, ${f(GROUND + 46)}, p.y) * mix(0.35, 1.0, smoothstep(24.0, 50.0, r));
+  float air = ${f(F.air)} * mix(${f(F.airRest)}, ${f(1 + F.airStirred)}, lift) * smoothstep(${f(GROUND + 14)}, ${f(GROUND + 46)}, p.y) * mix(0.35, 1.0, smoothstep(24.0, 50.0, r));
   float thrown = ${leanGlsl('p', 'uFogLean', f(RI))};
   bound *= max(thrown, 1.0);
   air *= thrown;
@@ -458,7 +480,8 @@ void main() {
   vec3 lit = stageCold(p) * ${f(F.cold)} + grid * ${f(F.warm)} * (1.0 - ${f(F.warmLifted)} * lift) + vec3(${f(F.glow)}) * mix(mix(0.3, 1.0, deep), 1.0, ${f(F.glowLifted)} * lift) * (0.75 + 0.5 * n.y);
   // Where it is thick it scatters more and goes pale: mint, not green.
   float thick = clamp(rho * ${f(F.paleMm)}, 0.0, 1.0);
-  vec3 col = mix(mix(${vec(F.tint)}, ${vec(F.pale)}, thick), ${vec(F.hazeTint)}, hazeRho / max(rho, 1e-6)) * lit * (1.0 + ${f(F.paleGain)} * thick);
+  vec3 litHaze = lit - grid * ${f(F.warm * (1 - F.hazeWarm))} * (1.0 - ${f(F.warmLifted)} * lift);
+  vec3 col = mix(mix(${vec(F.tint)}, ${vec(F.pale)}, thick) * lit, ${vec(F.hazeTint)} * litHaze, hazeRho / max(rho, 1e-6)) * (1.0 + ${f(F.paleGain)} * thick);
   col = mix(col, ${vec(F.hazeMidTint)} * (lit + vec3(${f(F.hazeMidGlow)})), midRho / max(rho, 1e-6));
   col = (col * rho + ${vec(F.airTint)} * (1.0 + ${f(F.airGrid)} * (grid.r + grid.g)) * air) / max(rho + air, 1e-6);
   gl_FragColor = vec4(col * a + dust * seen, a);
@@ -578,8 +601,8 @@ void main() {
   float run = uCrack.x * 1.03 - tau;
   if (run <= 0.0) discard;
   float mm = best * ${f(RS)};
-  // Thinner than a pixel, it is spread over nearly two with the same light, so that it does not break into dots that crawl.
-  float px = 1.8 * max(max(length(dFdx(vStageLocal)), length(dFdy(vStageLocal))), 1e-4);
+  // Thinner than a pixel, it is spread over a little more than one with the same light, so that it does not break into dots that crawl.
+  float px = ${f(C.spreadPx)} * max(max(length(dFdx(vStageLocal)), length(dFdy(vStageLocal))), 1e-4);
   float taper = smoothstep(0.0, 0.07, run) * mix(1.0, 0.45, smoothstep(0.35, 1.0, tau));
   float w = ${f(C.widthMm)} * taper;
   float core = clamp((0.5 * (w + px) - mm) / px, 0.0, min(1.0, w / px));
@@ -611,6 +634,34 @@ void main() {
     if (alpha * seen < 0.3) discard;
     gl_FragColor = stageDiag(vec3(0.8), n, 0.0, c, 0.0);
   }
+}
+`
+
+const MIST = `
+${FOG_HEAD}
+void main() {
+  float c = stageChange();
+  float seen = (uState.w > 1.5 ? 1.0 - c : uState.w > 0.5 ? c : 1.0) * uFlags.w * (1.0 - uFog.y);
+  if (seen <= 0.0 || uDiag != 0) discard;
+  vec3 p = vStageLocal;
+  float k = uFog.x;
+  vec3 q = vec3(p.x, p.y, 0.0);
+  float n0 = texture(uFogNoise, fogTurn(q, 0.35 * k) / ${f(F.mistBillowMm)} + vec3(0.21, 0.63 - 0.04 * k, 0.4)).r;
+  float n1 = texture(uFogNoise, fogTurn(q, 0.35 * (k - 1.0)) / ${f(F.mistBillowMm)} + vec3(0.21, 0.63 - 0.04 * (k - 1.0), 0.4)).r;
+  float n = 0.5 + (mix(n0, n1, k) - 0.5) / sqrt(k * k + (1.0 - k) * (1.0 - k));
+  float h = p.y - ${f(GROUND)};
+  float stand = exp(-max(h - ${f(F.mistLumpMm)} * (n - 0.5) * 2.0, 0.0) / ${f(F.mistMm)});
+  stand *= mix(${f(F.mistLeft)}, 1.0, smoothstep(${f(F.mistLeftMm[0])}, ${f(F.mistLeftMm[1])}, p.x));
+  float off = (p.x - ${f(F.mistAtMm)}) / ${f(F.mistWideMm)};
+  // No even veil: it hangs in patches, with the dark of the liquid between them.
+  float f0 = texture(uFogNoise, fogTurn(q, -0.5 * k) / ${f(F.mistPatchMm)} + vec3(0.67 + 0.2 * n, 0.19 + 0.06 * k, 0.83)).r;
+  float f1 = texture(uFogNoise, fogTurn(q, -0.5 * (k - 1.0)) / ${f(F.mistPatchMm)} + vec3(0.67 + 0.2 * n, 0.19 + 0.06 * (k - 1.0), 0.83)).r;
+  float fine = 0.5 + (mix(f0, f1, k) - 0.5) / sqrt(k * k + (1.0 - k) * (1.0 - k));
+  float clump = smoothstep(${f(F.mistPatch[0])}, ${f(F.mistPatch[1])}, fine);
+  float rho = ${f(F.mist)} * (${f(F.mistAir)} * (${f(F.mistEven[0])} + ${f(F.mistEven[1])} * clump * clump) + stand * (0.5 + clump + ${f(F.mistTrunk)} * exp(-off * off))) * (0.6 + 0.8 * n);
+  float a = (1.0 - exp(-rho)) * seen;
+  vec3 col = mix(mix(${vec(F.mistTop)}, ${vec(F.mistLow)}, stand), ${vec(F.mistHigh)}, smoothstep(${f(F.mistHighMm[0])}, ${f(F.mistHighMm[1])}, h));
+  gl_FragColor = vec4(col * a, a);
 }
 `
 
@@ -696,6 +747,24 @@ function makeLip(): THREE.Mesh {
   return mesh
 }
 
+function makeMist(): THREE.Mesh {
+  const r = RI - 0.6
+  const m = stageShader({
+    part: PART,
+    standIn: false,
+    inside: true,
+    change: 'veil',
+    uniforms: { uFog: uniforms.uFog, uFogNoise: uniforms.uFogNoise },
+    fragment: MIST,
+    // Only the faces that look at the eye from across the ball are drawn: the far half, whichever way the ball is turned.
+    params: { ...blend, transparent: false, side: THREE.BackSide },
+  })
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 40, 12, 0, Math.PI * 2, 0, Math.acos((GROUND - 3) / r)), m)
+  mesh.renderOrder = 4.5
+  mesh.frustumCulled = false
+  return mesh
+}
+
 function makeCrack(): THREE.Mesh {
   const m = stageShader({
     part: PART,
@@ -707,7 +776,7 @@ function makeCrack(): THREE.Mesh {
     fragment: CRACK,
     params: { ...blend, side: THREE.FrontSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 },
   })
-  const mesh = new THREE.Mesh(new THREE.SphereGeometry(RS + 0.06, 96, 64), m)
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(RS + 0.06, 96, 58), m)
   mesh.renderOrder = 11
   mesh.frustumCulled = false
   return mesh
@@ -716,7 +785,7 @@ function makeCrack(): THREE.Mesh {
 let group: THREE.Group | null = null
 
 export function dressing(): THREE.Object3D {
-  group ??= new THREE.Group().add(makeLip(), makeFog(), makeCrack())
+  group ??= new THREE.Group().add(makeMist(), makeLip(), makeFog(), makeCrack())
   return group
 }
 
