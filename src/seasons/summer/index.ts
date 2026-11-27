@@ -1,3 +1,4 @@
+import { inSteps, stepsOf } from '../../scene/steps'
 import type { KitMoment, SeasonKit } from '../kit'
 import * as arrivalPart from './arrival'
 import { backdrop } from './backdrop'
@@ -20,7 +21,11 @@ export const kit: SeasonKit = {
   arrival: arrivalPart.arrival,
   lights: miniaturePart.lights,
   collider: miniaturePart.collider,
-  dressing: () => ({ glass: glassPart.dressing(), surface: slabPart.dressing() }),
+  dressing: inSteps(function* () {
+    const glass = glassPart.dressing()
+    yield
+    return { glass, surface: yield* stepsOf(slabPart.dressing) }
+  }),
   update: (moment: KitMoment) => {
     basePart.update(moment)
     miniaturePart.update(moment)
