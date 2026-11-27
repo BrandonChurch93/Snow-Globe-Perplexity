@@ -733,6 +733,29 @@ function soften(renderer: THREE.WebGLRenderer, target: THREE.WebGLRenderTarget, 
   behindUniforms.uSoft.value = soft.texture
 }
 
+const warmed = new Map<THREE.TextureDataType, THREE.WebGLRenderTarget>()
+
+/**
+ * The soft copy drawn once into one pixel of its own kind, for the stage to ask for while the picture rests
+ * (`userData.warm`): the picture bound is of the frame's kind. First drawn in the first shake into spring, its program
+ * was linked there and held the shake.
+ */
+function warmSoft(renderer: THREE.WebGLRenderer): void {
+  const like = renderer.getRenderTarget()
+  if (!like) return
+  const type = like.texture.type === THREE.FloatType ? THREE.HalfFloatType : like.texture.type
+  let to = warmed.get(type)
+  if (!to) warmed.set(type, (to = new THREE.WebGLRenderTarget(1, 1, { type, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false })))
+  softPass ??= new Pass(SOFT, softUniforms)
+  const from = softUniforms.uFrom.value
+  softUniforms.uFrom.value = null
+  const drawn = { ...renderer.info.render }
+  softPass.render(renderer, to)
+  renderer.setRenderTarget(like)
+  Object.assign(renderer.info.render, drawn)
+  softUniforms.uFrom.value = from
+}
+
 // The frame as it stands when the glass has been drawn, for the drops to look through. One copy serves the beads and the
 // trails: it is taken before the first of them is drawn.
 function copyBehind(renderer: THREE.WebGLRenderer, material: THREE.Material, first: boolean): void {
@@ -785,6 +808,7 @@ function make(): THREE.Group {
   trails.renderOrder = 11
   trails.frustumCulled = false
   trails.onBeforeRender = (renderer, _scene, _camera, _geometry, material) => copyBehind(renderer, material, true)
+  trails.userData.warm = warmSoft
   const beads = new THREE.Mesh(
     beadsGeometry(),
     stageShader({ part: PART, standIn: false, change: 'glass-dressing', uniforms, vertexPars: BEAD_VERT_PARS, vertexMain: BEAD_VERT, fragment: BEAD, params: { ...blend } }),

@@ -299,6 +299,9 @@ export class GlobeStage implements Stage {
     )
     // A press that has waited `LAST_S` waits no longer for a link: the draws below wait for each program in turn.
     if (linked.length) await until(Promise.all(linked), () => !go() || this.wish.last(season), () => this.frameOrSoon())
+    // What a mesh draws of its own before its draw is drawn here once too (`userData.warm`): the draws below leave it out,
+    // and its program was linked in the first shake into the season.
+    await run(meshes.flatMap((d) => (typeof d.userData.warm === 'function' ? [() => aside(like, () => (d.userData.warm as (r: THREE.WebGLRenderer) => void)(renderer))] : [])))
 
     const pictures = new Set<THREE.Texture>([s.grid])
     for (const e of this.assets.entries(season)) if (e.picture && hasTexture(e.name)) pictures.add(texture(e.name))

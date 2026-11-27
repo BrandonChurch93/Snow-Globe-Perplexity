@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { LIVE, LiveSession, SeasonLoader, type LiveSim } from '../src/app/session'
 import { config } from '../src/config'
@@ -7,6 +8,7 @@ import { Governor } from '../src/core/quality'
 import { FIT_MS, FramePace, GAPS, Hands, KEEP_MS, LAST_S, LEAST_MS, PACE, PRESS_S, SETTLE_S, SOON_MS, Wish, fitIn, handIn, inPieces, inSteps, leftIn, runFor, seasonsIn, spendIn, spendOf, stepsOf, until, whole, workIn, type InSteps, type Step, type Turn } from '../src/scene/steps'
 import { kit as fall } from '../src/seasons/fall'
 import { kit as spring } from '../src/seasons/spring'
+import * as springGlass from '../src/seasons/spring/glass'
 import { kit as summer } from '../src/seasons/summer'
 import { kit as winter } from '../src/seasons/winter'
 import { rel } from '../tools/lib/paths.mjs'
@@ -1385,4 +1387,82 @@ describe('the four miniatures and what each season lays round its globe', () => 
     // anything that asks for it before the dressing has laid it, leaves a few hundred steps and one of them a long one.
     expect(Number(/^summer, the dressing: .*; (\d+) steps, /m.exec(out)?.[1])).toBeGreaterThan(1000)
   }, 300000)
+})
+
+// The hand of a season draws each mesh once alone, without what the mesh draws of its own before its draw: a copy of the
+// frame is of no use to one pixel. A pass drawn there has a program of its own, and that program was first linked in the
+// first frame of the first shake into spring. A mesh gives the stage what to draw once for it (`userData.warm`).
+describe('what the glass of spring draws of its own before a draw', () => {
+  type Drew = { to: THREE.WebGLRenderTarget | null; pass: THREE.Material }
+  const page = (frame: THREE.WebGLRenderTarget | null) => {
+    const drew: Drew[] = []
+    const info = { frame: 7, calls: 3, triangles: 5, points: 0, lines: 0 }
+    let bound = frame
+    const renderer = {
+      info: { render: info },
+      getRenderTarget: () => bound,
+      setRenderTarget: (to: THREE.WebGLRenderTarget | null) => void (bound = to),
+      copyFramebufferToTexture: () => undefined,
+      render: (scene: THREE.Object3D) => {
+        info.frame++
+        info.calls++
+        scene.traverse((o) => {
+          const pass = (o as THREE.Mesh).material as THREE.Material | undefined
+          if (pass) drew.push({ to: bound, pass })
+        })
+      },
+    }
+    return { renderer: renderer as unknown as THREE.WebGLRenderer, drew, info, bound: () => bound }
+  }
+  const meshes = (): THREE.Mesh[] => {
+    const all: THREE.Mesh[] = []
+    springGlass.dressing().traverse((o) => void ((o as THREE.Mesh).isMesh && all.push(o as THREE.Mesh)))
+    return all
+  }
+  const warms = (): ((renderer: THREE.WebGLRenderer) => void)[] => meshes().flatMap((m) => (typeof m.userData.warm === 'function' ? [m.userData.warm as (renderer: THREE.WebGLRenderer) => void] : []))
+  const kind = (t: THREE.WebGLRenderTarget | null): string => `${t?.texture.type} ${t?.texture.format} ${t?.samples} ${t?.depthBuffer} ${t?.stencilBuffer}`
+  const frameOf = (type: THREE.TextureDataType, side: number): THREE.WebGLRenderTarget => new THREE.WebGLRenderTarget(side, side, { type })
+
+  it('gives the stage every pass a mesh of it draws before its own draw, to draw once into one pixel of the same kind', () => {
+    for (const type of [THREE.HalfFloatType, THREE.FloatType, THREE.UnsignedByteType]) {
+      const live = page(frameOf(type, 64))
+      const hooked = meshes().filter((m) => m.onBeforeRender !== THREE.Object3D.prototype.onBeforeRender)
+      expect(hooked.length).toBeGreaterThan(0)
+      const uniforms = hooked.map((m) => (m.material as THREE.ShaderMaterial).uniforms)
+      for (const m of hooked) m.onBeforeRender(live.renderer, new THREE.Scene(), new THREE.Camera(), m.geometry, m.material as THREE.Material, null as unknown as THREE.Group)
+      for (const u of uniforms) {
+        if (u.uBehind) u.uBehind.value = null
+        if (u.uSoft) u.uSoft.value = null
+        ;(u.uBehindSize?.value as THREE.Vector2 | undefined)?.set(0, 0)
+      }
+      expect(live.drew.length).toBeGreaterThan(0)
+
+      const rest = page(frameOf(type, 1))
+      for (const warm of warms()) warm(rest.renderer)
+      for (const d of live.drew) {
+        const twin = rest.drew.find((w) => w.pass === d.pass)
+        expect(twin).toBeDefined()
+        expect(kind(twin!.to)).toBe(kind(d.to))
+        expect([twin!.to!.width, twin!.to!.height]).toEqual([1, 1])
+      }
+    }
+  })
+
+  it('leaves the renderer as it found it: the picture bound, and the count of what was drawn', () => {
+    const like = frameOf(THREE.HalfFloatType, 1)
+    const rest = page(like)
+    expect(warms().length).toBeGreaterThan(0)
+    for (const warm of warms()) warm(rest.renderer)
+    expect(rest.drew.length).toBeGreaterThan(0)
+    expect(rest.drew.every((d) => d.to !== like)).toBe(true)
+    expect(rest.bound()).toBe(like)
+    expect(rest.info).toEqual({ frame: 7, calls: 3, triangles: 5, points: 0, lines: 0 })
+  })
+
+  it('draws nothing where no picture is bound, which is the screen and not a frame of the stage', () => {
+    const rest = page(null)
+    for (const warm of warms()) warm(rest.renderer)
+    expect(rest.drew).toHaveLength(0)
+    expect(rest.bound()).toBeNull()
+  })
 })
