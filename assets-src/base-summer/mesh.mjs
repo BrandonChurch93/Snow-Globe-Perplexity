@@ -199,34 +199,68 @@ function scallop(soup, fr, it, rnd, opt) {
   )
 }
 
-// A whelk: a round shell with body. Each turn of its tube is far wider than the one before, so the last is most of the shell; it lies
-// tilted in the sand, the body turned out to the eye and the spire to one side.
+// A whelk: a low round shell coiled like a rope. Each turn of its tube is nearly twice as wide as the one before and lies closed against
+// it, so from above the shell is a disc with a spiral drawn on it: the seam between two turns. It lies in the sand with its mouth down and
+// the end of its tube drawn shut under it; `lie` is how far the tip leans from straight out of the wall, in degrees, and `turn` to which
+// side. Across the tube the points stand closest by the seam, where the eye reads the spiral. It is as wide as the dish it lies in.
+const WHELK = { turns: 3.25, shrink: 0.55, tube: 0.42, spire: 0.5, across: [-16, 0, 8, 18, 30, 44, 60, 78, 100, 130, 168], seam: 28 }
+function whelkSeam() {
+  const q = WHELK.shrink
+  const c = [0.5 * q, WHELK.spire * (1 - q)]
+  let lo = -80
+  let hi = 20
+  for (let i = 0; i < 50; i++) {
+    const m = (lo + hi) / 2
+    if (Math.hypot(0.5 + WHELK.tube * Math.sin(m * RAD) - c[0], WHELK.tube * Math.cos(m * RAD) - c[1]) < WHELK.tube * q) lo = m
+    else hi = m
+  }
+  return (lo + hi) / 2
+}
 function snail(soup, fr, it, rnd) {
   const R = it.r * 1.45
-  const turns = 2.5
   const band = it.band ?? [0.5, 0.28, 0.14]
-  const tilt = 32 * RAD
+  const lie = (it.lie ?? 20) * RAD
+  const sink = 0.1 + 0.25 * Math.sin(lie)
+  const grow = WHELK.turns * Math.log(1 / WHELK.shrink)
+  const seamAt = whelkSeam()
+  const nv = WHELK.across.length
+  const raw = (u, v) => {
+    const g = Math.exp(-grow * (1 - u))
+    const phi = (220 - (1 - u) * WHELK.turns * 360) * RAD
+    const shut = Math.sqrt(Math.max(1 - clamp((u - 0.93) / 0.07) ** 2, 0)) * Math.sqrt(smooth(0, 0.03, u))
+    const rc = 0.5 * g
+    const rt = WHELK.tube * g * shut
+    const psi = (seamAt + WHELK.across[Math.round(v * (nv - 1))]) * RAD
+    const rad = rc + rt * Math.sin(psi)
+    const x = rad * Math.cos(phi)
+    const z = WHELK.spire * (1 - g) - 0.3 * g * (1 - shut) + rt * Math.cos(psi)
+    return [x * Math.cos(lie) - z * Math.sin(lie), rad * Math.sin(phi), x * Math.sin(lie) + z * Math.cos(lie) - sink]
+  }
+  const box = [Infinity, -Infinity, Infinity, -Infinity]
+  for (let i = 0; i < 112; i++) for (let j = 0; j < nv; j++) {
+    const p = raw(i / 111, j / (nv - 1))
+    if (p[2] <= 0) continue
+    box[0] = Math.min(box[0], p[0])
+    box[1] = Math.max(box[1], p[0])
+    box[2] = Math.min(box[2], p[1])
+    box[3] = Math.max(box[3], p[1])
+  }
+  const k = (0.86 * R) / (0.5 * Math.max(box[1] - box[0], box[3] - box[2]))
   surf(
     soup,
     fr,
     112,
-    11,
+    nv,
     (u, v) => {
-      const g = Math.exp(-2.9 * (1 - u))
-      const phi = u * turns * 2 * Math.PI
-      const rc = 0.5 * R * g
-      const rt = 0.5 * R * g * (1 - 0.55 * smooth(0.95, 1, u))
-      const psi = (v * 2 - 1) * 118 * RAD
-      const rad = rc + rt * Math.sin(psi)
-      const x = rad * Math.cos(phi)
-      const z = 0.7 * R * (1 - g) + rt * Math.cos(psi)
-      return [x * Math.cos(tilt) + z * Math.sin(tilt) + 0.1 * R, rad * Math.sin(phi) - 0.16 * R, z * Math.cos(tilt) - x * Math.sin(tilt) - 0.16 * R - 0.3 * R * smooth(0.92, 1, u)]
+      const p = raw(u, v)
+      return [(p[0] - 0.5 * (box[0] + box[1])) * k, (p[1] - 0.5 * (box[2] + box[3])) * k, p[2] * k]
     },
     (u, v) => {
-      const psi = v * 2 - 1
-      const stripe = smooth(0.3, 0.7, 0.5 + 0.5 * Math.sin(psi * 5.5 + 1.2 + 0.4 * Math.sin(u * 40 + rnd.k * 9)))
+      const across = WHELK.across[Math.round(v * (nv - 1))]
+      // The first turn has no turn before it to lie against: no seam there.
+      const seam = u * WHELK.turns < 1 ? 1 : smooth(0, WHELK.seam, across)
+      const stripe = smooth(0.3, 0.7, 0.5 + 0.5 * Math.sin(across * 0.09 + 1.2 + 0.4 * Math.sin(u * 40 + rnd.k * 9)))
       const growth = 0.97 + 0.03 * Math.sin(u * 240)
-      const seam = 0.5 + 0.5 * smooth(0.0, 0.35, 1 - Math.abs(psi))
       const c = [0, 1, 2].map((q) => mix(it.c[q], band[q], 0.2 * stripe) * growth)
       return { uv: [u * 30, v * 2], uv2: [seam, 0.7], c }
     },
@@ -335,7 +369,8 @@ export function ledgeSand(f, az, t) {
   const lumps = (0.5 * (fbm(A * 60, t * 3, 60, 64, 205, 3) - 0.5) + 0.22 * (fbm(A * 170, t * 7, 170, 64, 207, 2) - 0.5)) * Math.sin(Math.PI * Math.min(t * 1.15, 1))
   const lee = 1 - 0.97 * smooth(-45, -75, az) * smooth(-178, -150, az)
   const a180 = az - 360 * Math.round(az / 360)
-  const shaded = smooth(-42, -26, a180) * smooth(48, 34, a180)
+  // From the left flank to right of the middle the top of the roll has no grains of its own: the stone's own drift lies there (profile.mjs).
+  const shaded = smooth(-82, -74, a180) * smooth(58, 44, a180)
   const thick = (Math.max(Math.max(heap, 0.25) * 1.5 * fall + lumps * (0.3 + sp), 0) + 0.04) * lee * (1 - shaded)
   const lift = 0.03 + 0.45 * Math.min(thick, 1.2)
   const h = q.h + q.nh * (d + lift)
