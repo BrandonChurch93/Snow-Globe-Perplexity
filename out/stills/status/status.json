@@ -1,45 +1,47 @@
 {
-  "number": 181,
-  "time": "2026-11-26 23:08 UTC",
+  "number": 183,
+  "time": "2026-11-27 00:05 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 181 · 2026-11-26 23:08 UTC · Phase 6",
-    "Main is `57503019`, pushed 23:06 UTC: the hand's last pass is in (a twist of up to 10 degrees after each turn, a deeper arched dip, uneven strokes with a heavy start). Read before the push: `npx tsc --noEmit` clean, the build green, the whole test run 58 files passed and 1 skipped, 799 tests passed and 4 skipped, and the eight draft stills of the four seasons at rest and at the landing byte for byte equal with it and without it. The inertia's builder took it up at 23:07 UTC with 60 minutes.",
-    "Waiting here for the test run's last word, not yet on origin: summer's base, first push, and the standstill (local main `8aabc817`). On that tree summer's detail line is green for the first time: \"pass M3 summer-rest: 0.8159 (threshold 0.75, detail.minSharpnessRatio)\", base 1.041 against 0.621 before, miniature 0.816. Picture 1 says what that is worth: the number is green and the look is still below the bar. Left the approved base, in the middle main before, right with the first push: sand grain and grooves are there now, the form is still thin even rings where the approved picture has broad carved swirls, and the shade is still warm where the approved one is blue grey. The base's builder works on; in the storm the base follows the approved shake picture (decision 172).",
-    "The standstill: where the live page draws one sample a frame, a part that gives way to another now does so through a fixed fine pattern instead of a flicker. Decision 171 restates the grain file's size rule that came with it.",
-    "Fall's air has its builder since 22:57 UTC (`tools/briefs/p6/fall-air.md`). Picture 2, approved left and build right at draft tier, below the bar: the build draws its sparks as golden blobs of 6 to 14 px spread evenly where the approved picture has fine points in drifts; by the widest of three counts warm pixels fill 14.4 in 100 of the glass against 9.9; between cottage and tree the build stands at 32, 33, 29 against 69, 71, 60 (the fog at rest, granted to the same builder).",
-    "Summer at 3840 in motion, final tier, drawn by a farm machine on `708c31cd` (film frames 1860 to 1889, the pull back; 77 to 79 s a frame). Picture 4 is a window of frame 1860 at full size. It holds almost everywhere: the base, shells, lamps, leaves, roof, fence, the air and the glass's film. Two faults found and sent to their builders at 23:04 UTC: the sand that pours over the lip at the right of the base is drawn anew in every frame and steps; the ball's outline at upper left is a band of 2 to 3 px of alternating pixels that shimmers as it moves.",
-    "Picture 3 is summer at the landing at review tier on the merged tree.",
-    "No rough draft since draft 4 and no frame of the 4K masters drawn yet: the masters wait until the motion faults of winter, spring and summer are mended. Open item 249 is new: this machine's disk (20 GB, 4.3 GB free) is too small to join the masters as it stands.",
-    "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
-    "phase 6: 20.32 h used of its 12.00 h box",
-    "allowance (after the review): 20.32 h used of 12.00 h allowed",
+    "Status 183 · 2026-11-27 00:05 UTC · Phase 6",
+    "Published at 00:04 UTC (5:04 PM MT) from `6733a516`: the live app now holds the hand's new motion, summer's base first push, the standstill of the particles at rest and the guards against the white glass. Built in a clean worktree of that commit: `npx tsc --noEmit` exit 0; the whole vitest 804 passed and 9 skipped (59 files passed, 1 skipped); `npm run build` exit 0, engine `4fdd312e06b0e534`; on the built site \"poster: pass · 40 stills and the table agree with the framing\"; 351 files, 191,822,509 bytes. A fresh security reviewer answered `BLOCKS: no` (audit 0, no secret, no request off the site's own address; its own rebuild matches 15 of the 17 files to the byte, and the other two, the page and its main script, match a build here without the sound files, which the public repo does not hold). Three things it would mend, none of them security: `?assets=full` typed into the address breaks the page for that visitor (open item 250, mine); the debug views open to anyone who types their names; the config still says the repo is expected private. The deploy reported the site's record as verified and the publish answered \"published\". The preview serves the same engine hash and both pages with 200; the published address answers 401 to a fetch without a sign-in, so the live pages are NOT read from here. Visibility: Organization (settings: https://www.perplexity.ai/computer/a/4c4f15d3-07df-421c-941e-77528b5e889f?open-publish=true ).",
+    "Picture 1, the four seasons as the app opens today: the first pictures the page shows before the app takes over, all 40 drawn again from today's build (one for each season and screen shape; the wide screen ones are shown). The check that they match the app's framing answered \"poster: pass · 40 stills and the table agree with the framing\". They are commit `6733a516`, pushed with main `e3012193` at 00:05 UTC.",
+    "Picture 2, fall's miniature after its builder's pass, approved left and build right: below the bar. Its measure rose from 0.534 to 0.709 against the config's 0.75, so the line it was given is not met. Its builder stopped there on purpose: a run at about 0.74 owed its number to a chimney in pale stripes that is wrong against the approved picture, and was mended. New: fall's own shingled roof with a sagging ridge, dark stone walls, nearly three times the leaves on the ground, finer rim stones, pumpkins, fence and bark. Still wrong by its own list and my look: the water is bright teal with white dashes where the picture has dark green with a soft glow, the front wall and the door hold half the detail, the chimney has no cap, the roof is brighter and more orange. It gets a second list after its merge.",
+    "Picture 3, a new measuring aid: summer as approved, as built, and as built with everything that floats in the ball taken away (`--no-air`, by the controls' finisher, decision 174). It is for reading the tones of the miniature under the air and is refused for every judged still. What it shows at once: under the air our tree is nearly black and our ground is pale, where the approved picture has a lit green crown.",
+    "Fall's air, first push on its branch: the sparks are fine points now and the warm share of the picture is 9.4, 5.9 and 1.6 in 100 against the approved 9.9, 4.9 and 1.8 (before 14.4, 6.3, 2.3). Its builder has not yet looked at the other seasons, the shake or the measures, so it is not merged yet.",
+    "The strict check of the live path found one real fault under the glass's guards (logged 23:40 UTC): with the guards off, the glass puts out an infinite colour in a ring at the edge of the ball (about 11,000 pixels in winter), held back today by one guard line only. Its finder is closing the open cases at their source. This is the family of fault behind the white glass on your iPad, so it is worth closing twice.",
+    "The hand's inertia is in from its builder (00:03 UTC, `agent/p6-inertia` `47891785`), not merged yet: loose petals and leaves now lag behind the glass and fold against its wall instead of moving with it (tracked petals move 3.3 px where the glass moves 18.5; on main they moved 10.9), and the sudden filling of the front at the first stroke is gone (1,613 petals in view in both frames where main jumped from 1,593 to 7,838). Its lines: all eight M4 and M5 pass, summer's M3 passes at 0.8007 with the miniature at 0.801 (the guard of decision 169 was 0.77), 810 tests passed. Not seen by it: full speed playback and the live page's frame rate. It is merged next, and rough draft 5 is drawn after it.",
+    "14 agents are at work: summer (tree, miniature, air, glass, sand, stone), fall (air, base), spring (base), winter (pond and frond), the change of season, the controls, the strict check, and one farm machine drawing winter into spring at 3840. Two places are free; fall's miniature gets its second list and the draft renderers start with rough draft 5.",
+    "No rough draft since draft 4 and no frame of the 4K masters drawn yet. Drawn since the last status: the 40 first pictures, nothing at 3840 here.",
+    "Sound: 7,420 of 10,000 credits, unchanged, no call planned (account counter 17,287 of 131,000 at 23:56 UTC).",
+    "phase 6: 21.27 h used of its 12.00 h box",
+    "allowance (after the review): 21.27 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-181-1.jpg",
-      "caption": "Summer's base: approved picture left, main before in the middle, with the first push right, still below the bar",
+      "file": "out/stills/status/status-183-1.jpg",
+      "caption": "The four seasons as the app opens today: the first pictures of the page, drawn again from today's build",
       "w": 1200,
-      "h": 175
+      "h": 677
     },
     {
-      "file": "out/stills/status/status-181-2.jpg",
-      "caption": "Fall's air: approved picture left and build right at draft tier, below the bar",
+      "file": "out/stills/status/status-183-2.jpg",
+      "caption": "Fall's miniature after its builder's pass, approved picture left and build right, below the bar",
       "w": 1200,
-      "h": 463
+      "h": 335
     },
     {
-      "file": "out/stills/status/status-181-3.jpg",
-      "caption": "Summer at the landing at review tier on the merged tree",
+      "file": "out/stills/status/status-183-3.jpg",
+      "caption": "Summer as approved, as built, and as built without its air (a measuring aid)",
       "w": 1200,
-      "h": 675
+      "h": 396
     },
     {
-      "file": "out/stills/status/status-181-4.jpg",
-      "caption": "Summer at 4K in motion: a window of frame 1860 at full size",
+      "file": "out/stills/status/status-183-4.jpg",
+      "caption": "Still: fall rest hero, hd, draft",
       "w": 1200,
       "h": 675
     }
