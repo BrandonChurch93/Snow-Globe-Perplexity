@@ -106,10 +106,11 @@ export function runFor(steps: Step[], ms: number, now: () => number): void {
 }
 
 /**
- * How long a press holds other seasons' work back where no shake answers it (reduced motion): as long as the page keeps
- * the wish. In the seconds the session counts, as all the times of a wish are: a frame counts a quarter of a second there
- * at most, so a page that draws slowly keeps a wish far longer than the clock says. Counted by the clock, the wish would
- * go on such a page before the season pressed for had its turn at the last piece, and the press would land nowhere.
+ * How long a press holds other seasons' work back where nothing answers it, neither a shake nor the season on show: as
+ * long as the page keeps the wish. In the seconds the session counts, as all the times of a wish are: a frame counts a
+ * quarter of a second there at most, so a page that draws slowly keeps a wish far longer than the clock says. Counted by
+ * the clock, the wish would go on such a page before the season pressed for had its turn at the last piece, and the
+ * press would land nowhere.
  */
 export const PRESS_S = config.live.loadWaitSeconds
 /** How long after a press its season is made in steps. What is left then is made in one piece: the picture stands for it, and the wish is not lost. */
@@ -118,9 +119,10 @@ export const LAST_S = PRESS_S - 0.5
 export const SETTLE_S = Math.max(config.shake.settleCheckSeconds, config.shake.spinDownSeconds)
 
 /**
- * The season a press asked for. The wish stands until the shake that answers the press has landed and settled, and for
- * `PRESS_S` where none does. While it stands nothing is made for any other season, and nothing at all through a shake
- * nobody pressed for.
+ * The season a press asked for. The wish stands until the change it asked for has been shown: with a shake, until the
+ * shake has landed and settled; without one (reduced motion), until the season is on show; and for `PRESS_S` where
+ * neither comes. While it stands nothing is made for any other season, and nothing at all through a shake nobody
+ * pressed for.
  */
 export class Wish {
   private inAir = false
@@ -128,6 +130,8 @@ export class Wish {
   private into: string | null = null
   private at = 0
   private time = 0
+  private giving = false
+  private given = false
 
   /** A press for `season`, at the moment drawn last: the session has not counted on since. */
   press(season: string): void {
@@ -137,14 +141,16 @@ export class Wish {
   }
 
   /** A frame of `moment` is drawn. A landing is no rest: what arrived is still coming down, and a stop there is seen. */
-  drawn(moment: Pick<Moment, 'beat' | 'sinceLanding' | 'time'>): void {
+  drawn(moment: Pick<Moment, 'beat' | 'season' | 'sinceLanding' | 'time'>): void {
     // The time runs back where a session begins again or a state is set. The wish keeps its age through that: let go in
     // mid shake, it would leave the season pressed for held with all the others.
     if (moment.time < this.time) this.at -= this.time - moment.time
     this.time = moment.time
-    if (moment.beat !== null) this.inAir = this.answered = true
-    else if (!(moment.sinceLanding < SETTLE_S)) this.inAir = false
-    if (!this.inAir && (this.answered || !(this.time - this.at < PRESS_S))) this.into = null
+    this.given = this.giving
+    this.giving = false
+    if (moment.beat !== null) this.answered = true
+    this.inAir = moment.beat !== null || moment.sinceLanding < SETTLE_S
+    if (!this.inAir && (this.answered || moment.season === this.into || !(this.time - this.at < PRESS_S))) this.into = null
   }
 
   awaits(season: string): boolean {
@@ -159,6 +165,21 @@ export class Wish {
   /** Whether what is left of `season` is made in one piece: it is the season pressed for, and the press is `LAST_S` old. */
   last(season: string): boolean {
     return this.into === season && this.time - this.at > LAST_S
+  }
+
+  /** The page works on the season pressed for, in the time before the frame that comes next. */
+  gives(): void {
+    this.giving = true
+  }
+
+  /**
+   * Whether the page worked on the season pressed for in the time the frame drawn last took to come. It gave that time
+   * up by its own choice (`spendIn`), so the frame says nothing of the machine's pace, and the governor is not told of
+   * it. Only where that work was in fact done: a season whose files fail or never come is not worked on, and holds the
+   * governor off for no frame. And it ends, because what is left `LAST_S` after the press is made in one piece.
+   */
+  get gave(): boolean {
+    return this.given
   }
 }
 
@@ -175,6 +196,7 @@ export interface Turn {
  */
 export function workIn(steps: Step[], season: string, turn: Turn, wish: Wish, pace: FramePace, now: () => number): void {
   const awaited = wish.awaits(season)
+  if (awaited) wish.gives()
   const from = now()
   if (wish.last(season)) while (steps.length) steps.shift()!()
   else runFor(steps, turn.frame === null ? spendOf(turn.waited, awaited) : spendIn(now() - turn.frame, pace.every, turn.waited, awaited, pace.taken), now)
