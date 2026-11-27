@@ -26,14 +26,14 @@ const LEVEL = { seed: 4107, medium: { back: 0.4, front: 0.72 }, low: { back: 0.2
 const WATER_CLEAR_MM = 2.2
 // The turf comes down over the upper half of the bank; under it lies the sand, a thin pale layer against the glass.
 // Of the bank only its upper three tenths stand over the collar: there the rows lie close (`rowsPow`).
-const BANK = { turfTo: 0.115, turfVary: 0.1, sandTo: 0.3, rowsPow: 1.8, hang: 1500, hangTuft: [0.7, 1.7], hangWide: 1.5, hangDown: 0.25, lawn: 900, rootMm: 0.62, tipMm: 0.42 }
-const turfTo = (th) => clamp(BANK.turfTo + BANK.turfVary * fbm(Math.cos(th) * 9 + 2.3, Math.sin(th) * 9 + 9.1, 4.7, 3) + 0.02 * fbm(Math.cos(th) * 41 + 5.1, Math.sin(th) * 41 + 1.3, 7.9, 2), 0.07, 0.2)
+const BANK = { turfTo: 0.03, turfVary: 0.05, turfLeast: 0.012, sandTo: 0.3, rowsPow: 1.8, hang: 220, hangTuft: [0.7, 1.7], hangWide: 1.5, hangDown: 0.25, lawn: 250, rootMm: 0.62, tipMm: 0.42 }
+const turfTo = (th) => clamp(BANK.turfTo + BANK.turfVary * fbm(Math.cos(th) * 9 + 2.3, Math.sin(th) * 9 + 9.1, 4.7, 3) + 0.02 * fbm(Math.cos(th) * 41 + 5.1, Math.sin(th) * 41 + 1.3, 7.9, 2), BANK.turfLeast, 0.2)
 const STEP = { seed: 9091, rise: 0.4, pale: 2.4, fenceFrontMm: 6, fenceLow: 0.4, at: [[150, 0.93, 2.6], [171, 0.9, 3.1], [192, 0.92, 2.7], [212, 0.9, 3.0]] }
 const STONE = { lift: 1.7, buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, wet: 0.6, moss: 0.8, mossFrom: 0.5, mossTo: 0.85, foot: 0.4, top: 1.2, rim: 18, rimTufts: 420, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692', '#9a8c74', '#6f6a62'] }
 // The bank as the approved image has it: the path's slabs and a row of loaves along the pond's far rim, brown, worn smooth and
 // mossy on top, pebbles at the water's edge and reeds in the shallows. The rubble that lay at the pond's left end is left out;
 // its stones keep their numbers in the run, so that the lawn and the flowers stand where they stood.
-const LOAF = { seed: 5081, dome: 0.85, shear: 0.25, sink: 0.3, wet: 0.45, tones: ['#a8957f', '#b3a08c', '#9c8872', '#bba995'], lumps: 0.12, chips: 0.03, moss: 0.45, mossFrom: 0.6, mossTo: 0.95, mossTone: '#6f7a3c', lift: 1.0, foot: 0.8, top: 0.3, crease: 0.3, creaseMm: 0.45, heel: 0.45, heelMm: 0.8, row: [[-4.0, -0.5, 2.0, 1.35, 0.7], [-1.5, -0.75, 1.9, 1.3, 0.72], [1.0, -0.45, 2.1, 1.4, 0.68], [3.6, -0.7, 1.9, 1.3, 0.72], [6.0, -0.5, 1.7, 1.2, 0.7], [8.0, -0.4, 1.3, 1.0, 0.62]], hide: [262, 246, 230, 214, 199, 255, 239, 222, 207, 188, 173, 161], fill: 2.2 }
+const LOAF = { seed: 5081, dome: 0.85, shear: 0.25, sink: 0.3, wet: 0.45, tones: ['#a8957f', '#b3a08c', '#9c8872', '#bba995'], lumps: 0.12, chips: 0.03, moss: 0.85, mossFrom: 0.35, mossTo: 0.7, mossTone: '#5f7030', lift: 1.0, foot: 0.8, top: 0.3, crease: 0.3, creaseMm: 0.45, heel: 0.45, heelMm: 0.8, row: [[-4.0, -0.5, 2.0, 1.35, 0.7], [-1.5, -0.75, 1.9, 1.3, 0.72], [1.0, -0.45, 2.1, 1.4, 0.68], [3.6, -0.7, 1.9, 1.3, 0.72], [6.0, -0.5, 1.7, 1.2, 0.7], [8.0, -0.4, 1.3, 1.0, 0.62]], hide: [262, 246, 230, 214, 199, 255, 239, 222, 207, 188, 173, 161], fill: 2.2 }
 // The path's slabs keep their flat tops and take the loaves' pale grey brown.
 const SLAB = { tones: ['#a8957f', '#b3a08c', '#9c8872', '#bba995'], lumps: 0.16, chips: 0.04, moss: 0.6, mossFrom: 0.5, mossTo: 0.85, mossTone: '#6f7a3c', lift: 1.0, foot: 0.7, top: 0.4, heel: 0.5, heelMm: 0.6 }
 // Pebbles lie in handfuls at the loaves' feet and along the rims, not in an even string.

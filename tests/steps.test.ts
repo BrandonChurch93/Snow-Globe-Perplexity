@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { LIVE, LiveSession, type LiveSim } from '../src/app/session'
 import { config } from '../src/config'
 import { Governor } from '../src/core/quality'
-import { FIT_MS, FramePace, GAPS, KEEP_MS, LAST_S, LEAST_MS, PACE, PRESS_S, SETTLE_S, SOON_MS, Wish, fitIn, inSteps, leftIn, runFor, spendIn, spendOf, stepsOf, whole, workIn, type InSteps, type Step } from '../src/scene/steps'
+import { FIT_MS, FramePace, GAPS, KEEP_MS, LAST_S, LEAST_MS, PACE, PRESS_S, SETTLE_S, SOON_MS, Wish, fitIn, inPieces, inSteps, leftIn, runFor, spendIn, spendOf, stepsOf, whole, workIn, type InSteps, type Step } from '../src/scene/steps'
 import { kit as fall } from '../src/seasons/fall'
 import { kit as spring } from '../src/seasons/spring'
 import { kit as summer } from '../src/seasons/summer'
@@ -65,6 +65,11 @@ describe('a making in steps', () => {
   it('is what every season hands the stage for its miniature', () => {
     for (const kit of [winter, spring, summer, fall]) expect(typeof (kit.miniature as Partial<InSteps<unknown>>).steps).toBe('function')
   })
+
+  // Summer's field of sand and its grains held the thread for a fifth of a second in one piece, on a page that was drawing.
+  it('is what summer hands the stage for what it lays round its globe as well', () => {
+    expect(typeof (summer.dressing as Partial<InSteps<unknown>>).steps).toBe('function')
+  })
 })
 
 describe('the steps of one frame', () => {
@@ -118,6 +123,75 @@ describe('the steps of one frame', () => {
     expect(f.ran).toEqual([])
     runFor(f.steps, 3, f.now)
     expect(f.ran).toEqual([0, 1])
+  })
+})
+
+describe('a part made in steps, as one step of a set', () => {
+  /** A set of a plain step, a part of three pieces and a plain step. Each of the five takes `cost` ms of a clock that only they move. */
+  const set = (cost: number) => {
+    let clock = 0
+    const ran: string[] = []
+    const did = (what: string): void => {
+      clock += cost
+      ran.push(what)
+    }
+    const part = inSteps(function* (): Generator<void, string> {
+      did('walls')
+      yield
+      did('ground')
+      yield
+      did('crown')
+      return 'the part'
+    })
+    const steps: Step[] = []
+    steps.push(() => did('before'), inPieces(() => steps, part, (made) => ran.push(`given ${made}`)), () => did('after'))
+    return { steps, ran, now: () => clock }
+  }
+
+  it('makes nothing before it is taken', () => {
+    const s = set(1)
+    expect(s.ran).toEqual([])
+    expect(s.steps.length).toBe(3)
+  })
+
+  it('makes its pieces one after the other in a frame that has the time, gives the part with the last, and leaves the next step a frame of its own', () => {
+    const s = set(1)
+    runFor(s.steps, 100, s.now)
+    expect(s.ran).toEqual(['before'])
+    runFor(s.steps, 100, s.now)
+    expect(s.ran).toEqual(['before', 'walls', 'ground', 'crown', 'given the part'])
+    expect(s.steps.length).toBe(1)
+    runFor(s.steps, 100, s.now)
+    expect(s.ran).toEqual(['before', 'walls', 'ground', 'crown', 'given the part', 'after'])
+    expect(s.steps.length).toBe(0)
+  })
+
+  it('stops between two pieces where the time of the frame is spent, stays at the front of the set, and gives no part before its last piece', () => {
+    const s = set(5)
+    runFor(s.steps, 8, s.now)
+    runFor(s.steps, 8, s.now)
+    expect(s.ran).toEqual(['before', 'walls', 'ground'])
+    expect(s.steps.length).toBe(2)
+    runFor(s.steps, 8, s.now)
+    expect(s.ran).toEqual(['before', 'walls', 'ground', 'crown', 'given the part'])
+    runFor(s.steps, 8, s.now)
+    expect(s.ran.at(-1)).toBe('after')
+  })
+
+  it('is made whole, in its place among the others, by a frame that needs the season at once and takes every step', () => {
+    const s = set(1)
+    for (let step = s.steps.shift(); step; step = s.steps.shift()) step()
+    expect(s.ran).toEqual(['before', 'walls', 'ground', 'crown', 'given the part', 'after'])
+  })
+
+  it('takes a part that has no steps as the one step it always was', () => {
+    let runs = 0
+    const given: number[] = []
+    const steps: Step[] = []
+    steps.push(inPieces(() => steps, () => ++runs, (made) => given.push(made)), () => void runs++)
+    expect(runs).toBe(0)
+    runFor(steps, 100, () => 0)
+    expect([runs, given, steps.length]).toEqual([1, [1], 1])
   })
 })
 
@@ -675,10 +749,15 @@ describe('a wish', () => {
 })
 
 // Each way is built in a process of its own (tools/miniatures.mjs says why), so the tool is run as a builder runs it.
-describe('the four miniatures', () => {
+describe('the four miniatures and what each season lays round its globe', () => {
   it('are the same built in one piece, in steps, and in steps with a second making in between', () => {
     const run = spawnSync(process.execPath, [rel('tools', 'miniatures.mjs')], { encoding: 'utf8' })
-    expect(run.stdout + run.stderr).toMatch(/^pass: sha256 [0-9a-f]{64}$/m)
+    const out = run.stdout + run.stderr
+    expect(out).toMatch(/^pass: sha256 [0-9a-f]{64}$/m)
     expect(run.status).toBe(0)
+    for (const season of seasons) expect(out).toMatch(new RegExp(`^${season}, the dressing: .*; the same all three ways, sha256 [0-9a-f]{64}$`, 'm'))
+    // Summer stops after every row of its field of sand and every lot of its grains. A field laid in one piece again, by
+    // anything that asks for it before the dressing has laid it, leaves a few hundred steps and one of them a long one.
+    expect(Number(/^summer, the dressing: .*; (\d+) steps, /m.exec(out)?.[1])).toBeGreaterThan(1000)
   }, 300000)
 })
