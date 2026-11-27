@@ -1,4 +1,4 @@
-# Handover: spring's base (phase 6, sixth list)
+# Handover: spring's base (phase 6, seventh list)
 
 Branch `agent/p6-spring-base`. Files: `src/seasons/spring/base.ts`, `assets-src/base-spring/build.mjs`, `layout.mjs`, `RECIPE.md`. Assets to make again: `npm run make -- base-spring`, then `npm run texpack -- --group spring` (texpack also rewrites `public/assets/spring/village-spring.glb`, which is not this job's; restore it with `git checkout`).
 
@@ -15,23 +15,36 @@ Branch `agent/p6-spring-base`. Files: `src/seasons/spring/base.ts`, `assets-src/
 - The cap's light in `base.ts`: `liveTop` (how far the mesh's own normal looks up) gates `liveCrown` and `liveLip`, so the light over the glass falls on crowns and the cap's face stays in the shade. The fill on the moss rises to 4.4 above 38 mm and turns warm there (`vec3(1.08, 0.96, 0.84)`). The low sun reaches further round on high moss (`liveReach` from 0.0, the third power of `liveGrazeM` eased toward the second). Stone in the deepest cavity keeps 0.12 of its light (`0.12 + 0.88 * smoothstep(...)` in `baseAo`), because the cavity under the cap's edge would be black otherwise.
 - The moss line above the glass's lowest point, approved against sixth list: middle 106 against 113 px, left 148 against 163, right 154 against 146 (`/tmp/line.py` on the ids view; the approved by eye on the picture).
 
+- Seventh list, the light: the low sun and the crest light no longer blow out. Both are a colour (`liveLowSun`, `liveCrest`) bounded toward `SUN_TOP` (2.4, 1.7, 0.7) by `x / pow(1 + abs(x / SUN_TOP)^3, 1/3)`, so a lit edge ends at a warm cream and the lens's fringe (`src/post/post.ts`, not this job's) has no pure white to split into a red and a blue line. On the growth the low sun's gain is 2.4 times the graze squared (7.0 times the cube before). In film frame 1030 the base's box held 1,409 deep blue and 1,081 pure white pixels at 3840 on the sixth list and holds 647 and 0 now; what is left is the fringe itself, one pixel wide.
+- Seventh list, the lit moss: `liveBlade` (from the moss sheet's blue channel) scales the low sun and the crest light on moss, so each lit tuft has a lit tip and its own shade. The crest's ridges are still a smooth cream (picture 28).
+- Seventh list, the body: `PROFILE` in `layout.mjs` leans in from the table all the way up (radius 60.4 mm at 1.6 mm, 50.6 at 32.5). Width over the glass's diameter, approved against build: under the cap 0.939, 0.932 against 0.912, 0.930; mid height 0.972 against 0.961; foot 0.996, 1.003 against 0.999, 0.997. The belly's swell is `6 * fbm - 2.2`.
+- Seventh list, the crest: clumps of uneven height stand in the crest (`2.6 * dome^2 * id^2 + 0.9 * mound * id - 1.2` over the last 8 mm before the seat). The moss line over the glass's lowest point is 106 px, as the approved's.
+
 ## What is short of the approved picture
-- At 3840 (picture 23) the lit rim and the lit right shoulder of the cap are a smooth pale skin with soft ripples. The leaf grain of the moss shows only where the fill lights it. The approved's lit moss is speckled: single bright tips with dark between. The tip light is added over the moss's colour and does not carry the sheet's grain strongly enough.
-- The cap's top edge at the front is close to one clean pale band; the list asked for uneven tufts. The clumps in the height were taken down because at full height they read as a row of knobs.
-- Lit crowns, brightest quarter of the box, approved against sixth: upper left (91,86,61) against (113,113,66); front right (167,146,97) against (67,76,31); right shoulder (234,206,166) against (242,228,168). The front right is far too dark: the approved has a lit crown there, the build's edge lies higher and the box falls on its face. Shade, darkest two fifths: (8,12,8), (6,11,8), (12,15,10) against (5,10,6), (6,11,6), (16,18,11).
-- The right of the cap from the middle to the shoulder is lit in the approved over its whole face (middle fifth (99,86,49)); the build has (53,60,25) there.
-- Between the cap's crest and the glass there is a dark crease at the front, and above it the miniature's own ground edge shows through the glass as an olive band. The approved's moss runs up to the glass without a crease.
-- The base still stands taller than the approved's: moss line to table at the middle 290 px against 250 (0.385 against 0.334 of the glass's diameter). The wall stands near upright with its widest part at mid height (1.05 of the glass's diameter); the approved's leans out to the table (0.93 at the cap's lower edge, 0.97 at mid height, 1.00 just above the table).
-- The trickle is still a dark glossy ribbon; the approved's is a pale clear film.
-- M4 of shake 2 (spring into summer) at draft reads 0.8964 with the collar. The bare pixels are the miniature's ground at the front left under a thin storm, not the base.
+- The crest reads as a rolled rim with a cream top; the approved's top is one broad cushion that slopes up to the glass, with clumps in three or four sizes and bare dips between. The clumps are too even.
+- The crest's ridges at 3840 are a smooth cream without grain (picture 28, the four rows).
+- The front right crown is dark: brightest quarter (54,66,30) against the approved's (167,146,97).
+- The cap's face is one green without the approved's pale speckle.
+- The roots: 41 in the build, thin and spread over the whole front; the approved has about 8, two to three times as thick, most of them right of the middle. Not counted on the registered outline yet.
+- The mushrooms: many small ones in bunches; the approved has fewer and larger, single or in twos.
+- The moss's lower edge is close to one level band; the approved's runs down in tongues between the stones and thins out.
+- The stones are more, smaller and rounder than the approved's, which are flat with a wet sheen.
+- The trickle is a dark glossy rope; the approved's is a thin clear sheet with a pale lit edge and a small splash at the table.
+- The crease where the cap meets the glass has no dark seam with tufts over the glass's foot.
+- The left end lump stands 13 px high.
+- The table to moss line is 0.375 of the glass's diameter against the approved's 0.334. It stays: `globe.baseHeightMm` is 33 for all four seasons (decision 40) and the table line lies 25 to 40 px lower than the approved's in every season.
+- The mushrooms' stems in the shade at 3840 read blue black; the approved's are cream.
+- The petals on the moss (`LEDGE_PETALS`, this job's) read as flat grey discs in the shade at 3840.
+- M4 of shake 2 (spring into summer) at draft reads 0.8874 (0.8954 on the sixth list, threshold 0.85). The bare pixels are the miniature's ground at the front left under a thin storm.
 
 ## How to look
-`npm run still -- --season spring --state rest --camera hero --tier review --format hd --force`, then crop (560,640,1380,1020) beside the approved picture scaled to 1920. The rim is measured 5 to 35 px under the base's top edge in thirds x 670 to 860, 860 to 1060, 1060 to 1250 (the base's edge from the ids view, the approved's from the hand trace in `outline.py`'s polygon). The detail line: `npm run measure -- --unit spring --only M3 --force --tier review` (0.8666 on the sixth list: base 0.909, miniature 0.867). It is the mean of the squared difference from a blur of 1.5 px over the base's pixels, so it is carried by the bright flanks.
+The seventh list's stills were drawn on 00216045 (main e5671c9c merged); the film frames 1030 and 1200 to 1203 on e767b105 (main 3170155e merged), before the three `pow` bases were wrapped in `max(..., 1.0)` for the shader test. The value is the same and the rest still at review on 00216045 equals the one on e767b105 byte for byte.
+`npm run still -- --season spring --state rest --camera hero --tier review --format hd --force`, then crop (560,640,1380,1020) beside the approved picture scaled to 1920. The rim is measured 5 to 35 px under the base's top edge in thirds x 670 to 860, 860 to 1060, 1060 to 1250 (the base's edge from the ids view, the approved's from the hand trace in `outline.py`'s polygon). The detail line: `npm run measure -- --unit spring --only M3 --force --tier review` (0.8564 on the seventh list: base 0.899, miniature 0.856; 0.8666 on the sixth: base 0.909, miniature 0.867). It is the mean of the squared difference from a blur of 1.5 px over the base's pixels, so it is carried by the bright flanks.
 
-## At 3840 in motion (film frames 1200 to 1203, final, sixth list)
-Each box laid on its neighbour by whole pixels, luminance; mean change a frame, the 99th percentile of the change, the share of pixels that change by more than 24 levels. The camera moves about two pixels a frame in these frames, so the numbers are not to be set beside those of frames 1100 to 1103 on the earlier lists.
-- cap, lit rim right of the middle: 5.4 to 6.6, p99 24 to 29, 0.8 to 2.1 percent. Lit rim at the middle: 4.9 to 5.0, p99 24 to 25, 1.0 to 1.1 percent
-- cap face: 5.5 to 5.6, p99 41 to 42, 3.7 to 3.8 percent
-- cap, lit right shoulder: 6.0 to 6.8, p99 37 to 41, 3.1 to 4.2 percent. Left lump: 3.4 to 4.1, p99 23 to 26, 0.9 to 1.2 percent
-- wall under the cap: 2.6 to 2.7, p99 21 to 22. Water: 3.7 to 4.4, p99 50, 39, 36
-Four frames are not the film: nobody has watched this at 60 a second.
+## At 3840 in motion (film frames 1200 to 1203, final, seventh list, drawn on e767b105)
+Each box laid on its neighbour by whole pixels, luminance; mean change a frame, the 99th percentile of the change, the share of pixels that change by more than 24 levels. The camera moves about two pixels a frame. In brackets the sixth list.
+- cap, lit rim right of the middle: 5.7 to 6.6, p99 32 to 36, 2.6 to 3.3 percent (5.4 to 6.6, p99 24 to 29). Lit rim at the middle: 7.6 to 8.2, p99 38 to 46, 4.7 to 6.4 percent (4.9 to 5.0, p99 24 to 25)
+- cap face: 6.0, p99 48, 4.7 to 4.8 percent (5.5 to 5.6, p99 41 to 42)
+- cap, lit right shoulder: 5.6 to 6.4, p99 38 to 44, 3.5 to 4.9 percent (6.0 to 6.8, p99 37 to 41). Left lump: 4.5 to 4.9, p99 29 to 32
+- wall under the cap: 2.5 to 2.6, p99 20. Water with the moss beside it: 4.5 to 5.2, p99 80, 69, 62 (3.7 to 4.4, p99 50, 39, 36)
+The lit moss changes more from frame to frame than on the sixth list because it carries grain where it was a smooth skin; the box is laid on by whole pixels and the camera moves by parts of a pixel. At 4 times the leaves hold their shapes over the four frames. Four frames are not the film: nobody has watched this at 60 a second.
