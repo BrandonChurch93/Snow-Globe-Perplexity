@@ -20,7 +20,7 @@ Date: 2026-11-25
 
 ## assets-full/fall/base-faces.lin.w1024.png
 Made by: assets-src/base-fall/maps.mjs (faces) through assets-src/base-fall/build.mjs, Node 20.20.2, sharp 0.35.5
-From: nothing but the script: four carvings of our own design (two triangle eyes, a triangle nose, a grin with teeth), each a list of polygons
+From: nothing but the script: four carvings of our own design, each a list of polygons: three that leer (two slanted triangle eyes of unlike size, a small triangle nose, a wide crescent grin whose pointed teeth are each of their own length and lean, six or seven above and four below) and one with round eyes; the second carving sits 0.07 of its half width to the right, nearer the approved face's place on its gourd
 Prompt or command: npm run make -- base-fall
 Takes: 1
 Why this one: a signed distance to the edge of the openings (0.5 at the edge) in a sheet of two by two, so the cut stays sharp at any size and the shader can read the rind's thickness from a second sample
