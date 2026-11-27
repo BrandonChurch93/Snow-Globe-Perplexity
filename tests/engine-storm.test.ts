@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { Euler, Vector3 } from 'three'
 import { config } from '../src/config'
 import { stream } from '../src/core/rng'
-import { barSeconds, stateSeconds, stillTimeline } from '../src/film/timeline'
-import { LIQUID_ROLL, LIQUID_TURBULENCE, ROLL_AXIS, ROLL_CENTRE, ROLL_MAX, ROLL_SLAB_MM, TURBULENCE_MAX } from '../src/globe/liquid'
+import { filmCut } from '../src/film/cut'
+import { barSeconds, filmTimeline, globePoseAt, prerollSeconds, stateSeconds, stillTimeline } from '../src/film/timeline'
+import { LIQUID_PIVOT_MM, LIQUID_R, LIQUID_ROLL, LIQUID_TURBULENCE, ROLL_AXIS, ROLL_CENTRE, ROLL_MAX, ROLL_SLAB_MM, TURBULENCE_MAX } from '../src/globe/liquid'
 import { ParticleEngine, STATE_HIDDEN, STATE_LIQUID, WALL } from '../src/particles/engine/engine'
 import { KINDS } from '../src/particles/engine/kinds'
 import { sdfSample } from '../src/particles/engine/sdf'
@@ -85,6 +87,92 @@ function swirl(e: ParticleEngine): { median: number; fast: number; slow: number;
   const at = (q: number): number => speeds[Math.floor((speeds.length - 1) * q)] ?? 0
   return { median: at(0.5), fast: at(0.9), slow: at(0.1), round: round / Math.max(1, speeds.length), flat: across / Math.max(1e-9, upright), outer: beyond[beyond.length >> 1] ?? 0 }
 }
+
+describe('the hand moves first', () => {
+  it.each([false, true])('banks the same petals while the dome goes right (twist: %s)', (twisted) => {
+    const grid = filmCut()
+    const film = filmTimeline(grid)
+    const shot = grid.spans.find((s) => s.shot.kind === 'shake' && s.shot.from === 'spring' && s.shot.to === 'summer')!
+    const shake = film.events.find((event) => event.id === shot.shot.id)!
+    const path = shake.path
+    shake.path = { ...path, poseAt: (beat) => ({ ...path.poseAt(beat), twist: twisted ? 0.09 * Math.sin(2.8 * beat) : 0 }) }
+    const e = new ParticleEngine({ season: film.startSeason, fraction: 0.1, collider })
+    const petal = KINDS.indexOf('petal')
+    const fresh = (frame: number): number => {
+      const t = prerollSeconds + (shot.first + frame) / grid.fps
+      e.advanceTo(steps(t), film)
+      return t
+    }
+    const countPetals = (): number => e.kindOf.reduce((sum, k, i) => sum + +(k === petal && e.state[i] === STATE_LIQUID), 0)
+    fresh(0)
+    const before = countPetals()
+    fresh(3)
+    expect(countPetals()).toBeGreaterThan(before * 0.9)
+    expect(countPetals()).toBeLessThan(before * 1.15)
+
+    const measure = (time: number) => {
+      const p: ReturnType<typeof globePoseAt> & { twist?: number } = globePoseAt(film, time)
+      const rot = new Euler(p.tiltX, p.twist ?? 0, p.tiltZ, 'XZY')
+      const centre = new Vector3(0, LIQUID_PIVOT_MM, 0).applyEuler(rot).add(new Vector3(p.x, p.y, p.z))
+      const world = (i: number): number => new Vector3().fromArray(e.pos, i * 3).applyEuler(rot).x + centre.x
+      return { centre, world }
+    }
+    const a = measure(fresh(12))
+    const cohort: [number, number][] = []
+    for (let i = 0; i < e.count; i++) if (e.kindOf[i] === petal && e.state[i] === STATE_LIQUID) cohort.push([i, a.world(i)])
+    expect(cohort.length).toBeGreaterThan(50)
+    const b = measure(fresh(26))
+    const same = cohort.filter(([i]) => e.state[i] === STATE_LIQUID)
+    const delta = same.reduce((sum, [i, x]) => sum + b.world(i) - x, 0) / same.length
+    expect(same.length).toBeGreaterThan(cohort.length * 0.9)
+    expect(Math.abs(delta)).toBeLessThan(0.45 * (b.centre.x - a.centre.x))
+    fresh(38)
+    expect(countPetals()).toBeGreaterThan(before * 4)
+    for (let i = 0; i < e.count; i++) {
+      if (e.state[i] !== STATE_LIQUID) continue
+      const o = i * 3
+      expect(Math.hypot(e.pos[o]!, e.pos[o + 1]!, e.pos[o + 2]!)).toBeLessThanOrEqual(WALL + 1e-4)
+    }
+  }, 120000)
+
+  it('has a sparse crown at the end of the hold while summer keeps all three kinds in the air', () => {
+    const grid = filmCut()
+    const film = filmTimeline(grid)
+    const e = new ParticleEngine({ season: film.startSeason, fraction: 0.075, collider })
+    const samples = (f: number, name: string) => {
+      e.advanceTo(steps(prerollSeconds + f / grid.fps), film)
+      const k = KINDS.indexOf(name)
+      let afloat = 0
+      let crown = 0
+      let alpha = 0
+      const pos = e.pos
+      for (let i = 0; i < e.count; i++) {
+        if (e.kindOf[i] !== k || e.state[i] !== STATE_LIQUID) continue
+        afloat++
+        alpha += e.opacity[i]!
+        if (pos[i * 3 + 1]! > LIQUID_R * 0.5) crown++
+      }
+      return { afloat, alpha, crown }
+    }
+    const spring = grid.spans.find((s) => s.shot.kind === 'hold' && s.shot.season === 'spring')!
+    const first = samples(spring.first, 'mote')
+    const late = samples(spring.last, 'mote')
+    expect(late.afloat).toBe(first.afloat)
+    expect(late.alpha / first.alpha).toBeGreaterThan(0.25)
+    expect(late.alpha / first.alpha).toBeLessThan(0.5)
+    expect(late.crown).toBeLessThan(first.crown * 0.45)
+    const summer = grid.spans.find((s) => s.shot.kind === 'hold' && s.shot.season === 'summer')!
+    const after = ['mote', 'firefly', 'seed'].map((k) => samples(summer.first, k))
+    const still = ['mote', 'firefly', 'seed'].map((k) => samples(summer.last, k))
+    expect(still[0]!.afloat).toBe(after[0]!.afloat)
+    expect(still[0]!.alpha).toBe(still[0]!.afloat)
+    expect(still[0]!.crown).toBeGreaterThan(0)
+    expect(still[0]!.crown).toBeLessThan(after[0]!.crown * 0.65)
+    expect(still[1]!.afloat).toBe(after[1]!.afloat)
+    expect(still[2]!.afloat).toBeGreaterThan(0)
+    expect(still[2]!.afloat).toBeLessThan(after[2]!.afloat * 0.22)
+  }, 120000)
+})
 
 describe('the storm of the look lock season', () => {
   it('turns as one flat swirl at the landing, at the pace of the streaks in the approved picture, and slows over seconds', () => {
