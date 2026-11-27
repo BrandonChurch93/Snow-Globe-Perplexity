@@ -77,3 +77,7 @@ Still short of the approved picture:
 - The litter near the left pumpkin is still more orange than the approved brown.
 - No leaves float on the pond. A first try at them did not show on the water and was taken out.
 - The wall's stones and the door's arch are the shared model's.
+
+## Second list, third push (on main 9c5c595c)
+
+The trunk's flank away from the lamp is darker (less fill, less of the pumpkin's light on the wood) and the pumpkin throws less light on the litter. M3 at review: miniature 0.804. The list of what is still short in the section above stands, except that the trunk's right flank is now dark, though not black with a cool rim as approved.
