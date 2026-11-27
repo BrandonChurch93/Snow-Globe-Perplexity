@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # The crown of summer's tree, counted from one mask, for the approved picture and for our own stills alike.
 #
-#   python3 assets-src/tree-summer/crown-count.py approved [OUT.jpg]
-#   python3 assets-src/tree-summer/crown-count.py NOAIR.png IDS.png [OUT.jpg]
+#   python3 assets-src/tree-summer/crown-count.py approved [OUT.jpg [SHADE.jpg]]
+#   python3 assets-src/tree-summer/crown-count.py NOAIR.png IDS.png [OUT.jpg [SHADE.jpg]]
 #   python3 assets-src/tree-summer/crown-count.py doubt
 #
 # NOAIR.png is the rest still of summer at hd without the air (`npm run still -- --season summer --state rest --camera hero
@@ -30,9 +30,25 @@
 #   pads   the crown dealt among one marked point in each pad and one in the middle mass (each pixel to the point nearest along a
 #          way inside the leaf): each pad's length, thickness and tilt, and for every pair of neighbours how far apart they are
 #          (a pair within 15 percent in length or in thickness is named)
+#   shade  the level inside the crown (0 to 255, the picture's own). The approved's air is set aside by the same pixels on every
+#          picture (`air_aside`): its hand marks, its seed heads and its fireflies, each firefly with half a millimetre about it.
+#          What is read is the body: the crown's leaf by colour, without the lit rim and one pixel about it.
+#          thirds  for each pad, every column of its share cut in three: the mean level of the lower thirds over that of the
+#                  upper thirds, and the same over the five pads together
+#          seams   the body within 1 mm of a border between two shares, over the pads' body away from those borders
+#          depth   the body by how far it lies in from the outline: within 1 mm of the upper left outline (the top), within 1 mm
+#                  of the outline that faces down (the underside), and deeper than 2.5 mm from any outline (the core); and the
+#                  top from 1 to 2 mm in, which the rim's own glow does not reach
+#          inside  the body deeper than 1 mm: the level a twentieth, a half and nineteen twentieths of it lie under, the hue and
+#                  the saturation of its mean colour, the hue of its darker and of its lighter half apart (a change in the
+#                  light moves the lighter half, a change in the leaf's own tone moves both), and the share of it that is vivid
+#                  green (green over red and over blue by more than 12 levels), with the mean colour of what is lighter than
+#                  level 48
 # `doubt` counts the approved again with the hand marks left out, grown and shrunk by 0.3 mm, with the rule for lit leaf drawn
 # tighter and looser, with the rim's reach at 0.6 and 1.4 mm and with the closing at half and at one and a half times its
-# strength, and gives the span of every number over those.
+# strength, and gives the span of every number over those. The shade's rows are counted again with the fireflies' room at 0.3 and
+# at 1.0 mm, with the hand marks grown and shrunk by 0.3 mm and with the seams 0.6 and 1.4 mm wide.
+import colorsys
 import json
 import os
 import sys
@@ -52,6 +68,9 @@ BOX = tuple(MARKS['box'])
 # the colour the ids view gives the miniature, read from the view
 MINIATURE = (68, 47, 218)
 LIT = dict(hat=35, fine=20, lum=140)
+# a firefly of the approved: a core that is bright and yellow green, and the room about it (mm)
+FLY = dict(lum=120, green=50, room=0.5)
+SEAM_MM = 1.0
 
 _y, _x = np.ogrid[-8:9, -8:9]
 WIDE = (_x * _x + _y * _y) <= 64
@@ -153,8 +172,9 @@ def approved(marks='as marked', rule=LIT, reach=1.0, close=2):
     if marks == 'shrunk':
         hand = ndi.distance_transform_edt(hand) > 0.3 * K
     lit = lit_of(a, rule) & ~discs(a.shape, MARKS['seeds'])
-    crown = crown_of(leaf_by_colour(a), hand, lit, close, reach)
-    return a, crown, lit & crown, dict(hand=hand)
+    leaf = leaf_by_colour(a)
+    crown = crown_of(leaf, hand, lit, close, reach)
+    return a, crown, lit & crown, dict(hand=hand, leaf=leaf)
 
 
 def ours(noair, ids, close=2):
@@ -165,7 +185,7 @@ def ours(noair, ids, close=2):
     outside = 100 * (leaf & ~mini).sum() / max(1, leaf.sum())
     lit = lit_of(a) & mini
     crown = crown_of(leaf & mini, np.zeros_like(mini), lit, close)
-    return a, crown, lit & crown, dict(outside=outside)
+    return a, crown, lit & crown, dict(outside=outside, leaf=leaf & mini)
 
 
 def count(a, crown, lit, name='', say=True, out=None):
@@ -296,6 +316,119 @@ def pads(crown, say=True):
             print(f"   NEIGHBOURS {a} and {b}: lengths {dl:4.1f}% apart, thicknesses {dt:4.1f}% apart, tilts {abs(got[a]['tilt'] - got[b]['tilt']):4.1f} degrees apart" + ('  <- within 15%' if min(dl, dt) < 15 else ''))
     return part, got
 
+def level(a):
+    return 0.2126 * a[..., 0] + 0.7152 * a[..., 1] + 0.0722 * a[..., 2]
+
+
+def air_aside(room=FLY['room'], marks='as marked'):
+    # the approved's air, the same pixels for every picture: the hand marks, the seed heads, and each firefly with `room` about it
+    a, _, _, info = approved(marks=marks)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    fly = (level(a) > FLY['lum']) & ((g - b) > FLY['green']) & (g >= r - 5)
+    air = info['hand'] | discs(a.shape, MARKS['seeds']) | (ndi.distance_transform_edt(~fly) <= room * K)
+    return ndi.binary_dilation(air, iterations=1)
+
+
+def outlines(crown):
+    # the crown's outline where the way out of the leaf points up and to the left, and where it points down
+    soft = ndi.gaussian_filter(crown.astype(float), 3.0)
+    gy, gx = np.gradient(soft)
+    nrm = np.hypot(gx, gy) + 1e-9
+    ox = -gx / nrm
+    oy = -gy / nrm
+    edge = crown & ~ndi.binary_erosion(crown)
+    return edge, edge & ((-0.6 * ox - 0.8 * oy) > 0.35), edge & (oy > 0.5)
+
+
+def thirds(m):
+    up = np.zeros_like(m)
+    low = np.zeros_like(m)
+    for x in np.nonzero(m.any(axis=0))[0]:
+        ys = np.nonzero(m[:, x])[0]
+        if len(ys) < 6:
+            continue
+        k = len(ys) // 3
+        up[ys[:k], x] = True
+        low[ys[-k:], x] = True
+    return up, low
+
+
+def shade(a, crown, lit, leaf, air, name='', say=True, out=None, seam=SEAM_MM):
+    lum = level(a)
+    part, _ = pads(crown, say=False)
+    names = [n for n in MARKS['pads'] if n != 'middle']
+    number = {n: i + 1 for i, n in enumerate(MARKS['pads'])}
+    body = crown & leaf & ~ndi.binary_dilation(lit, iterations=1) & ~air
+
+    def mean(m):
+        return float(lum[m].mean()) if m.any() else float('nan')
+
+    got = {}
+    ups = np.zeros_like(crown)
+    lows = np.zeros_like(crown)
+    rows = []
+    for n in names:
+        up, low = thirds(part == number[n])
+        ups |= up
+        lows |= low
+        got[f'{n}: lower over upper'] = mean(low & body) / mean(up & body)
+        rows.append(f"{n} {got[f'{n}: lower over upper']:.2f} ({mean(low & body):.0f} over {mean(up & body):.0f}, {int((low & body).sum())} and {int((up & body).sum())} px)")
+    got['five pads: lower over upper'] = mean(lows & body) / mean(ups & body)
+    cross = ndi.generate_binary_structure(2, 1)
+    border = crown & (part > 0) & (ndi.maximum_filter(part, footprint=cross) != ndi.minimum_filter(np.where(part > 0, part, 99), footprint=cross))
+    seams = crown & (ndi.distance_transform_edt(~border) <= seam * K)
+    padded = np.isin(part, [number[n] for n in names]) & ~seams
+    got['seams over pads'] = mean(seams & body) / mean(padded & body)
+    edge, upper, under = outlines(crown)
+    de = ndi.distance_transform_edt(~edge) / K
+    du = ndi.distance_transform_edt(~upper) / K
+    dl = ndi.distance_transform_edt(~under) / K
+    core = body & (de > 2.5)
+    top = body & (du < 1.0) & (du <= dl)
+    top2 = body & (du >= 1.0) & (du < 2.0) & (du <= dl)
+    low = body & (dl < 1.0) & (dl < du)
+    got['top over core'] = mean(top) / mean(core)
+    got['top, 1 to 2 mm in, over core'] = mean(top2) / mean(core)
+    got['underside over core'] = mean(low) / mean(core)
+    got['core level'] = mean(core)
+    inner = body & (de > 1.0)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    p5, p50, p95 = np.percentile(lum[inner], [5, 50, 95])
+    c = a[inner].mean(axis=0)
+    hue, sat, _ = colorsys.rgb_to_hsv(*(c / 255))
+    hue *= 360
+    vivid = inner & ((g - np.maximum(r, b)) > 12)
+    light = inner & (lum >= 48)
+    lc = a[light].mean(axis=0) if light.any() else np.zeros(3)
+    got['inside: median level'] = float(p50)
+    got['inside: level 5%'] = float(p5)
+    got['inside: level 95%'] = float(p95)
+    got['inside: hue'] = float(hue)
+    for half, m in (('darker', inner & (lum <= p50)), ('lighter', inner & (lum > p50))):
+        got[f'inside: hue of the {half} half'] = 360 * colorsys.rgb_to_hsv(*(a[m].mean(axis=0) / 255))[0]
+    got['inside: saturation'] = float(sat)
+    got['inside: vivid green share'] = 100 * vivid.sum() / inner.sum()
+    got['inside: share lighter than 48'] = 100 * light.sum() / inner.sum()
+    if say:
+        print(f"   SHADE {name}: the body read is {100 * body.sum() / crown.sum():.0f}% of the crown; lower third over upper third: " + '; '.join(rows) + f"; the five pads together {got['five pads: lower over upper']:.2f} ({mean(lows & body):.0f} over {mean(ups & body):.0f})")
+        print(f"   SHADE seams over pads {got['seams over pads']:.2f} ({mean(seams & body):.0f} over {mean(padded & body):.0f}, {int((seams & body).sum())} and {int((padded & body).sum())} px)")
+        print(f"   SHADE depth: core {mean(core):.0f}; top (to 1 mm in) {mean(top):.0f}, {got['top over core']:.2f} of the core; top from 1 to 2 mm in {mean(top2):.0f}, {got['top, 1 to 2 mm in, over core']:.2f}; underside (to 1 mm in) {mean(low):.0f}, {got['underside over core']:.2f}")
+        print(f"   SHADE inside (deeper than 1 mm): level {p5:.0f}, {p50:.0f}, {p95:.0f} (a twentieth, a half, nineteen twentieths under); mean colour ({c[0]:.0f}, {c[1]:.0f}, {c[2]:.0f}), hue {hue:.0f} degrees (the darker half {got['inside: hue of the darker half']:.0f}, the lighter half {got['inside: hue of the lighter half']:.0f}), saturation {got['inside: saturation']:.2f}; vivid green {got['inside: vivid green share']:.1f}%; lighter than 48: {got['inside: share lighter than 48']:.1f}% with mean colour ({lc[0]:.0f}, {lc[1]:.0f}, {lc[2]:.0f})")
+    if out:
+        H, W = crown.shape
+        px = np.asarray(Image.fromarray(a.astype(np.uint8)).resize((W * 2, H * 2), Image.LANCZOS)).astype(float)
+
+        def twice(m):
+            return np.kron(m, np.ones((2, 2), bool))
+
+        unread = twice(crown & ~body)
+        px[unread] = 0.35 * px[unread] + np.array([90, 0, 90])
+        for m, tone in ((ups & body, (255, 220, 60)), (lows & body, (70, 170, 255)), (core, (255, 255, 255))):
+            px[twice(m & ~ndi.binary_erosion(m))] = tone
+        px[twice(seams & body & (np.add.outer(np.arange(H), np.arange(W)) % 4 == 0))] = (255, 90, 60)
+        Image.fromarray(px.astype(np.uint8)).crop((0, 60, 1120, 960)).save(out, quality=90)
+    return got
+
 
 def doubt():
     base = count(*approved()[:3], say=False)
@@ -307,20 +440,31 @@ def doubt():
     for k in base:
         v = [r[k] for r in runs]
         print(f'   {k:26s} {base[k]:8.2f}   {min(v + [base[k]]):8.2f} to {max(v + [base[k]]):8.2f}   ' + ' '.join(f'{x:7.2f}' for x in v))
+    a, crown, lit, info = approved()
+    base = shade(a, crown, lit, info['leaf'], air_aside(), say=False)
+    runs = [shade(a, crown, lit, info['leaf'], air_aside(room=r), say=False) for r in (0.3, 1.0)]
+    runs += [shade(a, crown, lit, info['leaf'], air_aside(marks=m), say=False) for m in ('grown', 'shrunk')]
+    runs += [shade(a, crown, lit, info['leaf'], air_aside(), say=False, seam=w) for w in (0.6, 1.4)]
+    print("the approved's shade, its span, and each run: the fireflies' room 0.3, 1.0 mm; the marks set aside grown, shrunk; the seams 0.6, 1.4 mm wide")
+    for k in base:
+        v = [r[k] for r in runs]
+        print(f'   {k:34s} {base[k]:8.2f}   {min(v + [base[k]]):8.2f} to {max(v + [base[k]]):8.2f}   ' + ' '.join(f'{x:7.2f}' for x in v))
 
 
 if __name__ == '__main__':
     args = sys.argv[1:]
     if not args:
-        sys.exit('usage: crown-count.py approved [OUT.jpg] | NOAIR.png IDS.png [OUT.jpg] | doubt')
+        sys.exit('usage: crown-count.py approved [OUT.jpg [SHADE.jpg]] | NOAIR.png IDS.png [OUT.jpg [SHADE.jpg]] | doubt')
     if args[0] == 'doubt':
         doubt()
     elif args[0] == 'approved':
-        a, crown, lit, _ = approved()
+        a, crown, lit, info = approved()
         count(a, crown, lit, 'approved', out=args[1] if len(args) > 1 else None)
         pads(crown)
+        shade(a, crown, lit, info['leaf'], air_aside(), 'approved', out=args[2] if len(args) > 2 else None)
     else:
         a, crown, lit, info = ours(args[0], args[1])
         print(f"of the colour rule's leaf {info['outside']:.1f}% is not the miniature and is taken out")
         count(a, crown, lit, os.path.basename(args[0]), out=args[2] if len(args) > 2 else None)
         pads(crown)
+        shade(a, crown, lit, info['leaf'], air_aside(), os.path.basename(args[0]), out=args[3] if len(args) > 3 else None)
