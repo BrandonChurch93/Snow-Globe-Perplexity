@@ -285,7 +285,7 @@ const STONE_AFTER = `
   float stoneAz = dot(vBasePos.xz, vBasePos.xz) > 0.0 ? atan(vBasePos.x, vBasePos.z) : 0.0;
   float stoneEdge = stoneAz + 0.016 * (vBasePos.y - 30.0) + 0.1 * (baseNoise(vBasePos * 0.3 + 19.0) - 0.5);
   float stonePatch = smoothstep(0.1, -0.42, stoneEdge) * smoothstep(-1.5, -0.6, stoneAz) * smoothstep(19.0, 27.0, vBasePos.y + 5.0 * (baseNoise(vBasePos * 0.21 + 31.0) - 0.5));
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * baseSunC * vec3(1.0, 0.8, 0.58) * (${STONE.patch.toFixed(2)} * stonePatch * (0.6 + 0.8 * baseHigh) * (1.0 - 0.6 * baseCavity) * mix(0.4, 3.0, smoothstep(0.25, 0.7, stoneUp)));
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * baseSunC * vec3(1.0, 0.8, 0.58) * (${STONE.patch.toFixed(2)} * stonePatch * (0.6 + 0.8 * baseHigh) * (1.0 - 0.6 * baseCavity) * mix(0.4, 3.0, smoothstep(0.25, 0.7, mix(clamp(inverseTransformDirection(normalize(normalMatrix * normalize(vBaseNormal)), viewMatrix).y, -1.0, 1.0), stoneUp, 0.25))));
   // The two lights behind rake the stone: only what is turned up and back to them takes it, so it lies along the ridges.
   #ifdef STAGE_LIGHT_DONE
   float stoneRakeL = clamp(dot(normalize(normalMatrix * normalize(vBaseNormal)), stageRimL), 0.0, 1.0);
