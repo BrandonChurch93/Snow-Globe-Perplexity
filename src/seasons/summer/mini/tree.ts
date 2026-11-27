@@ -77,14 +77,20 @@ const CAP = { reachMm: 3.0, cellMm: 0.5, from: 0.1, to: 0.9, body: 0.74, lift: 1
 // of the way at most, between `from` and `to` of what it sends), so that the lit leaves read as soft light on a dark body and not
 // as vivid green. The leaf's own tone, and with it the body's hue, stays as it is.
 const SHADE = { roof: 0.4, deep: 0.5, above: [-0.196, 0.981, 0] as Vec3, pale: 0.55, from: 0.02, to: 0.07 }
-// The band on a pad's outline. Where a pad's own body turns away from the lens (`rim`, with `hem` of the single leaf) and up and to
-// the left as the lens sees it (`toward`, `from`, `to`; the rest of the outline keeps `around`), the outer ends of the tufts (`tip`,
-// along the tuft from its foot) carry small leaves lit pale and warm. The leaves are a field of beads in the crown's own space, one
-// to a cell `mm` across, each with its own size (`size`, its radius, of the cell) and its own light (`dim` is the least), so that
-// the band is two or three of them thick and every bead stays on its leaf as the leaf moves; a bead's edge is never drawn finer
-// than the picture can hold (`soft`, of a pixel). The sprig's dark leaves keep `dark` of it (`speck`). A leaf shut in under another
-// pad keeps `shut` of it.
-const BEAD = { power: 5.0, tone: [1.0, 0.61, 0.24] as Rgb3, rim: [0.5, 0.8] as const, hem: 0.5, toward: [-0.6, 0.8] as const, from: -0.1, to: 0.5, around: 0.1, speck: [0.3, 1.0] as const, dark: 0.5, tip: [0.45, 0.75] as const, shut: 0.5, mm: 0.26, size: [0.36, 0.5] as const, dim: 0.6, soft: 0.6 }
+// The lit edge on a pad's outline. Where a pad's own body turns away from the lens (`rim`, with `hem` of the single leaf) and up
+// and to the left as the lens sees it (`toward`, `from`, `to`; the rest of the outline keeps `around`), the outer ends of the tufts
+// (`tip`, along the tuft from its foot) are lit pale and warm on the leaf's own edge and nowhere else. The edge is read from the
+// sprig's own outline: the leaf's cover a little way out from the fragment (`reach`, of the sprig's width, and never less than
+// `least` pixels), outward as the pad turns and as the lens sees it (`lean` of `toward` added), taken from the sprig's picture at
+// `across` texels to the sprig, or coarser where the picture on screen is coarser. Where that cover is thin (`in`, shaped by
+// `curve`) the fragment lies on the leaf's outer edge and takes the light, so the line follows every bump of the outline, is
+// brightest at the very edge and has no geometry of its own. Behind the line the leaf's own colour is lit a little (`fade`, tinted
+// `glow`), read the same way from farther out and coarser (`far`, `wide`, `over`, `bend`), so that the light fades inward within
+// the band. Along the line the light is broken leaf by leaf: a field of spots in the crown's own space, one to a cell `mm` across,
+// each with its own size (`size`, its radius, of the cell) and its own light (`dim` is the least); between spots the line keeps
+// `dark` of it, and a spot's edge is never drawn finer than the picture can hold (`soft`, of a pixel). The spots stay on their
+// leaves as the leaves move. A leaf shut in under another pad keeps `shut` of it.
+const RIM = { power: 6.0, tone: [1.0, 0.62, 0.28] as Rgb3, rim: [0.6, 0.9] as const, hem: 0.5, toward: [-0.6, 0.8] as const, from: -0.5, to: 0.3, around: 0.1, dark: 0.2, tip: [0.35, 0.7] as const, shut: 0.5, across: 16, in: [0.05, 0.7] as const, curve: 1.5, reach: 0.09, lean: 0.5, least: 1.0, fade: 6.0, glow: [1.0, 0.9, 0.65] as Rgb3, far: 0.3, wide: 5, over: [0.0, 1.0] as const, bend: 1.5, mm: 0.38, size: [0.26, 0.4] as const, dim: 0.35, soft: 0.6 }
 // A flat pad's leaves stand farther above it than it is thick. For the choice of the pad a leaf is lit on, a pad counts as at least
 // this thick (mm), so that the leaves on a flat pad's top are lit as its top and not as the underside of a dome that hangs over it.
 const PAD_THICK = 1.5
@@ -163,8 +169,8 @@ vec4 treeLobes(vec3 p) {
   }
   return vec4(way, sqrt(d2) - sqrt(d1));
 }
-// The beads about a point (in beads): the light of the one it lies in, none between them; soft is how wide a bead's edge is.
-float treeBeads(vec3 p, float soft) {
+// The spots about a point (in spots): the light of the one it lies in, none between them; soft is how wide a spot's edge is.
+float treeSpots(vec3 p, float soft) {
   vec3 base = floor(p - 0.5);
   vec3 f = p - base;
   float lit = 0.0;
@@ -172,8 +178,8 @@ float treeBeads(vec3 p, float soft) {
     vec3 o = vec3(float(k & 1), float((k >> 1) & 1), float((k >> 2) & 1));
     vec3 h = treeHash(base + o);
     float pick = fract(h.x * 5.3 + h.y * 9.7 + h.z * 3.1);
-    float r = mix(${BEAD.size[0].toFixed(2)}, ${BEAD.size[1].toFixed(2)}, pick);
-    lit = max(lit, (1.0 - smoothstep(r - soft, r + soft, length(f - (o + 0.25 + 0.5 * h)))) * mix(${BEAD.dim.toFixed(2)}, 1.0, fract(pick * 7.9)));
+    float r = mix(${RIM.size[0].toFixed(2)}, ${RIM.size[1].toFixed(2)}, pick);
+    lit = max(lit, (1.0 - smoothstep(r - soft, r + soft, length(f - (o + 0.25 + 0.5 * h)))) * mix(${RIM.dim.toFixed(2)}, 1.0, fract(pick * 7.9)));
   }
   return lit;
 }
@@ -262,10 +268,22 @@ function leafHook(shader: Shader): void {
   float treePool = pow(clamp(1.0 - treeFar / ${(LEAF_POOL.reachMm * fork.radius).toFixed(2)}, 0.0, 1.0), 2.0) * smoothstep(${LEAF_POOL.from.toFixed(2)}, ${LEAF_POOL.to.toFixed(2)}, 2.0 * dot(treeLobe.xyz, treeTo / treeFar)) * smoothstep(0.0, ${LOBE.seam.toFixed(2)}, treeLobe.w) * mix(1.0, ${LEAF_POOL.top.toFixed(2)}, treeUp);
   reflectedLight.indirectDiffuse += treeTone * ${glsl3(paper(fork))} * (${LEAF_POOL.power.toFixed(2)} * treePool * lanternLevel(${fork.order.toFixed(1)}));
   reflectedLight.indirectDiffuse += vGlow.rgb * uTwinkle.z * ${glsl3(PAD.warmTone)} * (${PAD.warm.toFixed(3)} * mix(1.0, ${PAD.warmLobe.toFixed(2)}, treeTop) * (1.0 - treeUp) * (1.0 - treeUp) * smoothstep(${PAD.warmFrom.toFixed(2)}, ${PAD.warmTo.toFixed(2)}, vGlow.r) * mix(${PAD.dapEven.toFixed(2)}, 1.0, smoothstep(${PAD.leafFrom.toFixed(2)}, ${PAD.leafTo.toFixed(2)}, treeLum)));
-  float treeEdge = smoothstep(${BEAD.rim[0].toFixed(2)}, ${BEAD.rim[1].toFixed(2)}, 1.0 - dot(normalize(treePad + ${BEAD.hem.toFixed(2)} * normalize(vNormal)), treeV)) * mix(${BEAD.around.toFixed(2)}, 1.0, smoothstep(${BEAD.from.toFixed(2)}, ${BEAD.to.toFixed(2)}, dot(treePad.xy, vec2(${BEAD.toward[0].toFixed(2)}, ${BEAD.toward[1].toFixed(2)}))));
-  float treeBand = treeCard ? treeEdge * treeInside * smoothstep(${BEAD.tip[0].toFixed(2)}, ${BEAD.tip[1].toFixed(2)}, fract(vMapUv.y * 1.999)) * mix(${BEAD.dark.toFixed(2)}, 1.0, smoothstep(${BEAD.speck[0].toFixed(2)}, ${BEAD.speck[1].toFixed(2)}, treeLum)) * mix(${BEAD.shut.toFixed(2)}, 1.0, treeOpen) : 0.0;
-  float treeFine = length(fwidth(vTreeP)) * ${(BEAD.soft / BEAD.mm).toFixed(4)};
-  if (treeBand > 0.004) reflectedLight.indirectDiffuse += ${glsl3(BEAD.tone)} * (${BEAD.power.toFixed(2)} * treeBand * treeBeads(vTreeP * ${(1 / BEAD.mm).toFixed(4)}, clamp(treeFine, 0.08, 0.25)));
+  float treeEdge = smoothstep(${RIM.rim[0].toFixed(2)}, ${RIM.rim[1].toFixed(2)}, 1.0 - dot(normalize(treePad + ${RIM.hem.toFixed(2)} * normalize(vNormal)), treeV)) * mix(${RIM.around.toFixed(2)}, 1.0, smoothstep(${RIM.from.toFixed(2)}, ${RIM.to.toFixed(2)}, dot(treePad.xy, vec2(${RIM.toward[0].toFixed(2)}, ${RIM.toward[1].toFixed(2)}))));
+  float treeBand = treeCard ? treeEdge * smoothstep(${RIM.tip[0].toFixed(2)}, ${RIM.tip[1].toFixed(2)}, fract(vMapUv.y * 1.999)) * mix(${RIM.shut.toFixed(2)}, 1.0, treeOpen) : 0.0;
+  float treeFine = length(fwidth(vTreeP)) * ${(RIM.soft / RIM.mm).toFixed(4)};
+  vec2 treeOut = treePad.xy + vec2(${(RIM.lean * RIM.toward[0]).toFixed(3)}, ${(RIM.lean * RIM.toward[1]).toFixed(3)});
+  treeOut /= max(length(treeOut), 1e-3);
+  vec2 treeStep = treeOut.x * dFdx(vMapUv) + treeOut.y * dFdy(vMapUv);
+  if (treeBand > 0.004) {
+    float treeSize = float(textureSize(uSprigs, 0).x);
+    float treePx = max(length(treeStep), 1e-7);
+    vec2 treeCell = floor(vMapUv * 2.0) * 0.5;
+    vec2 treeAt = clamp(vMapUv + max(${(0.5 * RIM.reach).toFixed(4)} / treePx, ${RIM.least.toFixed(2)}) * treeStep, treeCell + ${(0.5 / RIM.across).toFixed(4)}, treeCell + ${(0.5 - 0.5 / RIM.across).toFixed(4)});
+    float treeRim = pow(1.0 - smoothstep(${RIM.in[0].toFixed(2)}, ${RIM.in[1].toFixed(2)}, textureLod(uSprigs, treeAt, max(log2(treeSize) - ${Math.log2(2 * RIM.across).toFixed(3)}, log2(treePx * treeSize))).a), ${RIM.curve.toFixed(2)});
+    vec2 treeBack = clamp(vMapUv + max(${(0.5 * RIM.far).toFixed(4)} / treePx, ${RIM.least.toFixed(2)}) * treeStep, treeCell + ${(0.5 / RIM.wide).toFixed(4)}, treeCell + ${(0.5 - 0.5 / RIM.wide).toFixed(4)});
+    float treeWash = pow(1.0 - smoothstep(${RIM.over[0].toFixed(2)}, ${RIM.over[1].toFixed(2)}, textureLod(uSprigs, treeBack, max(log2(treeSize) - ${Math.log2(2 * RIM.wide).toFixed(3)}, log2(treePx * treeSize))).a), ${RIM.bend.toFixed(2)});
+    reflectedLight.indirectDiffuse += ${glsl3(RIM.tone)} * (treeBand * ${RIM.power.toFixed(2)} * treeRim * mix(${RIM.dark.toFixed(2)}, 1.0, treeSpots(vTreeP * ${(1 / RIM.mm).toFixed(4)}, clamp(treeFine, 0.08, 0.25)))) + treeTone * ${glsl3(RIM.glow)} * (${RIM.fade.toFixed(2)} * treeBand * treeWash);
+  }
   reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.rimTone)} * (min(${PAD.cap.toFixed(2)}, treeHem * treeTurn * smoothstep(${PAD.patchFrom.toFixed(2)}, ${PAD.patchTo.toFixed(2)}, treeMid) * mix(${PAD.rimShut.toFixed(2)}, 1.0, treeOpen) * mix(${PAD.rimBelow.toFixed(2)}, 1.0, treeHigh) * (${PAD.fringe.toFixed(2)} * treeLeaf + ${PAD.rim.toFixed(2)} * treeDot) * (treeCard ? smoothstep(${PAD.tipFrom.toFixed(2)}, ${PAD.tipTo.toFixed(2)}, fract(vMapUv.y * 1.999)) : ${PAD.tipBody.toFixed(2)})) * mix(${PAD.shade.toFixed(2)}, 1.0, stageKeyS));
 }`,
   )
