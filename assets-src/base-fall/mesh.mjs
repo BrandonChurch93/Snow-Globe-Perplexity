@@ -145,7 +145,7 @@ function addStrands() {
   for (let i = 0; i < 9; i++) {
     const a0 = r(-128, -72)
     const span = r(18, 48)
-    push({ a0, span, h0: r(3, 31), slope: Math.tan((rng() < 0.5 ? -1 : 1) * r(14, 55) * RAD) * span * RAD * 53, bend: r(-5, 5), amp: r(0.8, 2.4), k: r(2, 6), ph: r(0, 6.28), rad: r(0.3, 0.52), lift: r(2.5, 9), sprawl: 1.2, wander: 2.4, thorn: [2.5, 5], every: 30, layer: 3, open: true, reach: r(3, 8) })
+    push({ a0, span, h0: r(3, 31), slope: Math.tan((rng() < 0.5 ? -1 : 1) * r(14, 55) * RAD) * span * RAD * 53, bend: r(-5, 5), amp: r(0.8, 2.4), k: r(2, 6), ph: r(0, 6.28), rad: r(0.24, 0.42), lift: r(2.5, 9), sprawl: 1.2, wander: 2.4, thorn: [2.5, 5], every: 30, layer: 3, open: true, reach: r(3, 8) })
   }
   // Three pairs of thick vines stand out of that tangle, the two of a pair wound round each other.
   for (let i = 0; i < 3; i++) {
@@ -349,7 +349,7 @@ export function buildIron() {
         refused++
         continue
       }
-      const line = thorn(soup, pts[i], dir, len * 0.92, rad * 1.12, add3([0, r(-1, 1), 0], t, -sgn * r(0.3, 1.6)), sidesAt(az, 7, 4), 0.85, t)
+      const line = thorn(soup, pts[i], dir, len * 0.92, rad * 1.12, add3([0, r(-1, 1), 0], t, -sgn * r(0.3, 1.6)), sidesAt(az, 6, 4), 0.85, t)
       tips.push(line[line.length - 1])
       thorns++
     }
