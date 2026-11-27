@@ -229,7 +229,9 @@ ${SHADE}
   // The dusk in the room is cool and comes from in front and above: it is what the stones and the moss in the base's own
   // shade are seen by, and it falls on each grain and tuft by the way that one faces, so the shade keeps its grain.
   float liveFill = clamp(dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(-0.25, 0.62, 0.74))) * 0.6 + 0.4, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * mix(vec3(0.8, 1.0, 0.9), vec3(1.08, 0.96, 0.84), baseMoss * smoothstep(30.0, 38.0, vBasePos.y)) * dot(liveSunC, vec3(0.3333)) * (mix(${ROCK.fill.toFixed(2)}, ${ROCK.mossFill.toFixed(2)}, baseMoss) * mix(0.2 + 0.8 * liveFill * liveFill, (0.3 + 0.7 * liveFill * liveFill) * (mix(0.55, 0.85, smoothstep(30.0, 38.0, vBasePos.y)) + 0.9 * smoothstep(0.45, 0.85, baseMossD.b)) * mix(0.9, mix(7.0, 4.4, smoothstep(-45.0, -5.0, vBasePos.x)), smoothstep(30.0, 38.0, vBasePos.y)), baseMoss) * mix(0.25 + 0.75 * baseAo, 0.3 + 0.7 * baseAo, baseMoss) + mix(0.45, 1.0, baseMoss));
+  float liveRoll = baseMoss * smoothstep(30.0, 38.0, vBasePos.y);
+  vec3 liveOlive = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.6, 0.1))) * vec3(1.0, 0.95, 0.8), liveRoll * mix(0.55, 0.3, smoothstep(-45.0, -5.0, vBasePos.x)));
+  reflectedLight.indirectDiffuse += liveOlive * RECIPROCAL_PI * mix(vec3(0.8, 1.0, 0.9), vec3(1.0, 0.95, 0.95), liveRoll) * dot(liveSunC, vec3(0.3333)) * (mix(${ROCK.fill.toFixed(2)}, ${ROCK.mossFill.toFixed(2)}, baseMoss) * mix(0.2 + 0.8 * liveFill * liveFill, (0.3 + 0.7 * liveFill * liveFill) * (mix(0.55, 0.85, smoothstep(30.0, 38.0, vBasePos.y)) + 0.9 * smoothstep(0.45, 0.85, baseMossD.b)) * mix(0.9, mix(6.5, 3.0, smoothstep(-45.0, -5.0, vBasePos.x)), smoothstep(30.0, 38.0, vBasePos.y)), baseMoss) * mix(0.25 + 0.75 * baseAo, 0.3 + 0.7 * baseAo, baseMoss) + mix(0.45, 1.0, baseMoss));
   // The low sun behind comes through the blossom and grazes the right flank: warm, and strongest on whatever stands out.
   vec3 liveGrazeDir = normalize(mat3(viewMatrix) * vec3(0.9, 0.25, -0.2));
   float liveGrazeM = clamp((dot(liveMacro, liveGrazeDir) + 0.14) / 1.14, 0.0, 1.0);
@@ -335,7 +337,9 @@ ${SHADE}
   vec3 liveKickDir = normalize(mat3(viewMatrix) * vec3(-0.85, 0.3, -0.3));
   float liveKick = clamp((dot(geometryNormal, liveKickDir) + 0.2) / 1.2, 0.0, 1.0);
   reflectedLight.indirectDiffuse *= liveShade;
-  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * vec3(0.8, 1.0, 0.9) * dot(liveSunC, vec3(0.3333)) * (0.55 * baseBark);
+  // In the shade of the front the caps stand in the room's warm light from above and the roots in its fill, so both read against the dark stones;
+  // on the sunlit right the roots keep their dark sides.
+  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * mix(vec3(1.0, 0.88, 0.7), mix(vec3(0.82, 1.0, 1.0), vec3(0.8, 1.0, 0.9), smoothstep(22.0, 36.0, vBasePos.x)), baseBark) * dot(liveSunC, vec3(0.3333)) * mix(3.0 * (0.35 + 0.65 * liveUp) * mix(1.0, 0.5, smoothstep(0.45, 0.8, dot(vBasePaint, vec3(0.3, 0.6, 0.1)))) * (1.0 - 0.85 * liveOpen), mix(1.6, 0.55, smoothstep(22.0, 36.0, vBasePos.x)), baseBark);
   reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.8);
   reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveKeyC * vec3(1.0, 0.8, 0.66) * ((mix(0.7, 0.8, baseBark) * liveRim * liveRim * liveOpen + mix(0.3, 0.25, baseBark) * liveKick * liveKick) * baseAo);
   // The same low warm sun that grazes the right flank of the stone catches the roots that stand out of it.
