@@ -1,52 +1,53 @@
 {
-  "number": 207,
-  "time": "2026-11-27 09:35 UTC",
+  "number": 208,
+  "time": "2026-11-27 10:06 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 207 · 2026-11-27 09:35 UTC · Phase 6",
+    "Status 208 · 2026-11-27 10:06 UTC · Phase 6",
     "Decision needed from Brandon, unchanged, one thing only he can do: the automation that restarts this build ends Friday noon Mountain Time and a run may not move its own end. He can move the end to Sunday noon in the automation's settings, or write any line in the thread. The Partner raises it again Friday morning. Open item 252.",
-    "Chain 26 is read whole and on origin main (`3170155e`, pushed 09:32 UTC): summer's tree tenth pass, fall's base tenth step, spring's base sixth list and fall's scene seventh list. On it: tsc exit 0, five makes exit 0, build exit 0, engine `85cf73c2c01e9f16`; \"pass M3 summer-rest: 0.8026\" (base 0.803, miniature 0.888); \"pass M3 fall-rest: 0.8741\" (base 0.913, miniature 0.874); \"pass M3 spring-rest: 0.8666\" (base 0.909, miniature 0.867); M4 0.9694, 0.8951, 0.956, 0.9584 and M5 0.993, 1, 0.9757, 0.9995, all pass, and the second change's cover is up from 0.8676; six of the eight draft stills moved, summer's, fall's and spring's, winter's two equal; the whole vitest 68 files passed and 1 skipped, 947 tests passed and 4 skipped; `node tools/miniatures.mjs` pass; triangles at high winter 1,490,555, spring 1,496,825, summer 1,703,097, fall 1,796,373 of 1,800,000. Spring's two stills are byte for byte the ones its builder drew on its own machine.",
-    "Chain 27 is running since 09:33 UTC on three more merges, not on origin yet: summer's stone (`3262c34c`), summer's glass fifth list (`d9e90ff5`) and summer's air (`6ba34474`). Fall's air seventh list (`a1f02de5`) is pushed and accepted but could not go in: it and summer's air changed the same lines of two shared files. I did not resolve that myself; fall's air builder merges and proves both seasons' stills, for chain 28.",
-    "The sixth publish: a helper machine was ordered at 09:34 UTC to draw the 40 first pictures on `3170155e`, so that this machine can go on reading chains. Then the build, the checks, the security review and the publish here. Still about 10:30 UTC. The live app is still the fifth publish.",
-    "Picture 1 is the four seasons after a shake as chain 26 drew them (file times 09:11 to 09:14 UTC), winter and spring above, summer and fall below. This is what is on origin now.",
-    "Picture 2 is summer's tree: the approved picture, the tenth pass (on origin) and the eleventh so far (not pushed). The eleventh has the openings in the right number and place by its builder's count (37 patches of sky where the approved has 38, STATED), but it reads as one flat sheet with round holes punched in it. Below the bar. Ruled: no opening inside a pad; an opening is the gap between two pads or the slit under a pad; the pads become bodies with a lit top and a dark underside. Pair by 09:55, push by 10:25 UTC.",
-    "Picture 3 is summer's base, the approved picture above and the stone's push below (in chain 27). Gone: the gold dashed line. Below the bar, plainly: ours reads as smooth weathered wood with many broad bands where the approved is packed sand with one fine grain, a few thin lines and carved steps; the shells are grey and matt where the approved's are cream and glossy; dark upright streaks stand under the glass. Its builder's box means stand within 13 levels of the approved's while my eye reads the approved's lit sand far paler, so I ordered no tone and asked for the spread (tenth, middle and ninetieth hundredth) in its registered boxes.",
-    "Picture 4 is summer's fence, the approved picture above and the miniature's sixth list so far below (not pushed): narrow tall posts with rounded tops of the same wood and two rails, where main had short posts with pale caps. Decision 184 used as meant. Push about 09:55 UTC.",
-    "4K motion. The shutter's builder traced the green sprinkle on summer's lit lawn at 3840 (frames 1740 to 1743): it is none of the passes (grain, bloom, the sampler's clumps, a glint and the lens fill were each taken away with the count unchanged); it is the lit blades' edges, about a pixel wide, stepping by a median of 17 levels on 2.9 to 3.8 percent of the pixels in the lit boxes (STATED). I ordered the test of a wider bell for each sample's place in the pixel, as film renderers deal it, with the cost in sharpness measured; numbers by 11:00 UTC. Chunk 58 of film B draws at 3840 since 09:16, last frame about 10:20 UTC. Spring's lit moss at 3840 is a smooth pale skin where the shade beside it carries grain; it is item 3 of spring's seventh list, after the trace of the blue pixels. Not a pass.",
-    "The change of season: its finisher found one pixel of summer after the landing moved by where its lines stood in a base's shader, and mended it before any push; push about 11:00 UTC. Fall's scene, first pair of the eighth list: chimney's part 0.89 (was 0.68), roof 0.85, wall 0.75 with flat blocks, about 18,000 triangles given back by the gate's count, unmeasured (STATED). Spring's base has its seventh list: the body squat and leaning out to the table on its own two measures, the lit moss, the top edge's tufts, the trickle as clear water, the stones dealt to the approved's count.",
-    "Below the bar, plainly. Summer: the tree's crown, the base's stone, seeds of one size, even disc lights, a pale wash on the upper glass, a thin stream of sand (its next pass is due about 09:36). Fall: the air (points paler and harder than the approved's, the upper air an even grey green), no lights on the boughs, the wall, the vines, the stone at 4K. Spring: the body too tall and upright, the lit moss at 4K, the blue pixels. The change of season: not merged. 4K motion and the controls: not a pass; nothing has been seen on a real card at 60 a second.",
-    "Render counts since the last status. Drawn here: chain 26's eight draft stills, its counts and the whole vitest. On helper machines: the builders' own stills, and chunk 58 at 3840 in work. No frame of the masters yet.",
+    "Chain 27 is read whole and on origin main (`e5671c9c`, pushed 10:01 UTC): summer's stone, summer's glass fifth list and summer's air. On it: tsc exit 0, make base-summer exit 0, build exit 0, engine `45ab169597ec2ed4`; \"pass M3 summer-rest: 0.875\" (base 0.875, miniature 0.905; chain 26 read 0.8026, 0.803 and 0.888); M4 0.9694, 0.8951, 0.956, 0.9584 and M5 0.993, 1, 0.9757, 0.9995, all pass and equal to chain 26's; two of the eight draft stills moved, summer's, the six others equal; the whole vitest 68 files passed and 1 skipped, 952 tests passed and 4 skipped; `node tools/miniatures.mjs` pass; triangles at high winter 1,490,555, spring 1,496,825, summer 1,703,094, fall 1,796,373 of 1,800,000.",
+    "That head carries one open fault, found by summer's air builder in its own push after I had merged it: at the close camera each of summer's out of focus lights was drawn as a bunch of eight dots. Decision 185: the chain went to origin as read, the fault is logged as open on that head, no publish and no film frame is taken from it, and from now on a part is merged after its builder's report is read, not on its push alone. The mend is pushed (`agent/p6-summer-air` `24b901a1`, one number, held by a test); picture 3 shows it. It goes into chain 28.",
+    "Decision 186: the base's height stays 33 mm for all four seasons and my aim for a lower spring body is withdrawn. Decision 40 set 33 as the lowest value that keeps the glass at its approved size in the frame with one seat for four seasons, and winter was refused a lower base earlier. So every base stands about 2 to 5 mm taller than its approved picture shows. It stays listed for the review.",
+    "The sixth publish. The helper machine drew the 40 first pictures on `3170155e` in 13.8 minutes and pushed them (`agent/p6-first-6` `3d6065fc`, \"poster: pass\", engine `85cf73c2c01e9f16`). The fresh security reviewer read that commit: \"BLOCKS: no\", no block and no warning, 0 vulnerabilities in 141 dependencies, no secret, no request off the page's own address, hostile addresses change nothing. It also said the globe did not draw in its own browser, whose software renderer gave shader errors on every address. I loaded chain 27's build here under the renderer a visitor's Chrome falls back to: no error and no warning in 77 seconds, the controls mounted and the canvas showing (MEASURED here; chain 27's head holds all of `3170155e`). I asked the reviewer for its errors word for word and for the same test on the fifth publish's commit. The publish build runs here since 10:05 UTC. The publish follows when its checks read green and the reviewer's answer names no fault of the page, about 10:35 to 10:45 UTC; I said about 10:30. The live app is still the fifth publish.",
+    "Picture 1 is summer at rest on chain 27, the approved picture left and the build right (file time 09:36 UTC, after the chain's start). Picture 2 is summer at the landing on chain 27: the air is one swirl now. Below the bar: its strokes are cream, thick and even, like feathers, and they hide the tree and the cottage, where the approved has wisps, sheets and gaps with the scene ghosted through.",
+    "Picture 3 is the fault and its mend at the close camera, four crops, the pushed head above and the mend below: one light where eight dots stood. Not on main yet.",
+    "Picture 4 is spring's base, the approved picture above and the first pair of the seventh list below (not pushed). Its builder traced the blue pixels to their cause, the low sun on the growth going far over white with the lens's fringe laying red and blue beside it, and mended it there: deep blue pixels in film frame 1030 from 1,409 to 693 at 3840 and pure white to 0 (STATED). Below the bar: the crest is a rolled rim where the approved is one broad cushion with the glass nested in it, about 20 thin roots where the approved has about 8 thick ones, the moss's lower edge level where the approved's hangs in tongues.",
+    "Other reports since Status 207, each on its builder's own pictures and numbers. Summer's stone, a registered pair in its working tree (not pushed): the dark bands are out and its lines now read as drawn on flat ground, so its builder will not push it; its measures overturned two of my words (the approved's left scallop is a mid tan, not cream; the lit sand's light is not short), so I withdrew both and gave the form: each ridge a roll with a lit facet above and a soft shade below, no line anywhere. Summer's glass at 3840: no seam, a smooth rim; below the bar the flame is a flat leaf and the top's bands are soft. My own measure there overturned my eye again: the inside air is not paler than the approved's, so its fill stays. Summer's sand stream (`b576180c`, pushed): single grains with dark between them where a cream veil stood; below the bar it is coarse lace, half the approved's breadth, grains twice as wide; it goes into chain 28 and its eighth list is the broad sheet in front of the stone's flank. Fall's air merged with summer's air (`4e8b1336`), proved both ways by hashes; its eighth list starts from counts (the approved has about 38 leaves in the upper left quarter, eight of them 20 px or longer; ours about 30, none over 17 px). Fall's base eleventh step (`fc68c28f`, pushed) is held: the lit wall at the right reads as an even pale sheet where the approved is black wet rock in lumps and folds; ruled as form for the twelfth. Summer's miniature sixth list is pushed (`e5fc7e1e`), its report follows about 10:25 UTC. Summer's tree, second pair of the eleventh: the crown is dark cushions now, fuller and rounder than the approved's; ordered apart into pads with limbs showing in the gaps, push 10:25 UTC.",
+    "4K motion: chunk 58 of film B draws at 3840 until about 10:20 UTC, then the test of the wider bell, numbers by 11:00 UTC. Not a pass. The change of season: push about 11:00 UTC, not merged. Controls: not a pass; nothing has been seen on a real card at 60 a second.",
+    "Below the bar, plainly. Summer: the crown too full and round, the base reads as grey weathered wood where the approved is pale packed sand, seeds as cream stars of few spokes, lights as even dots, the glass's flame and top bands, the landing's feathers, the sand stream. Fall: the air's points pale and hard, leaves of one shape and size, the roof, wall, fence and path as forms, the stone wall, no lights on the boughs. Spring: the crest, the roots, the moss's edge, the lit moss at 3840. The change of season, 4K motion and the controls as above.",
+    "Next: the sixth publish, then chain 28 with summer's air mend, fall's air and summer's sand stream; Round 23 on summer when its lists are in.",
+    "Render counts since the last status. Drawn here: chain 27's two M3 stills, eight draft stills, counts and the whole vitest, and one page load under the fallback renderer. On helper machines: the 40 first pictures, the builders' own stills, and chunk 58 at 3840 in work. No frame of the masters yet.",
     "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
-    "phase 6: 30.76 h used of its 12.00 h box",
-    "allowance (after the review): 30.76 h used of 12.00 h allowed",
+    "phase 6: 31.28 h used of its 12.00 h box",
+    "allowance (after the review): 31.28 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-207-1.jpg",
-      "caption": "The four seasons after a shake as chain 26 drew them, on origin now",
+      "file": "out/stills/status/status-208-1.jpg",
+      "caption": "Summer at rest on chain 27, approved picture left and build right, on origin now, below the bar",
       "w": 1200,
-      "h": 677
+      "h": 591
     },
     {
-      "file": "out/stills/status/status-207-2.jpg",
-      "caption": "Summer's tree, the approved picture left, the tenth pass in the middle, the eleventh so far right, not pushed, below the bar",
+      "file": "out/stills/status/status-208-2.jpg",
+      "caption": "Summer at the landing on chain 27, the air's single swirl, on origin now, below the bar",
       "w": 1200,
-      "h": 447
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-207-3.jpg",
-      "caption": "Summer's base, the approved picture above and the stone's push below, in chain 27, below the bar",
-      "w": 1116,
-      "h": 1018
+      "file": "out/stills/status/status-208-3.jpg",
+      "caption": "Summer's lights at the close camera, bunches of eight dots above and one light each with the mend below, not on main yet",
+      "w": 960,
+      "h": 606
     },
     {
-      "file": "out/stills/status/status-207-4.jpg",
-      "caption": "Summer's fence, the approved picture above and the miniature's sixth list so far below, not pushed",
-      "w": 746,
-      "h": 1200
+      "file": "out/stills/status/status-208-4.jpg",
+      "caption": "Spring's base, approved picture above and the seventh list's first pair below, not pushed, below the bar",
+      "w": 940,
+      "h": 804
     }
   ]
 }

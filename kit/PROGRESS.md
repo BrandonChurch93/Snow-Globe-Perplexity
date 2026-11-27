@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 207 · 2026-11-27 09:35 UTC
+Status 208 · 2026-11-27 10:06 UTC
 
-- `out/stills/status/status-207-1.jpg`: The four seasons after a shake as chain 26 drew them, on origin now
-- `out/stills/status/status-207-2.jpg`: Summer's tree, the approved picture left, the tenth pass in the middle, the eleventh so far right, not pushed, below the bar
-- `out/stills/status/status-207-3.jpg`: Summer's base, the approved picture above and the stone's push below, in chain 27, below the bar
-- `out/stills/status/status-207-4.jpg`: Summer's fence, the approved picture above and the miniature's sixth list so far below, not pushed
+- `out/stills/status/status-208-1.jpg`: Summer at rest on chain 27, approved picture left and build right, on origin now, below the bar
+- `out/stills/status/status-208-2.jpg`: Summer at the landing on chain 27, the air's single swirl, on origin now, below the bar
+- `out/stills/status/status-208-3.jpg`: Summer's lights at the close camera, bunches of eight dots above and one light each with the mend below, not on main yet
+- `out/stills/status/status-208-4.jpg`: Spring's base, approved picture above and the seventh list's first pair below, not pushed, below the bar
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 09:35 UTC
-clock: phase 6, tick of 25.8 minutes
-phase 6: 30.76 h used of its 12.00 h box
-allowance (after the review): 30.76 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 30.76 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 10:06 UTC
+clock: phase 6, tick of 31.6 minutes
+phase 6: 31.28 h used of its 12.00 h box
+allowance (after the review): 31.28 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 31.28 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
