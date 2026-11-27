@@ -61,3 +61,19 @@ M3 at review fell to 0.6174 for the miniature (0.722 on main). The rows of glint
 Still to do: the chimney's cap, rougher shingle edges, gnarled bark, the fence's uneven pickets, the pane's level and its spill, more grain on the door.
 
 The second box of the leaves (850,615,900,640 in the built still) lies on the left pumpkin's face, so its number does not move with the leaves.
+
+## Second list, second push (on main ad011f2b)
+
+Added since the first push: bark ridges in the sleeve's geometry (three scales of ridge, knots, 192 around) with the lamp's gloss on the ridges and limbs, a capped and taller chimney, rougher shingle edges with more spread of tone, a lighter door with grain along its planks, smaller and darker litter, a deeper pane with more spill on the wall. The ground went from 110 to 100 rings to pay for the bark and the cap: village-fall 283,454 triangles, tree-fall 37,058; G15 reads high 1,791,317 of 1,800,000.
+
+M3 at review: miniature 0.798 (main ad011f2b reads 0.789); the line itself still fails at 0.6996 on the base, which is not in these files.
+
+Both generators changed: run `npm run make -- village-fall`, `npm run make -- tree-fall`, then `npm run texpack -- --group fall`.
+
+Still short of the approved picture:
+- The trunk is lit brown across its whole width; the approved one is black on its right flank with a cool rim.
+- The fence is posts and rails, not pickets of uneven height; its boards have worn lit edges only.
+- The pane has one cross, the approved one two bars across.
+- The litter near the left pumpkin is still more orange than the approved brown.
+- No leaves float on the pond. A first try at them did not show on the water and was taken out.
+- The wall's stones and the door's arch are the shared model's.
