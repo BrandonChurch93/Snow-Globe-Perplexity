@@ -1017,9 +1017,12 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
   float vh = rh * rh + vStreak.w;
   float vw = rw * rw + vStreak.w;
   // over its path a light is spread thin by the shutter; a light of the storm keeps the larger share of it, so its streak is bright and never a pale bar
-  float core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * exp(-0.5 * d2 / vc) * fade;
   float sg = sqrt(vStreak.w);
   float disc = smoothstep(${n(CARD.glow.discFrom[0])}, ${n(CARD.glow.discFrom[1])}, sg / max(rc, 0.6)) * (spark ? 1.0 : 1.0 - uStorm.x);
+  // the brighter a bare ember's point stands at rest, the more light it is given and the tighter it is drawn: the approved picture's fine points are bright to clipping at the middle and still under two and a half pixels wide, and its faint ones are the fainter
+  float bareGain = spark ? mix(1.0, clamp(pow(max(vCore.w * rc * rc / vc / ${n(CARD.spark.restBareLift[0])}, 1e-4), ${n(CARD.spark.restBareLift[1])}), ${n(CARD.spark.restBareLift[2])}, ${n(CARD.spark.restBareLift[3])}), (1.0 - glowS) * (1.0 - disc) * (1.0 - vL2.w)) : 1.0;
+  float bareTight = 1.0 + ${n(CARD.spark.restBareTight)} * max(log2(bareGain), 0.0);
+  float core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * exp(-0.5 * d2 * bareTight / vc) * fade * bareGain;
   float lid = 0.0;
   if (disc > 0.0) {
     float rd = ${n(CARD.glow.discWide)} * sg;

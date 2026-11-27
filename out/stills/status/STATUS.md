@@ -1,19 +1,20 @@
-# Status 220
+# Status 224
 
-2026-11-27 17:01 UTC
+2026-11-27 19:03 UTC
 
 - Phases 1 to 5 complete. Phase 6 in progress.
-- Landed since Status 219: chain 34 is on origin main (63914740, pushed 16:56 UTC). Fall's base carries its three cut and lit pumpkin faces and the shutter's fine motion is in. Measured on it: fall at rest M3 0.9354 at review against 0.8835 before, the base's part 0.970 against 0.883; M4 of shakes 1 to 4 0.9694, 0.8957, 0.9567, 0.9597; the whole test run 954 passed, 4 skipped; triangles at high 1,759,623 of 1,800,000 for fall, the largest of the four.
-- Chain 35 runs since 16:59 UTC with three parts: the mend of summer's pale patches under the glass (open item 255; its builder's pictures looked at, the patches are gone in them), the change of season's first reworked item (bases, rim and lamps dissolve smoothly at 4K) and the thirteenth pass of summer's tree. Its checks are not read yet and nothing of it is on origin.
-- Decision 200: the first item of the tree's fourteenth list (shade inside the crown) is a real step in the crown's depth by my look and is held for its second item, because by its builder's own rows the top over the core and the wing fell.
-- Open and below the bar: winter's ferns torn at film frame 668, summer's heap torn at 2108, the petals' fringes at 680 (with the change's builder); spring's dots under the mushrooms' rims (open item 259); summer's flame and star in the glass; a white round patch behind the lamp post at summer's close camera (open item 260).
-- All four seasons remain below the bar. Sound credits 7,420 of 10,000.
-- phase 6: 38.20 h used of its 12.00 h box
-- allowance (after the review): 38.20 h used of 12.00 h allowed
+- Landed since Status 223: chain 37 reached origin main at 18:58 UTC as 92247ca7. It carries fall's sheaf on the base (decision 204), the shutter's wait for a master's lock and the eighth publish's first pictures. Read before the push: on the helper machine every step at exit 0, the whole test run 965 passed and 8 skipped in 68 files passed and 1 skipped, fall at rest against the approved picture 0.9159 at review (base 0.916, miniature 0.989; chain 36 read 0.9702, so the sheaf costs 0.0543, a fall allowed by decision 204 over its floor 0.85 and logged as a fall), the six guards of winter, spring and summer unmoved, the triangle budget a pass at 1,786,164 of 1,800,000; on this machine the commit's three files, the two stills' hashes, the engine's hash equal to the helper's and the sound tests 46 of 46. Looked at: fall at rest and landed. The sheaf reads as a tuft at the base's left flank, the tree is still a thicket.
+- Decision 209, the change of season: summer's heap may leave the table by lines in the sand's shader and not only by moving its mesh, because moved as a mesh every grain is drawn as a row of beads at 4K. Conditions: the eight guards at rest, nothing paid in a live frame, the heap whole in every frame of 2104 to 2111 at 4K. Winter's far lumps of snow go out with the frost by the same law, where they faded in place before. The three white specks are the table's own dust and no fault. In the builder's final frames the heap goes out to the right as one soft piece and the weave is gone. Not judged in motion, not pushed.
+- Decision 210, summer's falling sand: neither trial form is a pass. The faster one carries the fall in both views and fails the count of one frame events on the sheet (0.49 and 0.48 percent against a bar of 0.25). The slower one holds that count (0.08 and 0.09 percent) and shows no travel in the hero view. The rate is the faster, since a fall that reads as standing is the boil this work set out to end. The events are to be mended by structure: threads at least twice as long as they travel in one frame, half as wide. By my eye both forms are cream scales on orange, a braid and not yet sand.
+- The ninth publish is begun: its 40 first pictures were ordered at 19:02 UTC on 92247ca7. It will carry chains 36 and 37. The shutter's follow up for the 4K masters (a run refused at its start when memory is short, a line a minute while it waits for another render) is pushed as 20a5ebf6 and waits for its whole test run on the merged head.
+- Open and below the bar: winter's ferns at film frame 668 (mended at draft in its builder's tree, no final frame seen), the petals' fringes at 680; spring's dots under the mushrooms' rims (item 259); summer's flame and star in the glass; a white round patch behind the lamp post at summer's close camera (item 260); summer's falling sand; fall's tree; spring's base, a tall cake where the approved sinks the glass into a mound.
+- All four seasons remain below the bar. Sound credits 7,420 of 10,000, no call since 05:47 UTC on Thursday.
+- phase 6: 40.23 h used of its 12.00 h box
+- allowance (after the review): 40.23 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-220-1.jpg`: Fall at rest on chain 34 with the base's cut faces, approved picture left and build right, on origin now, below the bar
-- `out/stills/status/status-220-2.jpg`: Fall after its landing on chain 34, on origin now, below the bar
-- `out/stills/status/status-220-3.jpg`: Summer after its landing, the pale patches on the base above and gone with the mend below, in chain 35, not on origin yet
-- `out/stills/status/status-220-4.jpg`: Summer's tree, approved picture left, main in the middle, the fourteenth list's first item right, held for its second item, below the bar
+- `out/stills/status/status-224-1.jpg`: Fall at rest on chain 37, approved picture left and build right, on origin now, below the bar
+- `out/stills/status/status-224-2.jpg`: Fall after its landing on chain 37, on origin now, below the bar
+- `out/stills/status/status-224-3.jpg`: The change of season, summer's heap leaving over film frames 2107 to 2111 at the final tier, in its builder's tree, not pushed, not judged in motion
+- `out/stills/status/status-224-4.jpg`: Summer's falling sand at 4K at four times, film frames 1754 to 1757, the rate chosen, drawn without the smear, in its builder's tree, below the bar

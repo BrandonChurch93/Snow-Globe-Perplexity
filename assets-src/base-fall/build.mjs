@@ -25,7 +25,7 @@ const meshes = [iron.soup.mesh({ tileMm: 16 }), pumpkins.soup.mesh(extras), wax.
 const file = rel('assets-full', 'fall', 'base-fall.glb')
 writeGlb(file, meshes, { part: 'base-fall' })
 const tri = meshes.map((m) => m.index.length / 3)
-console.log(`iron ${tri[0]} triangles (drum and seat ${iron.drumTriangles}), ${iron.strands} strands, ${iron.thorns} thorns, ${iron.refused} thorns refused for crossing a face or the slab`)
+console.log(`iron ${tri[0]} triangles (drum and seat ${iron.drumTriangles}), ${iron.strands} strands, ${iron.thorns} thorns, ${iron.refused} thorns refused for crossing a face, the slab or the sheaf`)
 console.log(`pumpkins ${tri[1]} triangles in ${L.FACES.length} faces: ${L.FACES.map((f) => `${f.az.toFixed(1)}@${f.h.toFixed(1)}`).join(', ')}`)
 console.log(`wax ${tri[2]} triangles, ${wax.drips} runs; web ${tri[3]} triangles`)
 const size = fs.statSync(file).size
