@@ -3,15 +3,17 @@ import type { Rgb } from '../../../core/materials'
 export const season = 'fall'
 export const isTree = (role: string): boolean => role === 'trunk' || role === 'crown'
 
-export const tones: Record<'lamp' | 'flame' | 'lampLight' | 'purple' | 'purpleDrape' | 'purpleLight' | 'green' | 'greenDrape' | 'greenLight' | 'pumpkinLight' | 'ember' | 'emberLight' | 'pondLight' | 'haloEdge' | 'haloCore' | 'moss' | 'water' | 'fogGlint', Rgb> = {
+export const tones: Record<'lamp' | 'flame' | 'lampLight' | 'purple' | 'purpleDrape' | 'purpleFold' | 'purpleLight' | 'green' | 'greenDrape' | 'greenFold' | 'greenLight' | 'pumpkinLight' | 'ember' | 'emberLight' | 'pondLight' | 'haloEdge' | 'haloCore' | 'moss' | 'water' | 'fogGlint', Rgb> = {
   lamp: [1, 0.6, 0.24],
   flame: [1, 0.88, 0.62],
   lampLight: [1, 0.58, 0.3],
-  purple: [0.41, 0.03, 0.365],
+  purple: [0.42, 0, 0.4],
   purpleDrape: [0.62, 0.03, 0.6],
+  purpleFold: [1.25, 0.5, 1.2],
   purpleLight: [0.95, 0.22, 0.85],
   green: [0.16, 1, 0.12],
   greenDrape: [0.06, 0.62, 0.08],
+  greenFold: [1, 1, 0.4],
   greenLight: [0.3, 1, 0.28],
   pumpkinLight: [1, 0.5, 0.14],
   ember: [1, 0.43, 0.1],
