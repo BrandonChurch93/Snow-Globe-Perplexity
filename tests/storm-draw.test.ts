@@ -2,13 +2,13 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CARD_FRAG_PARS, CARD_VERT, CARD_VERT_PARS } from '../src/particles/draw/cards'
-import { CARD, PIXEL_SIGMA2, SEED_RESTS, SHAPE, STORM_FLOOD, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC, SUMMER_EDGE, lookOf } from '../src/particles/draw/looks'
+import { CARD, PIXEL_SIGMA2, SEED_NEAR, SEED_RESTS, SHAPE, STORM_FLOOD, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC, SUMMER_EDGE, lookOf } from '../src/particles/draw/looks'
 import { seatsOn } from '../src/particles/draw/points'
 import { VERT_MAIN } from '../src/particles/draw/shader'
 import { gridOf } from '../src/scene/layout'
 import { config, particleKinds } from '../src/config'
 import { BEHAVIOUR } from '../src/particles/engine/kinds'
-import { lensIor, lensPlace, lensRadiusMm } from '../src/globe/lens'
+import { innerRadiusMm, lensIor, lensPlace, lensRadiusMm } from '../src/globe/lens'
 import { VEIL_LOOK, veilUniforms } from '../src/core/chunks/veil'
 import type { KitMoment } from '../src/seasons/kit'
 import { STORM, TAKE, comesOfAnother, floodLeft, holdStorm, stormHeld, takePace, veil as summerVeil } from '../src/seasons/summer/veil'
@@ -517,6 +517,33 @@ describe('how the storm is drawn', () => {
     expect(CARD_VERT).toContain('keepC *= mix(1.0, mix(wholeC, smoothstep(0.0, ')
     expect(CARD_VERT).toContain('keepC *= 1.0 - calmC * offC * max(max(cotQ, bandQ) * (1.0 - smoothstep(')
     expect(CARD_VERT).not.toContain('pow(max(1.0 - dot(atC, atC), 0.04)')
+  })
+
+  it("in the calm no head leaves the picture in one frame where it snags and no stalk is there in one frame: a head afloat goes out over the way of its nearness before the touch, and a stalk comes with its head's class, each over twelve frames and more at the seed's fastest", () => {
+    const clock = CARD.clock
+    // the fastest a seed afloat goes in a frame and can still snag, in millimetres: the engine holds none that is faster
+    const fastMm = BEHAVIOUR.seed!.restSpeedMmS / config.film.fps
+    // the draw tells every seed afloat how near it is to what it can snag on, nothing in the open air and all of it before the touch, which is within the seed's layer
+    expect(SEED_NEAR.toMm).toBeGreaterThan(SEED_NEAR.fromMm)
+    expect(BEHAVIOUR.seed!.layerMm[1]).toBeLessThanOrEqual(SEED_NEAR.fromMm)
+    expect((SEED_NEAR.toMm - SEED_NEAR.fromMm) / fastMm).toBeGreaterThanOrEqual(12)
+    // the shader: a clock's share goes with that nearness, to nothing at the touch, and its size with it; nothing of it at the storm's full level, where a seed is not asked how near it is
+    expect(CARD_VERT).toContain('float snagC = 0.0;\n      if (uStorm.x < 0.99 && aState < ')
+    expect(CARD_VERT).toContain('snagC = offC * min(aState * ')
+    expect(CARD_VERT).toContain('keepC *= 1.0 - calmC * snagC;')
+    expect(CARD_VERT).toContain('wholeC * (1.0 - snagC)), clockC);')
+    // and where it is held it is not seen under the storm's full level, as no seed is that has snagged: no tuft comes in one frame where the clock went out. A head the scene has a place for lies as it lay
+    expect(CARD_VERT).toContain('if (uStorm.x < 0.99 && ')
+    expect(CARD_VERT).toContain(' && !laidB && !glowB && way.z > 0.5 && u5 < max(way.x, way.y)) keepC *= 1.0 - calmS * lying;')
+    expect(SEED_NEAR.stormOff[1]).toBeLessThanOrEqual(0.99)
+    // which heads show a stalk is each head's own for good, by its own number: the middle ones' few at every depth, and the others near the eye with the near class itself, which comes over the whole depth between the two of nearAt, in radii of the liquid
+    expect(clock.stalks[0]).toBeLessThan(clock.stalks[1])
+    expect(clock.nearAt[0]).toBeLessThan(clock.nearAt[1])
+    expect(((clock.nearAt[1] - clock.nearAt[0]) * innerRadiusMm) / fastMm).toBeGreaterThanOrEqual(12)
+    expect(CARD_FRAG_PARS).toContain('float ownStalkK = fract(vL3.x * 47.0);')
+    expect(CARD_FRAG_PARS).toContain('stalkK = mix(stalkK, mix(mix(step(ownStalkK, ')
+    // no line of the stalk's share moves with the depth past a head's own number
+    expect(CARD_FRAG_PARS).not.toContain('step(fract(vL3.x * 47.0), mix(mix(')
   })
 
   it("a seed or a light at the back of the ball comes in over twelve frames and more: where the lens puts it at once well inside the outline, it rises with its millimetres past the ray through the limb, and only summer's two shapes take that", () => {

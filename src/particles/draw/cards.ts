@@ -79,6 +79,8 @@ export const CARD_VERT = `
     // a seed that lands is of the storm: under its full level it is not seen at the touch of what it can snag on, nor where it has snagged (looks.ts, SEED_NEAR), so none comes into the picture or leaves it where it touches. A head the scene has a place for lies as it lay
     float calmS = 1.0 - smoothstep(${n(SEED_NEAR.stormOff[0])}, ${n(SEED_NEAR.stormOff[1])}, uStorm.x);
     if (${at(SHAPE.seed)} && whole > 0.5 && way.z > 0.5 && u5 >= max(way.x, way.y)) keepC *= max(max(afloat * gustC, uStorm.x * uStorm.w * (1.0 - nearS)), lying * step(fract(own * 977.0), ${n(CARD.clear.snagSeen)}) * (laidB ? 1.0 : 1.0 - calmS));
+    // a head that floats in the calm can come to what it snags on too, and is held there as any seed is. Under the storm's full level it is not seen where it has snagged either: the clock went out before the touch (snagC below), and no tuft comes into the picture in one frame where it went
+    if (uStorm.x < 0.99 && ${at(SHAPE.seed)} && !laidB && !glowB && way.z > 0.5 && u5 < max(way.x, way.y)) keepC *= 1.0 - calmS * lying;
     if (${at(SHAPE.spark)}) keepC = max(mix(${n(CARD.sparkKeep[0])}, ${n(CARD.sparkKeep[1])}, pow(abs(own), mix(${n(CARD.sparkRestSkew)}, ${n(CARD.sparkSkew)}, gust))), smoothstep(mix(${n(CARD.sparkRestClear[0])}, ${n(CARD.sparkClear[0])}, gust), mix(${n(CARD.sparkRestClear[1])}, ${n(CARD.sparkClear[1])}, gust), own));
     if (${at(SHAPE.spark)}) keepC = max(keepC, ${n(CARD.sparkRestFine[0])} * smoothstep(${n(CARD.sparkRestFine[1])}, ${n(CARD.sparkRestFine[1] + 0.05)}, own) * (1.0 - gust));
     if (${at(SHAPE.fleck)}) keepC = mix(${n(CARD.fleckKeep[0])}, ${n(CARD.fleckKeep[1])}, pow(abs(own), mix(${n(CARD.fleckSkew)}, ${n(CARD.fleckStorm)}, gustC)));
@@ -169,6 +171,10 @@ export const CARD_VERT = `
       // how much of this head the count lets stand. A clock that the count takes out or lets in as it drifts does not stand there as a ghost of itself: it is small while it comes and grows to its size, as a head does that floats up out of the deep of the ball (rC below), and is whole to see well before it is full grown
       float wholeC = smoothstep(denseC - edgeC, denseC, fract(own * 211.0));
       keepC *= mix(1.0, mix(wholeC, smoothstep(0.0, ${n(CARD.clock.goSeen)}, wholeC), offC), calmC);
+      // a head afloat that comes to what it can snag on is held there by the engine in one step, and a held head is no clock. So in the calm it goes out over the whole way of its nearness (looks.ts, SEED_NEAR; points.ts tells the nearness of every seed afloat) and is gone at the touch, and it is the smaller the nearer it is (rC below), as a head is that the count takes out: none leaves the picture between two frames where it snags
+      float snagC = 0.0;
+      if (uStorm.x < 0.99 && aState < ${n(SEED_NEAR.state * 1.25)}) snagC = offC * min(aState * ${n(1 / SEED_NEAR.state)}, 1.0);
+      keepC *= 1.0 - calmC * snagC;
       // before the cottage and the lanterns all but a few of the clocks are not drawn: each of the others fades as it drifts there, over the whole width of a wide edge round the miniature, and the few stay whole, so none is taken out at a line. Before the crown every clock is a little fainter
       float stalkQ = 0.0;
       if (uStorm.x < 0.99) {
@@ -219,7 +225,7 @@ export const CARD_VERT = `
           float atK = depth + ${n(CARD.clock.depthVary)} * (fract(h.w * 113.0) * 2.0 - 1.0);
           float midK = smoothstep(${n(CARD.clock.farAt[0])}, ${n(CARD.clock.farAt[1])}, atK);
           float nearK = smoothstep(${n(CARD.clock.nearAt[0])}, ${n(CARD.clock.nearAt[1])}, atK) * (1.0 - sceneC);
-          rC = mix(rC, look.y * uPoint.y * mag / zImg * shrink * mix(mix(${n(CARD.clock.mm[0])}, ${n(CARD.clock.mm[1])}, midK), ${n(CARD.clock.mm[2])} * mix(1.0, ${n(CARD.clock.stoutMm)}, step(cardHairHash((pid & 4095u) * 64u + 63u).y, ${n(CARD.clock.warmShare)})), nearK) * mix(${n(CARD.clock.vary[0])}, ${n(CARD.clock.vary[1])}, fract(vary * 7.0)) * mix(${n(CARD.clock.goSize)}, 1.0, wholeC), clockC);
+          rC = mix(rC, look.y * uPoint.y * mag / zImg * shrink * mix(mix(${n(CARD.clock.mm[0])}, ${n(CARD.clock.mm[1])}, midK), ${n(CARD.clock.mm[2])} * mix(1.0, ${n(CARD.clock.stoutMm)}, step(cardHairHash((pid & 4095u) * 64u + 63u).y, ${n(CARD.clock.warmShare)})), nearK) * mix(${n(CARD.clock.vary[0])}, ${n(CARD.clock.vary[1])}, fract(vary * 7.0)) * mix(${n(CARD.clock.goSize)}, 1.0, wholeC * (1.0 - snagC)), clockC);
           seedSoft = mix(seedSoft, closeC * mix(mix(${n(CARD.clock.softPx[0])}, ${n(CARD.clock.softPx[1])}, midK), ${n(CARD.clock.softPx[2])}, nearK), clockC);
           keepC *= mix(1.0, mix(mix(${n(CARD.clock.classSeen[0])}, ${n(CARD.clock.classSeen[1])}, midK), ${n(CARD.clock.classSeen[2])}, nearK), clockC);
           // a clock takes back the lens look's dimming of what floats far behind the miniature (looks.ts, LENS_LOOK.farDim; the line that sets alpha below): a far puff is whole to see, a soft grey ball, and it is the count that says how many there are, not a crowd of ghosts
@@ -1129,7 +1135,9 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   // in the calm more of the heads show their stalk, a golden hair a little stouter than the storm's, and none before the cottage or the crown: the calm's stalks come in with the calm by degrees, so none is there in one frame
   if (floatS > 0.0) {
     stemW = mix(stemW, mix(mix(${n(CARD.clock.stem[0])}, ${n(CARD.clock.stem[1])}, nearS), ${n(CARD.hair.stormStem)}, vL2.w) * rC, floatS);
-    stalkK = mix(stalkK, step(fract(vL3.x * 47.0), mix(mix(${n(CARD.clock.stalks[0])}, ${n(CARD.clock.stalks[1])}, nearS), ${n(CARD.hair.stormStalks)}, vL2.w)) * mix(mix(${n(CARD.clock.stemSeen[0])}, ${n(CARD.clock.stemSeen[1])}, nearS) * (1.0 - vL4.x), ${n(CARD.hair.stormStemSeen)}, vL2.w), floatS);
+    // which heads show a stalk is each head's own for good, by its own number: the middle ones' few show theirs at every depth, and the others that show one near the eye let it come with the near class itself, so a stalk grows as its head does and none is there in one frame
+    float ownStalkK = fract(vL3.x * 47.0);
+    stalkK = mix(stalkK, mix(mix(step(ownStalkK, ${n(CARD.clock.stalks[0])}), step(ownStalkK, ${n(CARD.clock.stalks[1])}), nearS), step(ownStalkK, ${n(CARD.hair.stormStalks)}), vL2.w) * mix(mix(${n(CARD.clock.stemSeen[0])}, ${n(CARD.clock.stemSeen[1])}, nearS) * (1.0 - vL4.x), ${n(CARD.hair.stormStemSeen)}, vL2.w), floatS);
   }
   // no stalk is a ruled line: each is bent a little at a knee, to its own side
   vec2 knee = 0.5 * (foot + hub) + ${n(2 * CARD.hair.stalkBend)} * (fract(vL3.w * 13.0) - 0.5) * vec2(-st.y, st.x);
