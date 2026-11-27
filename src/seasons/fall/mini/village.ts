@@ -36,6 +36,7 @@ const PANE_SIZE = { size: 3.2, rest: 0.3, hot: 0, bloom: 0.3 }
 const GREEN_SIZE = { ...PANE_SIZE, size: 1.5 }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [3.4, 1.25, 0.24]
+const PIER = { power: 45, reachMm: 6, ends: 1.5, jamb: [3.4, 3.0, 3.1] as Rgb, stone: [6.6, 5.5, 5.0] as Rgb, topMm: 4.5 }
 const WALL_FILL = 3.8
 const GROUND_FILL = 8
 // The made path stones stand up to 2 mm proud and read as boulders. The approved path is flat slabs, so at load every
@@ -46,13 +47,13 @@ const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4, keep: 
 const FENCE = { reachMm: 1.25, sinkMm: 5, keep: 0.92, footMm: 0.6, nearMm: 0.9 }
 // The made posts are boards 2 mm wide with a round top and read as bollards beside the approved's stout posts (a
 // post there is about an eighth as wide as it is tall), so at load each post keeps `keep` of its width.
-const POST = { keep: 0.78, point: 0, from: 0.84, deepMm: 0.36, slackMm: 0.2 }
+const POST = { keep: 0.64, point: 0, from: 0.84, deepMm: 0.36, slackMm: 0.2 }
 const MOSS = { low: [0.7, 0.9, 0.6] as Rgb, high: [0.88, 1.02, 0.86] as Rgb, tallMm: 9, soot: 0.8 }
 // The shared stones run from 0.03 (a joint) over 0.12 (the middle stone) to 0.9 (a few white ones). The approved wall is
 // dark grey green stones with joints only a little darker, so the tone is bent: joints are held at `floor` of `top` and
 // lose their hue, and only the palest stones reach `top`. The gable is cooler than the side, darker below the purple
 // window's head and lighter toward the side wall's corner, as the approved wall is.
-const STONE = { top: 0.041, knee: 0.17, power: 2.7, floor: 0.215, tone: [0.6, 0.78, 1.0] as Rgb, gable: [0.75, 0.82, 1.05] as Rgb, low: [0.82, 0.8, 0.86] as Rgb, high: [1.7, 1.35, 1.45] as Rgb, corner: [3.0, 2.21, 2.28] as Rgb, gableFloor: 0.78, lowFloor: 0.32, mossed: 0.6, lowMm: 3, eaveMm: 1.2, side: [1.5, 1, 0.98] as Rgb, faceMm: 1.2 }
+const STONE = { top: 0.041, knee: 0.17, power: 2.7, floor: 0.215, tone: [0.6, 0.78, 1.0] as Rgb, gable: [0.75, 0.82, 1.05] as Rgb, low: [0.82, 0.8, 0.86] as Rgb, high: [1.12, 1.22, 1.3] as Rgb, corner: [3.0, 2.21, 2.28] as Rgb, gableFloor: 0.78, lowFloor: 0.32, mossed: 0.6, lowMm: 3, eaveMm: 1.2, side: [1.5, 1, 0.98] as Rgb, faceMm: 1.2 }
 const WALL_LAMP: Rgb = [0.85, 0.6, 0.5]
 const WHITE: Rgb = [1, 1, 1]
 // The shared chimney is pale brick. The approved one is the wall's dark stone, a little greyer: warm on the side that
@@ -76,10 +77,20 @@ const FACE = { lit: 0.9, warm: [1.15, 1.0, 0.8] as Rgb, litAt: [0.3, 0.6] as [nu
 // Fall draws its own wall stones on the gable and the side wall (field stone of unequal sizes in stepping courses, in the make). The shared
 // round stones of those two walls are put behind the mortar at load and darkened, round the same openings the shared
 // make leaves, so the door's ring, the lintels and the sills stay. The made blocks carry `made` in their roughness.
-const WALLS = { deepMm: 0.56, proudMm: 0.45, backMm: 0.62, lowMm: -1.95, doorMm: 3.97, keyMm: 0.85, mortar: 0.87, dark: 0.9, made: 0.9 }
+// A made stone's steep sides (those whose normal turns less than `turned` out of the wall) and the mortar behind them
+// keep `gap` and `bed` of their tone, so the gap round a stone is dark down to its bottom.
+const WALLS = { deepMm: 0.56, proudMm: 0.45, backMm: 0.62, lowMm: -1.95, doorMm: 3.97, keyMm: 0.85, mortar: 0.87, dark: 0.9, made: 0.9, gap: 0.3, bed: 0.25, turned: [0.4, 0.62] as [number, number] }
 // The made stones are already the approved's size, so the coarse chips and the drawn crack that break up the shared
 // stones are held back on them and the fine grain is read gentler.
-const MADE_FACE = { even: 0.8, rough: [0.67, 0.66] as [number, number], scale: 1.7, lit: 0.4, shade: 0.07, flank: 0.05 }
+const MADE_FACE = { even: 0.8, rough: [0.67, 0.66] as [number, number], scale: 1.7, lit: 1.1, shade: 0.45, flank: 0.25 }
+// Each approved stone carries two to four pits a pixel or two wide at hd over a finer speckle. The grain map's blobs
+// are lost to its levels at that size, so both are drawn: an oval for most cells of a grid `cellMm` wide on the stone's
+// own face, its edge held one pixel soft, the pits with a pale lip on the side below. One under a pixel wide fades out.
+// Each oval sits anywhere in its cell and the four nearest cells are read: held to the cell's middle they stood in rows
+// at 3840.
+const PIT = { cellMm: 0.4, radius: [0.16, 0.3] as [number, number], share: 0.8, dark: 0.85, lip: 0.7, lipMm: 0.06, tileMm: 12 }
+const SPECK = { cellMm: 0.17, radius: [0.22, 0.38] as [number, number], share: 0.8, dark: 0.7 }
+const FLECK = { cellMm: 0.55, radius: [0.2, 0.36] as [number, number], share: 0.85, dark: 0.8, pale: 1.4, shift: 0.43 }
 // The shared ring round the door is nine round lumps. The approved one is a ring of flat wedge stones, paler and warmer
 // than the wall, on jambs of the same stone. Fall draws its own in the make; the shared ring and jambs above `fromMm`
 // go behind the mortar with the wall's stones, and the made ring is toned by `crown` at its top, which
@@ -94,7 +105,20 @@ const doorFrame = cottageFrame()
 const glslOf = (c: Rgb): string => `vec3(${c[0].toFixed(4)}, ${c[1].toFixed(4)}, ${c[2].toFixed(4)})`
 const chipped: Cover = {
   uniforms: {},
-  pars: '',
+  pars: `
+float fallPitIn(vec2 p, vec2 c, float px, float r0, float r1, float share) {
+  vec2 h = fract(sin(vec2(dot(c, vec2(127.1, 311.7)), dot(c, vec2(269.5, 183.3)))) * 43758.5453);
+  float r = mix(r0, r1, fract(h.x * 7.31 + h.y * 3.17));
+  vec2 d = (p - c - h) * vec2(1.0 + 0.8 * h.y, 1.0 + 0.8 * h.x);
+  float soft = max(r * px, 1e-4);
+  return (1.0 - smoothstep(r * r - soft, r * r + soft, dot(d, d))) * step(fract(h.x * 13.7 + h.y * 5.3), share) * clamp(2.0 * r / px, 0.0, 1.0);
+}
+float fallPitAt(vec2 p, float px, float r0, float r1, float share) {
+  vec2 c = floor(p - 0.5);
+  return max(
+    max(fallPitIn(p, c, px, r0, r1, share), fallPitIn(p, c + vec2(1.0, 0.0), px, r0, r1, share)),
+    max(fallPitIn(p, c + vec2(0.0, 1.0), px, r0, r1, share), fallPitIn(p, c + vec2(1.0, 1.0), px, r0, r1, share)));
+}`,
   apply: `
 {
   float fallChip = texture2D(map, vMapUv * ${CHIP.scale.toFixed(2)} + 0.61).r;
@@ -127,6 +151,17 @@ const chipped: Cover = {
   float fallRough = mix(${FACE.rough[0].toFixed(2)}, ${MADE_FACE.rough[0].toFixed(2)}, fallMade) + mix(${FACE.rough[1].toFixed(2)}, ${MADE_FACE.rough[1].toFixed(2)}, fallMade) * smoothstep(0.35, 0.6, texture2D(map, vMapUv.yx * mix(${FACE.scale.toFixed(2)}, ${MADE_FACE.scale.toFixed(2)}, fallMade) + 0.23).r);
   vec3 fallFace = (1.0 + mix(${FACE.lit.toFixed(2)}, ${MADE_FACE.lit.toFixed(2)}, fallMade) * fallLit * ${glslOf(FACE.warm)}) * ((1.0 - mix(${FACE.shade.toFixed(2)}, ${MADE_FACE.shade.toFixed(2)}, fallMade) * fallUnder) * (1.0 - mix(${FACE.flank.toFixed(2)}, ${MADE_FACE.flank.toFixed(2)}, fallMade) * fallFlank) * (1.0 - ${FACE.crack.toFixed(2)} * fallCrack * (1.0 - fallMade)) * mix(1.0, fallRough, fallUpright));
   diffuseColor.rgb *= mix(vec3(1.0), fallFace, fallHouse);
+  vec2 fallPitP = vMapUv * ${(PIT.tileMm / PIT.cellMm).toFixed(3)};
+  float fallPitPx = max(max(fwidth(fallPitP.x), fwidth(fallPitP.y)), 1e-4);
+  float fallPit = fallPitAt(fallPitP, fallPitPx, ${PIT.radius[0].toFixed(3)}, ${PIT.radius[1].toFixed(3)}, ${PIT.share.toFixed(2)});
+  float fallPitOver = fallPitAt(fallPitP + vec2(0.0, ${(PIT.lipMm / PIT.cellMm).toFixed(3)}), fallPitPx, ${PIT.radius[0].toFixed(3)}, ${PIT.radius[1].toFixed(3)}, ${PIT.share.toFixed(2)});
+  float fallSpeck = fallPitAt(vMapUv.yx * ${(PIT.tileMm / SPECK.cellMm).toFixed(3)} + 0.37, fallPitPx * ${(PIT.cellMm / SPECK.cellMm).toFixed(3)}, ${SPECK.radius[0].toFixed(3)}, ${SPECK.radius[1].toFixed(3)}, ${SPECK.share.toFixed(2)});
+  diffuseColor.rgb *= mix(1.0, (1.0 - ${PIT.dark.toFixed(2)} * fallPit) * (1.0 + ${PIT.lip.toFixed(2)} * fallPitOver * (1.0 - fallPit)) * (1.0 - ${SPECK.dark.toFixed(2)} * fallSpeck), fallMade * fallHouse * fallUpright);
+  vec2 fallFleckP = vMapUv * ${(PIT.tileMm / FLECK.cellMm).toFixed(3)} + 0.19;
+  float fallFleckPx = max(max(fwidth(fallFleckP.x), fwidth(fallFleckP.y)), 1e-4);
+  float fallHole = fallPitAt(fallFleckP, fallFleckPx, ${FLECK.radius[0].toFixed(3)}, ${FLECK.radius[1].toFixed(3)}, ${FLECK.share.toFixed(2)});
+  float fallFleck = fallPitAt(fallFleckP.yx + ${FLECK.shift.toFixed(2)}, fallFleckPx, ${FLECK.radius[0].toFixed(3)}, ${FLECK.radius[1].toFixed(3)}, ${FLECK.share.toFixed(2)});
+  diffuseColor.rgb *= mix(1.0, (1.0 - ${FLECK.dark.toFixed(2)} * fallHole) * (1.0 + ${FLECK.pale.toFixed(2)} * fallFleck * (1.0 - fallHole)), fallMade * fallStack * fallUpright);
   float fallShake = villageWood * step(${(doorFrame.floor + cottage.wall).toFixed(3)}, vStageLocal.y) * step(fallWide, ${SHAKE.reachMm.toFixed(2)}) * step(fallLong, ${SHAKE.reachMm.toFixed(2)});
   diffuseColor.rgb *= mix(1.0, ${SHAKE.low.toFixed(2)} + ${SHAKE.span.toFixed(2)} * smoothstep(0.3, 0.7, texture2D(map, vMapUv * ${SHAKE.scale.toFixed(2)} + 0.41).g), fallShake);
 }
@@ -162,7 +197,7 @@ function stretched(source: THREE.BufferGeometry): THREE.BufferGeometry {
 }
 
 const flame = tallLamp(lampFlame())
-const STACK = { fromMm: 17.6, keep: 0.84, reachMm: 0.5 }
+const STACK = { fromMm: 17.6, keep: 0.84, reachMm: 0.5, capMm: 0.8 }
 const BUSHES = shrubs().filter((s) => !isIvy(s.r))
 const IVY = shrubs().filter((s) => isIvy(s.r))
 const inIvy = (x: number, y: number, z: number): boolean => IVY.some((s) => Math.hypot((x - s.centre[0]) / s.r[0], (y - s.centre[1]) / s.r[1], (z - s.centre[2]) / s.r[2]) < 1.5)
@@ -180,6 +215,8 @@ const attic = atticAt()
 const pumpkinLights = PUMPKINS.map((p) => pumpkinFace(p, 0.55, 0.05))
 // The approved door has warm light at its foot, on the step and up the planks.
 const doorFoot: Point = cottagePoint(cottage.door.across + 1.2, 1.2, cottage.halfLength + 2.2)
+// The approved pier right of the door stands in the lamp's light, brightest under the eave's foot (214,184,136).
+const pierAt: Point = cottagePoint(cottage.door.across + cottage.door.width / 2 + 2.6, cottage.door.height - 2.8, cottage.halfLength + 6)
 const pumpkinPools = PUMPKINS.map((p): Point => {
   const f = pumpkinFace(p, 1.45)
   return [f[0], groundAt(f[0], f[2]) + 1.1, f[2]]
@@ -197,7 +234,7 @@ const list: InnerLight[] = [
 
 export const innerLights = (): InnerLight[] => list
 
-const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb): GlowSource[] => [
+const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb, made = false): GlowSource[] => [
   ...bounce(on === NEAR ? BOUNCE.fence.onGround : BOUNCE.fence.power),
   { at: flame, color: lampTone, ...on.lamp },
   { at: anchors.window, color: tones.purpleLight, ...on.pane },
@@ -206,12 +243,27 @@ const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb): GlowSource[
   { at: attic, color: tones.greenLight, ...on.atticPane },
   ...pumpkinPools.map((at): GlowSource => ({ at, color: tones.pumpkinLight, ...on.pumpkin })),
   { at: doorFoot, color: tones.pumpkinLight, ...on.door },
+  ...(made ? [{ at: pierAt, color: lampTone, ...PIER }, ...fenceEnds()] : []),
 ]
 
 // Light the glass and the lit fog throw back: on the faces of the fence the viewer sees, on the cottage's side wall and
 // on the rocks of the east bank, which the key (upper right) and the lamp all miss. The approved shows them lit,
 // grey-brown, olive and pale green.
-const BOUNCE = { fence: { color: [0.78, 0.76, 0.6] as Rgb, power: 5, onGround: 0.8, reachMm: 9, ends: 2.6, outMm: 5, upMm: 6.5 }, side: { color: [0.86, 0.9, 0.66] as Rgb, power: 6, reachMm: 13, ends: 2.4, outMm: 9, upMm: 7, alongMm: 2 }, bank: { color: [0.8, 0.95, 0.7] as Rgb, power: 7, reachMm: 10, ends: 2.4, outMm: 7, upMm: 5 } }
+const BOUNCE = { fence: { color: [0.78, 0.76, 0.6] as Rgb, power: 5, onGround: 0.8, reachMm: 9, ends: 2.6, outMm: 5, upMm: 6.5, far: [0.1, 0.9] as [number, number], farPower: 4.5 }, side: { color: [0.86, 0.9, 0.66] as Rgb, power: 6, reachMm: 13, ends: 2.4, outMm: 9, upMm: 7, alongMm: 2 }, bank: { color: [0.8, 0.95, 0.7] as Rgb, power: 7, reachMm: 10, ends: 2.4, outMm: 7, upMm: 5 } }
+
+// The one source at the middle of the fence leaves its two ends dark. The approved fence carries a pale edge on every
+// board, so fall's own boards get the same light at each end.
+function fenceEnds(): GlowSource[] {
+  const dx = fence.to[0] - fence.from[0]
+  const dz = fence.to[1] - fence.from[1]
+  const len = Math.hypot(dx, dz)
+  const out = dx / len > 0 ? [-dz / len, dx / len] : [dz / len, -dx / len]
+  return BOUNCE.fence.far.map((t): GlowSource => {
+    const x = fence.from[0] + dx * t + out[0]! * BOUNCE.fence.outMm
+    const z = fence.from[1] + dz * t + out[1]! * BOUNCE.fence.outMm
+    return { at: [x, groundAt(x, z) + BOUNCE.fence.upMm, z], color: BOUNCE.fence.color, power: BOUNCE.fence.farPower, reachMm: BOUNCE.fence.reachMm, ends: BOUNCE.fence.ends }
+  })
+}
 
 function bounce(fencePower: number): GlowSource[] {
   const dx = fence.to[0] - fence.from[0]
@@ -347,15 +399,25 @@ function* thinned(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeo
       const c = cottageLocal(P.getX(i), P.getZ(i))
       const up = P.getY(i) - frame.floor
       const n = wave(P.getX(i), P.getY(i), P.getZ(i))
+      const na = N.getX(i) * frame.v[0] + N.getZ(i) * frame.v[1]
+      const nl = N.getX(i) * frame.u[0] + N.getZ(i) * frame.u[1]
       if (stackAt(c, up)) {
+        const da = (c.across - cottage.chimney.across) / cottage.chimney.half
+        const dl = (c.along - cottage.chimney.along) / cottage.chimney.halfAlong
+        const capped = up > STACK.fromMm + (cottage.chimney.top - STACK.fromMm) * STACK.keep - STACK.capMm
+        const sunk = capped ? 1 : WALLS.gap + (1 - WALLS.gap) * smooth(WALLS.turned[0], WALLS.turned[1], Math.abs(da) > Math.abs(dl) ? Math.sign(da) * na : Math.sign(dl) * nl)
         const face = c.across < cottage.chimney.across - cottage.chimney.half - CHIMNEY.sideMm ? CHIMNEY.side : CHIMNEY.front
-        const v = CHIMNEY.madeVary[0] + CHIMNEY.madeVary[1] * n
+        const v = (CHIMNEY.madeVary[0] + CHIMNEY.madeVary[1] * n) * sunk
         C.setXYZ(i, C.getX(i) * face[0] * v, C.getY(i) * face[1] * v, C.getZ(i) * face[2] * v)
         continue
       }
       const t = stoned(c, up, [C.getX(i), C.getY(i), C.getZ(i)], n, true)
-      const warm = !ringed(c, up) ? WHITE : arched(up, c.across - cottage.door.across)
-      C.setXYZ(i, t[0] * warm[0], t[1] * warm[1], t[2] * warm[2])
+      const set = ringed(c, up)
+      const warm = !set ? WHITE : arched(up, c.across - cottage.door.across)
+      const gable = c.along > cottage.halfLength - STONE.faceMm
+      const sunk = set ? 1 : WALLS.gap + (1 - WALLS.gap) * smooth(WALLS.turned[0], WALLS.turned[1], gable ? nl : -na)
+      const lamp = gable ? washed(c, up, set) : WHITE
+      C.setXYZ(i, t[0] * warm[0] * lamp[0] * sunk, t[1] * warm[1] * lamp[1] * sunk, t[2] * warm[2] * lamp[2] * sunk)
       continue
     }
     if (kind === 0) flattened(P, N, i, C)
@@ -378,7 +440,7 @@ function stoned(c: { across: number; along: number }, up: number, tone: Rgb, n: 
   const [r, gr, b] = tone
   const m = (1 - smooth(0, MOSS.tallMm, up)) * (0.35 + 0.65 * n) + 0.35 * smooth(0.55, 0.8, n)
   const k = Math.min(1, Math.max(0, m))
-  const soot = near ? 1 - MOSS.soot * smooth(cottage.wall + 1, cottage.wall + 7, up) : 1
+  const soot = near ? 1 - MOSS.soot * smooth(cottage.wall, cottage.wall + 6, up) : 1
   const lum = 0.3 * r + 0.6 * gr + 0.1 * b
   const lit = 1 - Math.exp(-Math.pow(lum / STONE.knee, STONE.power))
   const onGable = near && c.along > cottage.halfLength - STONE.faceMm
@@ -413,6 +475,13 @@ function arched(up: number, dx: number): Rgb {
   const w = smooth(RING.crownFrom[0], RING.crownFrom[1], over)
   const tone = (j: number): number => (RING.flank[j]! * lamp(j)) * (1 - w) + RING.crown[j]! * w
   return [tone(0), tone(1), tone(2)]
+}
+
+function washed(c: { across: number; along: number }, up: number, set: boolean): Rgb {
+  const spring = cottage.door.height - cottage.door.width / 2
+  const w = smooth(-0.3, 0.6, c.across - cottage.door.across - cottage.door.width / 2) * (1 - smooth(spring + (set ? 0 : 1), spring + (set ? 0.5 : PIER.topMm), up))
+  const tone = set ? PIER.jamb : PIER.stone
+  return [1 + (tone[0] - 1) * w, 1 + (tone[1] - 1) * w, 1 + (tone[2] - 1) * w]
 }
 
 function ringed(c: { across: number; along: number }, up: number): boolean {
@@ -516,11 +585,14 @@ function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeom
         b = (lum * ROOF.grey + b * (1 - ROOF.grey)) * ROOF.tone[2]
       } else {
         const t = stoned(c, up, [r, gr, b], n, near)
-        const hide = near && buried(c, up, S.getX(i) - kind) ? WALLS.dark : 1
+        const rough = S.getX(i) - kind
+        const sunk = near && buried(c, up, rough)
+        const bed = near && rough > WALLS.mortar && (Math.abs(c.along - cottage.halfLength) < 1.2 || Math.abs(c.across + cottage.halfWidth) < 1.2)
+        const hide = sunk ? WALLS.dark : bed ? WALLS.bed : 1
         r = t[0] * hide
         gr = t[1] * hide
         b = t[2] * hide
-        if (hide < 1) {
+        if (sunk) {
           const da = Math.max(WALLS.backMm - cottage.halfWidth, Math.min(cottage.halfWidth - WALLS.backMm, c.across)) - c.across
           const dl = Math.max(WALLS.backMm - cottage.halfLength, Math.min(cottage.halfLength - WALLS.backMm, c.along)) - c.along
           P.setXYZ(i, x + da * frame.v[0] + dl * frame.u[0], y, z + da * frame.v[1] + dl * frame.u[1])
@@ -705,7 +777,7 @@ export function* making(): Generator<void, THREE.Object3D> {
   yield
   const walls = shadowed(new THREE.Mesh(yield* surfacing(turned, sources(NEAR_WALL, WALL_LAMP)), stone))
   yield
-  const decor = shadowed(new THREE.Mesh(yield* surfacing(yield* thinned(geometry(MODEL, 'decor')), sources(NEAR_WALL, tones.lampLight)), stone))
+  const decor = shadowed(new THREE.Mesh(yield* surfacing(yield* thinned(geometry(MODEL, 'decor')), sources(NEAR_WALL, tones.lampLight, true)), stone))
   yield
   const earth = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'ground').clone(), sources(NEAR, tones.lampLight)), groundMaterial()), false)
   yield

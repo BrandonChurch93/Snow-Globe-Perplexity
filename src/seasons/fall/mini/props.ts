@@ -46,23 +46,24 @@ export interface Board {
 
 const RAIL = { from: [-39.2, 10.6] as [number, number], to: [-16.4, 32.6] as [number, number], bow: 1.6 }
 const POSTS = [
-  { t: 0.0, tall: 9.6, along: 0.03, out: 0.03, wide: 2.2 },
-  { t: 0.17, tall: 11.9, along: -0.015, out: 0.04, wide: 1.95 },
-  { t: 0.335, tall: 9.2, along: 0.035, out: 0.02, wide: 2.25 },
-  { t: 0.5, tall: 11.3, along: 0.01, out: 0.05, wide: 2.0 },
-  { t: 0.665, tall: 10.0, along: -0.025, out: 0.03, wide: 2.15 },
-  { t: 0.835, tall: 12.1, along: -0.005, out: 0.05, wide: 1.95 },
-  { t: 1.0, tall: 9.3, along: 0.03, out: 0.04, wide: 2.25 },
+  { t: 0.0, tall: 9.8, along: 0.03, out: 0.03, wide: 2.2 },
+  { t: 0.17, tall: 10.3, along: -0.015, out: 0.04, wide: 1.95 },
+  { t: 0.335, tall: 9.6, along: 0.035, out: 0.02, wide: 2.25 },
+  { t: 0.5, tall: 10.2, along: 0.01, out: 0.05, wide: 2.0 },
+  { t: 0.665, tall: 9.9, along: -0.025, out: 0.03, wide: 2.15 },
+  { t: 0.835, tall: 10.4, along: -0.005, out: 0.05, wide: 1.95 },
+  { t: 1.0, tall: 9.7, along: 0.03, out: 0.04, wide: 2.25 },
 ]
-// The approved fence is stout posts and two rails. The pickets between the posts stay in the mesh, so the counts of
-// triangles stay at every level; the make marks them black and the village folds them away under the ground.
+// The approved fence is posts of one height, two rails and a thin picket between each pair of posts. The first picket
+// of each pair stays in the mesh, so the counts of triangles stay at every level; the make marks it black and the
+// village folds it away under the ground.
 const PICKETS = [
   { at: 0.3, tall: 6.3, along: 0.07, wide: 0.85, shown: false },
-  { at: 0.5, tall: 8.0, along: -0.03, wide: 0.55, shown: true },
+  { at: 0.5, tall: 8.1, along: -0.02, wide: 0.6, shown: true },
 ]
 const RAILS = [
-  { at: 3.5, tilt: [0.3, -0.45, 0.35, -0.25, 0.45, -0.35], wide: 1.3 },
-  { at: 7.3, tilt: [-0.4, 0.45, -0.3, 0.5, -0.45, 0.3], wide: 1.2 },
+  { at: 3.4, tilt: [0.3, -0.45, 0.35, -0.25, 0.45, -0.35], wide: 1.4 },
+  { at: 7.0, tilt: [-0.4, 0.45, -0.3, 0.5, -0.45, 0.3], wide: 1.35 },
 ]
 
 export function fenceBoards(): Board[] {
@@ -89,8 +90,8 @@ export function fenceBoards(): Board[] {
       const a = POSTS[i]!
       const b = POSTS[i + 1]!
       const turn = Math.sin(2.3 * i + 1.7 * j)
-      const at = { t: a.t + (b.t - a.t) * (k.at + 0.06 * turn), along: k.along + 0.05 * turn, out: (a.out + b.out) / 2 }
-      boards.push({ a: foot(at.t), b: lean(at, k.tall + 0.8 * turn), wide: k.wide, thick: 0.45, out, post: true, picket: true, hidden: !k.shown })
+      const at = { t: a.t + (b.t - a.t) * (k.at + 0.06 * turn), along: k.along + 0.09 * turn, out: (a.out + b.out) / 2 }
+      boards.push({ a: foot(at.t), b: lean(at, k.tall + 0.5 * turn), wide: k.wide, thick: 0.45, out, post: true, picket: true, hidden: !k.shown })
     })
   for (const r of RAILS)
     for (let i = 0; i < POSTS.length - 1; i++) {

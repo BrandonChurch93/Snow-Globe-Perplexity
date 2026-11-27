@@ -20,7 +20,9 @@ const T = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z)
 const between = (a, b) => a + (b - a) * R()
 
 const SIZE = 1024
-const POST_WEAR = 0.5
+// The approved fence is dark boards, each with one pale worn edge: the left of a post or picket, the top of a rail.
+const EDGE = { inMm: 0.2, post: 6, picket: 3, rail: 7, arch: 4.5, far: 0.3, face: 0.7, railFace: 0.6 }
+const RAIL_SAG = 0.22
 const ATTIC = PROPS.ATTIC
 const PUMPKINS = PROPS.PUMPKINS
 const STONES = PROPS.STONES
@@ -221,8 +223,8 @@ const FACES = {
 
 const pumpkinList = []
 function pumpkin(o) {
-  const nu = 220
-  const nv = 100
+  const nu = 208
+  const nv = 96
   const H = PROPS.pumpkinTall(o)
   const centre = PROPS.pumpkinCentre(o)
   const M = new THREE.Matrix4().makeRotationZ(o.lean).premultiply(new THREE.Matrix4().makeRotationY(o.yaw)).setPosition(centre[0], centre[1], centre[2])
@@ -346,11 +348,11 @@ function pumpkin(o) {
 }
 for (const p of PUMPKINS) pumpkin(p)
 
-// The approved roof is thick, uneven, weathered shingles in a few staggered rows, dark brown violet, with a ridge that
+// The approved roof is thick, uneven, weathered shingles in a few staggered rows, dark brown mauve, with a ridge that
 // sags. These lie just over the shared slope (its fine slates stay underneath, unseen), so the cottage keeps its place and size.
-const CAP = { fromMm: 17.6, keep: 0.84, out: 0.42, thick: 0.9 }
-const STACKED = { out: 0.3, gap: 0.11, cell: [0.5, 0.56], span: [[99, 1]], tall: [[2, 0.8], [3, 0.2]], wide: [[3, 0.3], [4, 0.4], [5, 0.3]] }
-const SHINGLE = { rows: 8, ridge: [0.52, 3.2], over: 1.5, wide: [4.0, 5.6], thick: [0.4, 0.6], rise: [0.5, 0.72], gap: 0.2, eave: 0.3, ends: 0.34, lap: 2.2, round: 0.3, ragged: 0.4, sx: 16, sz: 3, tones: ['#63545c', '#716164', '#584d67', '#7c6e6c', '#655a7c', '#4f4661'].map(lin), worn: lin('#9e8673'), wear: 0.55 }
+const CAP = { fromMm: 17.6, keep: 0.84, out: 0.42, thick: 0.9, rim: 3.5 }
+const STACKED = { out: 0.3, gap: 0.07, cell: [0.5, 0.36], span: [[99, 1]], tall: [[2, 0.85], [3, 0.15]], wide: [[4, 0.3], [5, 0.4], [7, 0.3]] }
+const SHINGLE = { rows: 8, ridge: [0.52, 3.2], over: 1.5, wide: [4.0, 5.6], thick: [0.4, 0.6], rise: [0.5, 0.72], gap: 0.2, eave: 0.3, ends: 0.34, lap: 2.2, round: 0.3, ragged: 0.4, sx: 16, sz: 3, tones: ['#63555a', '#716164', '#5a4e56', '#7c6e6c', '#675c61', '#52474e'].map(lin), worn: lin('#9e8673'), wear: 0.55 }
 {
   const RS = rng(9241)
   const pick = (a) => a[Math.floor(RS() * a.length)]
@@ -489,8 +491,10 @@ for (const s of STONES) {
 // with a bevelled rim and chipped corners round the door. The shared round stones are put behind the mortar at load.
 const BLOCKS = { rowH: 0.9, rowJ: 0.14, wide: 1.4, wideJ: 0.4, share: [0.7, 1.3], gap: 0.06, bevel: 0.09, out: 0.3, vary: 0.05, tilt: 0.05, cut: [0.1, 0.24], cutShare: 0.5, jitter: 0.03, base: -1.8, plainBelow: -0.6, mortar: -0.5, sideDim: 0.5, gain: 0.8, tone: 0.8, rim: 0.45, chip: [0.45, 1.5], dent: 0.07, inner: 0.55, mark: 0.99, tones: ['#8c867d', '#7c766f', '#979289', '#726d66', '#837e75', '#9e988e', '#79736a', '#908a7f', '#6b6660', '#87837d'].map(lin), dirt: lin('#4b4538') }
 // The approved wall is field stone: stones about twice as wide as tall (4 to 20 px wide, 12 to 13 in the middle, 5 to 8
-// tall at hd), each with a rounded face lit from its upper left and a dark gap round it, in courses that step.
-const FIELD = { cell: [0.33, 0.35], gap: 0.07, span: [[12, 0.25], [16, 0.3], [20, 0.25], [26, 0.2]], spanLeast: 6, tall: [[2, 0.72], [3, 0.28]], twice: 0.08, twiceWide: 6, wide: [[3, 0.05], [4, 0.08], [5, 0.12], [6, 0.18], [7, 0.2], [8, 0.17], [9, 0.12], [10, 0.08]], cut: [0.1, 0.3], jitter: 0.03, wobble: 0.05, wobbleFrom: 1.2, dome: 0.03, lip: 0.065, round: 0.015, deep: 0.12, rim: 0.8, shoulder: 0.97, inner: 0.45, light: 0.07, mottle: 0.12, tone: 0.2, vary: 0.5 }
+// tall at hd), each with a rounded face lit from its upper left and a dark gap round it, in courses that step. A stone
+// here is a face with worn corners on a sloped shoulder `lip` wide, which takes the light above and the shade below,
+// over a steep side that runs `deep` down to the mortar.
+const FIELD = { cell: [0.33, 0.35], gap: 0.045, span: [[12, 0.25], [16, 0.3], [20, 0.25], [26, 0.2]], spanLeast: 6, tall: [[2, 0.72], [3, 0.28]], twice: 0.08, twiceWide: 6, wide: [[3, 0.05], [4, 0.08], [5, 0.12], [6, 0.18], [7, 0.2], [8, 0.17], [9, 0.12], [10, 0.08]], cut: [0.14, 0.4], jitter: 0.03, wobble: 0.05, wobbleFrom: 1.2, dome: 0.03, worn: [0.55, 0.85], wall: 0.03, lip: 0.11, round: 0.06, deep: 0.26, rim: 0.8, shoulder: 0.97, inner: 0.45, light: 0.07, mottle: 0.12, tone: 0.2, vary: 0.5 }
 let blockCount = 0
 let blockTriangles = 0
 {
@@ -609,8 +613,10 @@ let blockTriangles = 0
         const j = () => (RW() - 0.5) * 2 * F.jitter
         const upright = [(sx * w) / 2 + j(), sy * (h / 2 - cut) + j()]
         const level = [sx * (w / 2 - cut) + j(), (sy * h) / 2 + j()]
-        if (sx * sy > 0) outline.push(upright, level)
-        else outline.push(level, upright)
+        const worn = F.worn[0] + (F.worn[1] - F.worn[0]) * RW()
+        const turn = [sx * (w / 2 - cut * (1 - worn)) + j(), sy * (h / 2 - cut * (1 - worn)) + j()]
+        if (sx * sy > 0) outline.push(upright, turn, level)
+        else outline.push(level, turn, upright)
         if (!o.plain && w > F.wobbleFrom && sx * sy > 0) outline.push([(RW() - 0.5) * w * 0.3, sy * (h / 2 + (RW() - 0.5) * 2 * F.wobble)])
       }
       const dome = F.dome * Math.min(1, small / 0.75) * (0.7 + 0.6 * RW())
@@ -622,8 +628,11 @@ let blockTriangles = 0
           const qy = py * (1 - inset) - Math.sign(py) * Math.min(lip, Math.abs(py) * 0.3)
           return { p: place(qx, qy, top - drop + dome * inset * (2 - inset) + tx * qx + ty * qy), k: tone(qx, qy), n: new THREE.Vector3() }
         })
-      const edge = loop(0, F.lip, F.round, (px, py) => F.shoulder * lit(px, py))
-      const bevel = [loop(0, 0, F.deep, () => F.rim), edge.map((v) => ({ p: v.p, k: v.k, n: new THREE.Vector3() }))]
+      const own = (ring) => ring.map((v) => ({ p: v.p, k: v.k, n: new THREE.Vector3() }))
+      const brow = loop(0, F.wall, F.round, (px, py) => F.shoulder * lit(px, py))
+      const edge = loop(0, F.lip, 0, lit)
+      const bevel = [loop(0, 0, F.deep, () => F.rim), brow]
+      const slope = [own(brow), own(edge)]
       const rings = o.plain ? [edge] : [edge, loop(F.inner, F.lip, 0, (px, py) => lit(px, py) * speck())]
       const mid = { p: place(0, 0, top + dome), k: speck(), n: new THREE.Vector3() }
       const tris = []
@@ -636,7 +645,7 @@ let blockTriangles = 0
         tris.push(back ? [a, d, b] : [a, b, d])
       }
       const n = outline.length
-      for (const set of [bevel, rings])
+      for (const set of [bevel, slope, rings])
         for (let q = 0; q + 1 < set.length; q++)
           for (let k = 0; k < n; k++) {
             const m = (k + 1) % n
@@ -766,8 +775,8 @@ let blockTriangles = 0
   }
   RW = rng(4129)
   fieldstones(left, { x0: -C.halfLength - 0.3, x1: C.halfLength + 0.3, y0: B.base, y1: C.wall + 0.1, holes: [{ x0: side.along - side.width / 2 - 0.42, x1: side.along + side.width / 2 + 0.42, y0: side.sill - 0.95, y1: side.sill + side.height + 1.25 }] }, { dim: B.sideDim, plain: true })
-  // The approved stack is the wall's rough stone, about seven courses of two stones to a face under the cap. These
-  // stand just proud of the shared stack's four sides, from the roof to the cap.
+  // The approved stack is the wall's rough stone in flat courses about 0.7 mm tall, one or two long stones to a face.
+  // These stand just proud of the shared stack's four sides, from the roof to the cap.
   RW = rng(5303)
   const ch = C.chimney
   const capFoot = CAP.fromMm + (ch.top - CAP.fromMm) * CAP.keep - 0.25 - CAP.thick / 2
@@ -930,9 +939,10 @@ for (const r of PROPS.ROCKS) {
     Z.addScaledVector(Y, -Z.dot(Y)).normalize()
     const X = new THREE.Vector3().crossVectors(Y, Z)
     const seed = R() * 50
-    const g = slab(b.wide, len, b.thick, { round: 0.1, sx: b.picket ? 2 : b.post ? 8 : 5, sy: b.picket ? 3 : Math.max(4, Math.round(len * 0.9)), sz: 1, warp: b.post ? 0.04 : 0.07, seed })
+    const g = slab(b.wide, len, b.thick, { round: 0.1, sx: b.picket ? 3 : b.post ? 8 : 7, sy: b.picket ? 3 : Math.max(4, Math.round(len * 0.9)), sz: 1, warp: b.post ? 0.04 : 0.07, seed })
     const P = g.getAttribute('position')
     const half = b.wide / 2
+    const lit = b.post ? -Math.sign(X.x) : Math.sign(X.y)
     const from = len / 2 - 1.7 * half
     const crown = (x) => len / 2 - half + 0.92 * Math.sqrt(Math.max(half * half - x * x, 0))
     for (let i = 0; i < P.count; i++) {
@@ -940,7 +950,7 @@ for (const r of PROPS.ROCKS) {
       const y = P.getY(i)
       const bite = 0.09 * noise(y * 1.3 + seed, x * 3, 0) * Math.sign(x)
       if (!b.post) {
-        P.setX(i, x + bite)
+        P.setX(i, x + bite - Math.sign(X.y) * RAIL_SAG * (1 - (2 * y / len) ** 2))
         continue
       }
       const cx = Math.max(-half, Math.min(half, x))
@@ -952,10 +962,10 @@ for (const r of PROPS.ROCKS) {
       const split = 1 - 0.6 * smooth(0.55, 0.7, noise(x * 9 + 3, y * 0.35 + seed, 1.7))
       const end = b.post ? 1 : 0.7 + 0.7 * smooth(len / 2 - 0.7, len / 2, Math.abs(y))
       const foot = b.post ? 0.5 + 0.5 * smooth(-len / 2 + 0.4, -len / 2 + 2.2, y) : 1
-      const side = b.picket ? 0 : smooth(half - 0.22, half - 0.02, Math.abs(x))
-      const arch = b.post ? smooth(0.1, 0.02, crown(Math.max(-half, Math.min(half, x))) - y) : 0
-      const worn = 1 + Math.max((b.post ? POST_WEAR : 5) * side, 3 * arch)
-      return grain * split * end * foot * worn
+      const side = smooth(half - EDGE.inMm, half - 0.02, x * lit) + EDGE.far * smooth(half - EDGE.inMm, half - 0.02, -x * lit)
+      const arch = b.post && !b.picket ? smooth(0.1, 0.02, crown(Math.max(-half, Math.min(half, x))) - y) : 0
+      const worn = 1 + Math.max((b.picket ? EDGE.picket : b.post ? EDGE.post : EDGE.rail) * side, EDGE.arch * arch)
+      return grain * split * end * foot * worn * (b.post ? EDGE.face : EDGE.railFace)
     })
     const mid = [(b.a[0] + b.b[0]) / 2, (b.a[1] + b.b[1]) / 2, (b.a[2] + b.b[2]) / 2]
     const M = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(mid[0], mid[1], mid[2])
@@ -963,13 +973,15 @@ for (const r of PROPS.ROCKS) {
   }
 }
 
-// The stack's cap: one wider course of dark stone at its top, as the approved chimney has.
+// The cap of the stack: one wider course of dark stone at its top with a worn pale rim, as the approved chimney has.
 {
   const ch = C.chimney
   const top = CAP.fromMm + (ch.top - CAP.fromMm) * CAP.keep
-  const g = slab(2 * (ch.half + CAP.out), CAP.thick, 2 * (ch.halfAlong + CAP.out), { round: 0.16, sx: 6, sy: 2, sz: 6, warp: 0.09, seed: 17 })
+  const hx = ch.half + CAP.out
+  const hz = ch.halfAlong + CAP.out
+  const g = slab(2 * hx, CAP.thick, 2 * hz, { round: 0.16, sx: 8, sy: 3, sz: 8, warp: 0.09, seed: 17 })
   const P = g.getAttribute('position')
-  shade(g, (x, y, z) => (0.55 + 0.45 * smooth(-0.2, 0.3, y)) * (0.7 + 0.6 * fbm(x * 2.4, y * 2.4, z * 2.4 + 3, 3)) * (1 - 0.6 * smooth(0.03, 0.12, 0.12 - Math.abs(noise(x * 2.2 + 1, z * 2.2, 8)))))
+  shade(g, (x, y, z) => (0.55 + 0.45 * smooth(-0.2, 0.3, y)) * (0.7 + 0.6 * fbm(x * 2.4, y * 2.4, z * 2.4 + 3, 3)) * (1 - 0.6 * smooth(0.03, 0.12, 0.12 - Math.abs(noise(x * 2.2 + 1, z * 2.2, 8)))) * (1 + CAP.rim * smooth(0.12, 0.36, Math.abs(y)) * smooth(-0.45, -0.12, Math.max(Math.abs(x) - hx, Math.abs(z) - hz))))
   for (let i = 0; i < P.count; i++) {
     const q = L.cottagePoint(ch.across + P.getX(i), top - 0.25 + P.getY(i), ch.along + P.getZ(i))
     P.setXYZ(i, q[0], q[1], q[2])
