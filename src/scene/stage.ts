@@ -25,7 +25,7 @@ import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, out
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { CHANGE_BLOOM, Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
-import { runFor, spendOf, stepsOf, type Step } from './steps'
+import { fitIn, FramePace, runFor, SOON_MS, spendIn, spendOf, stepsOf, type Step } from './steps'
 import { makeSlab, ReflectMix, updateSurface } from './surface'
 
 interface SeasonSet {
@@ -52,10 +52,10 @@ interface Making {
   steps: Step[]
 }
 
-/** How long a step waits for a frame before it goes without one, on a page that draws slowly or not at all. */
-const SOON_MS = 50
-/** How long a press holds other seasons' work back while no frame of its shake has been drawn. */
-const PRESS_MS = 3000
+/** How long a press holds other seasons' work back while no frame of its shake has been drawn: as long as the page keeps the wish. */
+const PRESS_MS = config.live.loadWaitSeconds * 1000
+/** How long after a press its season is made in steps. What is left then is made in one piece: the picture stands for it, and the wish is not lost. */
+const LAST_MS = PRESS_MS - 500
 /** How long after a landing the picture is still watched as a shake: until the storm has cleared and the liquid stands. */
 const SETTLE_S = Math.max(config.shake.settleCheckSeconds, config.shake.spinDownSeconds)
 /** What one frame spends on handing a season that is not on show to the GPU: the step that passes it is the frame's last. */
@@ -78,17 +78,11 @@ function picturesOf(m: THREE.Material, linked: Linked['uniforms']): THREE.Textur
   return out
 }
 
-const frameOrSoon = (): Promise<void> =>
-  new Promise((resolve) => {
-    let waiting = true
-    const go = (): void => {
-      if (!waiting) return
-      waiting = false
-      resolve()
-    }
-    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go)
-    setTimeout(go, SOON_MS)
-  })
+/** A turn at work that is done aside: how long it took to come, and when the frame began that brought it. None began where the page did not draw in time. */
+interface Turn {
+  waited: number
+  frame: number | null
+}
 
 const BLUR_CLEAR = new THREE.Color(0, 1, 0.5)
 
@@ -143,6 +137,7 @@ export class GlobeStage implements Stage {
   /** The picture the page paints into while it draws one sample a frame; none on a page that captures. */
   private live: THREE.WebGLRenderTarget | null = null
   private handing: Promise<void> = Promise.resolve()
+  private readonly pace = new FramePace()
   private readonly scratch = new Map<string, THREE.WebGLRenderTarget>()
   private stale = false
 
@@ -221,26 +216,52 @@ export class GlobeStage implements Stage {
         m.steps.shift()?.()
         continue
       }
-      // Past `SOON_MS` the wait was for the thread, not for a frame, and is no pace to take a share of.
-      const waited = Math.min(await this.turnFor(season), SOON_MS)
-      runFor(m.steps, spendOf(waited, this.into === season), () => performance.now())
+      const turn = await this.turnFor(season)
+      const awaited = this.into === season
+      const from = performance.now()
+      if (awaited && from - this.intoAt > LAST_MS) while (m.steps.length) m.steps.shift()!()
+      else runFor(m.steps, this.spend(turn, awaited), () => performance.now())
+      this.pace.taken += performance.now() - from
     }
     // Not waited for: the season can be shown from here on, and a frame that shows it before this is done makes the rest
     // itself, as it always did.
     if (this.live) this.handing = this.handing.then(() => this.hand(season))
   }
 
-  /**
-   * The next frame in which something may be done for `season`: none while a shake is in the air that does not go into it.
-   * Gives how long that frame took to come.
-   */
-  private async turnFor(season: string): Promise<number> {
+  /** The next frame in which something may be done for `season`: none while a shake is in the air that does not go into it. */
+  private async turnFor(season: string): Promise<Turn> {
     let from: number
+    let frame: number | null
     do {
       from = performance.now()
-      await frameOrSoon()
+      frame = await this.frameOrSoon()
     } while (this.held(season))
-    return performance.now() - from
+    return { waited: performance.now() - from, frame }
+  }
+
+  /** The next frame, by the time it began, or nothing after `SOON_MS` on a page that draws slowly or not at all. */
+  private frameOrSoon(): Promise<number | null> {
+    return new Promise((resolve) => {
+      let waiting = true
+      const go = (frame: number | null): void => {
+        if (frame !== null) this.pace.frame(frame)
+        if (!waiting) return
+        waiting = false
+        resolve(frame)
+      }
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go)
+      setTimeout(go, SOON_MS, null)
+    })
+  }
+
+  /**
+   * What a turn spends on a making. The whole wait counts, however long: where a frame holds the thread for seconds (no
+   * GPU, a program linked inside the frame) that is the page's pace, and a share of 50 ms of it left a season a minute in
+   * the making. Where a frame brought the turn it is spent by what that frame has left.
+   */
+  private spend(turn: Turn, awaited: boolean): number {
+    if (turn.frame === null) return spendOf(turn.waited, awaited)
+    return spendIn(performance.now() - turn.frame, this.pace.every, turn.waited, awaited, this.pace.taken)
   }
 
   /** Resolves when every season asked for so far is built and, on a page that paints, in the GPU's hands. */
@@ -287,9 +308,11 @@ export class GlobeStage implements Stage {
     }
     const run = async (steps: (() => void)[]): Promise<void> => {
       for (let i = 0; i < steps.length && go(); ) {
-        await this.turnFor(season)
+        const { frame } = await this.turnFor(season)
         const from = performance.now()
-        while (i < steps.length && go() && performance.now() - from < HAND_MS) steps[i++]!()
+        const ms = frame === null ? HAND_MS : fitIn(HAND_MS, from - frame, this.pace.every, this.pace.taken)
+        while (i < steps.length && go() && performance.now() - from < ms) steps[i++]!()
+        this.pace.taken += performance.now() - from
       }
     }
     const like = this.scratchOf(live.texture.type, live.samples)
