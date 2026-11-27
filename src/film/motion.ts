@@ -112,6 +112,132 @@ const frac = (x: number) => x - Math.floor(x)
 /** How far a moment may be moved, in parts of the shutter: where the ball turns round its pace is near nothing and the move would be without end. */
 const REACH = 2
 
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+
+const LENS_TENT = [1, 2, 3, 4, 3, 2, 1].map((w) => w / 16)
+const LENS_LEAN_FREE = 0.03
+const LENS_LEAN_WEIGHTS = [3, 30, 300, 3000, 30000]
+
+/**
+ * Which lens point the sample of each rank in time takes, in a frame whose travel points along (`dx`, `dy`). The places
+ * in the pixel and the moments are new, so the lens points are dealt out again, and two things are asked of the deal.
+ * The lens point must lean with the place in the pixel and with the moment as it does in the set as it stands, or what
+ * lies a little out of focus is drawn sharper or softer than in a frame at rest, and by the direction of the travel.
+ * And the lens point must not swing slowly through the shutter: a thing out of focus is drawn in each sample at its
+ * place along the travel plus its blur disc times the lens point, so where the lens points of neighbours in time lie
+ * together the copies bunch, and a bunch longer than the spread reaches shows as beads along a streak. So the mean of
+ * the lens points under the spread's own weights is kept near nothing all through the shutter; a swing from one sample
+ * to the next is what the spread closes. The deal starts from the best even stride through the lens points' own order
+ * and then lets pairs change places for as long as that helps. The set of lens points is the same, and so is the
+ * outcome for the same set and travel.
+ */
+export function lensOrder(set: readonly Sample[], dx = 1, dy = 0): number[] {
+  const n = set.length
+  if (n < 3) return set.map((_, k) => k)
+  const centred = (v: number[]) => {
+    const m = v.reduce((a, b) => a + b, 0) / n
+    const w = v.map((x) => x - m)
+    const norm = Math.sqrt(w.reduce((a, b) => a + b * b, 0)) || 1
+    return w.map((x) => x / norm)
+  }
+  const dot = (a: number[], b: number[]) => a.reduce((x, v, k) => x + v * b[k]!, 0)
+  const mine = [
+    centred(set.map((_, k) => frac(0.5 + ALONG * (k + 1)) - 0.5)),
+    centred(set.map((_, k) => frac(0.5 + ACROSS * (k + 1)) - 0.5)),
+    centred(set.map((_, k) => k)),
+  ]
+  const lens = [centred(set.map((s) => s.lu)), centred(set.map((s) => s.lv))]
+  const px = centred(set.map((s) => s.px))
+  const py = centred(set.map((s) => s.py))
+  const t = centred(set.map((s) => s.t))
+  const was = lens.map((l) => [dx * dot(px, l) + dy * dot(py, l), -dy * dot(px, l) + dx * dot(py, l), dot(t, l)])
+  const reach = (LENS_TENT.length - 1) / 2
+  const order = set.map((_, k) => k)
+  const left = lens.map(() => new Array<number>(n).fill(0))
+  const lean = lens.map(() => [0, 0, 0])
+  let weight = LENS_LEAN_WEIGHTS[LENS_LEAN_WEIGHTS.length - 1]!
+  const leanCost = (v: number) => weight * Math.max(0, Math.abs(v) - LENS_LEAN_FREE) ** 2
+  const smooth = (c: number, i: number) => {
+    let sum = 0
+    for (let k = -reach; k <= reach; k++) if (i + k >= 0 && i + k < n) sum += LENS_TENT[k + reach]! * left[c]![i + k]!
+    return sum
+  }
+  const settle = () => {
+    for (let c = 0; c < lens.length; c++) {
+      for (let k = 0; k < n; k++) left[c]![k] = lens[c]![order[k]!]! - was[c]![2]! * mine[2]![k]!
+      for (let m = 0; m < mine.length; m++) lean[c]![m] = mine[m]!.reduce((x, v, k) => x + v * lens[c]![order[k]!]!, 0) - was[c]![m]!
+    }
+  }
+  const cost = () => {
+    let sum = 0
+    for (let c = 0; c < lens.length; c++) {
+      for (const v of lean[c]!) sum += leanCost(v)
+      for (let i = 0; i < n; i++) sum += smooth(c, i) ** 2
+    }
+    return sum
+  }
+  let best = Infinity
+  let stride = 1
+  let start = 0
+  for (let a = 1; a < n; a++) {
+    if (gcd(a, n) !== 1) continue
+    for (let s = 0; s < n; s++) {
+      for (let k = 0; k < n; k++) order[k] = (a * k + s) % n
+      settle()
+      const now = cost()
+      if (now < best - 1e-15) {
+        best = now
+        stride = a
+        start = s
+      }
+    }
+  }
+  for (let k = 0; k < n; k++) order[k] = (stride * k + start) % n
+  settle()
+  const near = (i: number, j: number) => {
+    const out: number[] = []
+    for (let k = Math.max(0, i - reach); k <= Math.min(n - 1, i + reach); k++) out.push(k)
+    for (let k = Math.max(0, j - reach); k <= Math.min(n - 1, j + reach); k++) if (k > i + reach) out.push(k)
+    return out
+  }
+  const part = (touched: number[]) => {
+    let sum = 0
+    for (let c = 0; c < lens.length; c++) {
+      for (const v of lean[c]!) sum += leanCost(v)
+      for (const i of touched) sum += smooth(c, i) ** 2
+    }
+    return sum
+  }
+  const change = (i: number, j: number) => {
+    for (let c = 0; c < lens.length; c++) {
+      const d = lens[c]![order[j]!]! - lens[c]![order[i]!]!
+      left[c]![i]! += d
+      left[c]![j]! -= d
+      for (let m = 0; m < mine.length; m++) lean[c]![m]! += (mine[m]![i]! - mine[m]![j]!) * d
+    }
+    const keep = order[i]!
+    order[i] = order[j]!
+    order[j] = keep
+  }
+  for (const stage of LENS_LEAN_WEIGHTS) {
+    weight = stage
+    for (let sweep = 0; sweep < 200; sweep++) {
+      let changed = false
+      for (let i = 0; i < n - 1; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const touched = near(i, j)
+          const now = part(touched)
+          change(i, j)
+          if (part(touched) < now - 1e-12) changed = true
+          else change(i, j)
+        }
+      }
+      if (!changed) break
+    }
+  }
+  return order
+}
+
 /** One sample of a moving frame: what the stage draws it with, and its moment as a share of the shutter. */
 export interface Timed {
   sample: Sample
@@ -128,21 +254,25 @@ export interface Timed {
  * short run fills the pixel evenly, so the few copies that overlap at one spot of a streak settle its edge;
  * and each moment is moved by the time the ball takes to cross the sample's place along the travel, so the copies of
  * what moves with the ball lie at even steps on the picture whatever their place in the pixel. What stands still keeps
- * the whole pixel. The lens points and the numbers of the samples stay with their rank in time.
+ * the whole pixel. The numbers of the samples stay with their rank in time; the lens points are dealt out again (`lensOrder`).
  */
 export function evenSet(set: readonly Sample[], pace: (u: number) => readonly [number, number]): Timed[] {
   const n = set.length
+  const [mx, my] = pace(0.5)
+  const mid = Math.hypot(mx, my)
+  const lens = mid > 1e-6 ? lensOrder(set, mx / mid, my / mid) : lensOrder(set)
   const out: Timed[] = set.map((s, k) => {
     const u = (k + 0.5) / n
     const along = frac(0.5 + ALONG * (k + 1)) - 0.5
     const across = frac(0.5 + ACROSS * (k + 1)) - 0.5
+    const { lu, lv } = set[lens[k]!]!
     const [vx, vy] = pace(u)
     const speed = Math.hypot(vx, vy)
-    if (!(speed > 1e-6)) return { sample: { ...s, px: along, py: across, t: u }, at: u }
+    if (!(speed > 1e-6)) return { sample: { ...s, px: along, py: across, lu, lv, t: u }, at: u }
     const dx = vx / speed
     const dy = vy / speed
     const move = Math.max(-REACH / n, Math.min(REACH / n, along / speed))
-    return { sample: { ...s, px: along * dx - across * dy, py: along * dy + across * dx, t: u }, at: Math.max(0, Math.min(1, u + move)) }
+    return { sample: { ...s, px: along * dx - across * dy, py: along * dy + across * dx, lu, lv, t: u }, at: Math.max(0, Math.min(1, u + move)) }
   })
   return out.sort((a, b) => a.at - b.at || a.sample.index - b.sample.index)
 }
@@ -166,12 +296,23 @@ export const SPREAD_BALL: { sphere: [number, number]; base: [number, number, num
   base: [config.globe.baseDiameterMm / 2 + SPREAD.baseMarginMm, -SPREAD.baseBelowMm, config.globe.baseHeightMm + SPREAD.baseAboveMm],
 }
 
-/** What the spread of the sample drawn at `sec` needs, when the samples lie `spacingSec` apart. */
-export function spreadAt(sec: number, spacingSec: number, globeAt: (sec: number) => GlobePose, poseAt: (sec: number) => Pose, width: number, height: number): Spread {
+/**
+ * The share of its full reach the spread has in a frame of this travel: none at `fromPx`, where a frame is first drawn
+ * with even times, all of it from `fullPx`, where the count begins to follow the travel and the copies lie a full
+ * spacing apart, and in between in step with the travel. Under `fullPx` the copies lie closer than a spacing, so less
+ * reach settles them, and a frame just over `fromPx` reads as sharp as the one just under it.
+ */
+export function spreadReach(travelPx: number, fromPx: number, fullPx: number): number {
+  if (!(fullPx > fromPx)) return travelPx >= fromPx ? 1 : 0
+  return Math.max(0, Math.min(1, (travelPx - fromPx) / (fullPx - fromPx)))
+}
+
+/** What the spread of the sample drawn at `sec` needs, when the samples lie `spacingSec` apart; `reach` is its share of the full reach. */
+export function spreadAt(sec: number, spacingSec: number, globeAt: (sec: number) => GlobePose, poseAt: (sec: number) => Pose, width: number, height: number, reach = 1): Spread {
   const before = ballToClip(sec - spacingSec / 2, globeAt, poseAt, width, height)
   const after = ballToClip(sec + spacingSec / 2, globeAt, poseAt, width, height)
   aim(poseAt(sec), width, height)
   const toWorld = new THREE.Matrix4().multiplyMatrices(camera.matrixWorld, camera.projectionMatrixInverse)
   const toBall = ballMatrix(globeAt(sec), new THREE.Matrix4()).invert()
-  return { toWorld, toBall, before, after, ball: SPREAD_BALL }
+  return { toWorld, toBall, before, after, ball: SPREAD_BALL, reach }
 }
