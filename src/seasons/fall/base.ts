@@ -65,9 +65,9 @@ const baseUniforms = {
 const FLOOR_SHARE = 0.1
 // The brambles' tones, measured against the approved image in boxes at the review tier.
 const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, KEY_EAST: 44, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 170, CARD_WEST: 100, TOP: 0, BARK: 0.7, LIFT: 0.005, LIFT_WEST: 75, FILL: 0.08, LINE: 1.6, LINE_POW: 320, LINE_WIDE: 0.5, KNOB: 9, FISSURE: 1.8, BODY: 12, LINE_EAST: 20, THORN: 0.5 }
-const DRUM_SHEEN = 1.8
+const DRUM_SHEEN = 2.8
 const DRUM_FOLD = 6
-const DRUM_CRINKLE = 1.5
+const DRUM_CRINKLE = 0.8
 const DRUM_GRAIN = 2
 const PUMPKIN_BODY = 0.042
 const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}\n#define DRUM_FOLD ${DRUM_FOLD.toFixed(3)}\n#define DRUM_CRINKLE ${DRUM_CRINKLE.toFixed(3)}\n#define DRUM_GRAIN ${DRUM_GRAIN.toFixed(3)}`
@@ -242,11 +242,11 @@ float foldUp = baseFold(vBasePos + vec3(0.0, 0.4, 0.0));
 float crinkleHere = baseCrinkle(vBasePos);
 float crinkleOn = baseCrinkle(vBasePos + foldT * 0.16);
 float crinkleUp = baseCrinkle(vBasePos + vec3(0.0, 0.16, 0.0));
-float grainHere = baseNoise(vBasePos * 3.5 + 11.0);
-float grainOn = baseNoise((vBasePos + foldT * 0.12) * 3.5 + 11.0);
-float grainUp = baseNoise((vBasePos + vec3(0.0, 0.12, 0.0)) * 3.5 + 11.0);
+float grainHere = baseNoise(vBasePos * 5.50 + 11.0);
+float grainOn = baseNoise((vBasePos + foldT * 0.076) * 5.50 + 11.0);
+float grainUp = baseNoise((vBasePos + vec3(0.0, 0.076, 0.0)) * 5.50 + 11.0);
 // The crease of a fold is dark and dull, its back takes the sheen.
-float baseScale = max(1.0 - smoothstep(0.0, 0.22, foldHere), 0.8 * (1.0 - smoothstep(0.0, 0.16, crinkleHere))) * baseDrum;
+float baseScale = max(1.0 - smoothstep(0.0, 0.22, foldHere), 0.35 * (1.0 - smoothstep(0.0, 0.16, crinkleHere))) * baseDrum;
 diffuseColor.rgb = mix(mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch), mix(vec3(0.022, 0.031, 0.046), vec3(0.036, 0.05, 0.074), baseBlotch), baseDrum) * mix(1.0, 0.55, baseScale) * mix(BRAMBLE_ALBEDO * mix(1.0, 0.5, baseThorn), 0.6, baseDrum);
 float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * baseDrum * 0.1;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
@@ -317,7 +317,7 @@ const IRON_AFTER = `
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65 * (1.0 - ironWest)) * mix(vec3(1.0), vec3(1.0, 0.86, 1.0), ironWest);
   reflectedLight.directSpecular += (mix(ironKeyC, ironKeyOpen * baseAo, baseDrum) * vec3(0.8, 0.9, 1.0) * (mix(0.03, 0.4 * baseDim, baseDrum) * pow(abs(ironKh), mix(8.0, 9.0, baseDrum)) + mix(0.15 * pow(abs(ironKh), 40.0) * baseThorn, BRAMBLE_KEY * (1.0 + BRAMBLE_KEY_EAST * ironEast) * pow(abs(ironKh), mix(14.0, 140.0, ironEast)) * ironGrain, baseStrand)) * ironKl + ironCardC * (0.03 * pow(abs(ironCh), 10.0) + mix(0.08 * pow(abs(ironCh), 40.0) * baseThorn, BRAMBLE_CARD * (BRAMBLE_CARD_FRONT + BRAMBLE_CARD_WEST * ironWest * mix(1.0, 0.4, smoothstep(20.0, 34.0, vBasePos.y))) * pow(abs(ironCh), mix(16.0, 70.0, ironWest)) * mix(1.0, pow(abs(max(dot(ironRound, normalize(ironCard + geometryViewDir)), 0.0)), 10.0), ironWest) * (0.05 + 2.4 * barkLine), baseStrand)) * ironCl) * ironSheen;
   // The key rakes the bare leather of the right flank: a broad grey sheen, grained by the hide.
-  reflectedLight.directSpecular += ironKeyOpen * vec3(0.56, 0.84, 1.3) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * ironKl * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.2 + 1.1 * smoothstep(0.05, 0.55, foldHere)) * (0.55 + 0.75 * smoothstep(0.05, 0.6, crinkleHere)) * baseAo;
+  reflectedLight.directSpecular += ironKeyOpen * vec3(0.72, 0.92, 1.3) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * mix(ironKl, smoothstep(0.0, 0.2, dot(ironRound, ironKey)), 0.75) * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.2 + 1.1 * smoothstep(0.05, 0.55, foldHere)) * (0.85 + 0.3 * smoothstep(0.05, 0.6, crinkleHere)) * baseAo;
   float ironEdge = pow(abs(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
