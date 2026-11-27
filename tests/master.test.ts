@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { tierSamples } from '../src/config'
 import { finalVideoArgs, masterVideoArgs } from '../tools/lib/encode.mjs'
 import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
@@ -13,6 +13,7 @@ import { heldLine, heldRanges, parseTake } from '../tools/lib/master.mjs'
 import { firstPlace, markedHolder, notNumberFrames } from '../tools/lib/master.mjs'
 import { NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, shipTitle, shippedLine } from '../tools/lib/master.mjs'
 import { limitsLine, limitsRecord, localProblem, machineLimits, procsGainLine, procsMemoryHolds, readLimits, sameCommand, stoppedAt, stoppedLine } from '../tools/lib/master.mjs'
+import { OVERDUE, availableBytes, memoryShortLine, overdueLine, watchFrame } from '../tools/lib/master.mjs'
 import { bestRun, bigSha, butCrf, crfLadder, crfOf, encodeProofRows, finalKbps, hashFolder, intermediateVideo, masterConfigProblems, partName, partPlan, psnrFacts, sendGroups, splitFile, takeFiles, unsplitFile } from '../tools/lib/master.mjs'
 import { flatValue, refuseFlat } from '../tools/lib/page.mjs'
 import { frameLevels } from '../tools/lib/encode.mjs'
@@ -1140,6 +1141,57 @@ describe('what the machine may really use', () => {
     expect(procsProblem(2, 'hd', small)).toBeNull()
     expect(procsProblem(3, 'uhd', readLimits({ totalmem: 15.6 * GIB, cpus: 4 }))).toBeNull()
     expect(procsProblem(4, 'uhd', readLimits({ totalmem: 15.6 * GIB, cpus: 4 }))).not.toBeNull()
+  })
+
+  it('reads the memory that is free from the kernel, and says it loud where the renders would not fit, refusing nothing', () => {
+    expect(availableBytes('MemTotal:        8148272 kB\nMemFree:         7400000 kB\nMemAvailable:     941056 kB\nBuffers:           10000 kB\n')).toBe(941056 * 1024)
+    expect(availableBytes('MemTotal: 8148272 kB\n')).toBeNull()
+    expect(availableBytes('')).toBeNull()
+    expect(memoryShortLine(1, 'uhd', 7.1 * GIB)).toBeNull()
+    expect(memoryShortLine(1, 'uhd', 6.1 * GIB)).toBeNull()
+    expect(memoryShortLine(1, 'uhd', 0.9 * GIB)).toBe('SHORT OF MEMORY: 0.9 GiB are free on this machine now, and one uhd render holds about 6.1 GB with the encoder. A machine short of memory does not fail, it crawls. Look at what else runs here (ps -eo rss,etime,args --sort=-rss | head) before a long run.')
+    expect(memoryShortLine(2, 'uhd', 9.5 * GIB)).toMatch(/^SHORT OF MEMORY: 9\.5 GiB are free on this machine now, and 2 uhd renders hold about 10\.2 GB with the encoder\./)
+    expect(memoryShortLine(2, 'uhd', 10.2 * GIB)).toBeNull()
+    expect(memoryShortLine(12, 'preview', 0.5 * GIB)).toBeNull()
+    expect(memoryShortLine(1, 'uhd', null)).toBeNull()
+  })
+
+  it('says a frame is overdue once it takes three times what the frames before give it and five minutes at least, again when that doubles, and ends nothing', () => {
+    expect(overdueLine({ frame: 215, seconds: 1900, expected: 590.2, available: 0.9 * GIB })).toBe('OVERDUE: frame 215 has been drawing for 31.7 min, 3.2 times the 590.2 s the frames so far give it. Nothing has failed and nothing was given up. 0.9 GiB of memory are free now. A machine short of memory crawls without an error: look at free -m and at what else runs here.')
+    expect(overdueLine({ frame: 3, seconds: 400, expected: 2, available: null })).toBe('OVERDUE: frame 3 has been drawing for 6.7 min, 200.0 times the 2.0 s the frames so far give it. Nothing has failed and nothing was given up. A machine short of memory crawls without an error: look at free -m and at what else runs here.')
+    vi.useFakeTimers()
+    try {
+      const said: string[] = []
+      const watch = (expected: number | null) => watchFrame({ frame: 215, expected, say: (l: string) => said.push(l), available: () => 0.9 * GIB })
+      const end = watch(600)
+      vi.advanceTimersByTime(1799 * 1000)
+      expect(said).toEqual([])
+      vi.advanceTimersByTime(2 * 1000)
+      expect(said.length).toBe(1)
+      expect(said[0]).toMatch(/^OVERDUE: frame 215 has been drawing for 30\.0 min, 3\.0 times the 600\.0 s the frames so far give it\. .* 0\.9 GiB of memory are free now\./)
+      vi.advanceTimersByTime(1790 * 1000)
+      expect(said.length).toBe(1)
+      vi.advanceTimersByTime(20 * 1000)
+      expect(said.length).toBe(2)
+      expect(said[1]).toMatch(/^OVERDUE: frame 215 has been drawing for 60\.0 min, 6\.0 times/)
+      end()
+      vi.advanceTimersByTime(24 * 3600 * 1000)
+      expect(said.length).toBe(2)
+      const quick = watch(0.02)
+      vi.advanceTimersByTime((OVERDUE.leastSeconds - 1) * 1000)
+      expect(said.length).toBe(2)
+      vi.advanceTimersByTime(OVERDUE.everySeconds * 1000)
+      expect(said.length).toBe(3)
+      quick()
+      const first = watch(null)
+      const none = watch(0)
+      vi.advanceTimersByTime(24 * 3600 * 1000)
+      expect(said.length).toBe(3)
+      first()
+      none()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('promises nothing about more processes and says to measure them', () => {
