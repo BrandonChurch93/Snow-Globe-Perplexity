@@ -91,6 +91,11 @@ const SHADE = { roof: 0.4, deep: 0.5, above: [-0.196, 0.981, 0] as Vec3, pale: 0
 // `dark` of it, and a spot's edge is never drawn finer than the picture can hold (`soft`, of a pixel). The spots stay on their
 // leaves as the leaves move. A leaf shut in under another pad keeps `shut` of it.
 const RIM = { power: 6.0, tone: [1.0, 0.62, 0.28] as Rgb3, rim: [0.6, 0.9] as const, hem: 0.5, toward: [-0.6, 0.8] as const, from: -0.5, to: 0.3, around: 0.1, dark: 0.2, tip: [0.35, 0.7] as const, shut: 0.5, across: 16, in: [0.05, 0.7] as const, curve: 1.5, reach: 0.09, lean: 0.5, least: 1.0, fade: 6.0, glow: [1.0, 0.9, 0.65] as Rgb3, far: 0.3, wide: 5, over: [0.0, 1.0] as const, bend: 1.5, mm: 0.38, size: [0.26, 0.4] as const, dim: 0.35, soft: 0.6 }
+// The specks down a pad's flank. Where a pad's outline faces the right as the lens sees it (`toward`, `from`, `to`) the same edge
+// of the same leaves takes `power` of the lit edge's light, in the spots alone: between spots the flank stays dark and there is
+// no wash behind it, so it reads as a string of fine specks and not as a line. Where the lit edge is already as strong the flank
+// adds nothing.
+const FLANK = { power: 1.4, toward: [0.95, -0.3] as const, from: 0.2, to: 0.7 }
 // A flat pad's leaves stand farther above it than it is thick. For the choice of the pad a leaf is lit on, a pad counts as at least
 // this thick (mm), so that the leaves on a flat pad's top are lit as its top and not as the underside of a dome that hangs over it.
 const PAD_THICK = 1.5
@@ -268,13 +273,14 @@ function leafHook(shader: Shader): void {
   float treePool = pow(clamp(1.0 - treeFar / ${(LEAF_POOL.reachMm * fork.radius).toFixed(2)}, 0.0, 1.0), 2.0) * smoothstep(${LEAF_POOL.from.toFixed(2)}, ${LEAF_POOL.to.toFixed(2)}, 2.0 * dot(treeLobe.xyz, treeTo / treeFar)) * smoothstep(0.0, ${LOBE.seam.toFixed(2)}, treeLobe.w) * mix(1.0, ${LEAF_POOL.top.toFixed(2)}, treeUp);
   reflectedLight.indirectDiffuse += treeTone * ${glsl3(paper(fork))} * (${LEAF_POOL.power.toFixed(2)} * treePool * lanternLevel(${fork.order.toFixed(1)}));
   reflectedLight.indirectDiffuse += vGlow.rgb * uTwinkle.z * ${glsl3(PAD.warmTone)} * (${PAD.warm.toFixed(3)} * mix(1.0, ${PAD.warmLobe.toFixed(2)}, treeTop) * (1.0 - treeUp) * (1.0 - treeUp) * smoothstep(${PAD.warmFrom.toFixed(2)}, ${PAD.warmTo.toFixed(2)}, vGlow.r) * mix(${PAD.dapEven.toFixed(2)}, 1.0, smoothstep(${PAD.leafFrom.toFixed(2)}, ${PAD.leafTo.toFixed(2)}, treeLum)));
-  float treeEdge = smoothstep(${RIM.rim[0].toFixed(2)}, ${RIM.rim[1].toFixed(2)}, 1.0 - dot(normalize(treePad + ${RIM.hem.toFixed(2)} * normalize(vNormal)), treeV)) * mix(${RIM.around.toFixed(2)}, 1.0, smoothstep(${RIM.from.toFixed(2)}, ${RIM.to.toFixed(2)}, dot(treePad.xy, vec2(${RIM.toward[0].toFixed(2)}, ${RIM.toward[1].toFixed(2)}))));
-  float treeBand = treeCard ? treeEdge * smoothstep(${RIM.tip[0].toFixed(2)}, ${RIM.tip[1].toFixed(2)}, fract(vMapUv.y * 1.999)) * mix(${RIM.shut.toFixed(2)}, 1.0, treeOpen) : 0.0;
+  float treeLip = treeCard ? smoothstep(${RIM.rim[0].toFixed(2)}, ${RIM.rim[1].toFixed(2)}, 1.0 - dot(normalize(treePad + ${RIM.hem.toFixed(2)} * normalize(vNormal)), treeV)) * smoothstep(${RIM.tip[0].toFixed(2)}, ${RIM.tip[1].toFixed(2)}, fract(vMapUv.y * 1.999)) * mix(${RIM.shut.toFixed(2)}, 1.0, treeOpen) : 0.0;
+  float treeBand = treeLip * mix(${RIM.around.toFixed(2)}, 1.0, smoothstep(${RIM.from.toFixed(2)}, ${RIM.to.toFixed(2)}, dot(treePad.xy, vec2(${RIM.toward[0].toFixed(2)}, ${RIM.toward[1].toFixed(2)}))));
+  float treeFlank = max(treeLip * ${FLANK.power.toFixed(2)} * smoothstep(${FLANK.from.toFixed(2)}, ${FLANK.to.toFixed(2)}, dot(treePad.xy, vec2(${FLANK.toward[0].toFixed(2)}, ${FLANK.toward[1].toFixed(2)}))) - treeBand, 0.0);
   float treeFine = length(fwidth(vTreeP)) * ${(RIM.soft / RIM.mm).toFixed(4)};
   vec2 treeOut = treePad.xy + vec2(${(RIM.lean * RIM.toward[0]).toFixed(3)}, ${(RIM.lean * RIM.toward[1]).toFixed(3)});
   treeOut /= max(length(treeOut), 1e-3);
   vec2 treeStep = treeOut.x * dFdx(vMapUv) + treeOut.y * dFdy(vMapUv);
-  if (treeBand > 0.004) {
+  if (treeBand + treeFlank > 0.004) {
     float treeSize = float(textureSize(uSprigs, 0).x);
     float treePx = max(length(treeStep), 1e-7);
     vec2 treeCell = floor(vMapUv * 2.0) * 0.5;
@@ -282,7 +288,8 @@ function leafHook(shader: Shader): void {
     float treeRim = pow(1.0 - smoothstep(${RIM.in[0].toFixed(2)}, ${RIM.in[1].toFixed(2)}, textureLod(uSprigs, treeAt, max(log2(treeSize) - ${Math.log2(2 * RIM.across).toFixed(3)}, log2(treePx * treeSize))).a), ${RIM.curve.toFixed(2)});
     vec2 treeBack = clamp(vMapUv + max(${(0.5 * RIM.far).toFixed(4)} / treePx, ${RIM.least.toFixed(2)}) * treeStep, treeCell + ${(0.5 / RIM.wide).toFixed(4)}, treeCell + ${(0.5 - 0.5 / RIM.wide).toFixed(4)});
     float treeWash = pow(1.0 - smoothstep(${RIM.over[0].toFixed(2)}, ${RIM.over[1].toFixed(2)}, textureLod(uSprigs, treeBack, max(log2(treeSize) - ${Math.log2(2 * RIM.wide).toFixed(3)}, log2(treePx * treeSize))).a), ${RIM.bend.toFixed(2)});
-    reflectedLight.indirectDiffuse += ${glsl3(RIM.tone)} * (treeBand * ${RIM.power.toFixed(2)} * treeRim * mix(${RIM.dark.toFixed(2)}, 1.0, treeSpots(vTreeP * ${(1 / RIM.mm).toFixed(4)}, clamp(treeFine, 0.08, 0.25)))) + treeTone * ${glsl3(RIM.glow)} * (${RIM.fade.toFixed(2)} * treeBand * treeWash);
+    float treeLights = treeSpots(vTreeP * ${(1 / RIM.mm).toFixed(4)}, clamp(treeFine, 0.08, 0.25));
+    reflectedLight.indirectDiffuse += ${glsl3(RIM.tone)} * (${RIM.power.toFixed(2)} * treeRim * (treeBand * mix(${RIM.dark.toFixed(2)}, 1.0, treeLights) + treeFlank * treeLights)) + treeTone * ${glsl3(RIM.glow)} * (${RIM.fade.toFixed(2)} * treeBand * treeWash);
   }
   reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.rimTone)} * (min(${PAD.cap.toFixed(2)}, treeHem * treeTurn * smoothstep(${PAD.patchFrom.toFixed(2)}, ${PAD.patchTo.toFixed(2)}, treeMid) * mix(${PAD.rimShut.toFixed(2)}, 1.0, treeOpen) * mix(${PAD.rimBelow.toFixed(2)}, 1.0, treeHigh) * (${PAD.fringe.toFixed(2)} * treeLeaf + ${PAD.rim.toFixed(2)} * treeDot) * (treeCard ? smoothstep(${PAD.tipFrom.toFixed(2)}, ${PAD.tipTo.toFixed(2)}, fract(vMapUv.y * 1.999)) : ${PAD.tipBody.toFixed(2)})) * mix(${PAD.shade.toFixed(2)}, 1.0, stageKeyS));
 }`,

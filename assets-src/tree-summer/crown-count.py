@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # The crown of summer's tree, counted from one mask, for the approved picture and for our own stills alike.
 #
-#   python3 assets-src/tree-summer/crown-count.py approved [OUT.jpg [SHADE.jpg]]
-#   python3 assets-src/tree-summer/crown-count.py NOAIR.png IDS.png [OUT.jpg [SHADE.jpg]]
+#   python3 assets-src/tree-summer/crown-count.py approved [OUT.jpg [SHADE.jpg [FLANK.jpg]]]
+#   python3 assets-src/tree-summer/crown-count.py NOAIR.png IDS.png [OUT.jpg [SHADE.jpg [FLANK.jpg]]]
 #   python3 assets-src/tree-summer/crown-count.py doubt
 #
 # NOAIR.png is the rest still of summer at hd without the air (`npm run still -- --season summer --state rest --camera hero
@@ -27,6 +27,10 @@
 #          of that outline a line runs 2 mm into the crown and its lit pixels are counted. Given: the share of the outline that
 #          carries any, the thickness where it does, and the lit area per length of outline (the band as if spread evenly)
 #   beads  peaks of the light among the lit pixels within 0.6 mm of that outline, per 10 mm of it
+#   flank  the fine lights down the right flank of the two right domes: the outline of the right dome's and the low right pad's
+#          shares that is the crown's rightmost in its row, where the way out of the leaf points to the right and not up and to
+#          the left. Counted as the beads are: peaks of the light among the lit pixels within 0.6 mm of it, and per 10 mm of it.
+#          FLANK.jpg shows that outline in pale blue and every speck counted in a pink ring
 #   pads   the crown dealt among one marked point in each pad and one in the middle mass (each pixel to the point nearest along a
 #          way inside the leaf): each pad's length, thickness and tilt, and for every pair of neighbours how far apart they are
 #          (a pair within 15 percent in length or in thickness is named)
@@ -279,6 +283,44 @@ def count(a, crown, lit, name='', say=True, out=None):
     return got
 
 
+def flank(a, crown, lit, name='', say=True, out=None, near=0.6):
+    # the fine lights down the right flank of the two right domes: the outline of the right dome's and the low right pad's shares
+    # that is the crown's own rightmost in its row (to 2 px), where the way out of the leaf points to the right and not up and to
+    # the left. Counted as the beads are: peaks of the light among the lit pixels within `near` mm of that outline.
+    H, W = crown.shape
+    part, _ = pads(crown, say=False)
+    num = {n: i + 1 for i, n in enumerate(MARKS['pads'])}
+    soft = ndi.gaussian_filter(crown.astype(float), 3.0)
+    gy, gx = np.gradient(soft)
+    ox = -gx / (np.hypot(gx, gy) + 1e-9)
+    edge, upper, _ = outlines(crown)
+    cols = np.arange(W)[None, :]
+    last = np.where(crown, cols, -1).max(axis=1)[:, None]
+    line = edge & ((part == num['right dome']) | (part == num['low right'])) & (cols >= last - 2) & ~upper & (ox > 0.0)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    l2 = ndi.gaussian_filter(0.2126 * r + 0.7152 * g + 0.0722 * b, 0.7)
+    zone = ndi.distance_transform_edt(~line) <= near * K
+    peak = lit & zone & (l2 >= ndi.maximum_filter(l2, size=3))
+    length = line.sum() / K
+    got = {'flank mm': length, 'flank specks': int(peak.sum()), 'flank specks per 10 mm': 10 * peak.sum() / max(length, 1e-9)}
+    if say:
+        print(f"   FLANK {name}: the right flank of the two right domes, {length:.1f} mm of outline; SPECKS {got['flank specks']} within {near} mm of it, {got['flank specks per 10 mm']:.1f} per 10 mm; lit pixels there {int((lit & zone).sum())}")
+    if out:
+        px = np.asarray(Image.fromarray(a.astype(np.uint8)).resize((W * 2, H * 2), Image.LANCZOS)).copy()
+
+        def twice(m):
+            return np.kron(m, np.ones((2, 2), bool))
+
+        px[twice(edge & ~line)] = (40, 120, 200)
+        px[twice(line)] = (80, 230, 255)
+        im = Image.fromarray(px)
+        d = ImageDraw.Draw(im)
+        for y, x in zip(*np.nonzero(peak)):
+            d.ellipse((2 * x - 4, 2 * y - 4, 2 * x + 5, 2 * y + 5), outline=(255, 40, 200))
+        im.crop((int((X0 + K * 2) * 2), int((Y0 - K * 40) * 2), int((X0 + K * 22) * 2), int((Y0 - K * 14) * 2))).save(out, quality=92)
+    return got
+
+
 def pads(crown, say=True):
     # the crown is dealt among the marked points of crown-marks.json, one inside each pad and one in the middle mass: every pixel
     # of it goes to the point it is nearest to along a way that stays inside the leaf. Of each pad's share: its length and its
@@ -454,7 +496,7 @@ def doubt():
 if __name__ == '__main__':
     args = sys.argv[1:]
     if not args:
-        sys.exit('usage: crown-count.py approved [OUT.jpg [SHADE.jpg]] | NOAIR.png IDS.png [OUT.jpg [SHADE.jpg]] | doubt')
+        sys.exit('usage: crown-count.py approved [OUT.jpg [SHADE.jpg [FLANK.jpg]]] | NOAIR.png IDS.png [OUT.jpg [SHADE.jpg [FLANK.jpg]]] | doubt')
     if args[0] == 'doubt':
         doubt()
     elif args[0] == 'approved':
@@ -462,9 +504,11 @@ if __name__ == '__main__':
         count(a, crown, lit, 'approved', out=args[1] if len(args) > 1 else None)
         pads(crown)
         shade(a, crown, lit, info['leaf'], air_aside(), 'approved', out=args[2] if len(args) > 2 else None)
+        flank(a, crown, lit, 'approved', out=args[3] if len(args) > 3 else None)
     else:
         a, crown, lit, info = ours(args[0], args[1])
         print(f"of the colour rule's leaf {info['outside']:.1f}% is not the miniature and is taken out")
         count(a, crown, lit, os.path.basename(args[0]), out=args[2] if len(args) > 2 else None)
         pads(crown)
         shade(a, crown, lit, info['leaf'], air_aside(), os.path.basename(args[0]), out=args[3] if len(args) > 3 else None)
+        flank(a, crown, lit, os.path.basename(args[0]), out=args[4] if len(args) > 4 else None)
