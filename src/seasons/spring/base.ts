@@ -157,6 +157,8 @@ const SHADE = `
 // How much the low light from the left, the room's cool fill on the bare stone and the blossom-coloured light on the right flank give.
 const ROCK = { kick: 3.0, fill: 1.2, mossFill: 3.6, flank: 120.0, lustre: 0.04 }
 
+const SUN_TOP = 'vec3(2.4, 1.7, 0.7)'
+
 const ROCK_PARS = `
 uniform sampler2D uBaseStone;
 uniform sampler2D uBaseStoneDetail;
@@ -180,7 +182,10 @@ float baseWet = baseCover.g * mix(1.0, baseRun * uWater.w, step(baseCover.b, 0.9
 float baseAo = mix(0.3, mix(0.12 + 0.88 * smoothstep(0.1, 0.95, baseRelief.b), smoothstep(-0.3, 0.62, baseRelief.b), baseMoss), baseSeat);
 baseAo *= mix(1.0, mix(0.66, 1.0, smoothstep(0.2, 0.6, baseMossD.b)), baseMoss);
 // The glass sits in the moss: the moss darkens where it meets the glass, and the stone where it meets the table.
-baseAo *= mix(0.1, 1.0, smoothstep(0.1, 2.8, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0)) * mix(0.45, 1.0, smoothstep(0.0, 2.6, vBasePos.y));
+baseAo *= mix(0.55, 1.0, smoothstep(0.2, 1.8, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0)) * mix(0.45, 1.0, smoothstep(0.0, 2.6, vBasePos.y));
+// At the front the glass stands over the cushion's bank: the bank lies in its shade and only the brow keeps the light.
+float baseBank = smoothstep(0.55, 0.8, vBasePos.z / max(length(vBasePos.xz), 1.0)) * smoothstep(38.0, 24.0, vBasePos.x);
+baseAo *= mix(1.0, mix(0.16, 1.0, smoothstep(4.4, 6.8, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0)), baseBank);
 float baseBlotch = baseNoise(vBasePos * 0.19) * 0.6 + baseNoise(vBasePos * 0.8) * 0.4;
 float baseSun = baseNoise(vBasePos * 0.45 + 7.3);
 float baseSpeck = baseNoise(vBasePos * 6.5);
@@ -224,17 +229,30 @@ ${SHADE}
   // The dusk in the room is cool and comes from in front and above: it is what the stones and the moss in the base's own
   // shade are seen by, and it falls on each grain and tuft by the way that one faces, so the shade keeps its grain.
   float liveFill = clamp(dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(-0.25, 0.62, 0.74))) * 0.6 + 0.4, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * mix(vec3(0.8, 1.0, 0.9), vec3(1.08, 0.96, 0.84), baseMoss * smoothstep(30.0, 38.0, vBasePos.y)) * dot(liveSunC, vec3(0.3333)) * (mix(${ROCK.fill.toFixed(2)}, ${ROCK.mossFill.toFixed(2)}, baseMoss) * mix(0.2 + 0.8 * liveFill * liveFill, (0.3 + 0.7 * liveFill * liveFill) * (mix(0.55, 0.85, smoothstep(30.0, 38.0, vBasePos.y)) + 0.9 * smoothstep(0.45, 0.85, baseMossD.b)) * mix(0.9, 4.4, smoothstep(30.0, 38.0, vBasePos.y)), baseMoss) * mix(0.25 + 0.75 * baseAo, 0.3 + 0.7 * baseAo, baseMoss) + mix(0.45, 1.0, baseMoss));
+  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * mix(vec3(0.8, 1.0, 0.9), vec3(1.08, 0.96, 0.84), baseMoss * smoothstep(30.0, 38.0, vBasePos.y)) * dot(liveSunC, vec3(0.3333)) * (mix(${ROCK.fill.toFixed(2)}, ${ROCK.mossFill.toFixed(2)}, baseMoss) * mix(0.2 + 0.8 * liveFill * liveFill, (0.3 + 0.7 * liveFill * liveFill) * (mix(0.55, 0.85, smoothstep(30.0, 38.0, vBasePos.y)) + 0.9 * smoothstep(0.45, 0.85, baseMossD.b)) * mix(0.9, mix(2.0, 4.4, smoothstep(-45.0, 0.0, vBasePos.x)), smoothstep(30.0, 38.0, vBasePos.y)), baseMoss) * mix(0.25 + 0.75 * baseAo, 0.3 + 0.7 * baseAo, baseMoss) + mix(0.45, 1.0, baseMoss));
   // The low sun behind comes through the blossom and grazes the right flank: warm, and strongest on whatever stands out.
   vec3 liveGrazeDir = normalize(mat3(viewMatrix) * vec3(0.9, 0.25, -0.2));
   float liveGrazeM = clamp((dot(liveMacro, liveGrazeDir) + 0.14) / 1.14, 0.0, 1.0);
   // The mound's own body stands between the low sun and its front: only the side that looks toward the sun is reached.
   vec2 liveOut = vBasePos.xz;
   vec3 liveSide = dot(liveOut, liveOut) > 1e-6 ? normalize(normalMatrix * vec3(liveOut.x, 0.0, liveOut.y)) : geometryNormal;
-  float liveReach = smoothstep(mix(0.2, 0.0, baseMoss * liveHigh), 0.55, dot(liveSide, liveGrazeDir));
-  float liveGraze = liveReach * liveGrazeM * liveGrazeM * mix(liveGrazeM, 1.0, 0.85 * baseMoss * liveHigh) * 1.25 * smoothstep(-0.2, 0.5, dot(geometryNormal, liveGrazeDir)) * mix(0.8, 1.0, smoothstep(2.0, 16.0, vBasePos.y));
+  // Moss is a pile, not a skin: the low sun gets into it past the turn of each small fold.
+  vec3 liveLean = mix(geometryNormal, liveMacro, 0.7 * baseMoss);
+  vec3 liveSoft = dot(liveLean, liveLean) > 1e-6 ? normalize(liveLean) : geometryNormal;
+  float liveReach = smoothstep(mix(0.2, -0.12, baseMoss * liveHigh), mix(0.55, 0.4, baseMoss * liveHigh), dot(liveSide, liveGrazeDir));
+  float liveGraze = liveReach * liveGrazeM * liveGrazeM * mix(liveGrazeM, 1.0, 0.85 * baseMoss * liveHigh) * 1.25 * smoothstep(-0.2, 0.5, dot(liveSoft, liveGrazeDir)) * mix(0.8, 1.0, smoothstep(2.0, 16.0, vBasePos.y));
+  // In the low sun the moss of the right flank is a crowd of round heads, each about half a millimetre, and the sun does not
+  // reach between them: a slow pattern fixed to the stone, and gone before a head is narrower than two pixels.
+  float liveSpan = max(length(dFdx(vBasePos)), length(dFdy(vBasePos)));
+  float liveHeads = baseMoss * max(smoothstep(42.0, 50.0, vBasePos.x), smoothstep(30.0, 38.0, vBasePos.x) * smoothstep(37.0, 34.5, vBasePos.y)) * smoothstep(0.5, 0.25, liveSpan);
+  float liveHead = baseNoise(vBasePos * 2.4 + 3.0);
+  float liveBead = mix(1.0, mix(0.3, 1.0, smoothstep(0.3, 0.7, liveHead)), liveHeads);
   vec3 liveDry = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.6, 0.1))) * mix(vec3(1.5, 1.1, 0.8), vec3(1.2, 1.5, 0.72), baseMoss), mix(0.9, 0.8, baseMoss));
-  reflectedLight.directDiffuse += liveDry * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.66, 0.5) * (${ROCK.flank.toFixed(2)} * liveGraze * mix((0.04 + 0.46 * baseStoneD.b) * mix(0.35, 1.8, baseStoneF.b), (1.0 + 1.2 * liveTuft) * mix(0.5, 1.9, baseClump) * 2.6 * smoothstep(0.1, 0.75, mix(dot(liveMacro, liveGrazeDir), dot(geometryNormal, liveGrazeDir), 0.5)), baseMoss) * baseAo);
+  // The film's lens parts red from blue by a pixel at 3840, so a sunlit edge far over white grows a red and a blue line: the low sun rises to a warm cream and no further.
+  vec3 liveLowSun = liveDry * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.66, 0.5) * (${ROCK.flank.toFixed(2)} * liveGraze * mix((0.2 + 0.9 * baseStoneD.b) * mix(0.35, 1.8, baseStoneF.b), (1.0 + 1.2 * liveTuft) * mix(0.5, 1.9, baseClump) * 2.6 * smoothstep(0.1, 0.75, dot(liveSoft, liveGrazeDir)) * mix(1.0, mix(0.12, 3.5, smoothstep(0.45, 0.8, liveHead)), liveHeads), baseMoss) * baseAo);
+  vec3 liveOver = liveLowSun / ${SUN_TOP};
+  float liveBlade = mix(1.0, mix(0.5, 1.0, smoothstep(0.25, 0.85, baseMossD.b)), baseMoss);
+  reflectedLight.directDiffuse += liveBlade * liveLowSun / pow(max(1.0 + abs(liveOver * liveOver * liveOver), 1.0), vec3(0.3333));
   // Stone that is never quite dry: a soft cool lustre off the room on every face that looks up or toward the camera.
   float liveDamp = (1.0 - baseMoss) * (1.0 - 0.7 * baseFilm) * (1.0 - 0.7 * baseWet) * baseAo;
   vec3 liveSkyDir = normalize(mat3(viewMatrix) * vec3(-0.2, 0.75, 0.6));
@@ -242,11 +260,14 @@ ${SHADE}
   // The cap is a cushion with a wall of its own: the light that comes over the glass falls on its crowns, and its face stays in the shade.
   float liveTop = smoothstep(0.3, 0.8, liveUpM);
   float liveCrown = smoothstep(34.0, 42.5, vBasePos.y) * mix(0.35, 1.0, liveUp) * liveTop;
-  float liveLip = smoothstep(37.5, 41.0, vBasePos.y) * mix(0.4, 1.2, smoothstep(0.35, 0.65, baseBlotch)) * mix(0.12, 1.0, liveTop);
   // The sun is behind and to the right, and the glass stands between it and the left of the collar.
   float liveEast = smoothstep(0.1, 0.8, vBasePos.x / 52.0);
-  vec3 liveTip = mix(vec3(0.5, 0.43, 0.25), vec3(0.5, 0.447, 0.198), liveEast) * mix(0.33 + 0.75 * exp(-vBasePos.x * vBasePos.x / 400.0), 2.4, liveEast) * RECIPROCAL_PI * baseMoss * baseAo;
-  reflectedLight.directDiffuse += liveTip * (liveKeyC * ((1.7 + 2.1 * liveTuft + 1.5 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim * mix(0.15, 1.0, liveLip) + 2.2 * liveUp * liveUp * liveLip + mix(0.6, 0.08, liveEast) * liveCrown) * max(liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh), liveCrown)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
+  float liveLip = smoothstep(mix(39.4, 34.0, liveEast), mix(41.4, 38.5, liveEast), vBasePos.y) * mix(0.75, 1.1, smoothstep(0.35, 0.65, baseBlotch)) * mix(0.12, 1.0, liveTop);
+  vec3 liveTip = mix(vec3(0.5, 0.43, 0.25), vec3(0.5, 0.42, 0.198), liveEast) * mix(0.07 + 0.3 * exp(-vBasePos.x * vBasePos.x / 400.0), 1.55, liveEast) * RECIPROCAL_PI * baseMoss * baseAo;
+  vec3 liveCrest = liveTip * (liveKeyC * ((1.7 + 2.1 * liveTuft + 1.5 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim * mix(0.15, 1.0, liveLip) + 2.2 * liveUp * liveUp * liveLip + mix(0.6, 0.08, liveEast) * liveCrown) * max(liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh), liveCrown)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
+  liveOver = liveCrest / ${SUN_TOP};
+  reflectedLight.directDiffuse += liveBlade * liveCrest / pow(max(1.0 + abs(liveOver * liveOver * liveOver), 1.0), vec3(0.3333));
+  reflectedLight.directDiffuse *= liveBead;
   // A grain of dew and the pixel it falls in are together no narrower than a cell and a fifth, with the same light in all.
   vec3 liveAt = vBasePos * 7.5;
   float liveWide = clamp((1.22 - max(length(dFdx(liveAt)), length(dFdy(liveAt)))) / 0.42, 1.0, 2.9);
@@ -282,7 +303,7 @@ float baseBark = vBaseUv1.x;
 float baseFoot = smoothstep(0.0, 2.6, vBasePos.y);
 float baseAo = vBaseUv1.y * mix(0.2, 1.0, baseFoot);
 vec3 baseWood = diffuseColor.rgb * vec3(0.25, 0.195, 0.155) * vBasePaint * mix(0.7, 1.15, baseDetail.b);
-float baseRidge = 0.5 + 0.5 * sin(vMapUv.y * 37.7 + 5.0 * baseNoise(vBasePos * vec3(0.9, 0.35, 0.9)) + 2.0 * baseDetail.b);
+float baseRidge = 0.5 + 0.5 * sin(vMapUv.y * 37.7 + 5.0 * baseNoise(vBasePos * vec3(0.9, 0.35, 0.9)) + 4.0 * baseNoise(vBasePos * 2.3) + 2.0 * baseDetail.b);
 float baseCrack = smoothstep(0.5, 0.2, baseDetail.b) * smoothstep(0.35, 0.0, baseRidge);
 baseWood = mix(vec3(dot(baseWood, vec3(0.3, 0.5, 0.2))), baseWood, 0.7) * vec3(1.03, 1.0, 0.96) * mix(0.9, 1.05, baseRidge) * (1.0 - 0.35 * baseCrack);
 vec3 baseCap = mix(vec3(dot(vBasePaint, vec3(0.3, 0.5, 0.2))) * vec3(1.08, 0.98, 0.86), vBasePaint, 0.6) * 0.58 * mix(0.7, 1.12, baseNoise(vBasePos * 3.1)) * mix(0.82, 1.05, baseNoise(vBasePos * 11.0));
@@ -298,7 +319,7 @@ metalnessFactor = 0.0;
 `
 
 const GROWTH_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * (2.0 * baseBark) + vec2(0.0, 0.4 * cos(vMapUv.y * 37.7 + 5.0 * baseNoise(vBasePos * vec3(0.9, 0.35, 0.9)) + 2.0 * baseDetail.b) * baseBark);
+vec2 baseTilt = baseSlope(baseDetail.rg) * (2.0 * baseBark) + vec2(0.0, 0.4 * cos(vMapUv.y * 37.7 + 5.0 * baseNoise(vBasePos * vec3(0.9, 0.35, 0.9)) + 4.0 * baseNoise(vBasePos * 2.3) + 2.0 * baseDetail.b) * baseBark);
 `
 
 const GROWTH_AFTER = `
@@ -309,16 +330,18 @@ ${SHADE}
   vec3 liveKickDir = normalize(mat3(viewMatrix) * vec3(-0.85, 0.3, -0.3));
   float liveKick = clamp((dot(geometryNormal, liveKickDir) + 0.2) / 1.2, 0.0, 1.0);
   reflectedLight.indirectDiffuse *= liveShade;
-  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * vec3(0.8, 1.0, 0.9) * dot(liveSunC, vec3(0.3333)) * (0.35 * baseBark);
+  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * vec3(0.8, 1.0, 0.9) * dot(liveSunC, vec3(0.3333)) * (0.55 * baseBark);
   reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.8);
   reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveKeyC * vec3(1.0, 0.8, 0.66) * ((mix(0.7, 0.8, baseBark) * liveRim * liveRim * liveOpen + mix(0.3, 0.25, baseBark) * liveKick * liveKick) * baseAo);
   // The same low warm sun that grazes the right flank of the stone catches the roots that stand out of it.
-  vec3 liveGrazeDir = normalize(mat3(viewMatrix) * vec3(0.9, 0.25, -0.2));
-  float liveGraze = clamp((dot(geometryNormal, liveGrazeDir) + 0.2) / 1.2, 0.0, 1.0);
+  vec3 liveGrazeDir = normalize(mat3(viewMatrix) * vec3(0.75, 0.55, -0.15));
+  float liveGraze = clamp((dot(geometryNormal, liveGrazeDir) + 0.4) / 1.4, 0.0, 1.0);
   vec2 liveOut = vBasePos.xz;
   vec3 liveSide = dot(liveOut, liveOut) > 1e-6 ? normalize(normalMatrix * vec3(liveOut.x, 0.0, liveOut.y)) : geometryNormal;
   float liveGrazeM = clamp((dot(liveSide, liveGrazeDir) + 0.14) / 1.14, 0.0, 1.0);
-  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.78, 0.66) * (${ROCK.flank.toFixed(2)} * 7.0 * liveGraze * liveGraze * liveGraze * smoothstep(0.4, 0.9, liveGraze) * (0.008 + 1.25 * liveGrazeM * liveGrazeM) * smoothstep(0.2, 0.55, dot(liveSide, liveGrazeDir)) * mix(1.0, mix(0.6, 1.4, baseRidge * baseRidge), baseBark) * baseAo);
+  vec3 liveLowSun = diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.78, 0.66) * (${ROCK.flank.toFixed(2)} * 2.4 * liveGraze * liveGraze * smoothstep(0.1, 0.7, liveGraze) * (0.008 + 1.25 * liveGrazeM * liveGrazeM) * smoothstep(0.2, 0.55, dot(liveSide, liveGrazeDir)) * mix(0.3, mix(0.5, 1.4, baseRidge * baseRidge) * mix(0.45, 1.45, baseDetail.b) * (1.0 - 0.6 * baseCrack), baseBark) * baseAo);
+  vec3 liveOver = liveLowSun / ${SUN_TOP};
+  reflectedLight.directDiffuse += liveLowSun / pow(max(1.0 + abs(liveOver * liveOver * liveOver), 1.0), vec3(0.3333));
   vec3 liveSkin = diffuseColor.rgb * RECIPROCAL_PI * (1.0 - baseBark) * baseAo;
   reflectedLight.directDiffuse += liveSkin * (liveKeyC * 0.1 * liveWrap * liveWrap + uRigCardCol * 0.12 * liveCardWrap * liveCardWrap) * mix(0.4, 1.0, liveOpen);
   reflectedLight.directSpecular += (liveKeyC * pow(abs(liveNh), 60.0) * 0.5 + uRigCardCol * pow(abs(liveCh), 50.0) * 0.4) * baseAo * mix(0.6, 0.1, baseBark);
