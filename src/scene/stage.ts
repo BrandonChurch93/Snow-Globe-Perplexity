@@ -25,7 +25,7 @@ import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, out
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
-import { FramePace, handIn, Hands, inPieces, seasonsIn, SOON_MS, until, Wish, workIn, type Step, type Turn } from './steps'
+import { FramePace, handIn, Hands, inPieces, seasonsIn, SOON_MS, take, until, Wish, workIn, type Step, type Turn } from './steps'
 import { makeSlab, ReflectMix, updateSurface } from './surface'
 
 interface SeasonSet {
@@ -197,7 +197,7 @@ export class GlobeStage implements Stage {
     const m = this.making(season)
     while (m.steps.length) {
       if (!this.live) {
-        m.steps.shift()?.()
+        take(m.steps)
         continue
       }
       workIn(m.steps, season, await this.turnFor(season), this.wish, this.pace, NOW)
@@ -357,7 +357,7 @@ export class GlobeStage implements Stage {
     const made = this.sets.get(season)
     if (made) return made
     const m = this.making(season)
-    for (let step = m.steps.shift(); step; step = m.steps.shift()) step()
+    while (m.steps.length) take(m.steps)
     return this.sets.get(season)!
   }
 

@@ -145,7 +145,7 @@ function open(width: number, height: number, search = '', screen: Screen = {}): 
     },
   }
   const doc = { getElementById: (id: string) => (id === 'first' ? box : null), createElement: (tag: string) => new El(tag) }
-  new Function('window', 'document', 'location', screen.table ? script.replace(tableText, JSON.stringify(screen.table)) : script)(win, doc, { search })
+  new Function('window', 'document', 'location', screen.table ? script.replace(tableText, JSON.stringify(screen.table)) : script)(win, doc, { search, hostname: 'localhost' })
   return { box, win }
 }
 
