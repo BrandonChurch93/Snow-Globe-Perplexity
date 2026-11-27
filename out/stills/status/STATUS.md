@@ -1,19 +1,19 @@
-# Status 219
+# Status 220
 
-2026-11-27 16:26 UTC
+2026-11-27 17:01 UTC
 
 - Phases 1 to 5 complete. Phase 6 in progress.
-- Landed since Status 218: the change of season at 4K at the final tier is read. In film frames 674 to 677 the dissolve of winter's base into spring's, the rim and the lamps are smooth, no beads and no bands. That head goes to main in chain 35.
-- Found by that look, below the bar: single pixel dots under the lit rims of spring's two small mushrooms in every fast frame, on main too (open item 259, a builder has the order); winter's ferns near the foot torn into flat streaks at frame 668; grainy fringes on the table's petals at frame 680; summer's sand heap torn at 2108. The last three are with the change's builder.
-- Summer's pale patches (open item 255): the mend's builder reports them gone in two 4K frames at the landing; its other checks are running; not on main yet and not seen by me.
-- Chain 34 (fall's pumpkin faces, the shutter's fine motion) is in its checks. Measured so far: fall at rest M3 0.9354 at review against 0.8835 on main, the base's part 0.970 against 0.883.
+- Landed since Status 219: chain 34 is on origin main (63914740, pushed 16:56 UTC). Fall's base carries its three cut and lit pumpkin faces and the shutter's fine motion is in. Measured on it: fall at rest M3 0.9354 at review against 0.8835 before, the base's part 0.970 against 0.883; M4 of shakes 1 to 4 0.9694, 0.8957, 0.9567, 0.9597; the whole test run 954 passed, 4 skipped; triangles at high 1,759,623 of 1,800,000 for fall, the largest of the four.
+- Chain 35 runs since 16:59 UTC with three parts: the mend of summer's pale patches under the glass (open item 255; its builder's pictures looked at, the patches are gone in them), the change of season's first reworked item (bases, rim and lamps dissolve smoothly at 4K) and the thirteenth pass of summer's tree. Its checks are not read yet and nothing of it is on origin.
+- Decision 200: the first item of the tree's fourteenth list (shade inside the crown) is a real step in the crown's depth by my look and is held for its second item, because by its builder's own rows the top over the core and the wing fell.
+- Open and below the bar: winter's ferns torn at film frame 668, summer's heap torn at 2108, the petals' fringes at 680 (with the change's builder); spring's dots under the mushrooms' rims (open item 259); summer's flame and star in the glass; a white round patch behind the lamp post at summer's close camera (open item 260).
 - All four seasons remain below the bar. Sound credits 7,420 of 10,000.
-- phase 6: 37.61 h used of its 12.00 h box
-- allowance (after the review): 37.61 h used of 12.00 h allowed
+- phase 6: 38.20 h used of its 12.00 h box
+- allowance (after the review): 38.20 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-219-1.jpg`: The change of season at 4K at the final tier, film frames 676 and 677, winter's base dissolving into spring's on the flank, smooth, on its builder's head, not on main yet
-- `out/stills/status/status-219-2.jpg`: Spring's two small mushrooms at 4K in motion at four times, film frames 674 to 677, single pixel dots under the lit rims, on main too, being mended, below the bar
-- `out/stills/status/status-219-3.jpg`: Winter's frost ferns on the table at 4K, film frame 668, torn into flat streaks near the foot, being mended, below the bar
-- `out/stills/status/status-219-4.jpg`: The table's petals arriving at film frame 680, grainy fringes where the table's front crosses them, being mended, below the bar
+- `out/stills/status/status-220-1.jpg`: Fall at rest on chain 34 with the base's cut faces, approved picture left and build right, on origin now, below the bar
+- `out/stills/status/status-220-2.jpg`: Fall after its landing on chain 34, on origin now, below the bar
+- `out/stills/status/status-220-3.jpg`: Summer after its landing, the pale patches on the base above and gone with the mend below, in chain 35, not on origin yet
+- `out/stills/status/status-220-4.jpg`: Summer's tree, approved picture left, main in the middle, the fourteenth list's first item right, held for its second item, below the bar
