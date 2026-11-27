@@ -284,8 +284,8 @@ if (turfBankA > 0.01) {
   // and as much at the bank's foot as at its lip.
   float turfDeep = mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y));
   float turfPale = (1.0 - smoothstep(0.4, 0.5, vSurf.y)) * dot(material.diffuseContribution, vec3(0.3, 0.6, 0.1)) / turfDeep;
-  vec3 turfRoom = dot(stageKeyC, vec3(0.3333)) * vec3(1.0, 0.95, 0.7) * mix(vec3(1.0), material.diffuseContribution / max(dot(material.diffuseContribution, vec3(0.3, 0.6, 0.1)), 1e-4), 0.22);
-  reflectedLight.directDiffuse += turfRoom * (RECIPROCAL_PI * ${SKIRT_FILL.toFixed(2)} * turfBank * turfPale * (0.1 + 2.1 * mix(1.0, 0.3, smoothstep(0.08, 0.3, vSurf.y)) * turfCatch * turfCatch * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)));
+  vec3 turfRoom = dot(stageKeyC, vec3(0.3333)) * vec3(1.0, 0.95, 0.8) * mix(vec3(1.0), material.diffuseContribution / max(dot(material.diffuseContribution, vec3(0.3, 0.6, 0.1)), 1e-4), 0.22);
+  reflectedLight.directDiffuse += turfRoom * (RECIPROCAL_PI * ${SKIRT_FILL.toFixed(2)} * turfBank * turfPale * (0.06 + 2.1 * mix(1.0, 0.4, smoothstep(0.08, 0.35, vSurf.y)) * turfCatch * turfCatch * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)));
   reflectedLight.directDiffuse += stageKeyC * vec3(1.0, 0.72, 0.5) * (RECIPROCAL_PI * 900.0 * turfBank * turfPale * (1.0 - smoothstep(0.0, 0.22, vSurf.y)) * (1.0 - smoothstep(0.0, 0.22, vSurf.y)) * turfCatch * turfCatch);
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${ROCK_FILL.toFixed(2)} * (1.0 + ${STEP_FILL.toFixed(2)} * vSurf.y) * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift))) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${SOIL.fill.toFixed(2)} * turfBank * turfSoil * turfSeam) * material.diffuseContribution;
