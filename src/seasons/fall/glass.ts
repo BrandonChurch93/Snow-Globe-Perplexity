@@ -125,7 +125,7 @@ export const look = {
     mist: 0.74,
     mistAir: 0.38,
     mistMm: 15,
-    mistStand: 2.4,
+    mistStand: 3.4,
     mistLowFrom: [0.1, 0.45] as const,
     mistLumpMm: 9,
     mistTrunk: 2.6,
@@ -134,9 +134,11 @@ export const look = {
     mistBillowMm: 120,
     mistPatchMm: 62,
     mistPatch: [0.4, 0.62] as const,
-    mistLow: [0.13, 0.25, 0.11],
-    mistTop: [0.062, 0.058, 0.052],
-    mistHigh: [0.078, 0.062, 0.066],
+    mistLow: [0.24, 0.42, 0.135],
+    mistTop: [0.031, 0.059, 0.045],
+    mistHigh: [0.044, 0.078, 0.066],
+    mistEast: [1.7, 1.8, 2.5],
+    mistEastMm: [-8, 24] as const,
     mistLeft: 0.3,
     mistLeftMm: [-24, 4] as const,
     mistEven: [0.5, 2.4] as const,
@@ -675,7 +677,8 @@ void main() {
   float clump = smoothstep(${f(F.mistPatch[0])}, ${f(F.mistPatch[1])}, fine);
   float rho = ${f(F.mist)} * (${f(F.mistAir)} * (${f(F.mistEven[0])} + ${f(F.mistEven[1])} * clump * clump) + ${f(F.mistStand)} * stand * (0.5 + clump + ${f(F.mistTrunk)} * exp(-off * off))) * (0.6 + 0.8 * n);
   float a = (1.0 - exp(-rho)) * seen;
-  vec3 col = mix(mix(${vec(F.mistTop)}, ${vec(F.mistLow)}, smoothstep(${f(F.mistLowFrom[0])}, ${f(F.mistLowFrom[1])}, stand)), ${vec(F.mistHigh)}, smoothstep(${f(F.mistHighMm[0])}, ${f(F.mistHighMm[1])}, h));
+  vec3 east = mix(vec3(1.0), ${vec(F.mistEast)}, smoothstep(${f(F.mistEastMm[0])}, ${f(F.mistEastMm[1])}, p.x));
+  vec3 col = mix(mix(${vec(F.mistTop)} * east, ${vec(F.mistLow)}, smoothstep(${f(F.mistLowFrom[0])}, ${f(F.mistLowFrom[1])}, stand)), ${vec(F.mistHigh)} * east, smoothstep(${f(F.mistHighMm[0])}, ${f(F.mistHighMm[1])}, h));
   gl_FragColor = vec4(col * a, a);
 }
 `
