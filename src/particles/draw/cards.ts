@@ -230,7 +230,7 @@ export const CARD_VERT = `
           float atK = depth + ${n(CARD.clock.depthVary)} * (fract(h.w * 113.0) * 2.0 - 1.0);
           float midK = smoothstep(${n(CARD.clock.farAt[0])}, ${n(CARD.clock.farAt[1])}, atK);
           float nearK = smoothstep(${n(CARD.clock.nearAt[0])}, ${n(CARD.clock.nearAt[1])}, atK) * (1.0 - sceneC);
-          rC = mix(rC, look.y * uPoint.y * mag / zImg * shrink * mix(mix(${n(CARD.clock.mm[0])}, ${n(CARD.clock.mm[1])}, midK), ${n(CARD.clock.mm[2])} * mix(1.0, ${n(CARD.clock.stoutMm)}, step(cardHairHash((pid & 4095u) * 64u + 63u).y, ${n(CARD.clock.warmShare)})), nearK) * mix(${n(CARD.clock.vary[0])}, ${n(CARD.clock.vary[1])}, fract(vary * 7.0)) * mix(${n(CARD.clock.goSize)}, 1.0, wholeC * (1.0 - snagC)), clockC);
+          rC = mix(rC, look.y * uPoint.y * mag / zImg * shrink * mix(mix(${n(CARD.clock.mm[0])}, ${n(CARD.clock.mm[1])}, midK), ${n(CARD.clock.mm[2])} * mix(1.0, ${n(CARD.clock.stoutMm)}, mix(step(cardHairHash((pid & 4095u) * 64u + 63u).y, ${n(CARD.clock.stoutShare)}), step(cardHairHash((pid & 4095u) * 64u + 63u).y, ${n(CARD.clock.warmShare)}), smoothstep(${n(CARD.clock.stoutClose[0])}, ${n(CARD.clock.stoutClose[1])}, closeC))), nearK) * mix(${n(CARD.clock.vary[0])}, ${n(CARD.clock.vary[1])}, fract(vary * 7.0)) * mix(${n(CARD.clock.goSize)}, 1.0, wholeC * (1.0 - snagC)), clockC);
           seedSoft = mix(seedSoft, closeC * mix(mix(${n(CARD.clock.softPx[0])}, ${n(CARD.clock.softPx[1])}, midK), ${n(CARD.clock.softPx[2])}, nearK), clockC);
           keepC *= mix(1.0, mix(mix(${n(CARD.clock.classSeen[0])}, ${n(CARD.clock.classSeen[1])}, midK), ${n(CARD.clock.classSeen[2])}, nearK), clockC);
           // a clock takes back the lens look's dimming of what floats far behind the miniature (looks.ts, LENS_LOOK.farDim; the line that sets alpha below): a far puff is whole to see, a soft grey ball, and it is the count that says how many there are, not a crowd of ghosts
@@ -260,7 +260,10 @@ export const CARD_VERT = `
       float crownG = 1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.hair.sceneEdge[1])}, length((atG - vec2(${n(CARD.hair.crownAt[0])}, ${n(CARD.hair.crownAt[1])})) / vec2(${n(CARD.hair.crownWide[0])}, ${n(CARD.hair.crownWide[1])})));
       // the lanterns, the trunk and the yard between the two are the miniature as well
       float bandG = 1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.hair.sceneEdge[1])}, length((atG - vec2(${n(CARD.glow.bandAt[0])}, ${n(CARD.glow.bandAt[1])})) / vec2(${n(CARD.glow.bandWide[0])}, ${n(CARD.glow.bandWide[1])})));
-      float sceneG = max(max(cotG, crownG), bandG) * afloat * (1.0 - gustC);
+      // summer's own, in the calm alone: the tree's lowest boughs hang out past the crown's outline, and a large glow whose disc lay over their tips stood wider than a light may before the tree. For a light's size and its focus the crown reaches further (looks.ts, CARD.glow.treeReach); how many are lit there goes by crownG as it did, and at the storm's full level this is crownG itself
+      float treeG = crownG;
+      if (uStorm.x < 0.99) treeG = max(crownG, (1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.glow.treeReach)}, length((atG - vec2(${n(CARD.hair.crownAt[0])}, ${n(CARD.hair.crownAt[1])})) / vec2(${n(CARD.hair.crownWide[0])}, ${n(CARD.hair.crownWide[1])})))) * (1.0 - smoothstep(0.9, 0.99, uStorm.x)));
+      float sceneG = max(max(cotG, treeG), bandG) * afloat * (1.0 - gustC);
       outG = max(outG, max(${n(CARD.glow.crownOut)} * crownG, ${n(CARD.glow.bandOut)} * bandG));
       nearC *= 1.0 - sceneG;
       sceneL = sceneG;
@@ -659,7 +662,9 @@ export const CARD_VERT = `
     clip.xy -= holdC * vec2(projectionMatrix[0][0], projectionMatrix[1][1]) * (clip.w / uPoint.y);
     if (${at(SHAPE.seed)} && on > 0.5 && !laidB && !glowB) {
       // The glass's fade at its edge looks at where a particle's centre stands, and that is enough for a flake or a mote. A seed is wider than that: its down stands at the end of its stalk, up to nearly two of its own radii from its centre, and a stroke of the storm runs on for half its length. So a seed near the wall is drawn further in by what would have stood past the ball's outline: no hair, stalk or stroke is drawn in the room.
-      vec2 fromS = (view.xy / -view.z - centreV.xy / -centreV.z) * uPoint.y - holdC;
+      // The film looks through another place of its lens in every sample, and a clock stands at one place in all of them (shader.ts, lensC). The ball's middle does not: taken as each sample sees it, a head by the wall was drawn in by another length in every sample, and stood as many times as the frame has samples, a few pixels apart (seen at the right rim in the film's close camera once the near heads were let in). So the middle is moved here by the share the head itself is moved by; in the storm, from the level at which the clocks' look is gone (looks.ts, CARD.clock.stormOff), it is as it was.
+      vec2 midS = (centreV.xy + uAperture.xy * (lensC * (1.0 - smoothstep(${n(CARD.clock.stormOff[0])}, ${n(CARD.clock.stormOff[1])}, uStorm.x)))) / -centreV.z;
+      vec2 fromS = (view.xy / -view.z - midS) * uPoint.y - holdC;
       float isS = length(fromS);
       vec2 dirS = fromS / max(isS, 1e-3);
       float outS;
@@ -1003,8 +1008,11 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   // a clock's own three numbers, by the particle's whole number: how many hairs it has, whether it is one of the stout ones, and the way its hairs are swept
   vec3 ownK = vec3(0.0);
   if (clockS > 0.0) ownK = cardHairHash(uint(floor(vKind.z)) * 64u + 63u);
-  // the near clocks that stand in the low sun are the stout ones, of stouter hairs with faint ones between, and warm
-  float warmK = nearS * step(ownK.y, ${n(CARD.clock.warmShare)});
+  // the near clocks are the stout ones, of stouter hairs with faint ones between (CARD.clock.stoutShare of them, by the head's own number); the first of them by that same number stand in the low sun and are warm (warmShare), the others keep the down's own white. A camera that stands nearer than the hero has a near head far out of focus, and a stout hair so soft is a grey bar: there the stout ones are the warm ones alone, going over between the two of stoutClose, as the vertex has their size (this pixel's own depth says how near the camera stands)
+  float stoutS = step(ownK.y, ${n(CARD.clock.stoutShare)});
+  if (clockS > 0.0) stoutS = mix(stoutS, step(ownK.y, ${n(CARD.clock.warmShare)}), smoothstep(${n(CARD.clock.stoutClose[0])}, ${n(CARD.clock.stoutClose[1])}, uPoint.y * gl_FragCoord.w / (uPoint.w * ${n(CARD.hair.puffMmPx)})));
+  float warmK = nearS * stoutS;
+  float tintK = nearS * step(ownK.y, ${n(CARD.clock.warmShare)});
   vec2 st = a * (sin(leanU * ${n(Math.PI / 2)}) * rC / max(length(a), 1e-3));
   vec2 hub = ${n(CARD.hair.hub)} * st;
   float hairs = 0.0;
@@ -1193,7 +1201,7 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   col *= mix(vec3(1.0), vec3(${CARD.hair.peach.map(n).join(', ')}), starK * mix(${n(CARD.hair.peachShare)}, 1.0, fract(vL3.w * 23.0)) * (1.0 - vL2.w));
   // the down of a clock is white in the liquid's light, and the stout near ones stand warm in the low sun; its stalk is golden and its seed dark
   if (clockS > 0.0) {
-    vec3 colK = k.rgb * mix(mix(mix(vec3(${CARD.clock.tint.map(n).join(', ')}), vec3(${CARD.clock.farTint.map(n).join(', ')}), farS), vec3(${CARD.clock.warm.map(n).join(', ')}), warmK), mix(vec3(${CARD.clock.stemTint.map(n).join(', ')}), vec3(${CARD.hair.grainTint.map(n).join(', ')}), grain), stems / max(hairs + stems, 1e-4)) * light * ${n(CARD.clock.gain)};
+    vec3 colK = k.rgb * mix(mix(mix(vec3(${CARD.clock.tint.map(n).join(', ')}), vec3(${CARD.clock.farTint.map(n).join(', ')}), farS), vec3(${CARD.clock.warm.map(n).join(', ')}), tintK), mix(vec3(${CARD.clock.stemTint.map(n).join(', ')}), vec3(${CARD.hair.grainTint.map(n).join(', ')}), grain), stems / max(hairs + stems, 1e-4)) * light * ${n(CARD.clock.gain)};
     colK *= min(1.0, mix(mix(${n(CARD.clock.white)}, ${n(CARD.clock.farWhite)}, farS), ${n(CARD.clock.stoutWhite)}, warmK) * uLightBurn / max(max(colK.r, max(colK.g, colK.b)), 1e-3));
     // the heart of a clock is white hot, where the low sun comes through the hub
     colK = mix(colK, vec3(${CARD.clock.heartTint.map(n).join(', ')}) * uLightBurn, mix(${n(CARD.clock.heartLit[0])}, ${n(CARD.clock.heartLit[1])}, warmK) * hotK * (1.0 - stems / max(hairs + stems, 1e-4)));
