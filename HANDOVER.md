@@ -21,3 +21,13 @@ A bat circles the globe's axis (engine `wanderAt`, not this branch's file): ring
 ## Not seen
 - The bats in motion: the film was not rendered with the slower, tighter ring. Their turn is about 0.42 to 0.54 radians a second now (was about 0.8 to 1.0).
 - The lip with the ball turned, and at the storm other than the landed still.
+
+## The spark trial after the fourth list (c13801a0, pushed as 1ba316ee)
+
+What it does: at rest, sparks under the clear ones (own number from 0.22 on) keep 0.3 of their light (`sparkRestFine` in looks.ts, one line in the card's vertex stage) and are tinted pale gold (`spark.restFineHot`, `spark.restFineSeen`, one line in the spark's fragment stage). The storm is untouched.
+
+Reads at hd, review tier, 7a5fd873 to c13801a0, approved in brackets: smallest orange class 326 to 318 (206); points outside the crown box 825 to 1042 (1484); miniature's M3 share 0.893 to 0.917 (main without my change 0.922).
+
+Tried on the way: the same points left orange (smallest 375, outside 1007); dimmer and more of them (395, 1067); a whiter tint (290, 1075) which read as snow by eye and was dropped.
+
+Open: the fine points are paler and cooler than the approved's. Bats stay 44 px and 32 px off, accepted by the root. Next list: the leaves' lengths in three boxes.
