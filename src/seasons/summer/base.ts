@@ -648,7 +648,7 @@ const SHELL_AFTER = `
   // The whelk left of the middle is as pale as the scallop beside it, not the colour of the sand it lies in.
   shellKeeps *= mix(vec3(1.0), vec3(1.03, 1.3, 1.6), 1.0 - smoothstep(3.3, 4.0, length((vBasePos.xy - vec2(-28.1, 24.1)) * vec2(1.15, 1.0))));
   // The cockle in the middle lies open to the room: its far side is dim, not dark. The one at the right end stands half in the sun.
-  shellKeeps *= mix(vec3(1.0), vec3(1.7, 1.42, 1.16) * mix(vec3(1.05, 1.08, 1.11), vec3(0.9, 0.8, 0.66), shellFold * shellFold) * mix(vec3(0.94, 0.82, 0.68), vec3(1.04, 1.08, 1.12), clamp(0.5 + (vBasePos.y - 18.3) / 5.0, 0.0, 1.0)), 1.0 - smoothstep(4.2, 5.2, length(vBasePos.xy - vec2(4.0, 18.3))));
+  shellKeeps *= mix(vec3(1.0), vec3(1.48, 1.6, 1.78) * mix(vec3(1.05, 1.08, 1.11), vec3(0.9, 0.8, 0.66), shellFold * shellFold) * mix(vec3(0.94, 0.82, 0.68), vec3(1.04, 1.08, 1.12), clamp(0.5 + (vBasePos.y - 18.3) / 5.0, 0.0, 1.0)), 1.0 - smoothstep(4.2, 5.2, length(vBasePos.xy - vec2(4.0, 18.3))));
   shellKeeps *= mix(vec3(1.0), vec3(0.84, 0.78, 0.8), smoothstep(42.5, 44.0, vBasePos.x));
   // A matte shell has a faint bloom: at its turning edge it is a little paler.
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * dot(baseSunC, vec3(0.3333)) * vec3(1.0, 0.96, 0.94) * (0.3 * pow(abs(1.0 - shellNv), 2.0));
