@@ -155,7 +155,7 @@ const SHADE = `
 `
 
 // How much the low light from the left, the room's cool fill on the bare stone and the blossom-coloured light on the right flank give.
-const ROCK = { kick: 4.2, fill: 0.34, mossFill: 0.42, flank: 52.0, lustre: 0.05 }
+const ROCK = { kick: 4.2, fill: 0.34, mossFill: 0.62, flank: 110.0, lustre: 0.05 }
 
 const ROCK_PARS = `
 uniform sampler2D uBaseStone;
@@ -192,7 +192,7 @@ baseGreen *= mix(0.1, 1.15, smoothstep(0.2, 0.9, baseMossD.b)) * mix(0.5, 1.1, b
 baseGreen = mix(vec3(dot(baseGreen, vec3(0.3, 0.6, 0.1))) * vec3(0.8, 1.05, 0.7), baseGreen, 0.82);
 float baseClump = smoothstep(0.3, 0.68, 0.55 * baseNoise(vBasePos * 0.62 + 3.0) + 0.45 * baseNoise(vBasePos * 1.45 + 9.0));
 baseGreen *= mix(0.2, 1.3, baseClump);
-baseGreen = mix(baseGreen, vec3(0.03, 0.035, 0.012), 0.45 * (1.0 - smoothstep(0.1, 0.6, baseRelief.b)));
+baseGreen = mix(baseGreen, vec3(0.02, 0.04, 0.016), 0.45 * (1.0 - smoothstep(0.1, 0.6, baseRelief.b)));
 float baseFilm = max(smoothstep(0.3, 0.7, 0.6 * baseNoise(vBasePos * 0.31 + 3.1) + 0.3 * baseMossD.b + 0.3 * (1.0 - smoothstep(0.1, 0.7, baseRelief.b))), smoothstep(0.03, 0.28, baseCover.r)) * (1.0 - baseWet) * baseSeat;
 vec3 baseOlive = vec3(0.04, 0.066, 0.02) * mix(0.45, 1.6, baseMossD.b) * mix(0.7, 1.2, baseBlotch);
 baseStone = mix(baseStone, baseOlive, 0.45 * baseFilm);
@@ -214,23 +214,23 @@ ${SHADE}
   ${LIGHTS}
   float liveFuzz = pow(abs(1.0 - liveNv), 2.2);
   float liveHigh = smoothstep(24.0, 33.0, vBasePos.y);
-  float liveShade = mix(mix(0.7, 0.3, baseMoss), 1.25, liveOpen * mix(0.3, 1.0, max(liveHigh, smoothstep(0.1, 0.5, liveRimM))));
+  float liveShade = mix(mix(0.7, 0.5, baseMoss), 1.25, liveOpen * mix(0.3, 1.0, max(liveHigh, smoothstep(0.1, 0.5, liveRimM))));
   vec3 liveKickDir = normalize(mat3(viewMatrix) * vec3(-0.85, 0.3, -0.3));
   float liveKick = clamp((dot(geometryNormal, liveKickDir) + 0.2) / 1.2, 0.0, 1.0);
-  reflectedLight.indirectDiffuse *= mix(1.0, 0.42, baseMoss) * liveShade;
+  reflectedLight.indirectDiffuse *= mix(1.0, 0.75, baseMoss) * liveShade;
   reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.92);
   reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.82, 0.76) * (${ROCK.kick.toFixed(2)} * (1.0 + 2.5 * baseMoss) * liveKick * liveKick * baseAo);
   // The dusk in the room is cool and comes from in front and above: it is what the stones and the moss in the base's own
   // shade are seen by, and it falls on each grain and tuft by the way that one faces, so the shade keeps its grain.
   float liveFill = clamp(dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(-0.25, 0.62, 0.74))) * 0.6 + 0.4, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * vec3(0.8, 1.0, 0.9) * dot(liveSunC, vec3(0.3333)) * (mix(${ROCK.fill.toFixed(2)}, ${ROCK.mossFill.toFixed(2)}, baseMoss) * mix(0.6 + 0.4 * liveFill, liveFill * liveFill, baseMoss) * mix(0.7 + 0.3 * baseAo, baseAo, baseMoss));
+  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * vec3(0.8, 1.0, 0.9) * dot(liveSunC, vec3(0.3333)) * (mix(${ROCK.fill.toFixed(2)}, ${ROCK.mossFill.toFixed(2)}, baseMoss) * mix(0.6 + 0.4 * liveFill, liveFill * liveFill * (0.45 + 1.5 * smoothstep(0.5, 0.85, baseMossD.b)), baseMoss) * mix(0.7 + 0.3 * baseAo, baseAo, baseMoss));
   float liveTuft = smoothstep(0.55, 0.85, baseMossD.b);
   // The low sun behind comes through the blossom and grazes the right flank: warm, and strongest on whatever stands out.
   vec3 liveGrazeDir = normalize(mat3(viewMatrix) * vec3(0.9, 0.25, -0.2));
   float liveGrazeM = clamp((dot(liveMacro, liveGrazeDir) + 0.25) / 1.25, 0.0, 1.0);
-  float liveGraze = liveGrazeM * liveGrazeM * smoothstep(-0.2, 0.5, dot(geometryNormal, liveGrazeDir)) * mix(0.8, 1.0, smoothstep(2.0, 16.0, vBasePos.y));
+  float liveGraze = liveGrazeM * liveGrazeM * liveGrazeM * 1.25 * smoothstep(-0.2, 0.5, dot(geometryNormal, liveGrazeDir)) * mix(0.8, 1.0, smoothstep(2.0, 16.0, vBasePos.y));
   vec3 liveDry = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.6, 0.1))) * mix(vec3(1.5, 1.1, 0.8), vec3(1.5, 1.35, 0.5), baseMoss), mix(0.9, 0.8, baseMoss));
-  reflectedLight.directDiffuse += liveDry * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.66, 0.5) * (${ROCK.flank.toFixed(2)} * liveGraze * mix((0.2 + 0.45 * baseStoneD.b) * mix(0.55, 1.4, baseStoneF.b), 0.12 + 3.4 * liveTuft, baseMoss) * baseAo);
+  reflectedLight.directDiffuse += liveDry * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.66, 0.5) * (${ROCK.flank.toFixed(2)} * liveGraze * mix((0.12 + 0.62 * baseStoneD.b) * mix(0.35, 1.7, baseStoneF.b), 0.3 + 7.0 * liveTuft, baseMoss) * baseAo);
   // Stone that is never quite dry: a soft cool lustre off the room on every face that looks up or toward the camera.
   float liveDamp = (1.0 - baseMoss) * (1.0 - 0.7 * baseFilm) * (1.0 - 0.7 * baseWet) * baseAo;
   vec3 liveSkyDir = normalize(mat3(viewMatrix) * vec3(-0.2, 0.75, 0.6));
@@ -307,7 +307,7 @@ ${SHADE}
   vec2 liveOut = vBasePos.xz;
   vec3 liveSide = dot(liveOut, liveOut) > 1e-6 ? normalize(normalMatrix * vec3(liveOut.x, 0.0, liveOut.y)) : geometryNormal;
   float liveGrazeM = clamp((dot(liveSide, liveGrazeDir) + 0.25) / 1.25, 0.0, 1.0);
-  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.66, 0.5) * (${ROCK.flank.toFixed(2)} * 0.6 * liveGraze * liveGraze * (0.12 + 0.88 * liveGrazeM * liveGrazeM) * mix(1.0, mix(0.45, 1.9, baseRidge * baseRidge), baseBark) * baseAo);
+  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.66, 0.5) * (${ROCK.flank.toFixed(2)} * 0.6 * liveGraze * liveGraze * (0.06 + 1.1 * liveGrazeM * liveGrazeM * liveGrazeM) * mix(1.0, mix(0.45, 1.9, baseRidge * baseRidge), baseBark) * baseAo);
   vec3 liveSkin = diffuseColor.rgb * RECIPROCAL_PI * (1.0 - baseBark) * baseAo;
   reflectedLight.directDiffuse += liveSkin * (liveKeyC * 0.36 * liveWrap * liveWrap + uRigCardCol * 0.42 * liveCardWrap * liveCardWrap) * mix(0.4, 1.0, liveOpen);
   reflectedLight.directSpecular += (liveKeyC * pow(abs(liveNh), 60.0) * 0.5 + uRigCardCol * pow(abs(liveCh), 50.0) * 0.4) * baseAo * mix(0.6, 0.25, baseBark);
