@@ -61,7 +61,8 @@ export const CARD_VERT = `
       // the slow turn of the liquid gathers the leaves at the right of the ball: fewer of them are drawn there, so the open air of the left holds its share, few stand before the cottage, and none at the limb, where the lens would carry a leaf over the edge of the glass
       vec2 atL = (view.xy * (centreV.z / view.z) - centreV.xy) / max(uLens.x, 1e-4);
       vec2 cotL = (atL - vec2(${n(CARD.spark.restCottageAt[0])}, ${n(CARD.spark.restCottageAt[1])})) / vec2(${n(CARD.spark.restCottageWide[0])}, ${n(CARD.spark.restCottageWide[1])});
-      keepC *= mix(1.0, step(fract(own * 389.0), ${n(CARD.leafRestShare)} * mix(1.0, ${n(CARD.leafRestRight)}, smoothstep(${n(CARD.leafRestRightFrom[0])}, ${n(CARD.leafRestRightFrom[1])}, atL.x)) * (1.0 - ${n(CARD.leafRestCottage)} * exp(-0.5 * dot(cotL, cotL)))) * (1.0 - smoothstep(${n(CARD.leafRestRim[0])}, ${n(CARD.leafRestRim[1])}, length(atL))), restL);
+      vec2 fenceL = (atL - vec2(${n(CARD.leafRestFenceAt[0])}, ${n(CARD.leafRestFenceAt[1])})) / vec2(${n(CARD.leafRestFenceWide[0])}, ${n(CARD.leafRestFenceWide[1])});
+      keepC *= mix(1.0, step(fract(own * 389.0), ${n(CARD.leafRestShare)} * mix(1.0, ${n(CARD.leafRestRight)}, smoothstep(${n(CARD.leafRestRightFrom[0])}, ${n(CARD.leafRestRightFrom[1])}, atL.x)) * (1.0 - ${n(CARD.leafRestCottage)} * exp(-0.5 * dot(cotL, cotL))) * (1.0 - ${n(CARD.leafRestFence)} * exp(-0.5 * dot(fenceL, fenceL)))) * (1.0 - smoothstep(${n(CARD.leafRestRim[0])}, ${n(CARD.leafRestRim[1])}, length(atL))), restL);
       rC *= mix(1.0, mix(${n(CARD.leafRestMm[0])}, ${n(CARD.leafRestMm[1])}, pow(fract(vary * 7.0 + own), ${n(CARD.leafRestMm[2])})) / max(aData.x * spreadC, 1e-3), restL);
       rC = mix(rC, min(rC, uPoint.w * ${n(CARD.leafRestPx)}), restL) * mix(1.0, ${n(CARD.leafLieSize)}, lying * sheet);
     }
@@ -191,7 +192,8 @@ export const CARD_VERT = `
       keepC *= mix(1.0, smoothstep(outK - ${n(CARD.spark.restEdge)}, outK, fract(own * 211.0)), afloat * (1.0 - gustC));
       // a spark that is going out is gone sooner than its light falls: a crowd of half lit ones reads as dust, not as sparks
       keepC *= mix(1.0, aData.z * aData.z * aData.z * aData.z, afloat * (1.0 - gustC));
-      nearC *= step(fract(own * 97.0), mix(${n(CARD.spark.nearField)}, 1.0, exp(-0.5 * dot(upK, upK))));
+      vec2 rightK = (atK - vec2(${n(CARD.spark.nearRightAt[0])}, ${n(CARD.spark.nearRightAt[1])})) / vec2(${n(CARD.spark.nearRightWide[0])}, ${n(CARD.spark.nearRightWide[1])});
+      nearC *= step(fract(own * 97.0), mix(${n(CARD.spark.nearField)}, 1.0, max(exp(-0.5 * dot(upK, upK)), exp(-0.5 * dot(rightK, rightK))))) * (1.0 - smoothstep(${n(CARD.spark.nearCottage[0])}, ${n(CARD.spark.nearCottage[1])}, exp(-0.5 * dot(cotK, cotK))));
       keepC = mix(keepC, 1.0, nearC);
     }
     float farC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * smoothstep(${n(CARD.far.from)}, ${n(CARD.far.to)}, depth);
