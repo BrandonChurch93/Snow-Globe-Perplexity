@@ -68,7 +68,7 @@ const litterAt = (x, z) => {
   return clamp((base + byFence + underTree + byWall) * (0.25 + 0.75 * shore), 0, 1)
 }
 // How much of the ground's leaf map shows: thick by the fence and under the tree, thin on the path.
-const COVER = { base: 0.16, patch: 0.3, fence: 0.5, tree: 0.42, wall: 0.15, path: 0.25 }
+const COVER = { base: 0.42, patch: 0.25, fence: 0.3, tree: 0.3, wall: 0.15, path: 0.25 }
 const coverAt = (x, z) => {
   const base = COVER.base + COVER.patch * fbm(x * 0.12 + 1.7, z * 0.12 + 4.2, 5, 3)
   const byFence = COVER.fence * (1 - smooth(0.5, 5, fenceGap(x, z)))
@@ -348,7 +348,7 @@ for (const p of PUMPKINS) pumpkin(p)
 // The approved roof is thick, uneven, weathered shingles in a few staggered rows, dark brown violet, with a ridge that
 // sags. These lie just over the shared slope (its fine slates stay underneath, unseen), so the cottage keeps its place and size.
 const CAP = { fromMm: 17.6, keep: 0.84, out: 0.42, thick: 0.9 }
-const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], rise: [0.5, 0.72], gap: 0.16, eave: 0.3, ends: 0.34, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#c08a58'), wear: 0.75 }
+const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], rise: [0.5, 0.72], gap: 0.16, eave: 0.3, ends: 0.34, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#b07a55'), wear: 0.42 }
 {
   const RS = rng(9241)
   const pick = (a) => a[Math.floor(RS() * a.length)]
@@ -379,7 +379,7 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
         const g = slab(b - a - SHINGLE.gap, thick, long, { round: 0.08, sx: 5, sy: 2, sz: 6, warp: 0.035, seed })
         const P = g.getAttribute('position')
         const col = new Float32Array(P.count * 3)
-        const tone = mul3(pick(SHINGLE.tones), 0.3 + 0.5 * RS())
+        const tone = mul3(pick(SHINGLE.tones), 0.5 + 0.5 * RS())
         const halfW = (b - a - SHINGLE.gap) / 2
         for (let i = 0; i < P.count; i++) {
           const x = P.getX(i)
@@ -396,8 +396,10 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
           const top = smooth(-0.1, 0.1, y)
           const streak = 0.72 + 0.5 * noise(x * 4.5 + seed, z * 0.8, 7)
           const lit = top * smooth(0.8, 1, k) * (0.45 + 0.55 * smooth(0.5, 1, noise(x * 3.1 + seed, 9.2, 5) + 0.5))
-          const under = 0.14 + 0.86 * smooth(0.34, 0.62, k)
-          const c = mix3(mul3(tone, streak * (0.1 + 0.9 * top) * under), SHINGLE.worn, SHINGLE.wear * lit)
+          const under = 0.22 + 0.78 * smooth(0.34, 0.62, k)
+          const cut = 0.16 + 0.84 * smooth(1, 0.62, side)
+          const own = 0.35 + 1.3 * noise(seed, 5.7, 3)
+          const c = mix3(mul3(tone, streak * (0.18 + 0.82 * top) * under * cut), SHINGLE.worn, clamp(SHINGLE.wear * own * lit))
           col.set(c, i * 3)
         }
         g.setAttribute('color', new THREE.BufferAttribute(col, 3))
@@ -665,8 +667,8 @@ for (const r of PROPS.ROCKS) {
       const end = b.post ? 1 : 0.7 + 0.7 * smooth(len / 2 - 0.7, len / 2, Math.abs(y))
       const foot = b.post ? 0.5 + 0.5 * smooth(-len / 2 + 0.4, -len / 2 + 2.2, y) : 1
       const side = b.picket ? 0 : smooth(half - 0.22, half - 0.02, Math.abs(x))
-      const arch = b.post ? smooth(0.22, 0.04, crown(Math.max(-half, Math.min(half, x))) - y) : 0
-      const worn = 1 + 7 * Math.max(side, arch)
+      const arch = b.post ? smooth(0.1, 0.02, crown(Math.max(-half, Math.min(half, x))) - y) : 0
+      const worn = 1 + Math.max(5 * side, 3 * arch)
       return grain * split * end * foot * worn
     })
     const mid = [(b.a[0] + b.b[0]) / 2, (b.a[1] + b.b[1]) / 2, (b.a[2] + b.b[2]) / 2]

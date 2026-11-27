@@ -40,15 +40,19 @@ const WALL_FILL = 3.8
 const GROUND_FILL = 8
 // The made path stones stand up to 2 mm proud and read as boulders. The approved path is flat slabs, so at load every
 // stone on the path keeps `keep` of its height over the ground, which also brings the tops down to the level the
-// leaves land on.
-const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4, keep: 0.36, reachMm: 5, stepMm: 4.4, lowMm: -1.2, topMm: 2.7 }
+// leaves land on. Under the lamp the made tone reads orange; the approved slabs are grey brown (143,112,90 to
+// 172,132,108) with dark gaps, so the slabs are cooled by `slab` and their sides darkened by `gap`.
+const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4, keep: 0.36, reachMm: 5, stepMm: 4.4, lowMm: -1.2, topMm: 2.7, slab: [0.8, 0.95, 1.5] as Rgb, sideBelow: 0.55, gap: 0.25 }
 const FENCE = { reachMm: 1.25, sinkMm: 5, keep: 0.67, footMm: 0.6, nearMm: 0.9 }
+// The made posts are boards 2 mm wide with a round top and read as bollards. The approved's are narrower boards (8 to 9
+// px at hd against 12 to 14) that run to a point, so at load each post keeps `keep` of its width and its top is drawn in.
+const POST = { keep: 0.62, point: 0.65, from: 0.84, deepMm: 0.36, slackMm: 0.2 }
 const MOSS = { low: [0.7, 0.9, 0.6] as Rgb, high: [0.88, 1.02, 0.86] as Rgb, tallMm: 9, soot: 0.8 }
 // The shared stones run from 0.03 (a joint) over 0.12 (the middle stone) to 0.9 (a few white ones). The approved wall is
 // dark grey green stones with joints only a little darker, so the tone is bent: joints are held at `floor` of `top` and
 // lose their hue, and only the palest stones reach `top`. The gable is cooler than the side, darker below the purple
 // window's head and lighter toward the side wall's corner, as the approved wall is.
-const STONE = { top: 0.114, knee: 0.17, power: 2.7, floor: 0.215, tone: [0.6, 0.78, 1.0] as Rgb, gable: [0.75, 0.82, 1.05] as Rgb, low: [0.9, 0.92, 0.95] as Rgb, high: [1.2, 1.3, 1.3] as Rgb, corner: [3, 2.1, 2.3] as Rgb, lowMm: 3, eaveMm: 1.2, side: [1.5, 1, 0.98] as Rgb, faceMm: 1.2 }
+const STONE = { top: 0.114, knee: 0.17, power: 2.7, floor: 0.215, tone: [0.6, 0.78, 1.0] as Rgb, gable: [0.75, 0.82, 1.05] as Rgb, low: [0.95, 0.98, 0.9] as Rgb, high: [2.2, 1.65, 1.55] as Rgb, corner: [2.32, 1.81, 2.13] as Rgb, gableFloor: 0.4, lowMm: 3, eaveMm: 1.2, side: [1.5, 1, 0.98] as Rgb, faceMm: 1.2 }
 const WALL_LAMP: Rgb = [0.85, 0.6, 0.5]
 const WHITE: Rgb = [1, 1, 1]
 // The shared chimney is pale brick. The approved one is the wall's dark stone, a little greyer.
@@ -60,12 +64,16 @@ const DOOR: Rgb = [0.15, 0.31, 0.33]
 // The shared stones are a few large blocks; the approved wall is small chipped stones. Upright stone is broken up by the
 // grain map read coarser, through its levels, so the chips hold their size at any distance.
 const CHIP = { scale: 0.4, low: 0.4, span: 1.2, edges: [0.3, 0.7] as [number, number] }
-// The shared stones are smooth pillows. Each approved stone has a face of its own: a lit upper edge, a shade under it,
-// darker flanks, here and there a crack, and a rough face. The first four are read from the pillow's own normal, so
-// they sit on the real stone at any size; the face is the grain map read finer, through its levels.
-const FACE = { lit: 1.1, warm: [1.15, 1.0, 0.8] as Rgb, litAt: [0.22, 0.5] as [number, number], shade: 0.75, shadeAt: [0.15, 0.45] as [number, number], flank: 0.55, flankAt: [0.3, 0.65] as [number, number], crack: 0.8, rough: [0.55, 0.9] as [number, number], scale: 1.7, reachMm: 1.6 }
+// The shared stones are smooth pillows. Each approved stone has a face of its own: a flat rough face, a thin lit upper
+// edge, a shade under the stone and darker flanks. At load the normals inside a stone are turned to the wall (those
+// that already face out more than `flatFrom`), so only its rim is bevelled; the edges are then read from that rim's
+// normal and sit on the real stone at any size. The face is the grain map read finer, through its levels.
+// The shared stones are also about 1.4 times as wide as the approved's. Each face keeps a lean of `split` toward the
+// flank it was nearer to, so the lean changes sign once inside a stone; there, in patches of the wall, a crack is drawn
+// that parts the stone in two.
+const FACE = { lit: 0.9, warm: [1.15, 1.0, 0.8] as Rgb, litAt: [0.3, 0.6] as [number, number], shade: 0.8, shadeAt: [0.3, 0.6] as [number, number], flank: 0.6, flankAt: [0.4, 0.7] as [number, number], rough: [0.55, 0.9] as [number, number], scale: 0.57, reachMm: 1.6, flatFrom: 0.72, flat: 0.85, split: 0.12, crack: 0.85, cracked: [0.42, 0.5] as [number, number] }
 // The made shingles are smooth. The approved ones are split wood: the grain map read through its levels along each one.
-const SHAKE = { scale: 1.3, low: 0.5, span: 1.0, reachMm: 3.5 }
+const SHAKE = { scale: 0.45, low: 0.5, span: 1.0, reachMm: 3.5 }
 // The shared door is one smooth leaf. The approved one is planks: each a tone of its own, a dark groove between them,
 // drawn across the door with the groove's edge held one pixel soft.
 const PLANK = { wideMm: 0.84, groove: 0.16, dark: 0.92, tone: [0.4, 1.35] as [number, number], grain: [0.55, 0.9] as [number, number] }
@@ -99,8 +107,9 @@ const chipped: Cover = {
   float fallLit = smoothstep(${FACE.litAt[0].toFixed(2)}, ${FACE.litAt[1].toFixed(2)}, fallN.y) * (1.0 - smoothstep(0.8, 0.95, fallN.y));
   float fallUnder = smoothstep(${FACE.shadeAt[0].toFixed(2)}, ${FACE.shadeAt[1].toFixed(2)}, -fallN.y);
   float fallFlank = smoothstep(${FACE.flankAt[0].toFixed(2)}, ${FACE.flankAt[1].toFixed(2)}, abs(fallTilt));
-  float fallCrack = (1.0 - smoothstep(0.6, 1.6, abs(fallTilt) / max(fwidth(fallTilt), 1e-4))) * (1.0 - smoothstep(0.12, 0.3, abs(fallN.y)));
-  float fallRough = ${FACE.rough[0].toFixed(2)} + ${FACE.rough[1].toFixed(2)} * smoothstep(0.3, 0.7, texture2D(map, vMapUv * ${FACE.scale.toFixed(2)} + 0.23).r);
+  float fallTurn = fwidth(fallTilt);
+  float fallCrack = (1.0 - smoothstep(0.5, 1.5, abs(fallTilt) / max(fallTurn, 1e-4))) * step(1e-3, fallTurn) * (1.0 - smoothstep(0.15, 0.35, abs(fallN.y))) * smoothstep(${FACE.cracked[0].toFixed(2)}, ${FACE.cracked[1].toFixed(2)}, villageMottle);
+  float fallRough = ${FACE.rough[0].toFixed(2)} + ${FACE.rough[1].toFixed(2)} * smoothstep(0.35, 0.6, texture2D(map, vMapUv.yx * ${FACE.scale.toFixed(2)} + 0.23).r);
   vec3 fallFace = (1.0 + ${FACE.lit.toFixed(2)} * fallLit * ${glslOf(FACE.warm)}) * ((1.0 - ${FACE.shade.toFixed(2)} * fallUnder) * (1.0 - ${FACE.flank.toFixed(2)} * fallFlank) * (1.0 - ${FACE.crack.toFixed(2)} * fallCrack) * mix(1.0, fallRough, fallUpright));
   diffuseColor.rgb *= mix(vec3(1.0), fallFace, fallHouse);
   float fallShake = villageWood * step(${(doorFrame.floor + cottage.wall).toFixed(3)}, vStageLocal.y) * step(fallWide, ${SHAKE.reachMm.toFixed(2)}) * step(fallLong, ${SHAKE.reachMm.toFixed(2)});
@@ -113,7 +122,7 @@ const CASING = { tone: [0.1, 0.085, 0.1] as Rgb, reachMm: 1.1, deepMm: 1.4 }
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 // The shared shrubs are one soft mass. Dry leaves stand apart: each takes its own tone and its own depth of shade.
 const BUSH = { gain: 5.2, cap: 2, low: 0.35 }
-const GROUND = { soil: 0.16, tint: [0.8, 0.58, 0.55] as Rgb, mossTone: [0.02, 0.038, 0.034] as Rgb, leaf: 1.0, grey: 0.15, cover: 0.85, moss: 0.12, leafScale: 1.0, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
+const GROUND = { soil: 0.16, tint: [0.8, 0.58, 0.55] as Rgb, mossTone: [0.02, 0.038, 0.034] as Rgb, leaf: 0.75, grey: 0.5, cover: 1.0, moss: 0.12, leafScale: 1.0, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
 const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 4.5, pane: 1.6, pumpkin: 4.5, tight: 0.003, wide: 0.012, wideShare: 0.03, calm: 0.3, lowMm: 3.4, fog: 0.42, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
 
 const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
@@ -228,7 +237,22 @@ const lowered = (p: Point): Point => {
   return [p[0], foot + (p[1] - foot) * FENCE.keep, p[2]]
 }
 const MADE = fenceBoards()
-const BOARDS = MADE.filter((b) => !b.hidden).map((b) => ({ ...b, a: lowered(b.a), b: lowered(b.b) }))
+const BOARDS = MADE.filter((b) => !b.hidden).map((b) => ({ ...b, a: lowered(b.a), b: lowered(b.b), wide: b.post && !b.picket ? b.wide * POST.keep : b.wide }))
+const POSTS = MADE.filter((b) => b.post && !b.picket)
+function narrowed(at: Point): Point {
+  for (const b of POSTS) {
+    const e: Point = [b.b[0] - b.a[0], b.b[1] - b.a[1], b.b[2] - b.a[2]]
+    const t = ((at[0] - b.a[0]) * e[0] + (at[1] - b.a[1]) * e[1] + (at[2] - b.a[2]) * e[2]) / (e[0] * e[0] + e[1] * e[1] + e[2] * e[2])
+    if (t < -0.08 || t > 1.08) continue
+    const ox = at[0] - b.a[0] - e[0] * t
+    const oz = at[2] - b.a[2] - e[2] * t
+    const along = ox * b.out[1] - oz * b.out[0]
+    if (Math.abs(ox * b.out[0] + oz * b.out[1]) > POST.deepMm || Math.abs(along) > b.wide / 2 + POST.slackMm) continue
+    const cut = along * (1 - POST.keep * (1 - POST.point * smooth(POST.from, 1, t)))
+    return [at[0] - b.out[1] * cut, at[1], at[2] + b.out[0] * cut]
+  }
+  return at
+}
 const fenceBox = BOARDS.reduce(
   (m, b) => ({ x0: Math.min(m.x0, b.a[0], b.b[0]), x1: Math.max(m.x1, b.a[0], b.b[0]), z0: Math.min(m.z0, b.a[2], b.b[2]), z1: Math.max(m.z1, b.a[2], b.b[2]) }),
   { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity },
@@ -275,12 +299,17 @@ function nearPath(x: number, z: number): boolean {
   return false
 }
 
-function flattened(P: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, N: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, i: number): void {
+type Column = THREE.BufferAttribute | THREE.InterleavedBufferAttribute
+function flattened(P: Column, N: Column, i: number, C?: Column): void {
   const x = P.getX(i)
   const z = P.getZ(i)
   const up = P.getY(i) - groundAt(x, z)
   if (up < PATH.lowMm || up > PATH.topMm || !nearPath(x, z)) return
   P.setY(i, groundAt(x, z) + up * PATH.keep)
+  if (C) {
+    const k = N.getY(i) < PATH.sideBelow ? PATH.gap : 1
+    C.setXYZ(i, C.getX(i) * PATH.slab[0] * k, C.getY(i) * PATH.slab[1] * k, C.getZ(i) * PATH.slab[2] * k)
+  }
   const n = [N.getX(i), N.getY(i) / PATH.keep, N.getZ(i)]
   const len = Math.hypot(n[0]!, n[1]!, n[2]!)
   if (len > 0) N.setXYZ(i, n[0]! / len, n[1]! / len, n[2]! / len)
@@ -299,11 +328,14 @@ function* thinned(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeo
   for (let i = 0; i < P.count; i++) {
     if (i % ROW === 0) yield
     const kind = Math.floor(S.getX(i) + 0.001)
-    if (kind === 0) flattened(P, N, i)
+    if (kind === 0) flattened(P, N, i, C)
     if (kind !== 1) continue
     const at: Point = [P.getX(i), P.getY(i), P.getZ(i)]
     if (C.getX(i) + C.getY(i) + C.getZ(i) === 0) P.setXYZ(i, under[0], under[1], under[2])
-    else if (at[0] > madeBox.x0 && at[0] < madeBox.x1 && at[2] > madeBox.z0 && at[2] < madeBox.z1 && boardDistance(at[0], at[1], at[2], MADE) < FENCE.nearMm) P.setY(i, lowered(at)[1])
+    else if (at[0] > madeBox.x0 && at[0] < madeBox.x1 && at[2] > madeBox.z0 && at[2] < madeBox.z1 && boardDistance(at[0], at[1], at[2], MADE) < FENCE.nearMm) {
+      const q = narrowed(at)
+      P.setXYZ(i, q[0], lowered(q)[1], q[2])
+    }
   }
   return g
 }
@@ -349,6 +381,22 @@ function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeom
       const c = cottageLocal(x, z)
       const up = y - frame.floor
       const near = Math.abs(c.across) < cottage.halfWidth + 3.5 && Math.abs(c.along) < cottage.halfLength + 3.5
+      if (near) {
+        const na = N.getX(i) * frame.v[0] + N.getZ(i) * frame.v[1]
+        const nl = N.getX(i) * frame.u[0] + N.getZ(i) * frame.u[1]
+        if (Math.max(Math.abs(na), Math.abs(nl)) > FACE.flatFrom) {
+          const side = Math.abs(na) >= Math.abs(nl)
+          const out = (side ? Math.sign(na) : Math.sign(nl)) * Math.sqrt(1 - FACE.split * FACE.split)
+          const lean = ((side ? nl : na) >= 0 ? 1 : -1) * FACE.split
+          const fa = side ? out : lean
+          const fl = side ? lean : out
+          const nx = fa * frame.v[0] + fl * frame.u[0]
+          const ny = N.getY(i) * (1 - FACE.flat)
+          const nz = fa * frame.v[1] + fl * frame.u[1]
+          const len = Math.hypot(nx, ny, nz)
+          N.setXYZ(i, nx / len, ny / len, nz / len)
+        }
+      }
       const onPath = y - groundAt(x, z) < PATH.highMm && [...steps, ...stones].some(([sx, sz]) => Math.hypot(x - sx, z - sz) < PATH.nearMm)
       if (onPath) {
         flattened(P, N, i)
@@ -372,9 +420,10 @@ function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeom
         const soot = near ? 1 - MOSS.soot * smooth(cottage.wall + 1, cottage.wall + 7, up) : 1
         const lum = 0.3 * r + 0.6 * gr + 0.1 * b
         const lit = 1 - Math.exp(-Math.pow(lum / STONE.knee, STONE.power))
-        const bite = ((STONE.top * (STONE.floor + (1 - STONE.floor) * lit)) / Math.max(lum, 1e-4)) * soot
         const onGable = near && c.along > cottage.halfLength - STONE.faceMm
         const drop = onGable ? 1 - smooth(cottage.window.sill + cottage.window.height, cottage.window.sill + cottage.window.height + STONE.lowMm, y - frame.floor) : 0
+        const floor = onGable ? STONE.floor + (STONE.gableFloor - STONE.floor) * (1 - drop) : STONE.floor
+        const bite = ((STONE.top * (floor + (1 - floor) * lit)) / Math.max(lum, 1e-4)) * soot
         const corner = 1 - smooth(-cottage.halfWidth, 0.5 * cottage.halfWidth, c.across)
         const tint = (j: number): number => STONE.gable[j]! * (STONE.high[j]! * (1 + (STONE.corner[j]! - 1) * corner) * (1 - drop) + STONE.low[j]! * drop)
         const face: Rgb = !near ? WHITE : onGable ? [tint(0), tint(1), tint(2)] : c.across < STONE.faceMm - cottage.halfWidth ? STONE.side : WHITE
