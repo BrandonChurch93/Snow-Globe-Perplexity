@@ -39,7 +39,7 @@ const SLAB = { tones: ['#a8957f', '#b3a08c', '#9c8872', '#bba995'], lumps: 0.16,
 // Pebbles lie in handfuls at the loaves' feet and along the rims, not in an even string.
 const PEBBLE = { clusters: 22, each: [4, 9], spread: 1.5, size: [0.25, 0.65], fine: 0.45, from: 150, to: 400, feet: 6, clearMm: 0.2, tones: ['#b5a58c', '#cfc2a8', '#9a8a74', '#ddd0b8'], lumps: 0.2, chips: 0.05, moss: 0.25, mossFrom: 0.5, mossTo: 0.85, lift: 0.8, foot: 0.75, top: 0.35, wet: 0.5, crease: 0.35, creaseMm: 0.3, heel: 0.5, heelMm: 0.3 }
 const REED = { blades: 6, tall: [2.5, 4.5], wide: [0.2, 0.32], lean: [0.04, 0.28], standDeg: 5, stands: [[165, 5], [178, 7], [192, 6], [215, 3], [305, 3], [325, 5], [342, 7], [357, 6], [375, 5]], dry: { x: -17.5, z: 24.6, r: 1.5, n: 9, tall: 0.75 } }
-const GARLAND = { seed: 5087, r: 5.4, from: 0.1, to: 0.86, over: 18, down: 9, w: [0.5, 1.0], leaves: 9, leaf: 1.1, tone: [0.4, 1.0], shade: 0.4, rose: [0.42, 0.62], shrubRose: 1.35 }
+const GARLAND = { seed: 5087, r: 5.4, from: 0.1, to: 0.86, over: 18, down: 9, w: [0.6, 1.5], leaves: 13, leaf: 1.1, tone: [0.35, 1.1], shade: 0.4, rose: [0.4, 0.6], roseEvery: 1, shrubRose: 1.35 }
 const TONES = {
   grass: ['#1c3413', '#274616', '#30531a', '#213c15'].map(lin),
   tip: ['#566f27', '#6b8230', '#465f20'].map(lin),
@@ -1011,8 +1011,8 @@ for (const sh of RF.shrubs()) {
     }
     for (const [i, [across, up, w]] of line.entries()) {
       for (let k = 0; k < GARLAND.leaves; k++) leaf(L.cottagePoint(across + gr(-w, w), up + gr(-w, w), wallZ + gr(0, 0.5)), out, GARLAND.leaf, mul3(gp(TONES.leaf), gr(GARLAND.tone[0], GARLAND.tone[1])), G, k === 0, GARLAND.shade)
-      if (i % 2 === 0) {
-        blossom(L.cottagePoint(across + gr(-0.35, 0.35), up + gr(-0.35, 0.35), wallZ + 0.6), out, gr(GARLAND.rose[0], GARLAND.rose[1]), gp(TONES.rose), 6, G)
+      if (i % GARLAND.roseEvery === 0) {
+        blossom(L.cottagePoint(across + gr(-0.6, 0.6), up + gr(-0.6, 0.6), wallZ + 0.6), out, gr(GARLAND.rose[0], GARLAND.rose[1]), gp(TONES.rose), 6, G)
         counts.roses++
       }
     }
