@@ -223,3 +223,25 @@ Not seen: the film played; 3840 beyond the six frames of 1ee73b82, and those rea
 Offered to round two: the chimney's keep-out tied to the chimney's place in the ball; leaves at the far left and of 25 px and over (pulls against M5 of shake-3); a small amber skirt on the fine points; whether the red leaf at the chimney lies or floats.
 
 Tools of this step (not committed): /tmp/w/s17 (`t.sh`, `quick.sh`, `q2.sh`, `rd.sh`, `points3.py` the points parted warm and pale, `markleaf.py` with `leaflist.py` the marked leaves, `mklooks.py`, `zoom.py`, `treepair.py`, `speckmark.py`), /tmp/w/s12/motion.py.
+
+## Round two (pushed 59c60dbc)
+
+What it is. The critic judged fall 5 of 10 and named four items: the storm at the landing, the air at rest, the floaters, the bats stacked. Round two also merged summer's air twice (9be0cfdf, d91e182a; the conflict is in `src/particles/draw/looks.ts` at the `line:` row and the `glow:` row, every line of both kept) and main twice (5b76c959, ed9180da).
+
+What changed, by file.
+- `src/particles/draw/cards.ts`, `looks.ts` (1d7bb465): the fine points carry a small amber skirt (`spark.restSkirtShare`), the chimney's keep-out is tied to the chimney's place in the ball (`spark.restChimneyBall`).
+- `src/particles/draw/looks.ts`: `line.leafSkew` 1.8 to 1.45, `line.leafWidePx` [0.9, 1.9] to [1.7, 3.6], `leafStormGoldShare` 0.3 to 0.75, `leafMost` 0.43 to 0.56.
+- `src/particles/engine/kinds.ts`: the bat's `cruiseMmS` 5.7 to 6.2, which sets the two bats apart at the rest still (5.9 side by side, 6.1 one over the other, 6.2 and 6.3 apart).
+- `src/seasons/fall/glass.ts`: `mistEast` to [1.05, 1.05, 1.1], `mistLow` [0.25, 0.4, 0.15], `mistAir` 0.38 to 0.05, `mistMm` 15 to 10, `mistTrunk` 2.6 to 3.4, `hazeMid` 0.68 to 0.2, `lip` 1.1 to 0.3, `lipLifted` 0.9 to 4.8, `lipLiftedGlow` 0.9 to 2.2, `lipDeepGlow` 2.6 to 2.0, `dustStirred` 1.5 to 3.5, `liftedMiddle` 0.007 to 0.03.
+
+What was found. The pale wash over the whole air was the mist (with the mist at 0 the upper air read as the approved's), the pale patch between the roof and the crown was `hazeMid`, the flat bright band at the bottom was `lip`. The stirred values of the lip were raised so the storm keeps the fog it had.
+
+Rulings. Decision 219: the dark air wins over the floor of M3's miniature part, which is lifted from 0.974 to 0.90 for this push. Decision 223: the air box at 3840 reads above its floor; pushed with the glow in, not merged until the six frames of cd47d012 tell whose the rise is. If the glow is ruled out: `spark.restSkirtShare` to [0, 0] puts the points back to main's look, the chimney's keep-out stays.
+
+Proofs on 59c60dbc. Guards, draft, hero, hd: winter and spring equal main's list; summer-rest f57992f7a3595a24, summer-landed f5505a2f8b7f2c67 (equal those drawn on d91e182a); fall-rest 4bec8e1798a087b9, fall-landed db28d05fee2a0181. M3 fall-rest at review 0.8587 (base 0.859, miniature 0.915). M4 0.9694, 0.889, 0.9573, 0.9615. M5 0.9932, 1, 0.988, 0.9996. Strict pass. 3840, six frames of d8f5b086 (same rest picture by hash): air box steps 14.015 percent, one frame events 1.757 (floor 1.556, above); crown 9.594, 1.103 (floor 1.132).
+
+Below the bar. The air box line. The storm's lower third (24 percent warm against the approved's 29; the leaves' places in the storm are the shared `line.storm...` numbers), its upper third over full, strokes where the approved has dashes, no amber haze. The low mist behind the trunk darker than the approved's. The bats 80 and 103 px off the approved's places. Item 3: the close camera's large soft discs are untouched (`spark.restBigFrom`, `restHalo`, `restDiscSoftPx`); the mid points are still flat topped.
+
+Not seen: the film played; any 3840 frame of 59c60dbc itself; the storm at 3840; the chimney's corner in the film's camera on this head; the ball turned; other cameras but one close still; a fresh reviewer.
+
+Tools of this round (not committed): /tmp/w/s17 (`f3.sh` the whole proof chain, `air.py` boxes of the air beside the approved, `storm.py` the warm share of the glass by thirds, `lit.py` the lit share of the air box, `mk12.py` the looks, `lowmed.mjs` the page at low and medium), `/tmp/w/s12/motion.py` the two boxes' steps and one frame events, `/tmp/w/s6/draw.sh` the guards.
