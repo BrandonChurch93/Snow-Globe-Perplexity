@@ -1,6 +1,9 @@
 # Handover: `controls_finisher`, the steps, the governor line, two late mends (branch `agent/p6-steps`)
 
-Written 06:10 UTC Nov 27. Main is at `a7f9032b` (chain 17).
+Written 06:10 UTC Nov 27, when main was at `a7f9032b` (chain 17). Brought up to date 08:45 UTC with section 9 (where
+the jobs of 05:12 and 06:12 stand), section 10 (job 1) and section 11 (job 2). Main is now at `82d0b882` (chain 24),
+which holds `agent/p6-steps` at `7a863f7f`. Sections 1 to 8 stand as written at 06:10; where a later job changed what
+they say, sections 10 and 11 say so.
 
 - Branch `agent/p6-steps`, last commit pushed `75e5403f` (holds main `fe261991`). You took it into chain 16 as it stands.
 - Walked for this handover: `eb7db90d`, which is `75e5403f` with main `d13d29c6` merged in and nothing else. It is on
@@ -385,12 +388,199 @@ run from `out/work/p6s/` of a checkout. Each says in its first line how it is ca
   beside what a tool counts that sends two moves and then asks (section 3, line 9).
 - `keys-walk.mjs <url> [size] [folder for the pictures]`: the arrows with no control in focus and with a mark in focus,
   a key held through a landing, and `s` with no sound (section 3, line 10).
+- `job1-page.mjs <base url> <out dir> [wait seconds]`: the built page at addresses that name things the app does not
+  know, and the capture interface asked for names every object carries (section 10).
+- `own-keys.py <tree>`: every `in` and every index by a name in `src`, to be read by eye (section 10).
+- `kit-order.mjs <tree>`: each season's set made in Node in the page's order, the dressing and the miniature in steps
+  with a clock round each step (section 11). It needs the tree built.
+- `field-same.mjs <tree before> <tree after>`: summer's five arrays made in one piece and in steps, compared byte for
+  byte (section 11).
+- `step-page.mjs <url> <name> [size]`: the page of a scratch build that carries a clock round each step
+  (`step-probe.py <tree>` puts the clock into a copy of the tree, never into one you push); it reads each step as the
+  page's own clock has it (section 11).
+- `walk910.sh <tag> [port]`: the hint and the presses walked again, one walk after the other (section 11).
+- `prof-load.mjs <url> <name> [seconds after the controls] [press after ms] [size]`: the processor profile of the
+  page's thread from its start. `prof-stops.mjs <name> [over ms]`: where the thread was in each long stop after the
+  controls, by the innermost function (section 11).
 
-## 9. Next: the two jobs you gave me at 05:12
+## 9. The jobs you gave me at 05:12 and 06:12: where each stands
 
-1. The three warnings of the fifth publish's security reviewer, on `agent/p6-steps`: a capture address with a format the
-   config does not name; a view or a shot named in the address that is not a known one; lookups by a name from outside
-   that go through inherited properties. Begun once this file is pushed. With the same push, in my own
-   `tools/visit.mjs`: the three faults of the tool in section 3 (lines 11 to 13). The commits and the proof go to you by
-   message, and this file is brought up to date then, with the walk on that head.
-2. Summer's dressing made in steps, once you send the head that holds the sand's third push.
+1. Job 1, the three warnings of the fifth publish's security reviewer: done, `3e6e0a6d`, on main since chain 22.
+   Section 10.
+2. Job 2, summer's dressing made in steps: done, `7a863f7f`, on main since chain 24. Section 11.
+3. Job 3, under way, not pushed. What it holds, by your words of 06:12, 07:32 and 08:10:
+   - the early press (section 4, item 2): a season made before the press and not yet handed, pressed early, waits for
+     its hand, and no program is linked in the middle of the shake. In `src/scene/stage.ts`, `src/scene/steps.ts` and
+     `src/app/session.ts`, with your leave for lines 76 and 77 of `src/core/stage.ts` and line 322 of `src/app/app.ts`;
+   - `spring-soft.patch` tried (section 4, item 5), with spring's two guard stills as on main or the pair shown;
+   - `put()` and line 74 of `index.html`: the first still where the live picture stands at 600 x 600 (section 3,
+     line 7), and the first still for a capture address that fell back to the live page (section 10);
+   - `setDiagnostic` checked against the app's views, if it is three lines;
+   - in my own `tools/visit.mjs`: the three faults of the tool (section 3, lines 11 to 13);
+   - a test that says what the music loops are: a loop of 21.6 s with a seam of 2.4 s comes round every 19.2 s.
+   A section 12 follows with its report.
+
+## 10. Job 1: the three warnings of the fifth publish's security reviewer
+
+Pushed 07:16 UTC as `3e6e0a6d` (holds main `35d00e1b`). You took it into chain 22. Its commits: `e894607e` (the mend),
+`14adcd82` (chain 19 brought one more lookup of the same kind, `tierTravelRule`; by own key as well), and the merges
+`bcde303b` (main `07178847`), `48d59fcb` (`6909766b`) and `3e6e0a6d` (`35d00e1b`). Against main the branch differed in
+seven files: `src/core/params.ts`, `src/config.ts`, `src/capture/showcase.ts`, `src/scene/cameras.ts`,
+`src/audio/index.ts`, `tests/params.test.ts` and `tests/own-keys.test.ts` (new). `src/app/app.ts` and `src/main.ts`
+were not touched.
+
+(a) A capture address with a format the config does not name. It threw in `readParams`, so the page stopped before
+anything was drawn. Now `readParams` reads such an address as the live page at hd. `src/main.ts` hands out
+`window.showcase` only where the mode it reads is `capture`, so after the fallback the capture interface is absent, and
+`tools/lib/page.mjs` checks the format id before it opens the page and then waits for `window.showcase`: a tool that
+names a format the config does not hold gets no picture, never one in another format. No camera is named in the
+address. A tier named in the address has no reader in `src`. `quality` goes through `isLevel`. Tests
+(`tests/params.test.ts`): "opens the live page, not a dead one, for a capture address whose format the config does not
+name", "hands out the capture interface only on a page whose address still reads as a capture" (it reads `src/main.ts`
+for that), "stops for nothing a visitor can type".
+
+(b) A view or a shot named in the address that is not a known one. An unknown `diag` flattened the picture (no
+backdrop, no depth of field) and handed out `window.liveSim`; an unknown `shot` played the whole film without its sound.
+Now `readParams` takes a shot only if the film has it (`shots` of the config) and a view only if the app has it (`VIEWS`
+of `src/diagnostics/views.ts`, and `none`); anything else is read as absent. The readers (`src/app/app.ts` 288, 311 and
+538, `src/main.ts` 110 and 141 on `e894607e`) are as they were and now only ever see a known name. Test: "takes a shot
+only if the film has it and a view only if the app has it", with "knows the shots the film player can start from and
+the views the menu offers".
+
+(c) Lookups by a name from outside that went through inherited properties. Changed to own keys:
+
+- `src/config.ts`: `cameraById`, `tierSamples`, `tierMotion`, `tierEvenFromPx`, `tierTravelRule`, `particleKinds`, all
+  through one private `own()`.
+- `src/capture/showcase.ts`: `setAssets` (`Object.hasOwn`).
+- `src/scene/cameras.ts`: the lens of a camera (`lensOf`), which `poseById` and `poseWith` ask by the camera's name.
+- `src/audio/index.ts`: the bar a landing enters the music at (`landingEntry`).
+
+Left as they are, because the name is checked where it comes in or never comes from outside (line numbers of
+`3e6e0a6d`): `src/seasons/index.ts` 11 (`kitOf`: every entrance checks the season against the config first),
+`src/film/moves.ts` 156 to 158 (cameras of the film's own shots), `src/shake/change.ts` 82 (parts named in the code),
+`src/shake/table.ts` 769 and 780 (channels named in the code), `src/probe/index.ts` 19 (a level that went through
+`isLevel`), `src/audio/index.ts` 700 and 701 (cue ids named in the code), `src/app/app.ts` 287 (one of the two films),
+`src/core/assets.ts` (names from the code and the host's own index), `src/scene/surface.ts` 631 and
+`src/scene/backdrop.ts` 150 (a season that was checked), `src/particles/**` (kinds of the config),
+`src/core/models.ts` 94 and `src/scene/stage.ts` 164 and 457 (names the code made). I found them with
+`scratch-tools/own-keys.py <tree>`, which lists every `in` and every index by a name (153 places), and read each by eye.
+Tests: `tests/own-keys.test.ts`, six.
+
+The new tests on the old code: 8 failed | 10 passed (18). On the merge of chain 19 before `14adcd82`: 1 failed |
+17 passed. On `3e6e0a6d`: 18 passed.
+
+The built page, 960 x 540, `?quality=low`, lavapipe (`scratch-tools/job1-page.mjs <url> <folder>`):
+
+- Before, main `07178847`'s build (engine `60d39792f3f3d6c1`). `?mode=capture&format=bogus`: 1 page error, "no such
+  format: bogus", no first picture, a black page. `?diag=bogus`: the picture 28.28 apart from the plain page (mean of a
+  channel, 0 to 255), `window.liveSim` handed out. The capture page (`?mode=capture&format=hd`) took
+  `setAssets('constructor')` and `setAssets('__proto__')`, answered `dev.pose('constructor')` with a pose of nulls, and
+  drew a picture for the tier `constructor` and for the camera `toString`.
+- After, `3e6e0a6d`'s build (engine `274ef2230825a86c`). Seven addresses (format `bogus`, `constructor` and empty; diag
+  `bogus` and `constructor`; shot `bogus`; every name at once): 0 page errors, the first picture and the controls in 5.8
+  to 9.9 s, the capture interface absent, `liveSim` absent, the six still pages 0 to 0.67 apart from the plain page. The
+  address with every name stands 4.62 apart: it also asks for a quality that is not one, so the page picks its own and
+  does not draw at low. The film with an unknown shot runs (41.61 apart from the still page, as a film is). The capture
+  page refuses all six asks ("no such asset set", "no such camera", "no such format", "no such tier", "no such season")
+  and stays at assets `full`, format `hd`.
+- Picture: `job1/unknown-names-before-after.jpg`.
+
+Checks on `3e6e0a6d` with main `35d00e1b`: tsc exit 0; build exit 0; vitest 68 files passed, 1 skipped, 936 tests
+passed, 8 skipped; the eight guards equal to your list of 07:03; M3 summer-rest 0.8379 at review; the stand-ins of the
+four rest keys max 0; "determinism: pass · 3 pictures, 4 page loads, preview, draft, 161 s"; miniatures "pass: sha256
+1541a867759c17d08c105336622d3a6d4dbdc5b4da9e898219b99bf3b7e05bec"; the strict run on the four rest keys: "strict: pass,
+4 keys under pow, all+smooth, all+smooth+noguard, each row read against the plain picture, where that one differs by
+its answers (no number, 0, 0.577 and 1e30), and where those differ against its own --same picture (engine
+274ef2230825a86c, drawn by lavapipe): no pixel moves by more than 1 level, at most 0.01% of pixels move".
+
+What it leaves, with your rulings of 07:32:
+
+1. `index.html` line 74 leaves the first still out for every address with `mode=capture`, so the page that fell back
+   is black until the live picture comes (5.9 s here). Ruled: made in job 3 with `put()`.
+2. A capture address with a known format shows a visitor the tools' page, black, with no error. Ruled: left as it is.
+3. The capture interface's `setDiagnostic` takes any name from a tool. Ruled: checked against the app's views in job 3
+   if it is three lines.
+
+Not seen or heard: the film's sound with an unknown shot. This VM has no sound files; the test holds that such a shot
+is read as absent, and `src/app/app.ts` 288 plays the film's sound where no shot is named.
+
+## 11. Job 2: summer's dressing made in steps, as the miniatures are
+
+Pushed 07:50 UTC as `7a863f7f` (holds main `d2013ce3`); you took it into chain 24. Its commits: `a2485c63` (the
+change) and the merges `88aa10d9` (main `5fc1ed1f`) and `7a863f7f` (`d2013ce3`). Files: `src/seasons/summer/slab.ts`,
+`src/seasons/summer/arrival.ts`, five lines and an import in `src/seasons/summer/index.ts` (the `dressing:` entry; you
+gave leave for one line, it took five), `src/scene/stage.ts`, `src/scene/steps.ts`, `tests/steps.test.ts`,
+`tools/miniatures.mjs`.
+
+What it was. Summer's field of sand, its skin and its grains were made in one piece: 225 to 250 ms of the page's own
+script in one go in Node here, 192.8 and 256.5 ms in the page, on a page that was drawing. The 700 ms I told you of was
+`eb7db90d`, before the sand's third push made the field cheaper.
+
+What it is now. The kit hands the stage a dressing in steps (`dressing` of the kit, taken by the stage through
+`inPieces` of `src/scene/steps.ts`, as it takes the miniature), with a place to stop after the glass, after the pool of
+light, after each row of the field and of the skin, and after each lot of grains: 3935 steps. The statements run in the
+order they ran in, so nothing is computed otherwise.
+
+The five arrays. `scratch-tools/field-same.mjs <tree before> <tree after>` makes the field in the tree before in one
+piece and in the tree after whole, in steps, twice in turn and with a grain asking in between, and compares the bytes
+(`d2013ce3` against `7a863f7f`): the same every way, 281 x 305; sha256, first 16: heights `3d42f4894987f084`, shade
+before the blur `4ae673a09d81b2fe`, sun before the blur `8fc796a7e1cc3cc2`, shade `ebc95dab05a692bf`, sun
+`d4318fc272e33f06`. In steps: 3661 steps for the field alone, the longest 4.27 ms.
+
+The stills. On `7a863f7f` all eight guards are the hashes of your 07:48 list for `d2013ce3` (summer-rest
+`57d003259ae188a2`, summer-landed `30a9e0f8c2e5aa00`). `node tools/miniatures.mjs`: `pass: sha256 36f254d08ede387e...`
+as on main, and the new line `dressings: sha256 2a22418270e93bee...`, "summer, the dressing: 10 objects; whole 240 ms;
+3935 steps, 230 ms in all, the longest 4.7 ms (step 3816); the same all three ways".
+
+How long the longest piece is, measured as the 700 ms was.
+
+- Node, the first making in the process, in the page's order (`scratch-tools/kit-order.mjs`), three runs on `7a863f7f`:
+  summer's dressing 3935 steps, 258, 235 and 228 ms in all, the longest step 6.6, 6.0 and 4.1 ms. The miniatures'
+  longest steps beside it: winter 9.4 to 11, spring 15 to 16, summer 14 to 19, fall 5.2 to 9.0 ms. So no piece of
+  summer's dressing holds the thread longer than the miniatures' steps do.
+- In the page (`scratch-tools/step-page.mjs`, a scratch build with a clock round each step, low, 320 x 320, two loads
+  each): before, one piece of 256.5 and 192.8 ms; after, 3935 steps, 190.1 and 216.8 ms in all, the longest 2.6 and
+  8.0 ms.
+
+What is still one piece, longest first, none of it in my files: the grid (`bakeGrid`, `src/scene/lightgrid.ts`), in
+the page 117 to 150 ms for spring, 123 to 133 for summer, 92 to 122 for fall; in Node winter's lights 89 to 101 ms,
+fall's dressing 92 to 103 (51 to 71 in the page), fall's lights 45 to 49 (25 to 28), winter's arrival 38 to 40,
+spring's dressing 25 to 27 (24 to 57). The grid is now the longest single piece in every season. It can be made in
+steps the same way; say the word and name the owner of `lightgrid.ts`.
+
+Not in the leave, said so that nobody is surprised: `grainRows()` on a page without the baked grain file works the
+grains out in one piece (1.6 s in Node). The built page has the file.
+
+Tests. `tests/steps.test.ts`: the new tests on the old code 7 failed | 47 passed (54); with the change 54 passed. On
+`7a863f7f`: tsc 0; build 0 (engine `f2d93f209234841d`); the whole vitest 68 passed | 1 skipped (69), 943 passed | 8
+skipped (951); M3 summer-rest 0.8377; four `--diag standins` stills, the most 0; "determinism: pass · 3 pictures, 4
+page loads, preview, draft, 162 s"; the strict run's last line: "strict: pass, 4 keys under pow, all+smooth,
+all+smooth+noguard, each row read against the plain picture, where that one differs by its answers (no number, 0, 0.577
+and 1e30), and where those differ against its own --same picture (engine f2d93f209234841d, drawn by lavapipe): no pixel
+moves by more than 1 level, at most 0.01% of pixels move".
+
+Your items 9 and 10 (lines 5 and 6 of section 3), walked again after job 2 as you asked at 06:12, on `7a863f7f`'s
+build (engine `f2d93f209234841d`), `?quality=low`, 08:09 to 08:33 UTC (`scratch-tools/walk910.sh`). The three walks:
+0 not ok, the console 0 lines, 0 requests failed.
+
+- The hint, phone, in the walk: 6.217 s after the controls for 5 asked. Before, on `eb7db90d`: 7.039.
+- A press by pointer on the mark of fall, from the press to the busy control: 1.224 s. Before: 1.982.
+- The first of four presses in a row: 0.003 s. Before: 1.052. The eleven other timed presses: 0.004 s at most.
+- The hint in the standstill runs at phone, tablet and hd: 5.781, 9.941 and 8.755 s. Before: 5.005, 9.698 and 7.939.
+  A stop lay across the fifth second each time (2.9 s on phone, 5.2 s on tablet, 6.4 s on hd), and the hint came 40, 16
+  and 31 ms after it ended.
+
+So the two presses are bettered, the hint is not, and none of the three can be read as more than this machine's spread.
+Job 2 took one stop of about 0.2 s away. The stops that hold the hint and the press are ten to thirty times that long,
+and they are not the page's own script: in the processor profile of the page after job 2 (`scratch-tools/prof-load.mjs`
+and `prof-stops.mjs`, low, 320 x 320, the 34.6 s after the controls) the thread stood in 16 stops of half a second or
+more, 29.8 s in all, and of those 18.9 s were inside the wait for a linked program (three's `onFirstUse`), 4.9 s inside
+`texSubImage2D` and 1.8 s inside `bufferSubData`; no function of the page's own had more than 0.2 s. On the page before
+job 2 it was 17.1, 6.3 and 1.2 s. This renderer links and uploads in the page's thread (section 4, item 4). Whether the
+hint or a press is ever late on a real card is UNKNOWN: walk it there, the ring round Shake 5 s after the controls and a
+press in the first seconds.
+
+What job 2 changes in the sections above: section 3, line 3 (the stop while summer's set is made) and section 4, item 3
+are mended as far as the dressing goes; section 4, item 8 has summer's surface no longer in one piece.
+
+Not seen: nothing at 60 a second, no real card, no sound. No fresh reviewer read this job (I start no agents).

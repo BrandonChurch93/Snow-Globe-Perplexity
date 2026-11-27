@@ -1,5 +1,6 @@
-Looks of `controls_finisher`, branch `agent/p6-steps`. Four pictures. None is a render of a tier: each is the live page
-at `?quality=low`, drawn by the software renderer of the VM (lavapipe), as `tools/visit.mjs` pictured it. BEFORE is main
+Looks of `controls_finisher`, branch `agent/p6-steps`. Five pictures. None is a render of a tier: each is the live page
+at `?quality=low`, drawn by the software renderer of the VM (lavapipe), as `tools/visit.mjs` pictured it (the fifth as
+`scratch-tools/job1-page.mjs` pictured it). What is said next holds for the four pictures under `walk-eb7d/`. BEFORE is main
 `38eff8da` (my last walk of main, Nov 26, on the looks branch `agent/p6-controls-looks` under `walk-f/`). AFTER is
 `eb7db90d`: `agent/p6-steps` at `75e5403f` with main `d13d29c6` merged in, walked Nov 27 from 04:55 to 05:30 UTC. Between
 the two lie the steps, the hand, the governor line and the two late mends of this branch, and every push of the other
@@ -28,4 +29,13 @@ walk-eb7d/phone-rest-landed-before-after.jpg
 walk-eb7d/tablet-rest-before-after.jpg
   Shows: winter at rest with the controls, tablet layout, 1024 x 1366.
   State: left BEFORE, right AFTER (step 1, after the hint). The Shake control at 446, 1280, 132 x 52, the marks 48 x 48.
+  Tier: none.
+
+job1/unknown-names-before-after.jpg
+  Shows: job 1, an address that names something the app does not know, 960 x 540, each picture taken once the page had
+  drawn or had given up.
+  State: left column BEFORE, the build of main `07178847`. Right column AFTER, the build of `3e6e0a6d`. Top:
+  `?mode=capture&format=bogus&quality=low`. Before, the page stopped with "no such format: bogus" and stayed black;
+  after, it is the live page with its controls. Bottom: `?diag=bogus&quality=low`. Before, the picture was drawn flat,
+  with no backdrop and no depth of field; after, it is the plain page (0.67 apart at most, mean of a channel, 0 to 255).
   Tier: none.
