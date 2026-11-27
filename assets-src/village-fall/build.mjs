@@ -349,7 +349,7 @@ for (const p of PUMPKINS) pumpkin(p)
 // The approved roof is thick, uneven, weathered shingles in a few staggered rows, dark brown violet, with a ridge that
 // sags. These lie just over the shared slope (its fine slates stay underneath, unseen), so the cottage keeps its place and size.
 const CAP = { fromMm: 17.6, keep: 0.84, out: 0.42, thick: 0.9 }
-const SHINGLE = { rows: 6, over: 1.5, wide: [3.4, 5.4], thick: [0.3, 0.46], rise: [0.5, 0.72], gap: 0.2, eave: 0.3, ends: 0.34, lap: 2.2, round: 0.3, ragged: 0.4, sx: 16, sz: 3, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#b07a55'), wear: 0.42 }
+const SHINGLE = { rows: 6, over: 1.5, wide: [3.4, 5.4], thick: [0.4, 0.6], rise: [0.5, 0.72], gap: 0.2, eave: 0.3, ends: 0.34, lap: 2.2, round: 0.3, ragged: 0.4, sx: 16, sz: 3, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#b07a55'), wear: 0.55 }
 {
   const RS = rng(9241)
   const pick = (a) => a[Math.floor(RS() * a.length)]
@@ -395,7 +395,7 @@ const SHINGLE = { rows: 6, over: 1.5, wide: [3.4, 5.4], thick: [0.3, 0.46], rise
           const q = RF.roofAt(sd, down, mid + x, lift)
           P.setXYZ(i, q[0], q[1], q[2])
           const top = smooth(-0.1, 0.1, y)
-          const streak = 0.68 + 0.6 * noise(x * 8.5 + seed, z * 0.8, 7)
+          const streak = 0.68 + 0.6 * noise(x * 3.5 + seed, z * 2.5, 7)
           const lit = top * smooth(0.8, 1, k) * (0.45 + 0.55 * smooth(0.5, 1, noise(x * 3.1 + seed, 9.2, 5) + 0.5))
           const under = 0.22 + 0.78 * smooth(0.34, 0.62, k)
           const cut = 0.16 + 0.84 * smooth(1, 0.7, side)
@@ -486,7 +486,7 @@ for (const s of STONES) {
 // The shared wall is round stones about 1.3 times as wide as the approved's. Fall draws its own on the gable and the
 // side wall: flat faced blocks in courses with a thin joint, each with a bevelled rim and chipped corners, standing on
 // the shared mortar round the shared openings. The shared round stones are put behind the mortar at load.
-const BLOCKS = { rowH: 0.9, rowJ: 0.14, wide: 1.4, wideJ: 0.4, share: [0.7, 1.3], gap: 0.06, bevel: 0.09, out: 0.3, vary: 0.05, tilt: 0.05, cut: [0.1, 0.24], cutShare: 0.5, jitter: 0.03, base: -1.8, plainBelow: -0.6, mortar: -0.5, sideDim: 0.5, gain: 0.8, tone: 0.8, rim: 0.45, chip: [0.45, 1.5], dent: 0.07, inner: 0.55, mark: 0.99, tones: ['#8c867d', '#7c766f', '#979289', '#726d66', '#837e75', '#9e988e', '#79736a', '#908a7f', '#6b6660', '#87837d'].map(lin), dirt: lin('#4b4538') }
+const BLOCKS = { rowH: 0.9, rowJ: 0.34, wide: 1.4, wideJ: 0.7, share: [0.5, 1.6], gap: 0.06, bevel: 0.09, out: 0.3, vary: 0.05, tilt: 0.05, cut: [0.12, 0.3], cutShare: 0.85, dome: 0.12, jitter: 0.03, base: -1.8, plainBelow: -0.6, mortar: -0.5, sideDim: 0.5, gain: 0.8, tone: 0.8, rim: 0.45, chip: [0.45, 1.5], dent: 0.07, inner: 0.55, mark: 0.99, tones: ['#8c867d', '#7c766f', '#979289', '#726d66', '#837e75', '#9e988e', '#79736a', '#908a7f', '#6b6660', '#87837d'].map(lin), dirt: lin('#4b4538') }
 let blockCount = 0
 let blockTriangles = 0
 {
@@ -543,8 +543,8 @@ let blockTriangles = 0
     const chip = () => B.chip[0] + (B.chip[1] - B.chip[0]) * RW()
     if (o.bend || y - h / 2 > B.plainBelow) {
       const dent = () => (RW() - 0.5) * 2 * B.dent
-      const mid = place(dent(), dent(), top + dent())
-      const inner = ring.map(([px, py]) => place(B.inner * px + dent(), B.inner * py + dent(), top + B.inner * (tx * px + ty * py) + dent()))
+      const mid = place(dent(), dent(), top + B.dome + dent())
+      const inner = ring.map(([px, py]) => place(B.inner * px + dent(), B.inner * py + dent(), top + 0.6 * B.dome + B.inner * (tx * px + ty * py) + dent()))
       for (let k = 0; k < ring.length; k++) {
         const m = (k + 1) % ring.length
         const a = chip()
@@ -975,21 +975,20 @@ let tuftCount = 0
     tuftCount++
   }
   let tries = 0
-  while (tuftCount < 560 && tries++ < 60000) {
+  while (tuftCount < 420 && tries++ < 60000) {
     const a = R() * TAU
     const rr = 54 * Math.sqrt(R())
     const x = rr * Math.cos(a)
     const z = rr * Math.sin(a)
-    if (blocked(x, z, 0.3) || pathGap(x, z) < 1.2 || treeGap(x, z) < 4 || rockGap(x, z) < -0.3) continue
+    if (blocked(x, z, 0.3) || fenceGap(x, z) < 16 || pathGap(x, z) < 1.2 || treeGap(x, z) < 4 || rockGap(x, z) < -0.3) continue
     const bank = 1 - smooth(1.05, 1.6, L.pondField(x, z))
-    const post = 1 - smooth(0.4, 1.6, fenceGap(x, z))
     const rock = 1 - smooth(0, 1.6, rockGap(x, z))
     const rim = 1 - smooth(1.5, 7, L.islandEdge(Math.atan2(z, x)) - Math.hypot(x, z))
     const patch = smooth(0.0, 0.5, fbm(x * 0.14 + 5, z * 0.14 + 1, 4, 2))
     const east = smooth(4, 16, x) * smooth(-4, 8, z)
     // The front rim (toward the hero camera) carries tall grass that stands up through the low fog and breaks its level edge.
     const front = rim * smooth(-0.2, 0.5, z / Math.max(1, Math.hypot(x, z)))
-    if (R() > 0.02 + 0.3 * bank + 0.45 * post + 0.2 * rim + 0.75 * front + 0.08 * patch + 0.6 * east + 0.9 * rock) continue
+    if (R() > 0.02 + 0.3 * bank + 0.2 * rim + 0.75 * front + 0.08 * patch + 0.6 * east + 0.9 * rock) continue
     tuft(x, z, 0.8 + 0.3 * bank + 0.2 * rim + 1.1 * front + 0.5 * east + 0.5 * rock)
   }
   const g = new THREE.BufferGeometry()

@@ -44,9 +44,9 @@ const GROUND_FILL = 8
 // 172,132,108) with dark gaps, so the slabs are cooled by `slab` and their sides darkened by `gap`.
 const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4, keep: 0.36, reachMm: 5, stepMm: 4.4, lowMm: -1.2, topMm: 2.7, slab: [0.95, 1.2, 2.4] as Rgb, sideBelow: 0.55, gap: 0.25 }
 const FENCE = { reachMm: 1.25, sinkMm: 5, keep: 0.67, footMm: 0.6, nearMm: 0.9 }
-// The made posts are boards 2 mm wide with a round top and read as bollards. The approved's are narrower boards (8 to 9
-// px at hd against 12 to 14) that run to a point, so at load each post keeps `keep` of its width and its top is drawn in.
-const POST = { keep: 0.62, point: 0, from: 0.84, deepMm: 0.36, slackMm: 0.2 }
+// The made posts are boards 2 mm wide with a round top and read as bollards beside the approved's stout posts (a
+// post there is about an eighth as wide as it is tall), so at load each post keeps `keep` of its width.
+const POST = { keep: 0.78, point: 0, from: 0.84, deepMm: 0.36, slackMm: 0.2 }
 const MOSS = { low: [0.7, 0.9, 0.6] as Rgb, high: [0.88, 1.02, 0.86] as Rgb, tallMm: 9, soot: 0.8 }
 // The shared stones run from 0.03 (a joint) over 0.12 (the middle stone) to 0.9 (a few white ones). The approved wall is
 // dark grey green stones with joints only a little darker, so the tone is bent: joints are held at `floor` of `top` and
@@ -79,7 +79,7 @@ const WALLS = { deepMm: 0.56, proudMm: 0.45, backMm: 0.62, lowMm: -1.95, doorMm:
 // The shared ring round the door is nine round lumps. The approved one is a ring of flat wedge stones, paler and warmer
 // than the wall, on jambs of the same stone. Fall draws its own in the make; the shared ring and jambs above `fromMm`
 // go behind the mortar with the wall's stones, and the made ring is warmed by `tone`, the jambs by `jamb`.
-const RING = { tone: [1.75, 1.75, 1.1] as Rgb, jamb: [1.3, 0.95, 0.6] as Rgb, reachMm: 0.45, outMm: 1.5, fromMm: 0.35, insideMm: 0.1 }
+const RING = { tone: [2.3, 2.3, 1.5] as Rgb, jamb: [1.3, 0.95, 0.6] as Rgb, reachMm: 0.45, outMm: 1.5, fromMm: 0.35, insideMm: 0.1 }
 // The made shingles are smooth. The approved ones are split wood: the grain map read through its levels along each one.
 const SHAKE = { scale: 0.5, low: 0.35, span: 1.3, reachMm: 3.5 }
 // The shared door is one smooth leaf. The approved one is planks: each a tone of its own, a dark groove between them,
