@@ -64,12 +64,12 @@ const baseUniforms = {
 }
 const FLOOR_SHARE = 0.1
 // The brambles' tones, measured against the approved image in boxes at the review tier.
-const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, KEY_EAST: 32, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 85, CARD_WEST: 60, TOP: 0, BARK: 0.7, LIFT: 0.005, LIFT_WEST: 75, FILL: 0.08, LINE: 1.6, LINE_POW: 320, LINE_WIDE: 0.5, KNOB: 9, LINE_EAST: 14, THORN: 0.5 }
+const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, KEY_EAST: 32, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 105, CARD_WEST: 75, TOP: 0, BARK: 0.7, LIFT: 0.005, LIFT_WEST: 75, FILL: 0.08, LINE: 1.6, LINE_POW: 320, LINE_WIDE: 0.5, KNOB: 9, LINE_EAST: 14, THORN: 0.5 }
 const DRUM_SHEEN = 1.8
 const DRUM_FOLD = 6
 const DRUM_CRINKLE = 1.5
 const DRUM_GRAIN = 2
-const BARK_GRAIN = 1.8
+const BARK_GRAIN = 2.6
 const PUMPKIN_BODY = 0.042
 const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}\n#define DRUM_FOLD ${DRUM_FOLD.toFixed(3)}\n#define DRUM_CRINKLE ${DRUM_CRINKLE.toFixed(3)}\n#define DRUM_GRAIN ${DRUM_GRAIN.toFixed(3)}\n#define BARK_GRAIN ${BARK_GRAIN.toFixed(3)}`
 const flicker: { a: number; b: number; c: number }[] = []
@@ -319,7 +319,7 @@ const IRON_AFTER = `
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
   float ironLeft = clamp(dot(ironUp, normalize(vec3(-0.8, 0.25, 0.55))), 0.0, 1.0);
   // Only the ridge of a vine that faces the lamps is lit, a third of its width; the knobs and the grain break it there.
-  float ironRidge = mix(1.0, pow(abs(clamp(dot(inverseTransformDirection(ironRound, viewMatrix), normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0)), 26.0), baseStrand * ironWest);
+  float ironRidge = mix(1.0, pow(abs(clamp(dot(inverseTransformDirection(ironRound, viewMatrix), normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0)), 16.0), baseStrand * ironWest);
   reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.72, 0.5), mix(vec3(1.0, 0.6, 0.36), vec3(1.0, 0.86, 1.0), ironWest), baseStrand) * (mix(0.45 * baseDrum, BRAMBLE_WARM, baseStrand) * pow(abs(ironWarm), mix(5.0, mix(26.0, 110.0, ironWest), baseStrand)) + mix(0.1 * baseDrum, 0.05 * BRAMBLE_WARM, baseStrand) * pow(abs(ironLeft), mix(5.0, 20.0, baseStrand))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch) * mix(1.0, ironGrain, baseStrand * (1.0 - ironWest)) * mix(1.0, BRAMBLE_WARM_FRONT + BRAMBLE_WARM_WEST * ironWest * mix(1.0, 0.4, smoothstep(20.0, 34.0, vBasePos.y)), baseStrand) * ironRidge;
   vec3 ironTop = normalize(mat3(viewMatrix) * vec3(0.0, 1.0, 0.0));
   float ironTh = max(dot(geometryNormal, normalize(ironTop + geometryViewDir)), 0.0);
