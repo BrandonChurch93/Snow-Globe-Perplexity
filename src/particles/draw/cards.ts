@@ -656,6 +656,8 @@ export const CARD_VERT = `
       float mostS = max(${n(CARD.hair.inside)} * R * uPoint.y / sqrt(max(dist * dist - R * R, 1.0)) - outS, 1.0);
       if (isS > mostS) clip.xy += fromS * (mostS / isS - 1.0) * vec2(projectionMatrix[0][0], projectionMatrix[1][1]) * (clip.w / uPoint.y);
     }
+    // the low glow is light in the liquid, so it is drawn no nearer than the glass: the fragment stage finds the glass on each pixel's own ray, from the ray through the card's middle
+    if (glowB && aData.w < -1.5) vL4.xy = (clip.xy / clip.w + vec2(projectionMatrix[2][0], projectionMatrix[2][1])) / vec2(projectionMatrix[0][0], projectionMatrix[1][1]);
     // the third number is read by a light alone (cardGlow): the softness of its glow at rest
     #ifdef POINT_SPRITES
     float sideC = 2.0 * max(extC.x, extC.y);
@@ -681,6 +683,7 @@ export const CARD_FRAG_PARS = `${REST_LIGHT}
 /** The down of the seeds' heads: every form at every lean, drawn once at start (down.ts). */
 uniform sampler2D uDown;
 uniform vec4 uPoint;
+uniform mat4 projectionMatrix;
 ${CLOCK_HASH}/** One ring of a clock's hairs (looks.ts, CARD.clock): the three hairs about the pixel's own angle, each a line that fades toward its tip and ends in a tuft, or the mean of them all where they stand closer than a hair is wide. The share told of the ring's light stands as hairs that are told apart and the rest as the mean. */
 float cardClockRing(float th, float r, float u, float R, float n, uint id, float turn, float v, float thin, float vT, float thinT, vec2 weight, vec2 span, float tip, float fall, float told) {
   float stepK = 6.2831853 / n;
@@ -1464,6 +1467,17 @@ void cardStormGlow(vec2 p) {
   float edge = 1.0 - smoothstep(0.7, 1.0, length(p) / max(vL4.z, 1.0));
   // the pool and the low glow are each one wide glow of the cream alone
   bool pool = vL3.y < 0.0;
+  if (vL3.y < -1.5) {
+    // the low glow's card stands before the ground, which is nearer than the glass where the ball goes down into the base: it lay on the base there as a pale sheet with the base's outline. Its depth is the glass's own on this pixel's ray, so whatever stands before the glass hides it, and past the ball's outline there is none of it
+    vec3 rayG = normalize(vec3(vL4.xy + p / uPoint.y, -1.0));
+    vec3 midG = (viewMatrix * vec4(uLensCentre, 1.0)).xyz;
+    float nearG = dot(rayG, midG);
+    float wallG = 0.5 * (uLens.x + uLens.w);
+    float underG = nearG * nearG - dot(midG, midG) + wallG * wallG;
+    if (underG <= 0.0) discard;
+    float deepG = max(-rayG.z * (nearG - sqrt(underG)), 1e-3);
+    gl_FragDepth = 0.5 + 0.5 * (projectionMatrix[3][2] - projectionMatrix[2][2] * deepG) / deepG;
+  }
   float heart = exp(-0.5 * r2 / s2);
   // a warm light's blue goes with the square of its green
   vec3 own = vec3(1.0, vL3.y, 0.77 * vL3.y * vL3.y);

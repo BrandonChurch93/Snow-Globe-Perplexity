@@ -361,8 +361,8 @@
         },
         {
           "path": "summer/tree-summer.glb",
-          "bytes": 554500,
-          "sha": "99168aca94289286"
+          "bytes": 577516,
+          "sha": "e1601147c9100e18"
         },
         {
           "path": "summer/village-summer.glb",
@@ -693,8 +693,8 @@
         },
         {
           "path": "summer/tree-summer.glb",
-          "bytes": 1920236,
-          "sha": "881eb38c218580f9"
+          "bytes": 2001200,
+          "sha": "31c768b0fd76bf31"
         },
         {
           "path": "summer/village-summer.glb",
@@ -759,7 +759,7 @@
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "d9b043a56b56f3ea",
-    "summer": "d3cea4d0e39eea13",
+    "summer": "95e870899f865fab",
     "fall": "fe02fc3e48238ea3"
   }
 }

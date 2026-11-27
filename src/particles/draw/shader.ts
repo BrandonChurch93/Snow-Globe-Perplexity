@@ -358,6 +358,8 @@ ${CARD_FRAG_PARS}void pointAdd(vec4 lobe, vec2 p, inout float f, inout vec3 nrm)
   nrm += g * (1.0 + 0.6 * lobe.w) * vec3(q / lobe.z * sharp, sqrt(max(1.0 - dot(q, q) / (lobe.z * lobe.z), 0.05)));
 }
 void main() {
+  // one kind of card gives its own depth (cards.ts, the storm's low glow), so every path must give one: this is the depth it would have had
+  gl_FragDepth = gl_FragCoord.z;
   int kind = int(vKind.x + 0.5);
   float lying = step(1.5, vKind.y);
   pointBend = vKind.y - 2.0 * lying - 0.5;

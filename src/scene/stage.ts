@@ -11,20 +11,19 @@ import type { Emitter, Moment, ParticleSource, SdfGrid, Stage, StageQuality } fr
 import { hasTexture, preparedBytes, prepareGroup, setAnisotropy, texture } from '../core/textures'
 import { FLOW_RANGE_MM_S, LIGHT_RANGE, allParts, viewCode } from '../diagnostics/views'
 import { Shell } from '../globe/shell'
-import { lensState } from '../post/grade'
-import { lensFall } from '../post/post'
+import { addSeat, clearSeats } from '../post/post'
 import { ParticleDraw } from '../particles/draw/points'
 import { kitOf, kits } from '../seasons'
 import type { SeasonKit } from '../seasons/kit'
-import { changeBloom, partChange } from '../shake/change'
+import { changeBloom, changeShown, coverPlace, partChange, veilCrossed } from '../shake/change'
 import { AirHold, clearVeil } from './air'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
-import { newFrame, type StageFrame } from './frame'
+import { newFrame, withVeilLeft, type StageFrame } from './frame'
 import { fetchGrid } from './gridfile'
 import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, outerRadiusMm } from './layout'
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
-import { CHANGE_BLOOM, Lighting } from './lighting'
+import { Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
 import { fitIn, FramePace, inPieces, SOON_MS, Wish, workIn, type Step, type Turn } from './steps'
 import { makeSlab, ReflectMix, updateSurface } from './surface'
@@ -88,8 +87,6 @@ void main() {
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }`
 
-/** The power the veil's share of the swap window is raised to. */
-const VEIL_LATE = 2.5
 /** The power the light's share of the swap window is raised to. */
 const LIGHT_LATE = 2.5
 
@@ -103,6 +100,8 @@ export class GlobeStage implements Stage {
   private readonly slab = makeSlab()
   private readonly backdrop = new Backdrop()
   private readonly centre = new THREE.Vector3()
+  private readonly collar = new THREE.Vector3()
+  private seatSpan = -1
   private readonly shell = new Shell()
   /** The glass as the lens fill's map takes it when the globe itself is in focus: one closed surface with no blur. */
   private readonly keep = new THREE.Mesh(this.shell.shell.geometry, new THREE.MeshBasicMaterial({ color: 0x000000 }))
@@ -508,6 +507,7 @@ export class GlobeStage implements Stage {
     f.arrived = arrived
     f.from = a.kit
     f.to = b.kit
+    f.left = single && typeof moment.left === 'string' ? kitOf(moment.left) : null
     f.change = change
     // The light inside crosses through the whole window, late: at the middle of the window the storm is still lit by the season
     // that leaves, and the new season's colour comes up with the flare that hides the base.
@@ -515,14 +515,20 @@ export class GlobeStage implements Stage {
     // The veil crosses through the whole window. Where the season that leaves has the thicker veil it crosses late: a sixth of the way
     // at the middle of the window, four tenths where the base begins to change. Crossed evenly, that storm stood in the new season's
     // colour a dozen frames before the outside of the globe. Where the season that comes has the thicker veil the crossing stays
-    // even, because there the veil that comes is part of the cover of the swap.
+    // even, because there the veil that comes is part of the cover of the swap. The last of a veil that leaves late goes by
+    // ratio and on past the end of the window, under the cover's tail (change.ts, `veilCrossed`).
     const veil = partChange('veil', change)
-    f.mix.veil = a.kit.veil.density >= b.kit.veil.density ? Math.pow(veil, VEIL_LATE) : veil
+    const place = coverPlace(!single, change, moment.left, moment.beat)
+    f.mix.veil = (f.left ?? a.kit).veil.density >= b.kit.veil.density ? veilCrossed(place) : veil
     // Everything outside the glass reads this one number: the base, what the glass and the table show of it, the lights of the
     // backdrop and the light of the room cross in the same few frames, under the cover.
     f.mix.base = partChange('base', change)
     f.mix.particles = partChange('particles', change)
-    f.mix.bloom = changeBloom(change)
+    // The cover runs on past the end of the window as a tail (change.ts, `CHANGE_COVER.tailTo`): there the season that came
+    // stands alone, and the moment says which season the change has left. The cover is the exponent that shows so much of
+    // the picture on the storm that is in the glass, so it is asked for by the season that comes.
+    f.mix.shown = changeShown(place, b.kit.season)
+    f.mix.bloom = changeBloom(place, b.kit.season)
     f.grids[0] = a.grid
     f.grids[1] = b.grid
     f.liquid = liquid
@@ -549,7 +555,9 @@ export class GlobeStage implements Stage {
     u.uCoc.value.set(2 * pose.apertureMm * f.focalPx, 1 / pose.focusMm, 0)
 
     this.lighting.update(f)
-    updateVeil(f)
+    // On the tail of a change the last of the veil of the season that left is still going (change.ts, `veilCrossed`): there
+    // the shared veil is laid from that season to the one that came, as it was inside the window.
+    withVeilLeft(f, updateVeil)
     this.shell.update(f)
     updateSurface(f)
     this.backdrop.update(f)
@@ -610,15 +618,7 @@ export class GlobeStage implements Stage {
       renderer.setRenderTarget(target)
     } else {
       applyPose(this.camera, pose, w, h, sample)
-      this.inside.updateWorldMatrix(true, false)
-      this.inside.localToWorld(this.centre.set(0, CHANGE_BLOOM.glareSeat * collarY, 0))
-      const reach = (CHANGE_BLOOM.glareReach * f.focalPx * outerRadiusMm) / (this.centre.distanceTo(this.camera.position) * h)
-      this.centre.project(this.camera)
-      lensState.glareAt.set(0.5 + 0.5 * this.centre.x, 0.5 + 0.5 * this.centre.y, reach)
-      this.inside.localToWorld(this.centre.set(0, CHANGE_BLOOM.haloSeat * collarY, 0))
-      const wide = (CHANGE_BLOOM.haloReach * f.focalPx * outerRadiusMm) / (this.centre.distanceTo(this.camera.position) * h)
-      this.centre.project(this.camera)
-      lensFall.haloAt.set(0.5 + 0.5 * this.centre.x, 0.5 + 0.5 * this.centre.y, wide)
+      this.seat(sample, f.focalPx, w, h)
       drawPasses(this.pass, { shadows: cast, mirror: view === '' && f.planar, sliceOnly, emitters: beauty }, f)
       const fill = view === '' && pose.apertureMm > 0 ? lensFillOf(target) : undefined
       if (fill?.wants(sample)) this.drawBlur(fill, target, pose, f, single ? [a] : [a, b])
@@ -637,6 +637,35 @@ export class GlobeStage implements Stage {
     this.draw.points.visible = false
     clearVeil()
     for (const s of sets) this.airHeld.hide(s.glass)
+  }
+
+  /**
+   * Where the glass is in the picture at this sample, for the glow of a change's cover (post.ts, `lensFall.seats`): the
+   * outline of the ball as the camera sees it, its middle and its radius. The outline of a ball off the lens's axis is an
+   * ellipse a little further out than the ball's middle; here it is within a fifth of a pixel of a circle, which is what is
+   * kept. A picture's samples come in the order of their place in the shutter, so a place that does not come later than the
+   * last begins a new picture.
+   */
+  private seat(sample: Sample | null, focalPx: number, w: number, h: number): void {
+    const span = sample && (sample.of ?? 1) > 1 ? sample.t : -1
+    if (!(span > this.seatSpan)) clearSeats()
+    this.seatSpan = span
+    this.inside.updateWorldMatrix(true, false)
+    this.inside.localToWorld(this.centre.set(0, 0, 0))
+    const far = this.centre.distanceTo(this.camera.position)
+    this.centre.project(this.camera)
+    const x = 0.5 * this.centre.x * (w / h)
+    const y = 0.5 * this.centre.y
+    const off = (Math.hypot(x, y) * h) / focalPx
+    const sinOff = off / Math.sqrt(1 + off * off)
+    const sinBall = Math.min(outerRadiusMm / far, 0.99)
+    const cosBall = Math.sqrt(1 - sinBall * sinBall)
+    const open = cosBall * cosBall - sinOff * sinOff
+    if (!(open > 0)) return
+    const out = (1 - sinOff * sinOff) / open
+    const radius = (0.5 * ((cosBall * sinBall) / open + sinBall / Math.sqrt(open)) * focalPx) / h
+    this.inside.localToWorld(this.collar.set(0, collarY, 0)).project(this.camera)
+    addSeat(Math.max(span, 0), 0.5 + (x * out) / (w / h), 0.5 + y * out, radius, 0.5 * (this.collar.x - this.centre.x) * (w / h), 0.5 * (this.collar.y - this.centre.y))
   }
 
   /**
