@@ -97,11 +97,26 @@ export function spendIn(usedMs: number, everyMs: number, waitedMs: number, await
   return left + Math.max(0, Math.ceil((FIT_MS - left) / everyMs)) * everyMs
 }
 
+/**
+ * Takes the step at the front of a set and does it. One that throws stays at the front: the steps after it need what it
+ * did not make, and done without it they failed a frame later with an error that named none of it.
+ */
+export function take(steps: Step[]): boolean | void {
+  const step = steps.shift()
+  if (!step) return
+  try {
+    return step()
+  } catch (error) {
+    steps.unshift(step)
+    throw error
+  }
+}
+
 /** Takes one frame's steps off the front: until one does not answer true or `ms` have gone by. The step that passes `ms` is the frame's last. */
 export function runFor(steps: Step[], ms: number, now: () => number): void {
   const until = now() + ms
   let small: boolean | void
-  do small = steps.shift()?.()
+  do small = take(steps)
   while (small && now() < until)
 }
 
@@ -206,7 +221,7 @@ export function workIn(steps: Step[], season: string, turn: Turn, wish: Wish, pa
   const awaited = wish.awaits(season)
   if (awaited) wish.gives()
   const from = now()
-  if (wish.last(season)) while (steps.length) steps.shift()!()
+  if (wish.last(season)) while (steps.length) take(steps)
   else runFor(steps, turn.frame === null ? spendOf(turn.waited, awaited) : spendIn(now() - turn.frame, pace.every, turn.waited, awaited, pace.taken), now)
   pace.taken += now() - from
 }
@@ -319,11 +334,22 @@ export function stepsOf<T>(make: () => T): Generator<void, T> {
  * A part that is made in steps, as one step of a set. Taken, it makes one piece and puts itself back at the front of the
  * set, until its last piece is made and `made` is given the part. While pieces are left it says that more may follow in
  * the same frame; the step after its last piece has a frame of its own, as after a part made in one piece.
+ *
+ * A piece that throws ends the making, and taken again it throws the same: a making that has thrown says it is done and
+ * gives nothing, and the set went on without the part.
  */
 export function inPieces<T>(set: () => Step[], make: () => T, made: (part: T) => void): Step {
   const pieces = stepsOf(make)
+  let failed: { error: unknown } | null = null
   const piece = (): boolean => {
-    const p = pieces.next()
+    if (failed) throw failed.error
+    let p: IteratorResult<void, T>
+    try {
+      p = pieces.next()
+    } catch (error) {
+      failed = { error }
+      throw error
+    }
     if (p.done) made(p.value)
     else set().unshift(piece)
     return !p.done

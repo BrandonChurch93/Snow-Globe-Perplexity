@@ -41,6 +41,18 @@ const BARK_BUMP = 3.4
 // The bark: long flutes down the wood (the bark map drawn out along the grain), dark in their grooves, with the low sun
 // on the edge of the wood that faces it and moss on what faces up near the ground.
 const WOOD = { relief: 0.95, ridges: 5, warp: 2.6, fine: 0.4, low: 0.55, high: 1.35, from: 0.15, to: 0.85, depthMm: 1.5, rim: 150.0, rimTight: 2.6, rimFrom: -0.2, rimTo: 0.5, side: 0.1, wrap: 0.95, air: [0.045, 0.0375, 0.034] as Rgb3, haze: [0.011, 0.0085, 0.0055] as Rgb3, pool: 1.5, poolReachMm: 4.5, poolWrap: 0.3, poolFrom: [-2.2, 0, 0.5] as Vec3, arms: 3.0, armsReach: 1.5, armsWrap: 0.9, armsFrom: 0.7, armsTo: 1.8, top: 0.45, mossTo: 5.5, moss: 0.45 }
+// The bark's grain. The flutes alone read as smooth, turned wood. The approved's bark is fibrous: fine light and dark streaks down
+// the grain, three or four to the millimetre, with 8 to 13 levels between neighbours where ours had 2 to 4. So the wood carries
+// fibres of two widths that wind as the flutes do (`ridges`, how many of each lie across the bark map's run, where the flutes
+// are `WOOD.ridges`), shaken out of line by the bark map (`shake`): a fibre's groove (`from`, `to`, of its wave) is darker (`low`,
+// against `high` on its back) and is cut into the flutes' height (`cut` of it), so the relief follows the grain. A fibre finer
+// than the picture can hold is not drawn: it fades to its mean (`mean`) as its width falls from `see[0]` to `see[1]` of a wave to
+// the pixel, so the bark holds still at the hero's size and shows whole in the close camera and at 3840. The large lantern's
+// light is taken on that relief (`relief` of the way from the smooth round to the relief's own normal), where it lay on the smooth
+// round alone. And the limbs up in the crown stand in the crown's shade: above `shadeFrom` (mm over the ground, to `shadeTo`) the
+// wood keeps `shade` of its light, so the limbs between the pads read dark against the sky as the approved's do. The trunk's
+// shape, girth and tone stay as they are.
+const GRAIN = { ridges: [9, 17] as const, shake: 6.0, from: 0.1, to: 0.6, low: 0.4, high: 1.35, cut: 0.4, see: [0.22, 0.5] as const, mean: 0.62, relief: 0.6, shadeFrom: 19, shadeTo: 26, shade: 0.45 }
 const MOSS: Rgb3 = [0.3, 0.52, 0.12]
 const ROOT_MM = 4.5
 const LEAF_TINT: Rgb3 = [1, 1, 1]
@@ -64,7 +76,14 @@ const PAD = { soft: 7, round: 0.7, upFrom: -0.75, upTo: 0.55, under: 0.22, sky: 
 // `lowAt` and `highAt`, mm up). The light is paler than the leaf (`pale` of it is the leaf's grey). A lobe's seam keeps `seam` of
 // it, so that the lobes still read. `under` is the warm of the lanterns and the ground on the undersides, which the approved's
 // carry.
-const CREST = { power: 60.0, pale: 0.75, from: -0.4, to: 0.1, open: [0.05, 0.5] as const, shut: 0.6, line: [0.0, 0.7] as const, seam: 0.3, even: 0.06, blade: [1.0, 2.0] as const, tone: [1.2, 1.06, 0.8] as Rgb3, under: [0.55, 0.2, 0.1] as Rgb3, leftAt: -4, rightAt: 4, right: 0.2, lowAt: 18, highAt: 30, low: 1.0 }
+const CREST = { power: 60.0, pale: 0.75, from: -0.4, to: 0.1, open: [0.05, 0.5] as const, shut: 0.6, line: [0.0, 0.7] as const, seam: 0.3, even: 0.06, blade: [1.0, 2.0] as const, tone: [1.2, 1.06, 0.8] as Rgb3, under: [2.2, 1.3, 0.4] as Rgb3, leftAt: -4, rightAt: 4, right: 0.2, lowAt: 18, highAt: 30, low: 1.0 }
+// The sun on the tops. The approved's pads carry a gold green light on their tops: the leaf in the top millimetre of a pad reads
+// (52, 51, 32) there and (42, 46, 33) in the next, against the core's (34, 39, 28), where ours read (38, 40, 26) and (37, 40, 27).
+// So every leaf that faces up on its pad takes this light by how near it lies to the top of its own pad (`line`, mm under the
+// pad's highest leaf, `aTop.x`), in the sun's gold on the leaf's own green (`tone`, `power`); a pad under another pad keeps `shut`
+// of it and a lobe's seam `seam` of it. It lies on the leaf's own tone, so the single leaves still read, and it is added after
+// the leaf's light is made pale, so it keeps its colour. The leaf's own tone, and with it the body's hue, stays as it is.
+const SUN = { power: 5.5, tone: [1.9, 1.02, 0.6] as Rgb3, line: [0.0, 2.2] as const, shut: 0.3, seam: 0.6 }
 // A pad is a body: the leaves at its top catch the light and the rest of it does not. `aTop.x` is how far a leaf lies under the highest
 // leaf of its own pad within `reachMm` of it (mm, on a grid of `cellMm`). The leaves down to `from` under the top take `lift` of
 // the light, the scene's and the sky's; those deeper than `to` keep `body` of it.
@@ -94,8 +113,10 @@ const RIM = { power: 6.0, tone: [1.0, 0.62, 0.28] as Rgb3, rim: [0.6, 0.9] as co
 // The specks down a pad's flank. Where a pad's outline faces the right as the lens sees it (`toward`, `from`, `to`) the same edge
 // of the same leaves takes `power` of the lit edge's light, in the spots alone: between spots the flank stays dark and there is
 // no wash behind it, so it reads as a string of fine specks and not as a line. Where the lit edge is already as strong the flank
-// adds nothing.
-const FLANK = { power: 1.4, toward: [0.95, -0.3] as const, from: 0.2, to: 0.7 }
+// adds nothing. The specks are gold and not pale: the flank's light has its own tone (`tone`), and about each speck the leaf
+// behind the edge is lit low and deep (`ember` of the speck's light, in `gold`, to `reach` of the spot's radius and falling from
+// its heart), read from the same wide band as the lit edge's own fade, so a speck sits in a little gold of its own.
+const FLANK = { power: 1.45, toward: [0.95, -0.3] as const, from: 0.2, to: 0.7, turn: [0.15, -0.99] as const, turnFrom: 0.55, turnTo: 0.85, turnAt: [10.5, 12.0] as const, tone: [1.0, 0.565, 0.22] as Rgb3, ember: 0.45, gold: [1.0, 0.52, 0.16] as Rgb3, reach: 2.0 }
 // A flat pad's leaves stand farther above it than it is thick. For the choice of the pad a leaf is lit on, a pad counts as at least
 // this thick (mm), so that the leaves on a flat pad's top are lit as its top and not as the underside of a dome that hangs over it.
 const PAD_THICK = 1.5
@@ -175,16 +196,19 @@ vec4 treeLobes(vec3 p) {
   return vec4(way, sqrt(d2) - sqrt(d1));
 }
 // The spots about a point (in spots): the light of the one it lies in, none between them; soft is how wide a spot's edge is.
-float treeSpots(vec3 p, float soft) {
+// x is that light; y is the low light about the same spot, widest at its heart and gone at FLANK.reach of its radius.
+vec2 treeSpots(vec3 p, float soft) {
   vec3 base = floor(p - 0.5);
   vec3 f = p - base;
-  float lit = 0.0;
+  vec2 lit = vec2(0.0);
   for (int k = 0; k < 8; k++) {
     vec3 o = vec3(float(k & 1), float((k >> 1) & 1), float((k >> 2) & 1));
     vec3 h = treeHash(base + o);
     float pick = fract(h.x * 5.3 + h.y * 9.7 + h.z * 3.1);
     float r = mix(${RIM.size[0].toFixed(2)}, ${RIM.size[1].toFixed(2)}, pick);
-    lit = max(lit, (1.0 - smoothstep(r - soft, r + soft, length(f - (o + 0.25 + 0.5 * h)))) * mix(${RIM.dim.toFixed(2)}, 1.0, fract(pick * 7.9)));
+    float d = length(f - (o + 0.25 + 0.5 * h));
+    float about = max(1.0 - d / (${FLANK.reach.toFixed(2)} * r), 0.0);
+    lit = max(lit, mix(${RIM.dim.toFixed(2)}, 1.0, fract(pick * 7.9)) * vec2(1.0 - smoothstep(r - soft, r + soft, d), about * about));
   }
   return lit;
 }
@@ -261,6 +285,7 @@ function leafHook(shader: Shader): void {
   vec3 treePale = mix(treeTone, vec3(dot(treeTone, vec3(0.2126, 0.7152, 0.0722))), ${CREST.pale.toFixed(2)});
   reflectedLight.indirectDiffuse += treePale * ${glsl3(CREST.tone)} * (${CREST.power.toFixed(2)} * treeCrest * mix(${CREST.seam.toFixed(2)}, 1.0, treeTop) * mix(${CREST.even.toFixed(2)}, 1.0, smoothstep(${CREST.blade[0].toFixed(2)}, ${CREST.blade[1].toFixed(2)}, treeLum)));
   reflectedLight.indirectDiffuse += treePale * ${glsl3(CREST.under)} * ((1.0 - treeUp) * (1.0 - treeUp));
+  reflectedLight.indirectDiffuse += treeTone * ${glsl3(SUN.tone)} * (${SUN.power.toFixed(2)} * (1.0 - smoothstep(${SUN.line[0].toFixed(2)}, ${SUN.line[1].toFixed(2)}, vPad.z)) * treeUp * treeUp * mix(${SUN.shut.toFixed(2)}, 1.0, vPad.w) * mix(${SUN.seam.toFixed(2)}, 1.0, treeTop));
   float treeTurn = smoothstep(${PAD.rimFrom.toFixed(2)}, ${PAD.rimTo.toFixed(2)}, treeToSun);
   float treeOpen = smoothstep(${PAD.openFrom.toFixed(2)}, ${PAD.openTo.toFixed(2)}, vCard.y);
   float treeHem = pow(clamp(1.0 - dot(normalize(treePad + ${PAD.hem.toFixed(2)} * normalize(vNormal)), treeV), 0.0, 1.0), ${PAD.rimTight.toFixed(1)});
@@ -275,7 +300,7 @@ function leafHook(shader: Shader): void {
   reflectedLight.indirectDiffuse += vGlow.rgb * uTwinkle.z * ${glsl3(PAD.warmTone)} * (${PAD.warm.toFixed(3)} * mix(1.0, ${PAD.warmLobe.toFixed(2)}, treeTop) * (1.0 - treeUp) * (1.0 - treeUp) * smoothstep(${PAD.warmFrom.toFixed(2)}, ${PAD.warmTo.toFixed(2)}, vGlow.r) * mix(${PAD.dapEven.toFixed(2)}, 1.0, smoothstep(${PAD.leafFrom.toFixed(2)}, ${PAD.leafTo.toFixed(2)}, treeLum)));
   float treeLip = treeCard ? smoothstep(${RIM.rim[0].toFixed(2)}, ${RIM.rim[1].toFixed(2)}, 1.0 - dot(normalize(treePad + ${RIM.hem.toFixed(2)} * normalize(vNormal)), treeV)) * smoothstep(${RIM.tip[0].toFixed(2)}, ${RIM.tip[1].toFixed(2)}, fract(vMapUv.y * 1.999)) * mix(${RIM.shut.toFixed(2)}, 1.0, treeOpen) : 0.0;
   float treeBand = treeLip * mix(${RIM.around.toFixed(2)}, 1.0, smoothstep(${RIM.from.toFixed(2)}, ${RIM.to.toFixed(2)}, dot(treePad.xy, vec2(${RIM.toward[0].toFixed(2)}, ${RIM.toward[1].toFixed(2)}))));
-  float treeFlank = max(treeLip * ${FLANK.power.toFixed(2)} * smoothstep(${FLANK.from.toFixed(2)}, ${FLANK.to.toFixed(2)}, dot(treePad.xy, vec2(${FLANK.toward[0].toFixed(2)}, ${FLANK.toward[1].toFixed(2)}))) - treeBand, 0.0);
+  float treeFlank = max(treeLip * ${FLANK.power.toFixed(2)} * max(smoothstep(${FLANK.from.toFixed(2)}, ${FLANK.to.toFixed(2)}, dot(treePad.xy, vec2(${FLANK.toward[0].toFixed(2)}, ${FLANK.toward[1].toFixed(2)}))), smoothstep(${FLANK.turnFrom.toFixed(2)}, ${FLANK.turnTo.toFixed(2)}, dot(treePad.xy, vec2(${FLANK.turn[0].toFixed(2)}, ${FLANK.turn[1].toFixed(2)}))) * smoothstep(${(FLANK.turnAt[0] + offset[0]).toFixed(2)}, ${(FLANK.turnAt[1] + offset[0]).toFixed(2)}, vTreeP.x)) - treeBand, 0.0);
   float treeFine = length(fwidth(vTreeP)) * ${(RIM.soft / RIM.mm).toFixed(4)};
   vec2 treeOut = treePad.xy + vec2(${(RIM.lean * RIM.toward[0]).toFixed(3)}, ${(RIM.lean * RIM.toward[1]).toFixed(3)});
   treeOut /= max(length(treeOut), 1e-3);
@@ -288,8 +313,8 @@ function leafHook(shader: Shader): void {
     float treeRim = pow(max(1.0 - smoothstep(${RIM.in[0].toFixed(2)}, ${RIM.in[1].toFixed(2)}, textureLod(uSprigs, treeAt, max(log2(treeSize) - ${Math.log2(2 * RIM.across).toFixed(3)}, log2(treePx * treeSize))).a), 0.0), ${RIM.curve.toFixed(2)});
     vec2 treeBack = clamp(vMapUv + max(${(0.5 * RIM.far).toFixed(4)} / treePx, ${RIM.least.toFixed(2)}) * treeStep, treeCell + ${(0.5 / RIM.wide).toFixed(4)}, treeCell + ${(0.5 - 0.5 / RIM.wide).toFixed(4)});
     float treeWash = pow(max(1.0 - smoothstep(${RIM.over[0].toFixed(2)}, ${RIM.over[1].toFixed(2)}, textureLod(uSprigs, treeBack, max(log2(treeSize) - ${Math.log2(2 * RIM.wide).toFixed(3)}, log2(treePx * treeSize))).a), 0.0), ${RIM.bend.toFixed(2)});
-    float treeLights = treeSpots(vTreeP * ${(1 / RIM.mm).toFixed(4)}, clamp(treeFine, 0.08, 0.25));
-    reflectedLight.indirectDiffuse += ${glsl3(RIM.tone)} * (${RIM.power.toFixed(2)} * treeRim * (treeBand * mix(${RIM.dark.toFixed(2)}, 1.0, treeLights) + treeFlank * treeLights)) + treeTone * ${glsl3(RIM.glow)} * (${RIM.fade.toFixed(2)} * treeBand * treeWash);
+    vec2 treeLights = treeSpots(vTreeP * ${(1 / RIM.mm).toFixed(4)}, clamp(treeFine, 0.08, 0.25));
+    reflectedLight.indirectDiffuse += ${glsl3(RIM.tone)} * (${RIM.power.toFixed(2)} * treeRim * treeBand * mix(${RIM.dark.toFixed(2)}, 1.0, treeLights.x)) + ${glsl3(FLANK.tone)} * (${RIM.power.toFixed(2)} * treeRim * treeFlank * treeLights.x) + ${glsl3(FLANK.gold)} * (${(RIM.power * FLANK.ember).toFixed(3)} * treeWash * treeFlank * treeLights.y) + treeTone * ${glsl3(RIM.glow)} * (${RIM.fade.toFixed(2)} * treeBand * treeWash);
   }
   reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.rimTone)} * (min(${PAD.cap.toFixed(2)}, treeHem * treeTurn * smoothstep(${PAD.patchFrom.toFixed(2)}, ${PAD.patchTo.toFixed(2)}, treeMid) * mix(${PAD.rimShut.toFixed(2)}, 1.0, treeOpen) * mix(${PAD.rimBelow.toFixed(2)}, 1.0, treeHigh) * (${PAD.fringe.toFixed(2)} * treeLeaf + ${PAD.rim.toFixed(2)} * treeDot) * (treeCard ? smoothstep(${PAD.tipFrom.toFixed(2)}, ${PAD.tipTo.toFixed(2)}, fract(vMapUv.y * 1.999)) : ${PAD.tipBody.toFixed(2)})) * mix(${PAD.shade.toFixed(2)}, 1.0, stageKeyS));
 }`,
@@ -301,19 +326,24 @@ function woodHook(shader: Shader, groundY: number): void {
   Object.assign(shader.uniforms, { uTile: { value: 1 }, uBump: { value: WOOD.depthMm }, uSway: sway })
   const fork = lanterns.reduce((a, b) => (b.radius > a.radius ? b : a))
   shader.vertexShader = shader.vertexShader
-    .replace('#include <common>', '#include <common>\nattribute float aStem;\nvarying vec3 vTreeP;\nvarying vec3 vTreeN;\nvarying float vStem;')
-    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTreeP = position;\nvTreeN = normal;\nvStem = aStem;')
+    .replace('#include <common>', '#include <common>\nattribute float aStem;\nvarying vec3 vTreeP;\nvarying vec3 vTreeN;\nvarying float vStem;\nvarying vec3 vWoodTo;')
+    .replace('#include <begin_vertex>', `#include <begin_vertex>\nvTreeP = position;\nvTreeN = normal;\nvStem = aStem;\nvWoodTo = (modelViewMatrix * vec4(${v3([fork.at[0] + WOOD.poolFrom[0], fork.at[1] + WOOD.poolFrom[1], fork.at[2] + WOOD.poolFrom[2]])} - position, 0.0)).xyz;`)
   shader.fragmentShader = shader.fragmentShader
-    .replace('#include <common>', `#include <common>\n${TREE_GLSL}\n${LEVEL_GLSL}\nvarying float vStem;\nfloat woodH = 0.0;`)
+    .replace('#include <common>', `#include <common>\n${TREE_GLSL}\n${LEVEL_GLSL}\nvarying float vStem;\nvarying vec3 vWoodTo;\nfloat woodH = 0.0;`)
     .replace(
       '#include <map_fragment>',
       `#include <map_fragment>
 {
   float woodA = dot(texture2D(map, vMapUv * vec2(0.3333, 0.07)).rgb, vec3(0.3, 0.6, 0.1));
   float woodB = dot(texture2D(map, vMapUv * vec2(1.0, 0.35) + 0.31).rgb, vec3(0.3, 0.6, 0.1));
-  float woodWave = 0.5 + 0.5 * sin(6.2831853 * (vMapUv.x * ${WOOD.ridges.toFixed(1)} + ${WOOD.warp.toFixed(2)} * woodA + 0.5 * sin(vMapUv.y * 1.3) + 0.25 * sin(vMapUv.y * 3.1 + 1.0)));
+  float woodPhase = vMapUv.x * ${WOOD.ridges.toFixed(1)} + ${WOOD.warp.toFixed(2)} * woodA + 0.5 * sin(vMapUv.y * 1.3) + 0.25 * sin(vMapUv.y * 3.1 + 1.0);
+  float woodWave = 0.5 + 0.5 * sin(6.2831853 * woodPhase);
   woodH = smoothstep(${WOOD.from.toFixed(2)}, ${WOOD.to.toFixed(2)}, mix(woodWave, woodB * 2.2, ${WOOD.fine.toFixed(2)}));
+  float woodWide = fwidth(woodPhase);
+  float woodGrain = 0.6 * mix(${GRAIN.mean.toFixed(2)}, smoothstep(${GRAIN.from.toFixed(2)}, ${GRAIN.to.toFixed(2)}, 0.5 + 0.5 * sin(6.2831853 * (${(GRAIN.ridges[0] / WOOD.ridges).toFixed(3)} * woodPhase + ${GRAIN.shake.toFixed(2)} * woodB))), 1.0 - smoothstep(${GRAIN.see[0].toFixed(2)}, ${GRAIN.see[1].toFixed(2)}, ${(GRAIN.ridges[0] / WOOD.ridges).toFixed(3)} * woodWide)) + 0.4 * mix(${GRAIN.mean.toFixed(2)}, smoothstep(${GRAIN.from.toFixed(2)}, ${GRAIN.to.toFixed(2)}, 0.5 + 0.5 * sin(6.2831853 * (${(GRAIN.ridges[1] / WOOD.ridges).toFixed(3)} * woodPhase + ${(1.7 * GRAIN.shake).toFixed(2)} * woodB + 0.37))), 1.0 - smoothstep(${GRAIN.see[0].toFixed(2)}, ${GRAIN.see[1].toFixed(2)}, ${(GRAIN.ridges[1] / WOOD.ridges).toFixed(3)} * woodWide));
+  woodH *= mix(${(1 - GRAIN.cut).toFixed(2)}, 1.0, woodGrain);
   diffuseColor.rgb *= mix(${WOOD.low.toFixed(2)}, ${WOOD.high.toFixed(2)}, woodH);
+  diffuseColor.rgb *= mix(${GRAIN.low.toFixed(2)}, ${GRAIN.high.toFixed(2)}, woodGrain);
   float woodMoss = ${WOOD.moss.toFixed(2)} * (1.0 - smoothstep(${(groundY + 1).toFixed(2)}, ${(groundY + WOOD.mossTo).toFixed(2)}, vTreeP.y + 2.5 * woodB)) * smoothstep(-0.25, 0.45, normalize(vTreeN).y + 0.5 * (woodA - 0.3));
   diffuseColor.rgb = mix(diffuseColor.rgb, ${v3(MOSS)} * (0.25 + 1.5 * woodB), woodMoss);
 }`,
@@ -333,9 +363,12 @@ function woodHook(shader: Shader, groundY: number): void {
   float woodFar = max(length(woodTo), 1e-3);
   // Over the large lantern its light climbs the arms: there it reaches farther and lies on more of each arm's round, so that the wood in the notch about the stem is lit.
   float woodOver = smoothstep(${(WOOD.armsFrom * fork.radius).toFixed(2)}, ${(WOOD.armsTo * fork.radius).toFixed(2)}, -woodTo.y);
-  float woodPool = pow(clamp(1.0 - woodFar / (${(WOOD.poolReachMm * fork.radius).toFixed(2)} * mix(1.0, ${WOOD.armsReach.toFixed(2)}, woodOver)), 0.0, 1.0), 2.0) * stageWrap(dot(normalize(vTreeN), woodTo / woodFar), mix(${WOOD.poolWrap.toFixed(2)}, ${WOOD.armsWrap.toFixed(2)}, woodOver));
+  float woodPool = pow(clamp(1.0 - woodFar / (${(WOOD.poolReachMm * fork.radius).toFixed(2)} * mix(1.0, ${WOOD.armsReach.toFixed(2)}, woodOver)), 0.0, 1.0), 2.0) * stageWrap(mix(dot(normalize(vTreeN), woodTo / woodFar), dot(normal, normalize(vWoodTo)), ${GRAIN.relief.toFixed(2)}), mix(${WOOD.poolWrap.toFixed(2)}, ${WOOD.armsWrap.toFixed(2)}, woodOver));
   reflectedLight.indirectDiffuse += woodTone * ${glsl3(paper(fork))} * (${WOOD.pool.toFixed(2)} * mix(1.0, ${WOOD.arms.toFixed(2)}, woodOver) * woodPool * lanternLevel(${fork.order.toFixed(1)}));
   reflectedLight.directDiffuse += stageKeyC * woodTone * (${WOOD.top.toFixed(2)} * smoothstep(0.15, 0.9, normalize(vTreeN).y));
+  float woodShade = mix(1.0, ${GRAIN.shade.toFixed(2)}, smoothstep(${(groundY + GRAIN.shadeFrom).toFixed(2)}, ${(groundY + GRAIN.shadeTo).toFixed(2)}, vTreeP.y));
+  reflectedLight.directDiffuse *= woodShade;
+  reflectedLight.indirectDiffuse *= woodShade;
 }`,
   )
 }

@@ -64,7 +64,7 @@ const STACK = { tone: [0.58, 0.54, 0.5] as Rgb, reachMm: 0.4 }
 // take that tone here (pale: how light a vertex must be to count as a picket).
 const FENCE_WOOD = { rail: [0.36, 0.225, 0.135] as Rgb, picket: [0.29, 0.185, 0.115] as Rgb, reachMm: 1.6, pale: 0.25 }
 const SLATE_BASE: Rgb = [0.018, 0.022, 0.03]
-const BANK_TINT: Rgb = [0.74, 0.52, 0.52]
+const BANK_TINT: Rgb = [0.55, 0.62, 0.6]
 // The top of each bank mound goes warm and pale, as the approved's moss lip does. The mesh's second surf number is the
 // depth down a mound: 0 at the lawn's edge, 0.5 at the mound's foot, 1 well under it (BANK.fall and BANK.sun read it).
 const BANK_SUN: Rgb = [1.45, 1.3, 0.85]
@@ -280,13 +280,13 @@ if (turfBankA > 0.01) {
   float turfCatch = smoothstep(-0.15, 0.9, dot(geometryNormal, vec3(0.0, 0.76, 0.65)));
   float turfRock = smoothstep(2.5, 2.9, vSurf.x);
   float turfLift = normalize(vObjN).y;
-  // Moss in the shade of the glass's foot is seen by its fuzz, which scatters the room's light whatever the green under it,
+  // Moss in the shade of the glass's foot is seen by its fuzz, which scatters the room's light and takes only a little of the green under it,
   // and as much at the bank's foot as at its lip.
   float turfDeep = mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y));
   float turfPale = (1.0 - smoothstep(0.4, 0.5, vSurf.y)) * dot(material.diffuseContribution, vec3(0.3, 0.6, 0.1)) / turfDeep;
-  vec3 turfRoom = dot(stageKeyC, vec3(0.3333)) * vec3(1.0, 0.95, 0.7);
-  reflectedLight.directDiffuse += turfRoom * (RECIPROCAL_PI * ${SKIRT_FILL.toFixed(2)} * turfBank * turfPale * (0.05 + 2.1 * turfCatch * turfCatch * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)));
-  reflectedLight.directDiffuse += stageKeyC * vec3(1.0, 0.72, 0.5) * (RECIPROCAL_PI * 420.0 * turfBank * turfPale * (1.0 - smoothstep(0.0, 0.22, vSurf.y)) * (1.0 - smoothstep(0.0, 0.22, vSurf.y)) * turfCatch * turfCatch * turfCatch);
+  vec3 turfRoom = dot(stageKeyC, vec3(0.3333)) * vec3(0.86, 1.0, 0.8) * mix(vec3(1.0), material.diffuseContribution / max(dot(material.diffuseContribution, vec3(0.3, 0.6, 0.1)), 1e-4), 0.22);
+  reflectedLight.directDiffuse += turfRoom * (RECIPROCAL_PI * ${SKIRT_FILL.toFixed(2)} * turfBank * turfPale * (0.06 + 1.5 * mix(1.0, 0.4, smoothstep(0.08, 0.35, vSurf.y)) * turfCatch * turfCatch * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)));
+  reflectedLight.directDiffuse += stageKeyC * vec3(1.0, 0.72, 0.5) * mix(vec3(1.0), material.diffuseContribution / max(dot(material.diffuseContribution, vec3(0.3, 0.6, 0.1)), 1e-4), 0.6) * (RECIPROCAL_PI * 760.0 * turfBank * turfPale * (1.0 - smoothstep(0.0, 0.22, vSurf.y)) * (1.0 - smoothstep(0.0, 0.22, vSurf.y)) * turfCatch * turfCatch);
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${ROCK_FILL.toFixed(2)} * (1.0 + ${STEP_FILL.toFixed(2)} * vSurf.y) * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift))) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${SOIL.fill.toFixed(2)} * turfBank * turfSoil * turfSeam) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fuzz.toFixed(2)} * turfFuzz * stageWrap(dot(geometryNormal, stageKeyL), 1.0)) * material.diffuseContribution;

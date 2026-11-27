@@ -167,8 +167,29 @@ export function leaveOut(leaves: boolean, change: number, sample: { t: number; o
     behind: joins ? out - gone(at - reach) : 0,
     ahead: joins ? gone(at + reach) - out : 0,
     of: joins ? of : 0,
-    kept: Math.min(1, (reachMm - out) / (reachMm - thinFromMm)),
+    kept: leaveKept(out, reachMm, thinFromMm),
   }
+}
+
+/** Of a thing `out` mm on its way that thins from `thinFromMm` out and is gone at `goneMm`, the share that is left: 1 before, 0 after. */
+export function leaveKept(out: number, goneMm: number, thinFromMm: number): number {
+  return Math.max(0, Math.min(1, (goneMm - out) / (goneMm - thinFromMm)))
+}
+
+/**
+ * What is piled on such a thing against the foot and takes the glass's light there as a light of its own (winter's heap of
+ * snow) goes out with it, at its pace. That light is held through the falling exposure of a change and the pour is laid on
+ * top of it, so a pile that carried it along was the brightest thing on the table all the way out, and it goes toward the
+ * camera. So on its way a pile leaves the light and then the table, by the one share above: its own light is out at
+ * `darkMm`, falling by the square of what is left of that way (the pour rises while it goes, and by the plain share the
+ * pile still stood out a frame before its light was gone), and from there it is lit as what lies beside it. The pile itself
+ * thins from `thinFromMm` and is gone at `goneMm`, before the thing it lies on begins to thin. At rest both shares are 1.
+ */
+export const PILED_LEAVE = { darkMm: 50, thinFromMm: 40, goneMm: 80 } as const
+
+/** Of a pile `out` mm on its way: the share of its own light that is left (`lit`) and the share of the pile (`kept`). */
+export function piledLeft(out: number): { lit: number; kept: number } {
+  return { lit: leaveKept(out, PILED_LEAVE.darkMm, 0) ** 2, kept: leaveKept(out, PILED_LEAVE.goneMm, PILED_LEAVE.thinFromMm) }
 }
 
 const ramp = (v: number): number => (v <= 0 ? 0 : v >= 1 ? 1 : v)

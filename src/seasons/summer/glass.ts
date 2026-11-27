@@ -12,20 +12,24 @@ import { holdStorm, veil } from './veil'
 // 1. The flare: the reflection of the one strong warm light (the rig's key) on the outside of the glass. It sits where a sphere
 //    mirrors that light toward the eye (the half vector between the eye and the light), which from the hero camera is the upper
 //    right shoulder, at the limb. It is a white patch on the outline, drawn out along it, with the soft bloom and the
-//    warm glow a lens draws round it, and a star of thin rays that stand out from it into the room: seven wedges and
-//    a needle along each, four needles more between them. The rays lift what lies behind them, so they stand on the
+//    warm glow a lens draws round it, and in that bloom seven soft rays that stand out from it into the room: wedges
+//    without a bright root and without an end one could point at. The rays lift what lies behind them, so they stand on the
 //    room's pale lights as on its dark. All of that is the lens's and is drawn last of all; the hot line the sun leaves
 //    down the limb is the glass's and is drawn with the globe. It kindles on the landing.
 // 2. The pool: the same light focused by the globe onto the slab, in front of the globe and to its left, inside the globe's own
 //    shadow: a soft pool of warm light, brightest at a knot by the foot, and inside it a few broad curved bands of the water's
-//    light, soft edged and never a net or a star. There is no pool before the landing; after it the pool swells, its bands
-//    slide into place and come to rest, and they breathe a little while the water is still.
+//    light, long across the picture, each clear at its outer edge and soft inward, and never a net or a star (the
+//    config's settled line for summer: the approved picture's thin veins out of one point are not drawn). There is no
+//    pool before the landing; after it the pool swells, its bands slide into place and come to rest, and they breathe
+//    a little while the water is still.
 // 3. The wall: the sun, bent by the globe, burns on the inside of the glass low on the far side: a sheaf of hairs of
 //    light that follow the limb, one white body without a gap along their middles, whose core ends up the limb in
 //    soft pointed tongues of unequal length and thins past them into fibres that go out; it thins to a round foot
 //    and dies away into the warm halo round it. The same
 //    billboard carries the warm haze of the liquid at rest, which lies low and behind
-//    the miniature; above the roof line it is no more than a thin even veil, so the dark room reads through the whole
+//    the miniature: gold behind the cottage, brightest along the ground right of the trunk, dark behind the crown. It
+//    thins toward the outline, where the eye looks through less of the liquid, so it reads as a ball of liquid and not
+//    as a wall; above the roof line it is no more than a thin even veil, so the dark room reads through the whole
 //    upper half of the glass. And it carries the glass's own reflections: one cream ribbon in lanes under the top, one cool slab
 //    down the right shoulder, and at the upper left the ribbon's broad end, the clear dark past it, one dash and a few
 //    short strokes, no two alike. The haze and the reflections do not grow brighter with the storm, which is the air's: the
@@ -56,15 +60,17 @@ export const look = {
     halfMm: 30,
     // the core: white hot, a patch on the outline, drawn out along it and bent with it; how strong, and its size across
     // the outline and along it (in the quad's half width, as every length of the flare is, which is half the ball's
-    // radius). On the approved picture what is white (a level of 250 and over) lies 0.065 of the radius along the rim
-    // and 0.035 of it across
-    core: 12,
-    coreAcross: 0.035,
-    coreAlong: 0.07,
+    // radius). On the approved picture what is white (a level of 250 and over) lies 0.069 of the radius along the rim
+    // and 0.033 of it across. Here it is held under that, 0.047 by 0.026 on the drawn still: where a light of the room
+    // lies behind the star, as it does in the film, the room's light is added and the white spreads, there to 0.065
+    // by 0.031
+    core: 10,
+    coreAcross: 0.03,
+    coreAlong: 0.06,
     // the mirror's own place for the sun lies a hair inside the outline: the glint is pushed out along the radius by this
     // share of it, so that its middle lies on the outline and the bloom sits on the rim
     rimOut: 0.012,
-    // the bloom of the lens round the patch: soft, nearly white, brightest on the rim, and a little longer along the
+    // the bloom of the lens round the patch: soft, cream, brightest on the rim, and a little longer along the
     // outline than across it, since the patch it blooms from is long (`bloom`, and the lengths it falls to a third in,
     // across the outline and along it); round it the warm glow, its tail, which falls off slower and has no edge
     // (`glow`, and its lengths)
@@ -74,52 +80,38 @@ export const look = {
     glow: 1.83,
     glowAcross: 0.12,
     glowAlong: 0.164,
-    hot: [1, 0.92, 0.72] as const,
+    hot: [1, 0.88, 0.64] as const,
     amber: [1, 0.51, 0.27] as const,
-    // the star: seven thin rays stand out from the middle of the patch into the dark of the room, counted on the
-    // approved picture, and none into the ball. Each: its angle from the outline's outward normal (degrees, counter
-    // clockwise), how far it reaches (in the quad's half width), the tangent of half the angle it opens by, how bright
-    // beside the longest, and how strong its lift is beside the strongest. A ray is a wedge of light: brightest and
-    // thinnest where it leaves the patch, and it falls off along its reach as the approved's do, by `rayFall` to the
-    // reach (the power of e) over its growing width, which `rayRoot` keeps from nothing at the root. `ray` is how
-    // bright the longest is, `rayThin` half the width a ray has at its root, `rayHue` its colour, copper as the
-    // approved's are. That light is dealt to the approved picture, where the room behind the star is dark. Where a
-    // pale light of the room lies behind the star, light of that strength is lost on it, so a ray besides lifts what
-    // lies behind it: `lift` is by how many times its own strength the strongest lifts it at its root, falling along
-    // the reach half as fast as the light does and over `liftRoot`. On a dark room that is next to nothing, on a
-    // pale light it is the ray. The flare's own light is not lifted: it is added after the lift, in the one pass.
-    // The lift has the wedge's shape by the share `liftWedge` and, whole, the shape of a
-    // needle along the ray's middle: `needle` is half its width at the root and what it gains to one half width of
-    // the quad along the ray; it is never drawn thinner than `needleLeast` pixels, only fainter, so it melts into
-    // its wedge in a small picture and stands in a large one. The needle adds a little light of its own too
-    // (`needleAdd`, `needleHue`). `needles` are four more that have no wedge, between the seven: angle, reach, lift
+    // the star is a bloom with rays in it, not a drawn star: seven soft rays, measured on the approved picture (six
+    // that stand out into the room and the one that lies down the limb), and none into the ball. Each: its angle from
+    // the outline's outward normal (degrees, counter clockwise), how far it reaches (in the quad's half width), the
+    // tangent of half the angle it opens by, how bright beside the longest, and how strong its lift is beside the
+    // strongest. A ray is a soft wedge of light. It has no bright root: it rises out of the bloom over `rayRise`, runs
+    // on falling to a third in every `rayLen`, and from the share `rayEnd` of its reach it fades to nothing at its
+    // reach, so it has no end one could point at. `ray` is how bright the longest is, `rayThin` half the width a ray
+    // has at its root, `rayHue` its colour, copper as the approved's are. On the approved picture a ray stands 4 to 20
+    // levels over what lies beside it, and is 7 to 15 degrees wide: the numbers are dealt to that. That light is
+    // dealt to the approved picture, where the room behind the star is dark. Where a pale light of the room lies
+    // behind the star, light of that strength is lost on it, so a ray besides lifts what lies behind it: `lift` is by
+    // how many times its own strength the strongest lifts it, in the ray's own shape and falling along it half as fast
+    // as the light does. On a dark room that is next to nothing, on a pale light it is the ray. The flare's own light
+    // is not lifted: it is added after the lift, in the one pass
     rays: [
-      [-65.8, 0.9, 0.065, 1, 1],
-      [-83.8, 0.85, 0.035, 0.84, 0.6],
-      [-27.3, 0.9, 0.07, 0.3, 0.5],
-      [-8.8, 1.6, 0.07, 0.042, 0.14],
-      [13.7, 0.35, 0.07, 0.3, 0.3],
-      [39.2, 0.6, 0.12, 1, 0.5],
-      [68.2, 0.9, 0.06, 0.5, 0.6],
+      [-69, 0.9, 0.06, 1, 1],
+      [-83.8, 0.6, 0.035, 0.4, 0.4],
+      [64, 0.75, 0.08, 0.6, 0.7],
+      [34, 0.55, 0.09, 0.24, 0.4],
+      [4, 0.5, 0.1, 0.2, 0.35],
+      [-16, 0.7, 0.08, 0.15, 0.35],
+      [-41, 0.7, 0.075, 0.27, 0.45],
     ] as const,
-    needles: [
-      [-46, 0.7, 0.35],
-      [2, 0.75, 0.35],
-      [26, 0.55, 0.3],
-      [52, 0.8, 0.4],
-    ] as const,
-    ray: 0.33,
-    rayFall: 5.5,
-    rayRoot: 0.05,
-    rayThin: 0.005,
-    rayHue: [1, 0.72, 0.42] as const,
-    lift: 2.5,
-    liftRoot: 0.15,
-    liftWedge: 0.6,
-    needle: [0.0012, 0.008] as const,
-    needleLeast: 1,
-    needleAdd: 0.04,
-    needleHue: [1, 0.9, 0.75] as const,
+    ray: 0.5,
+    rayRise: 0.06,
+    rayLen: 0.2,
+    rayEnd: 0.35,
+    rayThin: 0.012,
+    rayHue: [1, 0.68, 0.38] as const,
+    lift: 0.7,
     // down the limb from the patch the outline itself is hot: one thin line just inside it (`line`: how strong, how far
     // inside the outline it lies and half its width, how far down the limb its middle lies and half its length there,
     // all in the quad's half width)
@@ -198,7 +190,9 @@ export const look = {
     // how the lanes swing about that, so that no two stretches run quite the same way (how far, how many radians to
     // a degree up the limb and to the radius), `warp` how far they wander from even spacing (two waves: how many
     // lanes, how many radians to the radius), `soft` the share of a lane its edge is soft over (and never less than
-    // a pixel), `bright` how bright a lane is beside a white thread and `dim` what the dimmest keeps of that. `tip`
+    // a pixel), `bright` how bright a lane is beside a white thread and `dim` what the dimmest keeps of that. At this
+    // `bright` the body is white in its heart alone and warm white round it, as the approved's is: there what is
+    // white lies in the lower middle only, and the body round it has the mean colour 250 240 225. `tip`
     // and `foot` are where the core ends up the limb and where the lanes begin: the bearing by the depth inside the
     // outline (pairs: depth, bearing). The foot is round: the lanes of the middle reach furthest down and those of both flanks begin
     // further up, so the body thins to its foot and no line crosses it. `side` is the share of the sheaf by the
@@ -225,15 +219,15 @@ export const look = {
       wave: [0.003, 0.45, 40] as const,
       warp: [0.3, 190, 0.2, 73] as const,
       soft: 0.4,
-      bright: 2,
+      bright: 1.7,
       dim: 0.85,
       tip: [
-        [0.058, 193.5],
-        [0.085, 195.2],
-        [0.105, 197],
-        [0.125, 199.5],
-        [0.145, 201.5],
-        [0.17, 202.5],
+        [0.058, 192.3],
+        [0.085, 192.3],
+        [0.105, 195.8],
+        [0.125, 196.2],
+        [0.145, 198.2],
+        [0.17, 201.2],
         [0.195, 202.5],
         [0.215, 204],
         [0.23, 206],
@@ -279,7 +273,7 @@ export const look = {
       part: 1.3,
       wander: 0.3,
       halo: 0.36,
-      haloColor: [1, 0.6, 0.28] as const,
+      haloColor: [1, 0.5, 0.15] as const,
       haloIn: [0.075, 0.19] as const,
       haloAcross: [0.045, 0.07] as const,
       haloTip: 0,
@@ -292,8 +286,8 @@ export const look = {
     // the share of its width a thread keeps at its very tip and at its very foot: it draws to a needle at both
     threadPoint: 0.2,
     hotColor: [1, 0.94, 0.8] as const,
-    flameWarm: [1, 0.6, 0.33] as const,
-    flameWarmHalf: 0.4,
+    flameWarm: [1, 0.5, 0.18] as const,
+    flameWarmHalf: 1,
     threadWarm: [1, 0.42, 0.16] as const,
     // the amber glow of the liquid round the patch: thin and close, so the turf and the fence beside the flame stay
     // clear (`glowSize`: how far it reaches across the limb, down the limb and up it)
@@ -326,51 +320,56 @@ export const look = {
     airColor: [1, 0.62, 0.3] as const,
     airFar: [0.065, 0.82, 0.43, 0.25, 0.3, 0.45, 0.25] as const,
     airFarColor: [1, 0.7, 0.42] as const,
-    // the haze: the liquid behind the miniature holds the last sun. It is cream gold and fullest low, just over the ground
-    // (`hazeLow`, in globe radii up the picture), and stands highest in a plume between the cottage and the tree (`hazeAt`,
+    // the haze: the liquid behind the miniature holds the last sun. It is gold and fullest low, just over the ground
+    // (`hazeLow`, in globe radii up the picture), and stands highest in a plume over the middle of the ground (`hazeAt`,
     // `hazeWide`), `hazeTall` radii tall there and `hazeSideTall` of that at the sides, where it is `hazeRim` as strong. With
     // it goes a thinner light that lies on a slope and never on a level, `hazeHigh` at the ground, down to a third
-    // `hazeHighTall` radii up, and `hazeHighLeft` of that at the far left. `hazeBanks` is how unevenly all of it lies, in
-    // soft banks `hazeBankSize` globe radii across, so it reads as lit liquid and never as a flat card
-    haze: 0.32,
-    hazeColor: [1, 0.68, 0.4] as const,
+    // `hazeHighTall` radii up, and `hazeHighLeft` of that at the far left. The liquid is a ball: the eye looks through
+    // most of it at the middle and through little at the outline, so the haze and the bodies below are whole inside the
+    // first of the `hazeLimb` radii and gone at the second. `hazeBanks` is how unevenly all of it lies, in soft banks
+    // `hazeBankSize` globe radii across, and `hazeFine` in finer ones `hazeFineSize` across, so it reads as lit liquid
+    // with depth in it and never as a flat card
+    haze: 0.4,
+    hazeColor: [1, 0.62, 0.28] as const,
     hazeRim: 0.07,
-    hazeAt: -0.12,
-    hazeWide: 0.45,
+    hazeAt: 0.05,
+    hazeWide: 0.6,
     hazeLow: -0.46,
-    hazeTall: 0.5,
+    hazeTall: 0.38,
     hazeSideTall: 0.55,
-    hazeHigh: 0.04,
+    hazeLimb: [0.5, 0.96] as const,
+    hazeHigh: 0.02,
     hazeHighTall: 0.4,
     hazeHighLeft: 0.35,
     // the haze over the dome: above the roof line the liquid holds very little of the sun, an even thin veil that the
     // seed heads and the fireflies float in, `fill` of it, thin and as warm as the liquid's own light, so that the dark
     // room reads through the whole upper half of the glass as a warm dark and never as a grey one. It has no patches
     // and no folds. Two soft bodies of light lie in it
-    // (`fillBody`, each: where, across and up, how wide and how tall in globe radii, how much): one low over the roof
-    // at the left, and a faint one right of the crown on the flare's side. None lies over the middle or the upper
-    // middle
-    fill: 0.03,
+    // (`fillBody`, each: where, across and up, how wide and how tall in globe radii, how much): one low behind the
+    // cottage at the left, no higher than its chimney, and a faint one right of the crown on the flare's side. None
+    // lies over the middle or the upper middle, and behind the crown the liquid is dark
+    fill: 0.02,
     fillColor: [1, 0.5, 0.25] as const,
     fillBody: [
-      [-0.3, 0.1, 0.34, 0.15, 0.17],
+      [-0.42, 0.02, 0.34, 0.16, 0.16],
       [0.55, 0.47, 0.3, 0.26, 0.02],
     ] as const,
-    bodyColor: [1, 0.58, 0.34] as const,
+    bodyColor: [1, 0.6, 0.26] as const,
     // and a body falls off to the limb: all of it inside the first of these radii, none beyond the second
     bodyLimb: [0.5, 0.92] as const,
-    // a faint warm body of light low over the middle, behind the cottage and left of the crown (`domeAt`, globe radii
-    // across and up; `domeSize`, how far it reaches to the left, to the right and up or down). It is smooth and it ends
-    // below the upper half
-    dome: 0.07,
-    domeAt: [-0.15, 0.25] as const,
-    domeSize: [0.3, 0.35, 0.2] as const,
-    domeColor: [1, 0.58, 0.34] as const,
-    // behind the tree and the lanterns the liquid is brightest and warmest: a core between the trunk and the right wall
-    core: 0.11,
-    coreAt: [0.4, -0.12] as const,
-    coreSize: [0.38, 0.26] as const,
-    coreColor: [1, 0.56, 0.26] as const,
+    // a warm gold body of light behind the cottage's roof and the gap between it and the trunk (`domeAt`, globe radii
+    // across and up; `domeSize`, how far it reaches to the left, to the right and up or down). The banks break it and
+    // it ends below the upper half
+    dome: 0.09,
+    domeAt: [-0.2, 0.08] as const,
+    domeSize: [0.28, 0.22, 0.16] as const,
+    domeColor: [1, 0.6, 0.26] as const,
+    // along the ground behind the trunk's foot and right of it the liquid is brightest and most golden: a low core
+    // between the trunk and the right wall, which the banks break. Over it, behind the crown, the liquid is dark
+    core: 0.28,
+    coreAt: [0.32, -0.3] as const,
+    coreSize: [0.45, 0.15] as const,
+    coreColor: [1, 0.6, 0.22] as const,
     // the sharp light on the glass low on the right limb: one thin pale streak that follows the arc just inside the
     // outline, and no other, since the approved picture has no pale patch inside the right arc. Each: its bearing
     // (degrees from the right, counter clockwise) and half its length along the arc (degrees), where in the radius it
@@ -625,8 +624,10 @@ export const look = {
     rimSkyColor: [0.72, 0.86, 1] as const,
     rimSteel: [62, 0.88, 0.97, 0.925, 0.955, 0.975, 0.998, 0.07] as const,
     reflexStorm: 0.6,
-    hazeBanks: 0.35,
-    hazeBankSize: 0.42,
+    hazeBanks: 0.4,
+    hazeBankSize: 0.17,
+    hazeFine: 0.25,
+    hazeFineSize: 0.06,
     // the storm is the air's, in front, in the veil: nothing here grows brighter with it. The still air's haze behind
     // the miniature gives way to it by this much, between these two turbulences, and it dulls the glow round the burn
     // and the line on the outline beside it (`stormDulls`); the burn's threads it widens (`threadStorm`, above)
@@ -647,31 +648,43 @@ export const look = {
     // never one flat tone
     softMm: 26,
     at: [-18, -2] as const,
-    gain: 0.175,
+    gain: 0.1,
     // and a smaller, brighter body of it by the foot (its radius, where, how bright)
     nearMm: 11,
     nearAt: [-5, 0] as const,
-    near: 0.27,
+    near: 0.16,
     cellMm: 38,
     mottle: 0.35,
     // the knot by the foot: a small soft hot spot, and the glow it lies in
-    core: 1.4,
-    coreMm: 2.6,
-    glow: 0.3,
+    core: 3.2,
+    coreMm: 2.2,
+    glow: 0.45,
     glowMm: 5,
-    // the water's light inside the pool: a few broad curved bands that bend round the knot, each several millimetres wide,
-    // soft edged, thickest and brightest at its middle and fading to its ends, of unlike length and width (each: the
-    // middle of its circle from the knot, across and down the way, its radius, the bearing of its middle and its half
-    // length in degrees, half its width, how bright, and how far it slides as the liquid swings, all lengths in
-    // millimetres). No line runs out from the knot
+    // the water's light inside the pool: a few broad curved bands, each several millimetres wide, thickest and
+    // brightest at its middle and thinning and fading to its ends, of unlike length and width (each: the middle of its
+    // circle from the knot, across and down the way, its radius, the bearing of its middle and its half length in
+    // degrees, half its width, how bright, and how far it slides as the liquid swings, all lengths in millimetres).
+    // The camera sees the table at a low angle, a millimetre toward the front as a fifth of one across, so a band
+    // reads as a curve only where it runs across the picture. Three long ones are parts of wide circles whose middles
+    // lie far behind the knot: one passes just in front of the knot and rises to the left, one lies behind that and
+    // one in front of it, and they lie beside one another and do not meet. One short crescent bends round the knot
+    // and one faint band lies to its right. A band is a fold of the water's light: its outer edge is clear (it falls
+    // to 0.37 within its half width over the root of `bandEdge`) and inward it runs out softly (to 0.37 within its
+    // half width over `bandTail`). So it reads as light through water and not as a smear, and it stays broad: no
+    // thin line, none out of the knot
     band: [
-      [3, -2, 11, 205, 45, 1.7, 1, 2],
-      [-6, 4, 16, 185, 40, 2.4, 0.85, -3],
-      [4, -4, 40, 200, 35, 3.2, 0.6, 4.5],
-      [-10, -14, 12, 240, 35, 1.5, 0.5, -2.5],
-      [2, 0, 13, 40, 28, 1.5, 0.45, 2.5],
+      [2.4, -62.6, 65.2, 106.9, 28.3, 2, 1, 2.5],
+      [-12.4, -44.5, 36.1, 118.3, 30.1, 1.5, 0.6, -3],
+      [-19.6, -80.3, 87.6, 98.1, 16.4, 1.7, 0.7, 4],
+      [2.5, -1, 8, 165, 60, 1.4, 0.9, 2],
+      [37.9, -89.3, 97.3, 98.3, 10.1, 1.3, 0.45, -2.5],
     ] as const,
-    bands: 1,
+    bands: 2.5,
+    bandEdge: 9,
+    bandTail: 0.9,
+    // the breath at rest slides a band by up to half of `breath` of its radius, and of no more than this radius: the
+    // wide circles would else slide many times further than the small one
+    breathMm: 16,
     // the water's cells take this much of a band's light away in places, so it is uneven along its length
     bandMottle: 0.3,
     // grains of sand on the table take the light where a band lies: one to a cell `grainCellMm` wide, `grainMm` in
@@ -693,7 +706,10 @@ export const look = {
     // to all of it, and the bands slide out into their places with the liquid's swing and come to rest
     swellSeconds: 0.8,
     small: 0.6,
-    gold: [1, 0.66, 0.26] as const,
+    // a band is gold far from the knot (`gold`) and a paler gold close by it (`bandNear`); the ground is `amber`, the
+    // knot `pale`
+    gold: [1, 0.52, 0.13] as const,
+    bandNear: [1, 0.66, 0.28] as const,
     amber: [1, 0.5, 0.14] as const,
     pale: [1, 0.8, 0.5] as const,
   },
@@ -754,48 +770,23 @@ void main() {${FLARE_AT}
   gl_FragColor = vec4(${vec(F.hot)} * (${n(F.line[0])} * line * lit * edge), 0.0);
 }`
 const FLARE_RAYS = `
-// a ray's needle: the thin line along its middle. ax: how far along the ray, cr: how far off it, squared, px: the
-// least half width, f: the reach and how strong the lift is. One exponential along the ray serves the light (its
-// square) and the lift. First what the lift has of the needle, second how wide the needle is drawn, squared, third
-// the lift's strength along the ray, fourth the light's fall along it
-vec4 flNeedle(float ax, float cr, float px, vec2 f) {
-  float t = ax / f.x;
-  float w = ${n(F.needle[0])} + ${n(F.needle[1])} * ax;
-  float wd = max(w, px);
-  float fall = exp(${n(-F.rayFall / 2)} * t);
-  float end = 1.0 - smoothstep(0.6, 1.0, t);
-  float g = f.y * fall * end / (t + ${n(F.liftRoot)});
-  return vec4(g * (w / wd) * exp(-cr / (wd * wd)), wd * wd, g, fall * fall * end / (t + ${n(F.rayRoot)}));
-}
-// one ray of the star: a thin wedge that stands out from the middle of the patch, brightest where it leaves it and gone
-// at its reach, with its needle. u: its direction, f: how far it reaches, the tangent of half the angle it opens by,
-// how bright, how strong its lift. First the light its wedge adds, second its lift, third its needle alone
-vec3 flRay(vec2 q, float px, vec2 u, vec4 f) {
-  float ax = dot(q, u);
-  if (ax <= 0.0 || ax >= f.x) return vec3(0.0);
-  float cr = q.x * u.y - q.y * u.x;
-  cr *= cr;
-  float wide = f.y * f.y * ax * ax + ${(F.rayThin * F.rayThin).toFixed(6)};
-  // nothing of it this far off its middle
-  if (cr > 12.0 * max(wide, px * px)) return vec3(0.0);
-  vec4 nd = flNeedle(ax, cr, px, f.xw);
-  float wedge = exp(-cr / wide);
-  return vec3(f.z * nd.w * wedge, nd.z * ${n(F.liftWedge)} * wedge + nd.x, nd.x);
-}
-// a needle without a wedge. f: how far it reaches and how strong its lift. Its lift, and the same again
-vec2 flPin(vec2 q, float px, vec2 u, vec2 f) {
+// one ray of the star: a soft wedge that rises out of the bloom, runs on with it and fades to nothing before its reach.
+// u: its direction, f: how far it reaches, the tangent of half the angle it opens by, how bright, how strong its lift.
+// First the light it adds, second its lift. One exponential along the ray serves the lift and the light (its square)
+vec2 flRay(vec2 q, vec2 u, vec4 f) {
   float ax = dot(q, u);
   if (ax <= 0.0 || ax >= f.x) return vec2(0.0);
   float cr = q.x * u.y - q.y * u.x;
   cr *= cr;
-  float w = max(${n(F.needle[0])} + ${n(F.needle[1])} * ax, px);
-  if (cr > 12.0 * w * w) return vec2(0.0);
-  return flNeedle(ax, cr, px, f).xx;
+  float wide = f.y * f.y * ax * ax + ${(F.rayThin * F.rayThin).toFixed(6)};
+  // nothing of it this far off its middle
+  if (cr > 12.0 * wide) return vec2(0.0);
+  float body = exp(-cr / wide) * smoothstep(0.0, ${n(F.rayRise)}, ax) * (1.0 - smoothstep(${n(F.rayEnd)}, 1.0, ax / f.x));
+  float fall = exp(${n(-0.5 / F.rayLen)} * ax);
+  return body * fall * vec2(f.z * fall, f.w);
 }`
 const FLARE_LENS = `${FLARE_VARY}${FLARE_RAYS}
-void main() {
-  // the least half width of a needle: what that many pixels span on the quad, read before anything is discarded
-  float px = ${n(F.needleLeast)} * max(abs(dFdx(vFl.x)), abs(dFdy(vFl.y)));${FLARE_AT}
+void main() {${FLARE_AT}
   // across the outline and along it: both squared
   off *= off;
   float along = q.y * q.y;
@@ -804,12 +795,10 @@ void main() {
   // the lens's bloom round it, brightest on the rim, and the warm glow round that as its tail: no edge
   float bloom = exp(-(off / ${n(F.bloomAcross * F.bloomAcross)} + along / ${n(F.bloomAlong * F.bloomAlong)}));
   float glow = exp(-sqrt(off / ${n(F.glowAcross * F.glowAcross)} + along / ${n(F.glowAlong * F.glowAlong)}));
-  // the star: the rays stand out from the patch on the side away from the ball. x: the light the wedges add, y: the
-  // lift, z: the needles alone
-  vec3 star = vec3(0.0);
-${F.rays.map((b) => `  star += flRay(q, px, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), vec4(${n(b[1])}, ${n(b[2])}, ${n(b[3])}, ${n(b[4])}));`).join('\n')}
-${F.needles.map((b) => `  star.yz += flPin(q, px, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), vec2(${n(b[1])}, ${n(b[2])}));`).join('\n')}
-  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom) + ${vec(F.amber)} * (${n(F.glow)} * glow) + ${vec(F.rayHue)} * (${n(F.ray)} * star.x) + ${vec(F.needleHue)} * (${n(F.needleAdd)} * star.z);
+  // the star: the rays stand out from the patch on the side away from the ball. x: the light they add, y: the lift
+  vec2 star = vec2(0.0);
+${F.rays.map((b) => `  star += flRay(q, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), vec4(${n(b[1])}, ${n(b[2])}, ${n(b[3])}, ${n(b[4])}));`).join('\n')}
+  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom) + ${vec(F.amber)} * (${n(F.glow)} * glow) + ${vec(F.rayHue)} * (${n(F.ray)} * star.x);
   // what is there is kept and lifted along the rays (the fourth number is what it is kept by, 1 and more), and the
   // lens's own light is added to that, itself not lifted
   gl_FragColor = vec4(col * (lit * edge), 1.0 + ${n(F.lift)} * star.y * lit * edge);
@@ -1102,12 +1091,14 @@ ${W.threads.map(threadLine).join('\n')}
   vec3 spill = ${vec(W.spillColor)} * (${n(W.spill)} * exp(-dot(off, off) / 0.022) * lit);
   float still = 1.0 - ${n(W.stormClears)} * storm;
   float bank = 1.0 - ${n(W.hazeBanks)} + ${n(2 * W.hazeBanks)} * stageNoise(vec3(vWl / ${n(W.hazeBankSize)}, 3.7));
+  bank *= ${n(1 - W.hazeFine)} + ${n(2 * W.hazeFine)} * stageNoise(vec3(vWl / ${n(W.hazeFineSize)}, 9.2));
   // the burn's light in the liquid, behind the miniature: close round the burn, and thinner over the left side of the ball
   float nearIn = (r - ${n(W.air[1])}) / (r < ${n(W.air[1])} ? ${n(W.air[3])} : ${n(W.air[4])});
   float nearUp = (a - ${n(W.air[2])}) / (a < ${n(W.air[2])} ? ${n(W.air[5])} : ${n(W.air[6])});
   float farIn = (r - ${n(W.airFar[1])}) / (r < ${n(W.airFar[1])} ? ${n(W.airFar[3])} : ${n(W.airFar[4])});
   float farUp = (a - ${n(W.airFar[2])}) / (a < ${n(W.airFar[2])} ? ${n(W.airFar[5])} : ${n(W.airFar[6])});
   vec3 air = (${vec(W.airColor)} * (${n(W.air[0])} * exp(-nearIn * nearIn - nearUp * nearUp)) + ${vec(W.airFarColor)} * (${n(W.airFar[0])} * exp(-farIn * farIn - farUp * farUp) * bank * bank)) * (body * still);
+  float thick = 1.0 - smoothstep(${n(W.hazeLimb[0])}, ${n(W.hazeLimb[1])}, r);
   float column = (vWl.x - ${n(W.hazeAt)}) / ${n(W.hazeWide)};
   float plume = exp(-column * column);
   float rise = max(vWl.y - ${n(W.hazeLow)}, 0.0) / (${n(W.hazeTall * W.hazeSideTall)} + ${n(W.hazeTall * (1 - W.hazeSideTall))} * plume);
@@ -1115,14 +1106,14 @@ ${W.threads.map(threadLine).join('\n')}
   float glowing = 0.0;
 ${W.fillBody.map((b) => `  glowing += ${n(b[4])} * exp(-dot((vWl - vec2(${n(b[0])}, ${n(b[1])})) / vec2(${n(b[2])}, ${n(b[3])}), (vWl - vec2(${n(b[0])}, ${n(b[1])})) / vec2(${n(b[2])}, ${n(b[3])})));`).join('\n')}
   air += (${vec(W.fillColor)} * (${n(W.fill)} * inside) + ${vec(W.bodyColor)} * (glowing * (1.0 - smoothstep(${n(W.bodyLimb[0])}, ${n(W.bodyLimb[1])}, r)) * bank)) * still;
-  air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * body * bank * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * plume) * exp(-rise * rise * rise));
-  air += ${vec(W.hazeColor)} * (${n(W.hazeHigh)} * bank * exp(-max(vWl.y - ${n(W.hazeLow)}, 0.0) / ${n(W.hazeHighTall)}) * mix(${n(W.hazeHighLeft)}, 1.0, smoothstep(-0.8, 0.5, vWl.x)) * still * body);
+  air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * thick * bank * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * plume) * exp(-rise * rise * rise));
+  air += ${vec(W.hazeColor)} * (${n(W.hazeHigh)} * bank * exp(-max(vWl.y - ${n(W.hazeLow)}, 0.0) / ${n(W.hazeHighTall)}) * mix(${n(W.hazeHighLeft)}, 1.0, smoothstep(-0.8, 0.5, vWl.x)) * still * thick);
   vec2 fromDome = vWl - vec2(${n(W.domeAt[0])}, ${n(W.domeAt[1])});
   fromDome.x /= fromDome.x < 0.0 ? ${n(W.domeSize[0])} : ${n(W.domeSize[1])};
   fromDome.y /= ${n(W.domeSize[2])};
-  air += ${vec(W.domeColor)} * (${n(W.dome)} * exp(-dot(fromDome, fromDome)) * still * body);
+  air += ${vec(W.domeColor)} * (${n(W.dome)} * exp(-dot(fromDome, fromDome)) * still * thick * bank);
   vec2 fromCore = (vWl - vec2(${n(W.coreAt[0])}, ${n(W.coreAt[1])})) / vec2(${n(W.coreSize[0])}, ${n(W.coreSize[1])});
-  air += ${vec(W.coreColor)} * (${n(W.core)} * exp(-dot(fromCore, fromCore)) * still * body);
+  air += ${vec(W.coreColor)} * (${n(W.core)} * exp(-dot(fromCore, fromCore)) * still * thick * bank);
   air *= uSummerAir;
   // the glass's own reflections: curved bands down the right shoulder and one inside the ribbon's end
   vec3 reflex = vec3(0.0);
@@ -1196,7 +1187,7 @@ float poolWater(vec2 p, float z) {
 }
 // one broad band of the water's light: part of a circle round c with the radius q, its middle at the bearing at and
 // span radians long to either side, wide its half width. It is thickest and brightest at its middle and thins and fades
-// to both ends
+// to both ends. Across itself it is a fold of light: clear at its outer edge, soft inward
 float poolBand(vec2 h, vec2 c, float q, float at, float span, float wide) {
   vec2 v = h - c;
   float phi = dot(v, v) > 0.0 ? atan(v.y, v.x) : 0.0;
@@ -1204,7 +1195,7 @@ float poolBand(vec2 h, vec2 c, float q, float at, float span, float wide) {
   if (turn >= 1.0) return 0.0;
   float ends = 1.0 - turn * turn;
   float off = (length(v) - q) / (wide * (0.4 + 0.6 * ends));
-  return exp(-off * off) * ends * ends;
+  return exp(off > 0.0 ? ${n(-P.bandEdge)} * off * off : ${n(P.bandTail)} * off) * ends * ends;
 }
 void main() {
   vec2 d = vStageWorld.xz - uPoolAt.xy;
@@ -1237,7 +1228,7 @@ void main() {
   float wide = poolWater(h / ${n(P.cellMm)} + 3.1, 0.6 * z + 0.37);
   float sheet = min(2.5 * wide * wide, 1.0);
   float bands = 0.0;
-${P.band.map((b, i) => `  bands += ${n(b[6])} * poolBand(h, vec2(${n(b[0])}, ${n(b[1])}), ${n(b[2])} * (1.0 + ${n(i % 2 ? -0.5 : 0.5)} * breath) + ${n(b[7])} * sway, ${n(b[3] * RAD)} + ${n(i % 2 ? -0.1 : 0.1)} * sway, ${n(b[4] * RAD)}, ${n(b[5])});`).join('\n')}
+${P.band.map((b, i) => `  bands += ${n(b[6])} * poolBand(h, vec2(${n(b[0])}, ${n(b[1])}), ${n(b[2])} + ${n((i % 2 ? -0.5 : 0.5) * Math.min(b[2], P.breathMm))} * breath + ${n(b[7])} * sway, ${n(b[3] * RAD)} + ${n(i % 2 ? -0.1 : 0.1)} * sway, ${n(b[4] * RAD)}, ${n(b[5])});`).join('\n')}
   bands *= ${n(1 - P.bandMottle)} + ${n(P.bandMottle)} * sheet;
   float pool = (${n(P.gain)} * soft + ${n(P.near)} * near) * (${n(1 - P.mottle)} + ${n(P.mottle)} * sheet);
   // the bands lie in the pool and go out with it at its rim
@@ -1247,7 +1238,7 @@ ${Number(P.grains) > 0 ? `  vec2 cell = floor(h / ${n(P.grainCellMm)});
   float grainWide = max(${n(P.grainMm)}, 0.6 * max(length(hx), length(hy)));
   float chance = stageHash(vec3(cell + 4096.0, 0.83));
   float sparks = ${n(P.grains)} * exp(-dot(h - grainAt, h - grainAt) / (grainWide * grainWide)) * (${n(P.grainMm)} / grainWide) * smoothstep(0.86, 1.0, chance) * min(2.5 * bands, 1.0) * smoothstep(2.0, 12.0, len);` : '  float sparks = 0.0;'}
-  vec3 col = ${vec(P.amber)} * pool + mix(${vec(P.pale)}, ${vec(P.gold)}, smoothstep(${n(0.3 * P.softMm)}, ${n(1.4 * P.softMm)}, len)) * lines + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow + sparks);
+  vec3 col = ${vec(P.amber)} * pool + mix(${vec(P.bandNear)}, ${vec(P.gold)}, smoothstep(${n(0.3 * P.softMm)}, ${n(1.4 * P.softMm)}, len)) * lines + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow + sparks);
   gl_FragColor = vec4(col * there, 0.0);
 }`
 
