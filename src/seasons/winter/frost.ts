@@ -24,7 +24,7 @@ export const FULL = 2
 setGlass(season, { ringThin: 0.5, topLine: 0.4, windowSoftDeg: 0, windowGrain: 0, arcs: 1.2, arcTint: [1, 0.8, 0.58], arcCool: 2, strip: 0.6 })
 
 const look = {
-  glass: { cover: 1.72, haze: 1.38, slope: 0.55, micro: 1.1, glint: 2.6, light: 0.96, through: 2.4, thin: 0.3, thick: 1.1, blur: 0.012, bend: 0.012, scatter: 0.06, room: 0.5, viewCut: 0.3, mapCut: 0.004, soften: 0.12, rimMu: 0.3, faceOn: 0.65, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
+  glass: { cover: 1.72, haze: 1.38, slope: 0.55, micro: 1.1, glint: 2.6, light: 0.96, through: 2.4, thin: 0.3, thick: 1.1, blur: 0.012, bend: 0.012, scatter: 0.06, room: 0.5, viewCut: 0.3, mapCut: 0.004, glintFade: [0.1, 0.4], soften: 0.12, rimMu: 0.3, faceOn: 0.65, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
   slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.1, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.38, gainFront: 0.5, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.5, leftBack: 2.0, leftMid: 0.42, leftSkyCut: 0.5, leftWarm: 0.22, leftFrontCut: 0.5, leftHeap: 0.62, leftHeapCut: 0.12, leftHeapSky: 0.6, heapGlint: 0.4, wet: 0.6, focusMm: 35, far: [40, 110], near: [28, 75], farMips: 3.0, nearMips: 3.2, shadeGlint: 0.85, lumpMm: 3.2, lump: 0.5, lumpSheet: 0.16, frontLag: 0.5, frontMm: 80, frontEnd: [0.3, 0.8] },
 }
 const SNOW = { thin: [0.6, 0.68, 0.8], thick: [0.92, 0.955, 0.99], body: [0.9, 0.93, 0.98] }
@@ -42,6 +42,7 @@ const frostUniforms = {
   uSlabLook: { value: new THREE.Vector4(look.slab.cover, look.slab.pool, look.slab.slope, look.slab.micro) },
   uGlint: { value: new THREE.Vector4(look.glass.glint, look.slab.glint, 0.3, look.glass.light) },
   uGlassThru: { value: new THREE.Vector4(look.glass.through, look.glass.thin, look.glass.thick, look.glass.viewCut) },
+  uTravel: { value: 0 },
 }
 
 export const behindUniforms = {
@@ -139,6 +140,7 @@ uniform sampler2D uGlassMap;
 uniform vec4 uShape;
 uniform vec4 uGlassLook;
 uniform vec4 uGlassThru;
+uniform float uTravel;
 uniform sampler2D uBehind;
 uniform vec2 uBehindSize;
 varying vec3 vAxisX;
@@ -234,6 +236,7 @@ void main() {
   vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6) * uGlint.w * (uGlassThru.y + uGlassThru.z * smoothstep(0.04, 0.6, h0)) * (0.84 + 0.32 * sugar);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(ga * ${RS.toFixed(2)}, pxMm, ng, v, ${look.glass.room.toFixed(3)}) * uGlint.x * (0.06 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
+  spark *= 1.0 - smoothstep(${look.glass.glintFade[0]!.toFixed(3)}, ${look.glass.glintFade[1]!.toFixed(3)}, uTravel / max(pxMm, 1e-4));
   if (uBehindSize.x > 0.0) {
     float thickness = clamp(h0 + 0.6 * haze, 0.0, 1.0);
     float soft = smoothstep(0.02, 0.35, thickness);
@@ -516,7 +519,7 @@ function makeGlass(): THREE.Mesh {
     change: 'glass-dressing',
     textured: true,
     texels: 1 / frostUniforms.uShape.value.y,
-    uniforms: { ...roomUniforms, ...lightUniforms, uGlassMap: frostUniforms.uGlassMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uShape: frostUniforms.uShape, uGlassLook: frostUniforms.uGlassLook, uGlassThru: frostUniforms.uGlassThru, uGlint: frostUniforms.uGlint, ...behindUniforms },
+    uniforms: { ...roomUniforms, ...lightUniforms, uGlassMap: frostUniforms.uGlassMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uShape: frostUniforms.uShape, uGlassLook: frostUniforms.uGlassLook, uGlassThru: frostUniforms.uGlassThru, uTravel: frostUniforms.uTravel, uGlint: frostUniforms.uGlint, ...behindUniforms },
     vertexPars: 'varying vec3 vAxisX;\nvarying vec3 vAxisY;\nvarying vec3 vAxisZ;',
     vertexMain: 'vAxisX = normalize(modelMatrix[0].xyz);\nvAxisY = normalize(modelMatrix[1].xyz);\nvAxisZ = normalize(modelMatrix[2].xyz);',
     fragment: GLASS,
@@ -592,4 +595,32 @@ export function setGrowth(glassLevel: number, slabLevel: number, keepGlass: numb
   frostUniforms.uTouch.value.set(rolled >= 0 ? 1 : 0, Math.max(0, rolled), lead, 0)
 }
 
-export function update(_moment: KitMoment): void {}
+// The glass travels while the shutter is open. A glint is narrower than a pixel, so a sample lights it or misses it, and once
+// the glass steps further between two of a frame's samples than the glint is wide, it is drawn as a row of dots along the way.
+// The glints on the glass therefore fade out as that step grows from `glintFade[0]` to `glintFade[1]` of a pixel: `uTravel`
+// is the step on the glass in mm from the sample before in the same picture. A picture's first sample has none before it;
+// in a shake it draws no glints, elsewhere all of them. At rest the step is 0 and nothing changes, and a picture never
+// depends on the one drawn before it.
+const FAR_MM = 1e3
+const before = { seed: NaN, index: -1, of: 0, t: 0, at: [0, 0, 0, 0, 0, 0] }
+export function update(moment: KitMoment): void {
+  const s = moment.frame.sample
+  if (s === null) {
+    frostUniforms.uTravel.value = 0
+    before.seed = NaN
+    return
+  }
+  const run = moment.seed === before.seed && s.of === before.of
+  if (run && s.index === before.index) return
+  const g = moment.frame.globe
+  const at = [g.x, g.y, g.z, g.tiltX, g.tiltZ, g.twist ?? 0]
+  const b = before.at
+  const turn = Math.abs(at[3]! - b[3]!) + Math.abs(at[4]! - b[4]!) + Math.abs(at[5]! - b[5]!)
+  const step = Math.hypot(at[0]! - b[0]!, at[1]! - b[1]!, at[2]! - b[2]!) + (config.globe.sphereDiameterMm / 2) * turn
+  frostUniforms.uTravel.value = run && s.t > before.t ? step : (s.of ?? 1) > 1 && moment.beat !== null ? FAR_MM : 0
+  before.seed = moment.seed
+  before.index = s.index
+  before.of = s.of ?? 0
+  before.t = s.t
+  before.at = at
+}
