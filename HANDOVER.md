@@ -51,3 +51,13 @@ A replica of M3 with a per cell grid, a tone reader per box and a pair maker liv
 - The still with `--diag standins` is black (largest value 0 over the whole frame).
 - Winter, spring and summer at rest, draft, hd: sha256 equal to main 58687dc1.
 - Fall at `--state landed` (draft, hd) and the sheet `shake-3` (draft, 12 frames) were looked at; nothing new seen wrong at their size.
+
+## Second list, first push (3f8a931d, on main f4df90d1)
+
+Done: the water (dark green, one soft reflection under the lamp, no rows of glints), the leaf litter (browner, leaf by leaf) with the path's slabs lit, the door (planks, a warmer tone, warm light at its foot), the pane toward magenta, the trunk lit from the lamp's side, worn edges on the fence boards.
+
+M3 at review fell to 0.6174 for the miniature (0.722 on main). The rows of glints on the water, the pale streaks on the bark and the flat orange carpet carried part of the earlier number; they are gone and nothing fine has yet taken their place. The loss sits on the tree (the bark) and on the water.
+
+Still to do: the chimney's cap, rougher shingle edges, gnarled bark, the fence's uneven pickets, the pane's level and its spill, more grain on the door.
+
+The second box of the leaves (850,615,900,640 in the built still) lies on the left pumpkin's face, so its number does not move with the leaves.
