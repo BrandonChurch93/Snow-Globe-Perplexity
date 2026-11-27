@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { LIVE, LiveSession, SeasonLoader, type LiveSim } from '../src/app/session'
 import { config } from '../src/config'
 import { Governor } from '../src/core/quality'
-import { FIT_MS, FramePace, GAPS, Hands, KEEP_MS, LAST_S, LEAST_MS, PACE, PRESS_S, SETTLE_S, SOON_MS, Wish, fitIn, handIn, inPieces, inSteps, leftIn, runFor, seasonsIn, spendIn, spendOf, stepsOf, until, whole, workIn, type InSteps, type Step, type Turn } from '../src/scene/steps'
+import { FIT_MS, FramePace, GAPS, Hands, KEEP_MS, LAST_S, LEAST_MS, PACE, PRESS_S, SETTLE_S, SOON_MS, Wish, fitIn, handIn, inPieces, inSteps, leftIn, runFor, seasonsIn, spendIn, spendOf, stepsOf, take, until, whole, workIn, type InSteps, type Step, type Turn } from '../src/scene/steps'
 import { kit as fall } from '../src/seasons/fall'
 import { kit as spring } from '../src/seasons/spring'
 import * as springGlass from '../src/seasons/spring/glass'
@@ -183,8 +183,61 @@ describe('a part made in steps, as one step of a set', () => {
 
   it('is made whole, in its place among the others, by a frame that needs the season at once and takes every step', () => {
     const s = set(1)
-    for (let step = s.steps.shift(); step; step = s.steps.shift()) step()
+    while (s.steps.length) take(s.steps)
     expect(s.ran).toEqual(['before', 'walls', 'ground', 'crown', 'given the part', 'after'])
+  })
+
+  const thrownBy = (f: () => void): unknown => {
+    try {
+      f()
+    } catch (error) {
+      return error
+    }
+    return null
+  }
+
+  it('stays at the front of the set once a piece of it has thrown, throws the same each time it is taken, gives no part, and lets no step after it be taken', () => {
+    const ran: string[] = []
+    const fault = new Error('the part cannot be made')
+    const part = inSteps(function* (): Generator<void, string> {
+      ran.push('walls')
+      yield
+      throw fault
+    })
+    const steps: Step[] = []
+    steps.push(inPieces(() => steps, part, (made) => ran.push(`given ${made}`)), () => void ran.push('after'))
+    expect(thrownBy(() => runFor(steps, 100, () => 0))).toBe(fault)
+    expect(thrownBy(() => runFor(steps, 100, () => 0))).toBe(fault)
+    expect(thrownBy(() => {
+      while (steps.length) take(steps)
+    })).toBe(fault)
+    expect(ran).toEqual(['walls'])
+    expect(steps.length).toBe(2)
+  })
+
+  it('keeps a plain step that throws at the front of the set, and takes it again before any other', () => {
+    let tries = 0
+    const ran: string[] = []
+    const steps: Step[] = [
+      () => {
+        if (++tries < 3) throw new Error('not yet')
+        ran.push('base')
+      },
+      () => void ran.push('after'),
+    ]
+    expect(() => take(steps)).toThrow('not yet')
+    expect(() => runFor(steps, 100, () => 0)).toThrow('not yet')
+    expect([ran, steps.length]).toEqual([[], 2])
+    take(steps)
+    take(steps)
+    expect([ran, steps.length, take(steps)]).toEqual([['base', 'after'], 0, undefined])
+  })
+
+  it('is taken by the stage through take alone, in the making and in the frame that needs the season at once', () => {
+    const stage = fs.readFileSync(rel('src', 'scene', 'stage.ts'), 'utf8')
+    expect(stage).not.toMatch(/steps\.shift\(/)
+    expect(stage.match(/take\(m\.steps\)/g)?.length).toBe(2)
+    expect(fs.readFileSync(rel('src', 'scene', 'steps.ts'), 'utf8').match(/steps\.shift\(/g)?.length).toBe(1)
   })
 
   it('takes a part that has no steps as the one step it always was', () => {

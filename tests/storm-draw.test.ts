@@ -84,6 +84,8 @@ describe('how the storm is drawn', () => {
     // the storm's leaves are few and dark and ride in the strokes' own draw (the landing list asked for about a dozen): under one stroke in a hundred, at less than a stroke's own light, and nothing bright, green and flat
     expect(CARD.line.stormLeaves).toBeGreaterThanOrEqual(0)
     expect(CARD.line.stormLeaves).toBeLessThanOrEqual(0.01)
+    // the settled line of summer's shake: the crown is whole and no leaves fly, so none of the strokes is a leaf
+    expect(CARD.line.stormLeaves).toBe(0)
     expect(CARD.line.stormLeafGain).toBeLessThanOrEqual(0.5)
     expect(CARD.line.stormLeafGain).toBeLessThan(CARD.line.stormGain)
     expect(CARD_VERT).toContain('float bitC = storming &&')
@@ -328,6 +330,12 @@ describe('how the storm is drawn', () => {
     const glow = CARD.glow
     expect(glow.stormStreakPx[0]).toBeLessThan(glow.stormStreakPx[1])
     expect(glow.stormStreakSkew).toBeGreaterThan(1)
+    // in the storm the lights are few fine streaks, not many short thick ones: three in ten of them at the most, a core finer than at rest, and none under 8 px long
+    expect(glow.stormShare).toBeLessThanOrEqual(0.3)
+    expect(glow.stormCorePx).toBeLessThanOrEqual(0.3)
+    expect(glow.stormCorePx).toBeLessThan(glow.corePx)
+    expect(glow.stormStreakPx[0]).toBeGreaterThanOrEqual(8)
+    expect(glow.stormSize).toBeLessThan(0.3)
     expect(glow.stormTail).toBeLessThan(1)
     // no ring and no edge on a light out of focus, and the wide faint glows are few
     expect(glow.discRim).toBe(0)
@@ -350,6 +358,11 @@ describe('how the storm is drawn', () => {
     expect(glow.restHeartScene).toBeLessThanOrEqual(1.5)
     expect(glow.restBig[0]).toBeGreaterThan(0.3)
     expect(glow.restBig[0]).toBeLessThan(glow.restBig[1])
+    // the tree's lowest boughs hang out past the crown's outline: for a light's size and its focus the crown reaches further than it does for the count, in the calm alone
+    expect(glow.treeReach).toBeGreaterThan(CARD.hair.sceneEdge[1])
+    expect(CARD_VERT).toContain('float treeG = crownG;')
+    expect(CARD_VERT).toContain('if (uStorm.x < 0.99) treeG = max(crownG, (1.0 - smoothstep(')
+    expect(CARD_VERT).toContain('float sceneG = max(max(cotG, treeG), bandG) * afloat * (1.0 - gustC);')
     expect(glow.restTop).toBeLessThanOrEqual(0.6)
     expect(glow.restGlowBig[0]).toBeGreaterThan(glow.restHeart[0] + glow.restHeart[1])
     expect(glow.restGlowBig[1]).toBeLessThanOrEqual(7)
@@ -395,6 +408,10 @@ describe('how the storm is drawn', () => {
     expect(clock.told[0]).toBeLessThan(clock.told[1])
     expect(clock.told[1]).toBeLessThanOrEqual(1)
     expect(clock.downTold[0]).toBeLessThan(clock.told[0])
+    // a fine head is white rays on the liquid's light tan and no grey puff: most of a ring stands as hairs told apart, and a hair hides more than once over at its middle, yet less than a stout one's
+    expect(clock.told[0]).toBeGreaterThanOrEqual(0.8)
+    expect(clock.seen).toBeGreaterThanOrEqual(1)
+    expect(clock.seen).toBeLessThan(clock.stoutSeen)
     // no hair is finer than a pixel: with the pixel's own softness a hair is a pixel wide at half its height, and wider where it is stout or out of focus, so it is a whole line wherever it lies between the pixels
     expect(2.355 * Math.sqrt(PIXEL_SIGMA2 + clock.wide * clock.wide)).toBeGreaterThanOrEqual(1)
     expect(clock.stoutWide).toBeGreaterThanOrEqual(1)
@@ -402,6 +419,10 @@ describe('how the storm is drawn', () => {
     // a clock stands at one place in every sample of the film's lens, so a hair is one line and a tuft one dot
     expect(clock.lensFilm).toBe(1)
     expect(VERT_MAIN).toContain(`if (abs(shape - ${SHAPE.seed.toFixed(1)}) < 0.5 && uStorm.x < ${clock.stormOff[1]}) lensShare = mix(`)
+    // and a clock by the wall too: the ball's middle it is drawn in from is moved by the head's own share of the lens, so it is drawn in by one length in every sample; from the storm's level at which the clocks' look is gone the middle is each sample's own, as the storm was drawn before
+    expect(CARD_VERT).toContain(`vec2 midS = (centreV.xy + uAperture.xy * (lensC * (1.0 - smoothstep(${clock.stormOff[0]}, ${clock.stormOff[1]}, uStorm.x)))) / -centreV.z;`)
+    expect(CARD_VERT).toContain('vec2 fromS = (view.xy / -view.z - midS) * uPoint.y - holdC;')
+    expect(CARD_VERT).not.toContain('vec2 fromS = (view.xy / -view.z - centreV.xy / -centreV.z)')
     // a head hangs near upright and rocks by less than the angle between two hairs of a ring
     expect(clock.rock).toBeLessThan((2 * Math.PI) / clock.hairsMost)
     expect(clock.lean).toBeLessThan(1)
@@ -424,10 +445,23 @@ describe('how the storm is drawn', () => {
     expect(clock.foot[0]).toBeGreaterThan(0)
     expect(clock.footNear[1]).toBeGreaterThan(clock.foot[1])
     expect(clock.stem[1]).toBeLessThan(0.02)
-    // the down is no brighter than about the level that burns to white, and only the stout heads in the low sun go over it
+    // the down is no brighter than about the level that burns to white, and only the stout heads near the eye go over it
     expect(clock.white).toBeLessThanOrEqual(1.1)
     expect(clock.stoutWhite).toBeGreaterThan(clock.white)
     expect(clock.warmShare).toBeLessThanOrEqual(1)
+    // the stout near heads are the warm ones and more, the warm the first of them by the head's one number. A camera nearer than the hero has a near head far out of focus, where a stout hair is a grey bar: there the warm ones alone are stout, in size and in boldness alike, and the hero's own nearest head stands well under where that begins
+    expect(clock.stoutShare).toBeGreaterThanOrEqual(clock.warmShare)
+    expect(clock.stoutShare).toBeLessThanOrEqual(1)
+    const heroMm = config.cameras.hero.distanceMm
+    expect(clock.stoutClose[0]).toBeGreaterThan((1.2 * heroMm) / (heroMm - lensRadiusMm))
+    expect(clock.stoutClose[0]).toBeLessThan(clock.stoutClose[1])
+    expect(CARD_VERT).toContain('), step(cardHairHash((pid & 4095u) * 64u + 63u).y, ')
+    expect(CARD_VERT).toContain(', closeC)))')
+    expect(CARD_FRAG_PARS).toContain('float stoutS = step(ownK.y, ')
+    expect(CARD_FRAG_PARS).toContain('if (clockS > 0.0) stoutS = mix(stoutS, step(ownK.y, ')
+    expect(CARD_FRAG_PARS).toContain(', uPoint.y * gl_FragCoord.w / (uPoint.w * ')
+    expect(CARD_FRAG_PARS).toContain('float warmK = nearS * stoutS;')
+    expect(CARD_FRAG_PARS).toContain('float tintK = nearS * step(ownK.y, ')
     // a stout near head is the larger, by the head's own whole number, which the vertex and the pixel read alike, and its hairs are bold at the hub and taper to a small tuft
     expect(clock.stoutMm).toBeGreaterThan(1)
     expect(clock.stoutMm).toBeLessThanOrEqual(1.5)

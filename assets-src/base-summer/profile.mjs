@@ -413,7 +413,7 @@ const foldAt = (az) => {
 }
 // The fold in section, by the height over its slot in mm: the lip stands out to an edge just over the slot and falls back slowly above it,
 // the slot is narrow and deep, and under it the foot's roll stands out again.
-const FOLD = { lip: 1.05, at: 1.4, under: 1.15, over: 5.0, slot: 0.25, half: 0.8, foot: 1.2, footAt: -3.2, footHalf: 2.6, footLow: 4.5 }
+const FOLD = { lip: 0.9, at: 1.4, under: 2.1, over: 5.0, slot: 0.08, half: 0.8, foot: 0.95, footAt: -3.2, footHalf: 2.6, footLow: 4.5 }
 const foldForm = (x) => {
   const up = (x - FOLD.at) / (x < FOLD.at ? FOLD.under : FOLD.over)
   return FOLD.lip * Math.exp(-up * up) - FOLD.slot * Math.exp(-((x / FOLD.half) ** 2)) + FOLD.foot * Math.exp(-(((x - FOLD.footAt) / (x < FOLD.footAt ? FOLD.footLow : FOLD.footHalf)) ** 2))
@@ -509,14 +509,22 @@ function bare(m, az, s) {
   // The streak from the chip's right corner down the wall: bright where it leaves the chip, orange where it ends.
   const bandAt = set && a180 > -32.6 && a180 < -28.2 ? pathAt(BAND, a180, q.h, kx) : { near: 9, along: 0 }
   const band = smooth(0.21, 0.07, bandAt.near) * mix(0.72, 0.4, bandAt.along) * smooth(1, 0.8, bandAt.along)
-  // The rim is thicker and paler toward the chip and ends under the chip's left corner with a gap of shade between them.
-  const rimAt = set && a180 > -46.2 && a180 < -38.5 ? pathAt(RIM, a180, q.h, kx) : { near: 9, along: 0 }
-  const rimHalf = mix(0.12, 0.33, rimAt.along)
+  // Read on the approved: the patch and the rim are one crumbled ridge, not a knob on a handle. The rim is that ridge's lit lower edge,
+  // thicker and paler toward the chip, broken along its length and never straight; it ends under the chip's left corner with a gap of shade.
+  const rimAt = set && a180 > -46.2 && a180 < -38.5 ? pathAt(RIM, a180, q.h + 0.14 * (fbm(A * 300 + 5, 0.5, 300, 4, 377, 2) - 0.5), kx) : { near: 9, along: 0 }
+  const rimHalf = mix(0.12, 0.33, rimAt.along) * mix(0.6, 1.3, fbm(A * 520 + 8, 0.5, 520, 4, 379, 2))
   const rimOn = smooth(rimHalf + 0.08, rimHalf - 0.08, rimAt.near) * smooth(-38.95, -39.2, a180)
-  const rim = rimOn * (mix(0.5, 0.62, smooth(0, 0.6, rimAt.along)) + 0.36 * smooth(0.7, 0.95, rimAt.along) + 0.16 * (fbm(A * 380 + 2, 0.5, 380, 4, 351, 2) - 0.5))
-  // Left of the rim the edge is a patch of crumbs, each lit on its top.
-  const patchOn = set && a180 < -44.5 ? coverAt(PATCH, a180, q.h, kx, () => [-0.08, 0.08]) : 0
-  const crumbled = patchOn * mix(0.12, 0.44, smooth(0.4, 0.6, fbm(A * 620 + 4, q.h / 0.42 + 2, 620, 128, 361, 2))) * (0.85 + 0.3 * grit2)
+  const rimHeld = mix(0.35, 1, smooth(0.34, 0.56, fbm(A * 760 + 6, 0.5, 760, 4, 381, 2)))
+  const rim = rimOn * rimHeld * (mix(0.34, 0.62, smooth(0, 0.6, rimAt.along)) + 0.36 * smooth(0.7, 0.95, rimAt.along) + 0.16 * (fbm(A * 380 + 2, 0.5, 380, 4, 351, 2) - 0.5))
+  // Left of the rim the edge is a patch of crumbs, each lit on its top and none of them as bright as the chip; its outline is crumbs too.
+  const crumbOn = set ? smooth(0.4, 0.62, fbm(A * 620 + 4, q.h / 0.42 + 2, 620, 128, 361, 2)) : 0
+  const patchOn = set && a180 < -44.2 ? coverAt(PATCH, a180 + (0.36 * (fbm(A * 700 + 3, q.h / 0.5 + 1, 700, 128, 383, 2) - 0.5)) / kx, q.h + 0.36 * (fbm(A * 700 + 9, q.h / 0.5 + 5, 700, 128, 385, 2) - 0.5), kx, () => [-0.12, 0.2]) : 0
+  const crumbled = patchOn * mix(0.07, 0.34, crumbOn) * (0.8 + 0.4 * grit2)
+  // Over the rim the same crumbs go on as a band, dimmer toward its torn top, from the patch to the chip.
+  const overRim = q.h - lineAt(RIM, a180)
+  const overRimTop = mix(0.5, 0.85, smooth(-45.3, -39.6, a180)) + 0.3 * (fbm(A * 240 + 2, 0.5, 240, 4, 387, 2) - 0.5)
+  const overRimOn = set ? smooth(-46.6, -45.2, a180) * smooth(-39.1, -39.6, a180) * smooth(-0.06, 0.08, overRim) * smooth(overRimTop + 0.22, overRimTop - 0.22, overRim) : 0
+  const overRimLit = overRimOn * mix(0.07, 0.3, crumbOn) * (0.8 + 0.4 * grit2) * mix(1, 0.55, smooth(0.15, 0.8, overRim))
   // The lump is a heap of clods. Its top is cream; lower down it takes less of the sun, and one crease parts the knobbed roll at its
   // foot from the body over it. Its left flank and the left of its lower side run out soft, and both its ends are dimmer.
   // No two clods are one size or one shape, and only here and there does a gap between two of them go deep.
@@ -544,7 +552,7 @@ function bare(m, az, s) {
   const ring = 0.5 * smooth(0.13, 0.04, Math.abs(spotAt(RING, a180, q.h, kx) - 0.3))
   // The chip's face stands out most at its lower edge and is cut back under it; the lump is thickest low down, every clod of it a round back.
   const chipU = q.h - lineAt(EDGE, a180)
-  const crust = 0.1 * smooth(-0.9, 0.1, over) * stepOn + 0.16 * chip * smooth(1.6, 0, chipU) - 0.05 * chip * chipCrack + 0.3 * lumpBody * (1 - 0.6 * creased * smooth(0.2, 0.05, creaseAt)) * (0.72 + 0.28 * mix(0.3, 1, parted) * smooth(0, 0.25, cell.gap)) * (0.85 + 0.3 * cell.one) * mix(0.6, 1, smooth(1.2, 0, lumpOver)) + 0.08 * Math.max(rim, crumbled)
+  const crust = 0.1 * smooth(-0.9, 0.1, over) * stepOn + 0.16 * chip * smooth(1.6, 0, chipU) - 0.05 * chip * chipCrack + 0.3 * lumpBody * (1 - 0.6 * creased * smooth(0.2, 0.05, creaseAt)) * (0.72 + 0.28 * mix(0.3, 1, parted) * smooth(0, 0.25, cell.gap)) * (0.85 + 0.3 * cell.one) * mix(0.6, 1, smooth(1.2, 0, lumpOver)) + 0.08 * Math.max(rim, crumbled, overRimLit)
   // Under that outline the wall keeps its light and turns to rust: deep red right under a crisp edge, thinner further down.
   const under = lumpOver
   const shade = under < 0 && under > -3.6 && a180 > -52 && a180 < -12.5 ? shadeAt(a180) : [0, 0, 1, 0, 1, 0]
@@ -563,10 +571,10 @@ function bare(m, az, s) {
   // Right under the lump's left end the wall takes light all the same: there that shade is laid on the sand's own tone as well.
   const laidTone = under < 0 ? 0.55 * smooth(-26.8, -24.0, a180) * smooth(-19.8, -21.4, a180) * smooth(-0.1, -0.45, under) * smooth(-1.5, -0.95, under) : 0
   // The rim, the crumbled patch, the chip's cracks and the lump's dimmer sand are rust in the grain too.
-  const tinted = Math.max(0.5 * rimOn, 0.2 * patchOn, 0.7 * chip * chipCrack, 0.55 * lumpBody * Math.max(smooth(0.9, 0.5, lumpFace), 0.75 * smooth(-20.5, -17.5, a180)), 0.5 * slopeOn * (1 - lumpBody))
+  const tinted = Math.max(0.5 * rimOn, 0.2 * patchOn, 0.3 * overRimOn, 0.7 * chip * chipCrack, 0.55 * lumpBody * Math.max(smooth(0.9, 0.5, lumpFace), 0.75 * smooth(-20.5, -17.5, a180)), 0.5 * slopeOn * (1 - lumpBody))
   // How much of the low sun each of them takes: the chip and the lump's top nearly all of it, the rim and the lump's foot about half.
   const spotLit = (v) => SPOT * smooth(0, 0.08, v) + (1 - SPOT) * v
-  const lipLeft = Math.max(spotLit(Math.max(chip * chipFace, chipTail, band, rim, crumbled, lump, slope * (1 - lumpBody), ring * (1 - lumpBody))), 0.06 * stepOn * smooth(-0.1, 0.3, over) * smooth(39.6, 38.9, q.h))
+  const lipLeft = Math.max(spotLit(Math.max(chip * chipFace, chipTail, band, rim, crumbled, overRimLit, lump, slope * (1 - lumpBody), ring * (1 - lumpBody))), 0.06 * stepOn * smooth(-0.1, 0.3, over) * smooth(39.6, 38.9, q.h))
   // From there to the middle the sun lies on the face of the roll above the ledge.
   const lipRight = smooth(-1, 1, over) * smooth(4.6, 0.6, over + 2.2 * (fbm(A * 50 + 9, h / 3, 50, 64, 207, 3) - 0.5)) * 0.6 * smooth(-5, -16, a180) * (0.3 + 0.7 * flake)
   // As far as the low sun's own light reaches, the roll's lit face stays under what that light reads.

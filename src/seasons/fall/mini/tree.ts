@@ -21,7 +21,7 @@ const TWIG_TINT: [number, number, number] = [0.05, 0.047, 0.045]
 const BARK_RELIEF = 1.7
 const EMBER_GAIN = 6.5
 const EMBER_ON_WOOD = { power: 14, reachMm: 0.9 }
-const LAMP_ON_WOOD = { power: 210, reachMm: 12, wrap: 0.05 }
+const LAMP_ON_WOOD = { power: 196, reachMm: 12, wrap: 0.05 }
 const LAMP_TONE: [number, number, number] = [1, 0.52, 0.3]
 const LAMP_SHIFT: Vec3 = [-4, -10, -8]
 const PUMPKIN_ON_WOOD = { power: 8, reachMm: 6, wrap: 0.1 }
@@ -43,10 +43,17 @@ const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
 // Wet black bark: the lamp, the pumpkin at the foot and the green of the pond glance off the ridges as small sharp lights
 // and leave the grooves black. `shine` is the lobe's exponent, `ridge` how far a groove (dark vertex colour) is kept out.
 const GLINT = { shine: 120, ridge: [0.3, 0.8] as [number, number], rough: 0.86 }
-const GLINT_LAMP = { lift: 3.6, power: 1.6, reachMm: 11 }
+const GLINT_LAMP = { lift: 3.6, power: 1.6, reachMm: 11, trunk: 0.9 }
 const GLINT_TONE: [number, number, number] = [1, 0.46, 0.14]
 const GLINT_PUMPKIN = { power: 0.9, reachMm: 8 }
 const GLINT_POND = { power: 0.05, reachMm: 24 }
+// The sky glances off the wet trunk as a few pale streaks on the side turned from the lamp, and the lamp's glint is
+// stronger there by `GLINT_LAMP.trunk`; the limbs take neither.
+const GLINT_SKY = { power: 0.3, reachMm: 30, tone: [0.6, 0.82, 0.8] as [number, number, number] }
+// The approved trunk is near black and wet: the bark turned to the lamp burns orange on its ridges, the bark turned away
+// sinks to a dark teal. `side` is the cosine between the trunk's own round and the way to the lamp over which the bark's
+// answer to the baked light goes from `far` to `near`. Only the trunk's sleeve takes it, the limbs and twigs do not.
+const WET = { side: [-0.15, 0.6] as [number, number], far: [0.33, 0.5, 0.75] as [number, number, number], near: [1.8, 1.42, 1.15] as [number, number, number] }
 // The approved bark is black and wet: on the side turned from the lamp the trunk's edge takes a soft grey green line from
 // the air. It is read off the limb's own round, not the bark's relief, so it is one even edge and not a row of bright
 // ridges. Below the first fork it fades out over `fade` (heights on the trunk), so the foot's far side is as dark as the body.
@@ -54,10 +61,10 @@ const RIM = { tone: [0.55, 0.66, 0.6] as [number, number, number], power: 0.5, s
 // The approved limbs are wet and black with one thin pale line along the side turned up to the sky, over the whole crown.
 // It is read off the tube's own round (alpha of the vertex colour is 1 on limbs and twigs, 0 on the trunk's sleeve), and
 // takes the tone of the embers where they hang near.
-const LINE = { tone: [0.48, 0.41, 0.39] as [number, number, number], power: 0.52, sharp: 3, side: [-0.1, 0.5] as [number, number], from: [-0.2, 1, 0.15] as Vec3, glow: 0.1 }
+const LINE = { tone: [0.48, 0.41, 0.39] as [number, number, number], power: 0.58, sharp: 3, side: [-0.1, 0.5] as [number, number], from: [-0.2, 1, 0.15] as Vec3, glow: 0.1 }
 // The air round the crown is warm with embers: it lifts the darkest side of the limbs, the twigs and the stem above the
 // first fork (`stem`, heights on the trunk) out of black, and leaves the trunk below as dark as it was.
-const AIR = { tone: [0.76, 0.86, 0.9] as [number, number, number], power: 4.4, stem: [12.6, 21.6] as [number, number] }
+const AIR = { tone: [0.76, 0.86, 0.9] as [number, number, number], power: 4.1, stem: [12.6, 21.6] as [number, number] }
 
 const clock = { value: 0 }
 const emberGain = { value: EMBER_GAIN }
@@ -93,13 +100,15 @@ function onWood(): GlowLight[] {
 
 const vec3 = (p: readonly number[]): string => `vec3(${p[0]!.toFixed(3)}, ${p[1]!.toFixed(3)}, ${p[2]!.toFixed(3)})`
 
-function glints(): { at: Vec3; color: readonly number[]; power: number; reachMm: number }[] {
+function glints(): { at: Vec3; color: readonly number[]; power: number; reachMm: number; trunk?: boolean }[] {
   const flame = lampFlame()
   const pumpkin = PUMPKINS.find((p) => p.name === 'tree')!
   return [
     { at: [flame[0], flame[1] + GLINT_LAMP.lift, flame[2]], color: GLINT_TONE, power: GLINT_LAMP.power, reachMm: GLINT_LAMP.reachMm },
     { at: pumpkinFace(pumpkin, 0.4, 0.6), color: tones.pumpkinLight, power: GLINT_PUMPKIN.power, reachMm: GLINT_PUMPKIN.reachMm },
     { at: placePoint([4, 2, 26]), color: tones.pondLight, power: GLINT_POND.power, reachMm: GLINT_POND.reachMm },
+    { at: [flame[0], flame[1] + GLINT_LAMP.lift, flame[2]], color: GLINT_TONE, power: GLINT_LAMP.trunk, reachMm: GLINT_LAMP.reachMm, trunk: true },
+    { at: placePoint(FILL_FROM), color: GLINT_SKY.tone, power: GLINT_SKY.power, reachMm: GLINT_SKY.reachMm, trunk: true },
   ]
 }
 
@@ -131,7 +140,7 @@ ${lit
     float d2 = dot(to, to);
     vec3 l = to * inversesqrt(max(d2, 1e-6));
     float s = pow(max(dot(normal, normalize(l + glintV)), 0.0), ${GLINT.shine.toFixed(1)}) * smoothstep(0.0, 0.25, dot(normal, l));
-    glintSum += ${vec3(l.color)} * (${l.power.toFixed(3)} * s / (1.0 + d2 / ${(l.reachMm * l.reachMm).toFixed(2)}));
+    glintSum += ${vec3(l.color)} * (${l.power.toFixed(3)} * s${l.trunk ? ' * (1.0 - vColor.a)' : ''} / (1.0 + d2 / ${(l.reachMm * l.reachMm).toFixed(2)}));
   }`,
   )
   .join('\n')}
@@ -148,6 +157,7 @@ ${lit
   float lineEdge = pow(clamp(1.0 - dot(nonPerturbedNormal, glintV), 0.0, 1.0), ${LINE.sharp.toFixed(1)}) * smoothstep(${LINE.side[0].toFixed(2)}, ${LINE.side[1].toFixed(2)}, dot(nonPerturbedNormal, lineUp));
   reflectedLight.directSpecular += (${vec3(LINE.tone)} + ${LINE.glow.toFixed(3)} * vGlow.rgb) * (${LINE.power.toFixed(3)} * lineEdge * vColor.a * uTwinkle.z);
   reflectedLight.indirectDiffuse += ${vec3(AIR.tone)} * (${AIR.power.toFixed(3)} * max(vColor.a, smoothstep(${airFrom[0].toFixed(3)}, ${airFrom[1].toFixed(3)}, vRimUp)) * uTwinkle.z) * material.diffuseContribution;
+  material.diffuseContribution *= mix(vec3(1.0), mix(${vec3(WET.far)}, ${vec3(WET.near)}, smoothstep(${WET.side[0].toFixed(2)}, ${WET.side[1].toFixed(2)}, dot(rimN, rimL))), 1.0 - vColor.a);
 }`,
     )
 }
