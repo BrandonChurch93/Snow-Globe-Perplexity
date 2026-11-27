@@ -171,6 +171,26 @@ describe("summer's falling sand", () => {
     expect(Math.abs(mean - 4)).toBeLessThan(0.05)
   })
 
+  // The length law (decision 210). What is lit of a line along its path, its soft ends left out and the film's shutter
+  // left out, is at least twice the way the line goes in one frame at its thread's own rate, the quickest of the three
+  // included. A shorter line is lit in one frame where the frame before and the frame after are dark, and that is a
+  // flash. A line of the face is some travels long, any length between two bounds, and one at the back is a set time
+  // long; only the lip and the heap, where its path ends, cut a line shorter.
+  it('draws no line shorter than twice its travel in a frame', () => {
+    const fps = 60
+    const lit = 1 - 2 * FALL.ends
+    expect(lit).toBeGreaterThan(0.5)
+    expect(FALL.long[1]).toBeGreaterThan(FALL.long[0])
+    expect(FALL.long[0] * lit).toBeGreaterThanOrEqual(2)
+    let behind = 0
+    for (const p of paths) {
+      if (p.slide < 0 || !p.back) continue
+      behind++
+      expect(FALL.deepDash[0] * lit).toBeGreaterThanOrEqual((2 * p.life * p.rate * FALL.fold) / fps)
+    }
+    expect(behind).toBeGreaterThan(0)
+  })
+
   it('stands at rest, surges after a landing and stops in the air', () => {
     expect(fallShare(-1)).toBe(0)
     expect(fallShare(Infinity)).toBe(FALL.stand)
