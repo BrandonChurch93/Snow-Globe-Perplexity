@@ -38,9 +38,9 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
 /**
  * How the parts outside the glass give way, all of them inside the one span of change.ts and under its cover.
  * The base is never morphed: every pixel of a sample holds one base or the other, and the share that holds the new one grows
- * over `BASE_PASS`, longer than the span. Both are near black under the cover and under the halo of its flash (lighting.ts,
- * `CHANGE_BLOOM`), so no mix of two bases is in sight; what is in sight is their line against the lit glass, which passes
- * from one shape to the other and never steps.
+ * over `BASE_PASS`, longer than the span. Both stand in the light the glass pours (`pourOnBase` below, set by lighting.ts,
+ * `CHANGE_BLOOM`): lip and shoulder near white in it, the flank in its own colour and dim, so the eye follows a base from
+ * frame to frame while one shape passes into the other over the frames of `BASE_PASS`, and nothing steps.
  * Which base a pixel holds is a hash against that share. Drawn afresh at each sample of a frame, the hash left the strip between
  * the two lines as grain a critic reads at native pixels: a pixel held the new base in a number of samples that fell by chance.
  * So a frame has one hash to a pixel and one share (`uPass`, set in stage.ts): of N samples the hash is set at the middle of one
@@ -49,23 +49,109 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
  * so a base's line that stands across the travel is drawn out, and a pixel there is under that base for a part of the shutter
  * only. The step therefore goes by the sample's place in the shutter, `passStride` levels a place: the samples that hold the new
  * base fall evenly over any part of the shutter, at every pixel.
+ * The share to the nearest of N is the share itself where N is large. Of few samples it is a few states: a frame of two holds
+ * the old base, half of each or the new, and the pass was two steps however many frames it ran. So under `PASS_EVEN` samples
+ * the odd sample is shared out among the pixels by the still tile (`stageStill`, `passShare`, in `stageChange`): a pixel holds the new base in
+ * the whole number of samples under the share times N plus its own level on the tile. Any patch then holds the share itself,
+ * at every frame of the pass, and a pixel that has taken one sample more keeps it. From `PASS_EVEN` samples on every pixel
+ * holds the same number, as before, and no grain is there to read.
  * Where the page draws one sample a frame and shows it (`uPass.w` 0, `passCount`), nothing averages the hash away, and a hash
  * drawn afresh each frame made every pixel of a part that gives way flicker for as long as the change ran. There the level
  * is the pixel's own and never the frame's (`stageStill`): a pixel goes once and stays gone, comes once and stays. The levels
  * are a tile in the order of the void and the cluster (still.ts): at every share the pixels that are gone stand as far from
  * one another as they can, so a part thins evenly. A white hash leaves clumps, and a lattice such as interleaved gradient
  * noise, which this was first, sets its dots in rows that the eye reads as a weave across the part.
- * The table's dressing never holds two seasons: the old season's is gone in the first half of the span and the new season's
- * comes in the second (`DRESSING_CHANGE`). Each goes and comes from the foot outward; the edge of that front is broken into
+ * The table's dressing never holds two seasons, and it is not swapped under the cover: the old season's leaves over the six
+ * frames before the base begins to pass, in sight, as the cover rises, and the new season's comes when the base has passed,
+ * with the cover's tail (`DRESSING_CHANGE`); between them the table is bare. The old goes from the foot outward and the new
+ * comes from the far places in to the foot; the edge of that front is broken into
  * patches (`cellMm`, `fineMm`) drawn out along the way a gust runs (`streak` times as long as wide, `rayMm` to a radian across)
  * and feathered across the samples of a frame (`feather`), so a field of frost or of sand thins in fingers and never along a line.
- * Nothing here lays light on a part: the cover is the fall of the exposure with the light of the glass poured over it and
- * drawn in under the flash, and all of that is set in lighting.ts (`CHANGE_BLOOM`).
+ * The cover is the fall of the exposure with the light of the glass poured over the room, and all of that is set in
+ * lighting.ts (`CHANGE_BLOOM`). The one light laid here is what a base takes of that pour (`pourOnBase`).
  * The code of a part's kind rides in `uState.z`: 0 and above is the lag of a part inside the glass, under 0 the table's gain,
  * under `-BASE_CODE` the base's.
  */
 export const OUTSIDE_FRONT = { rayMm: 110, streak: 3.4, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14 } as const
 const BASE_CODE = 10
+/** From this many samples a frame on, every pixel holds the new base in the same number of them; under it the still tile shares the odd sample out. */
+export const PASS_EVEN = 8
+
+/**
+ * What a base takes of the light a change pours, whatever it is made of. A base is dark stuff (moss, blackened iron, oiled
+ * wood) and stands in a room the cover has taken the exposure from: left to what the flood lays on it by its own shade it is
+ * black against the room, or, lit as brightly as the table, it is a colour that is no season's base. So the glass lights it
+ * as a lamp close over a dark thing does. `uPourBase` is the light at the collar, in the colour of the pour. The rim takes it
+ * whole and falls off with the way out from the glass (`uPourBaseShape.x`, mm, to one part in e), `uPourBaseShape.y` of the way
+ * from the stuff's colour to the colour of the light, so the lip and the shoulder go to white and lose their carving. The
+ * flank takes `uPourBaseFlank.x` of that, falling off over `uPourBaseFlank.y` mm, in the stuff's own colour alone and by a
+ * light with `uPourBaseFlank.z` of the pour's colour in it and the rest white: rose light on brown wood is terracotta, which
+ * is no season's base, so the flank stays the dark thing it is, in its own colour, with a warm edge where the rim falls
+ * off into it. Both are whole on a face that looks at the glass and
+ * `uPourBaseShape.z` of that on a face that looks away. The stuff's colour is its albedo over its strongest channel to the
+ * power `uPourBaseShape.w`: at 0 the albedo itself, so black iron would stay black; at 1 the bare hue, so a carving would
+ * go flat; between, a dark base is lifted toward a pale one and keeps its grain.
+ * It is laid after everything a base does to its own light, so no shade of a base cuts it, and with no cover it is nothing
+ * (`uPourBase` is 0 then and the lines are not run). lighting.ts sets the three (`CHANGE_BLOOM`, `base` and on).
+ * It is laid on what leaves the face (`outgoingLight`), on the line after three closes the sums of a base's own light
+ * (`POUR_AFTER`), and under the coat of a base that has one. It is not laid into the diffuse sum: there it stood between a
+ * base's last product and the sum that takes it, and the compiler joins those two otherwise when a line stands between them,
+ * run or not. One pixel of summer's landed still moved by one level with no cover in the picture (measured on 82d0b882: the
+ * still read f6c56497bedfc63d with the lines before `vec3 totalDiffuse =`, any lines at all, and main's cbe415cdef5fc7c5
+ * with them here). Here no line of a base's own stands on either side, so a picture with no cover is the picture without
+ * the pour, bit for bit.
+ */
+export const pourUniforms = {
+  uPourBase: { value: new THREE.Color(0, 0, 0) },
+  uPourBaseShape: { value: new THREE.Vector4(4, 0.8, 0.2, 0.5) },
+  uPourBaseFlank: { value: new THREE.Vector3(0.05, 30, 0) },
+}
+/**
+ * The room's own light as a base keeps it under the cover of a change. The cover takes the exposure from the room, and what
+ * that takes from the dark of the backdrop is laid back over the picture (lighting.ts, `CHANGE_BLOOM.room`). A base is a
+ * thing in that room and keeps its own look in the same way: these are the room's lights under the names the light chunk
+ * reads them by, each `hold` times the room's own. lighting.ts sets them on every frame; with no cover `hold` is 1 and they
+ * are the room's own, number for number. `pourOnBase` gives them to a base's material in place of the room's, so the key,
+ * the rim, the card, the sky and the ground and the room in its polish stand on a base through the fall as they do at
+ * rest, with everything the base does to its own light, and the base is its own colour under the pour.
+ */
+export const baseRoom = {
+  hold: 1,
+  uniforms: {
+    uRigKeyCol: { value: new THREE.Color(0, 0, 0) },
+    uRigRimCol: { value: new THREE.Color(0, 0, 0) },
+    uRigCardCol: { value: new THREE.Color(0, 0, 0) },
+    uRigSky: { value: new THREE.Color(0, 0, 0) },
+    uRigGround: { value: new THREE.Color(0, 0, 0) },
+    uRigRoom: { value: new THREE.Vector4(1, 1, 0.5, 0.6) },
+  },
+}
+const POUR_PARS = `
+uniform vec3 uPourBase;
+uniform vec4 uPourBaseShape;
+uniform vec3 uPourBaseFlank;
+`
+/** The line of three's own shader the pour follows: the sums of a face's own light, closed. tests/lens-glare.test.ts reads it out of three. */
+const POUR_AFTER = 'vec3 outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance;'
+const POUR_FRAG = `
+if (uPourBase.r + uPourBase.g + uPourBase.b > 0.0) {
+  float pourFar = max(length(vStageLocal), uLightFloodAt.x);
+  float pourOut = pourFar - uLightFloodAt.x;
+  vec3 pourN = uLightFrame * (inverseTransformDirection(geometryNormal, viewMatrix) * vec3(1.0, uLensCentre.y < 0.0 ? -1.0 : 1.0, 1.0));
+  float pourFace = mix(uPourBaseShape.z, 1.0, clamp(0.5 - 0.5 * dot(pourN, vStageLocal) / pourFar, 0.0, 1.0));
+  float pourTop = max(diffuseColor.r, max(diffuseColor.g, diffuseColor.b));
+  vec3 pourStuff = pourTop > 1e-4 ? diffuseColor.rgb * pow(max(pourTop, 1e-4), -uPourBaseShape.w) : vec3(0.0);
+  float pourRim = exp(-pourOut / uPourBaseShape.x);
+  float pourFlank = uPourBaseFlank.x * exp(-pourOut / uPourBaseFlank.y);
+  vec3 pourPlain = mix(vec3(max(uPourBase.r, max(uPourBase.g, uPourBase.b))), uPourBase, uPourBaseFlank.z);
+  outgoingLight += pourFace * (uPourBase * (pourRim * mix(pourStuff, vec3(1.0), uPourBaseShape.y)) + pourPlain * (pourFlank * pourStuff));
+}
+`
+/** Lays the pour on a base's material, after the part's own hook: `stageMaterial` calls it for every lit part of a base. */
+export function pourOnBase(shader: { uniforms: Record<string, THREE.IUniform>; fragmentShader: string }): void {
+  Object.assign(shader.uniforms, pourUniforms, baseRoom.uniforms)
+  shader.fragmentShader = shader.fragmentShader.replace('#include <common>', `#include <common>\n${POUR_PARS}`).replace(POUR_AFTER, `${POUR_AFTER}\n${POUR_FRAG}`)
+}
 
 const OUTSIDE_RAMP = changeRamp('base')
 /**
@@ -136,6 +222,16 @@ export function passLevel(hash: number, step: number, count: number): number {
 }
 
 /**
+ * The share a base's pixel is held against in a frame of `count` samples: what the base's branch of `stageChange` gives.
+ * From `PASS_EVEN` samples on, and in a frame of one, it is the share that has passed. Between them it is the whole number
+ * of samples under the share times `count` plus the pixel's own level on the still tile (`still`, `stillLevel`), as a share
+ * of `count`: the pixel holds the new base in exactly that many samples of the frame.
+ */
+export function passShare(share: number, count: number, still: number): number {
+  return count > 1 && count < PASS_EVEN ? Math.floor(share * count + still) / count : share
+}
+
+/**
  * The dressing on the glass is on the one thing the cover leaves in sight, so it is not there while the base changes: the old
  * season's goes as the cover rises, burnt off by the light, and the new season's comes as the cover falls.
  */
@@ -154,11 +250,13 @@ const TABLE = {
 const BASE = { from: share(BASE_PASS.from), long: share(BASE_PASS.to) - share(BASE_PASS.from) } as const
 
 /**
- * The scatter on the table is carried by the strokes, not swapped. What lies there lifts `leadOut` shares of the outside span
+ * The scatter on the table is carried, not swapped. What lies there lifts `leadOut` shares of the outside span
  * before its place is cleared (never before `DRESSING_CHANGE.liftFrom`), is blown out from the foot, faster and faster, and is
  * gone in the air; what the new season lays starts `leadIn` shares before its place fills, from further out, flies in and
- * comes down on its place, the far places first and the foot last, and every new piece is down while the cover of the change
- * is still whole (`GUST_LAST_DOWN_AT` stays under `CHANGE_COVER.fullTo`), so no piece is seen in the air.
+ * comes down on its place, the far places first and the foot last. Both are in sight (`DRESSING_CHANGE`): the old is blown
+ * out as the light of the glass bursts over it, a piece carried outward runs ahead of the front that clears its place and
+ * is thinned as that front comes up with it, and the last of it is gone before the base begins to pass; the new comes down
+ * with the cover's tail, and every new piece is down before the window closes (`GUST_LAST_DOWN` stays under `GUST_CLOSES`).
  * Lengths in millimetres. With one season on the stage the mode is 0 and nothing here is read.
  */
 export const GUST = { leadOut: 1, longOut: 1.25, reachOutMm: 170, leadIn: 0.45, longIn: 0.65, reachInMm: 70, heightMm: 14 } as const
@@ -340,11 +438,15 @@ float stagePatch(vec3 p) {
   float n = ${(1 - OUTSIDE_FRONT.fine).toFixed(2)} * stageNoise(p / ${OUTSIDE_FRONT.cellMm.toFixed(1)}) + ${OUTSIDE_FRONT.fine.toFixed(2)} * stageNoise(p / ${OUTSIDE_FRONT.fineMm.toFixed(1)} + 37.0);
   return (n - 0.5) * ${OUTSIDE_FRONT.contrast.toFixed(1)} + 0.5;
 }
+float stageStill(ivec2 at);
 float stageChange() {
   if (uState.w < 0.5) return 0.0;
   if (uState.z < 0.0) {
     float s = (uChange - uState.x) / uState.y;
-    if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) return clamp(((uPass.z - uState.x) / uState.y + ${(-BASE.from).toFixed(4)}) / ${BASE.long.toFixed(4)}, 0.0, 1.0);
+    if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) {
+      float pass = clamp(((uPass.z - uState.x) / uState.y + ${(-BASE.from).toFixed(4)}) / ${BASE.long.toFixed(4)}, 0.0, 1.0);
+      return uPass.w > 1.5 && uPass.w < ${(PASS_EVEN - 0.5).toFixed(1)} ? floor(pass * uPass.w + stageStill(ivec2(gl_FragCoord.xy))) / uPass.w : pass;
+    }
     float far = clamp((length(vStageWorld.xz) - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
     float run = uState.w > 1.5 ? (s - ${TABLE.leaveFrom.toFixed(4)}) / ${TABLE.leaveLong.toFixed(4)} : (s - ${TABLE.comeFrom.toFixed(4)}) / ${TABLE.comeLong.toFixed(4)};
     float reach = clamp(run, 0.0, 1.0) * (1.0 - uState.z) + uState.z * (uState.w > 1.5 ? far : 1.0 - far);
@@ -462,6 +564,7 @@ export function stageMaterial(spec: LitSpec): THREE.MeshStandardMaterial {
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${FRAG_LIGHT}`)
       .replace('#include <dithering_fragment>', `#include <dithering_fragment>\n${FRAG_TAIL}`)
     spec.hook?.(shader)
+    if (spec.change === 'base') pourOnBase(shader)
   }
   const key = spec.key ?? (spec.hook ? spec.part : '')
   m.customProgramCacheKey = () => `stage:${spec.inside ? 'in' : 'out'}:${key}`
