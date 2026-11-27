@@ -186,16 +186,16 @@ export function strataCoord(az, h) {
 const FOOT = { glass: 1.08, scallop: 1.2, cockle: 1.2, snail: 1.25, olive: 1.0, pearl: 0.95 }
 // Wet sand moulded by hand into one low mound (references/approved/summer-rest.png): a few broad swells, no two of one width or depth. Seen
 // from the front they all run down to the right: near level off the left flank, steepest under the middle, easing toward the right flank;
-// where two run close they run into each other. Where two swells meet there is a crease, a sharp line that comes and goes. Over the swells
+// where two run close they run into each other. Where two swells meet there is a round hollow in soft shade, with a faint crease in it here and there. Over the swells
 // the fingers have drawn the sand into ridges a few millimetres wide that lie on each other like shingles: each stands out at its lower edge
 // and has a thin shade under it, no two are as wide or as deep, and each comes and goes along its run. Right of the middle the hand has
 // dabbed more than drawn: there the ridges are short and wavy and the sand between them is pitted. The mesh holds the swells; the carve map
 // holds the ridges, the creases, the pits and the crumbs. All of it parts round the things set in the sand as water parts round a stone.
-const SWIRL = { apart: 9.5, slope: 0.4, most: 0.6, least: 0.12, crumb: 0.034, notch: 0.035, crest: 0.2 }
+const SWIRL = { apart: 9.5, slope: 0.46, most: 0.7, least: 0.12, crumb: 0.034, notch: 0.035, crest: 0.2 }
 const RIDGE = { apart: 2.6, deep: 0.36, peak: 0.36, pit: 0.16, gouge: 0.14, crack: 0.02 }
-// A roll of moulded sand in section, from the crease under it (0) to the crease over it (1): it stands out quickly to its crest and falls
-// back slowly, and where it meets the next roll the line is sharp.
-const roll = (x, crest) => Math.max(x < crest ? Math.sin((0.5 * Math.PI * x) / crest) : Math.cos((0.5 * Math.PI * (x - crest)) / (1 - crest)), 0) ** 0.85
+// A roll of moulded sand in section, from the hollow under it (0) to the hollow over it (1): it stands out quickly to its crest and falls
+// back slowly, and where it meets the next roll the hollow is round, so it lies in soft shade and draws no line.
+const roll = (x, crest) => Math.max(x < crest ? Math.sin((0.5 * Math.PI * x) / crest) : Math.cos((0.5 * Math.PI * (x - crest)) / (1 - crest)), 0) ** 1.25
 const frac = (v) => v - Math.floor(v)
 const swirlLean = (az) => {
   const a = az - 360 * Math.round(az / 360)
@@ -225,7 +225,7 @@ function swirlCoord(m, az, s, h, r) {
 }
 // The roll under the glass lies on the body as a crust: from the left flank to the middle its lower edge is a ragged step, high on the left
 // and lower toward the middle, its height in mm.
-const crustEdge = (A, a180) => 34.0 - 0.093 * (clamp(a180, -58, -6) + 10) + 3.6 * (fbm(A * 46 + 1, 0.5, 46, 4, 191, 4) - 0.5) + 1.5 * (fbm(A * 170 + 7, 0.5, 170, 4, 205, 2) - 0.5)
+const crustEdge = (A, a180) => 34.0 - 0.093 * (clamp(a180, -58, -6) + 10) + 3.6 * (fbm(A * 46 + 1, 0.5, 46, 4, 191, 4) - 0.5) + 1.5 * (fbm(A * 110 + 7, 0.5, 110, 4, 205, 3) - 0.5)
 // Low on the left flank the sand is folded over itself: a lip, a deep crease under it and the foot's roll standing out below. How much of
 // that fold there is at an azimuth.
 const foldAt = (az) => {
@@ -320,7 +320,7 @@ function bare(m, az, s) {
   const crumb = SWIRL.crumb * 2.4 * grit * crumbs
   // Under the roll on the left the sand lies in thin beds: five or six soft grooves, near level and each a little bent.
   const bedH = h + 0.55 * Math.sin((a180 + 37) * 0.11) + 2.0 * (fbm(A * 13 + 5, h / 14 + 2, 13, 64, 251, 2) - 0.5)
-  const beds = -0.09 * (0.5 - 0.5 * Math.cos(2 * Math.PI * frac(bedH / 1.5))) ** 2 * smooth(-88, -74, a180) * smooth(-16, -30, a180) * smooth(25.5, 27.5, h) * smooth(-0.4, -1.6, over) * (0.5 + 0.5 * smooth(0.3, 0.55, fbm(A * 9 + 1, h / 7 + 4, 9, 64, 253, 2)))
+  const beds = -0.06 * (0.5 - 0.5 * Math.cos(2 * Math.PI * frac(bedH / 1.5))) ** 2 * smooth(-88, -74, a180) * smooth(-16, -30, a180) * smooth(25.5, 27.5, h) * smooth(-0.4, -1.6, over) * (0.5 + 0.5 * smooth(0.3, 0.55, fbm(A * 9 + 1, h / 7 + 4, 9, 64, 253, 2)))
   const small = (ridge + pit + gouge + crack - notch + beds) * body * fade + crumb
   const fine = swirl * (1 - held) * fade + small
   const d = ((swell + ripple) * (1 - 0.55 * onTop) + swirl * held + hold + lumps + dabs + crust + crease + heap) * fade
