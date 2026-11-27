@@ -191,11 +191,14 @@ const FOOT = { glass: 1.08, scallop: 1.2, cockle: 1.2, snail: 1.25, olive: 1.0, 
 // and has a thin shade under it, no two are as wide or as deep, and each comes and goes along its run. Right of the middle the hand has
 // dabbed more than drawn: there the ridges are short and wavy and the sand between them is pitted. The mesh holds the swells; the carve map
 // holds the ridges, the creases, the pits and the crumbs. All of it parts round the things set in the sand as water parts round a stone.
-const SWIRL = { apart: 9.5, slope: 0.52, most: 0.85, least: 0.12, crumb: 0.034, notch: 0.03, crest: 0.3 }
-const RIDGE = { apart: 4.4, deep: 0.5, peak: 0.56, pit: 0.1, gouge: 0.03, crack: 0.006 }
+const SWIRL = { apart: 9.5, slope: 0.52, most: 0.85, least: 0.12, crumb: 0.034, notch: 0.03, crest: 0.22, kink: 0.7 }
+const RIDGE = { apart: 2.1, deep: 0.3, lip: 0.36, pit: 0.1, gouge: 0.03, crack: 0.006 }
 // A roll of moulded sand in section, from the hollow under it (0) to the hollow over it (1): it stands out quickly to its crest and falls
 // back slowly, and where it meets the next roll the hollow is round, so it lies in soft shade and draws no line.
 const shelf = (x, crest) => (x < crest ? 0.5 - 0.5 * Math.cos((Math.PI * x) / crest) : 0.5 + 0.5 * Math.cos((Math.PI * (x - crest)) / (1 - crest)))
+// A shelf of drawn sand in section, the same way up: under its lip it is cut back, steepest right under the lip, and over the lip its face
+// falls back slowly. The lip is an edge, with its shade under it and the light on it; both hollows are round.
+const ledge = (x, lip, back = 1.5) => (x < lip ? (x / lip) ** 2 : (1 - (x - lip) / (1 - lip)) ** back)
 const frac = (v) => v - Math.floor(v)
 const swirlLean = (az) => {
   const a = az - 360 * Math.round(az / 360)
@@ -293,7 +296,10 @@ function bare(m, az, s) {
   const held = smooth(3.2, 5.0, across)
   // Where the hand dabbed, a swirl does not run on: it is there for a finger's width and gone for the next.
   const stroke = 0.15 + 0.85 * smooth(0.34, 0.6, fbm(A * 44 + 13, h / 5 + 5, 44, 64, 247, 2))
-  const swirl = deep * live * wave * body * mix(0.3, 1, smooth(-40, -8, a180)) * mix(1, 0.65 * stroke, dabbed)
+  const drawn = deep * live * body * mix(0.3, 1, smooth(-40, -8, a180)) * mix(1, 0.65 * stroke, dabbed)
+  const swirl = drawn * wave
+  // The mesh holds a swirl as a round swell. What makes its crest an edge is narrower than the mesh's cells, so the carve map holds it.
+  const kink = SWIRL.kink * drawn * (mix(2 * ledge(frac(t1), SWIRL.crest, 1) - 1, 2 * ledge(frac(0.5 * t1 + 0.0955), SWIRL.crest, 1) - 1, pair) - wave)
   // The crease at the bottom of a hollow: there on one stretch, gone on the next.
   const sharp = smooth(0.34, 0.6, fbm(A * 7 + 11, h / 9 + 2, 7, 64, 203, 2))
   const notch = SWIRL.notch * smooth(-0.6, -1, wave) ** 2 * sharp * live * clamp(deep / 0.3, 0.4, 1) * mix(1, 0.25, dabbed)
@@ -315,7 +321,10 @@ function bare(m, az, s) {
   const driftEdge = 38.6 - 2.2 * smooth(6, 30, a180) * smooth(100, 70, a180) + 1.4 * (fbm(A * 40 + 5, 0.5, 40, 4, 193, 3) - 0.5)
   const drift = smooth(driftEdge - 0.9, driftEdge + 0.9, q.h)
   const heap = drift * (0.28 + 0.3 * smooth(6, 30, a180) * smooth(100, 70, a180) + 0.5 * (fbm(A * 90 + 2, q.r / 2.4, 90, 64, 195, 3) - 0.5))
-  const grit = fbm(A * 560 + 3, h / 0.62 + 1, 560, 128, 181, 2) - 0.5
+  // Left of the middle the roll's shoulder is crumbly: lumps of one to three millimetres as the picture shows them, so its edge is broken and their tops take the sun.
+  const knobs = 1.3 * (fbm((56 * Math.sin(a180 * RAD)) / 1.4 + 70, (q.r + q.h) / 1.5 + 2, 256, 256, 259, 2) - 0.5) * smooth(driftEdge - 2.4, driftEdge - 0.2, q.h) * smooth(47.9, 49.4, q.r) * smooth(-78, -62, a180) * smooth(-8, -22, a180)
+  // Over the roll's top the height stands still: the run inward carries the grain on, or it draws there as ribs.
+  const grit = fbm(A * 560 + 3, (h + Math.max(0, 52.6 - q.r)) / 0.62 + 1, 560, 128, 181, 2) - 0.5
   const underLedge = mix(1, smooth(-0.2, -1.5, over), smooth(-62, -52, a180) * smooth(-4, -14, a180)) * smooth(35.5, 33, h)
   const rpsi = psi + 1.5 * dabbed * (fbm(A * 70 + 3, h / 2.6 + 2, 70, 64, 215, 2) - 0.5)
   const rp = rpsi / RIDGE.apart + 0.4 * Math.sin(rpsi / 6.1 + p1) + 0.15 * Math.sin(rpsi / 2.9 + p2 + 12 * Math.PI * A)
@@ -323,7 +332,7 @@ function bare(m, az, s) {
   const rx = rp - rk
   const rRun = smooth(0.14, 0.46, mix(fbm(A * 18 + 0.37 * rk, 0.61 * rk + 0.5, 18, 64, 219, 2), fbm(A * 46 + 0.37 * rk, 0.61 * rk + 0.5, 46, 64, 231, 2), dabbed))
   const rOn = Math.max(0.2 * smooth(-100, -84, a180) * smooth(-10, -28, a180) * smooth(23.5, 27, h), smooth(-40, -20, a180) * smooth(44, 22, a180) * mix(0.4, 1, smooth(9, 15, h)) * smooth(5, 9, h), 0.45 * smooth(5, 9, h)) * underLedge * mix(1, 0.55, dabbed) * mix(0.5, 1, Math.max(smooth(-45, -22, a180), smooth(20, 24, h)))
-  const ridge = RIDGE.deep * (0.35 + 0.65 * hashInt(rk, 3, 217)) * rRun * shelf(rx, RIDGE.peak) * rOn
+  const ridge = RIDGE.deep * (0.35 + 0.65 * hashInt(rk, 3, 217)) * rRun * ledge(rx, RIDGE.lip) * rOn * mix(0.4, 1, smooth(-48, -26, a180))
   // A pit where a grain or two fell out, a crumb where a few stand proud: each in its own cell, most where the hand dabbed.
   const pu = A * 232
   const pv = h / 1.55
@@ -347,10 +356,10 @@ function bare(m, az, s) {
   const beds = -0.06 * (0.5 - 0.5 * Math.cos(2 * Math.PI * frac(bedH / 1.5))) ** 2 * smooth(-88, -74, a180) * smooth(-16, -30, a180) * smooth(25.5, 27.5, h) * smooth(-0.4, -1.6, over) * (0.5 + 0.5 * smooth(0.3, 0.55, fbm(A * 9 + 1, h / 7 + 4, 9, 64, 253, 2)))
   const small = (ridge + pit + gouge + crack - notch + beds) * body * fade + crumb
   // The crust's torn step is narrower than the mesh's cells: the carve map holds it, or the mesh draws it as a saw.
-  const fine = (swirl * (1 - held) + crust) * fade + small
-  const d = ((swell + ripple) * (1 - 0.55 * onTop) + swirl * held + hold + lumps + dabs + heap) * fade + form
+  const fine = (swirl * (1 - held) + kink + crust) * fade + small
+  const d = ((swell + ripple) * (1 - 0.55 * onTop) + swirl * held + hold + lumps + dabs + heap + knobs) * fade + form
   // What the light from above reads: every part of the relief that makes a face turned up or down.
-  const rel = (swirl + dabs + crust + crease) * fade + small - crumb
+  const rel = (swirl + kink + dabs + crust + crease) * fade + small - crumb
   return { d, fine, rel, form, bulge, lip: lip * fade, grain: 2 * grit * Math.min(crumbs, 1), drift, w, k, f, q, onTop, gh }
 }
 export function relief(m, az, s) {

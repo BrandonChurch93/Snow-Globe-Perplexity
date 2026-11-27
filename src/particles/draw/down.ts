@@ -13,6 +13,18 @@ import { CARD } from './looks'
  * stalk). A card takes the form its particle was given and the lean its own axes have, and turns the picture to
  * its stalk; the stalk and the grain are still lines of the card itself.
  *
+ * After those come the stars (`CARD.down.stars`): the same head as it reads when it is small on the picture, some
+ * sixty fine hairs of unequal length that are each told apart, wider on the sheet so that a hair is a whole line at
+ * that size and not a row of dots. Each is a little bowed and opens to a soft fan toward its tip, as a hair of down
+ * does, so the rim of a head is feathered and never a ring of beads. A card reads a star where its head is small
+ * and the dense form where it is large, and both across the sizes between. The stars are drawn after the dense
+ * forms, so the dense forms take the same numbers from the stream as they did.
+ *
+ * After the stars come the puffs (`CARD.down.puffs`), the heads at rest: round tufts whose hairs are of nearly one length
+ * and thin from a small bright heart to nothing at the tip, so a head is a soft ball and not a wheel of spokes with blunt
+ * ends. Last come the drifts (`CARD.down.drifts`), the heads as the storm leaves them: fewer hairs, and of some only those
+ * of one side (`part`), the others torn off. Both are drawn after all that came before, which takes its numbers as it did.
+ *
  * The sheet is a pure function of the seed: no clock and no random source but the engine's own stream. What it
  * holds is the sum of the hairs' cover over `CARD.down.most`, so the smaller copies (each the mean of four pixels
  * of the one before, made here and not by the graphics driver, so they are the same on every machine) are what a
@@ -22,7 +34,9 @@ export function downAtlas(): THREE.DataTexture {
   const D = CARD.down
   const size = D.tile
   const width = size * D.tilts
-  const height = size * D.forms.length
+  type Form = { hairs: number; cap: readonly [number, number]; long?: readonly [number, number]; weight?: readonly [number, number]; part?: number }
+  const rows: { form: Form; star: boolean; puff: boolean }[] = [...D.forms.map((form) => ({ form, star: false, puff: false })), ...D.stars.map((form) => ({ form, star: true, puff: false })), ...D.puffs.map((form) => ({ form, star: false, puff: true })), ...D.drifts.map((form) => ({ form, star: true, puff: false }))]
+  const height = size * rows.length
   const sum = new Float32Array(width * height)
   const rng = stream('seed-down')
   // texels for one hair length
@@ -51,24 +65,38 @@ export function downAtlas(): THREE.DataTexture {
       }
     }
   }
-  const step = 0.8 * D.wide
-  const each = step / (Math.sqrt(2 * Math.PI) * D.wide)
-  D.forms.forEach((form, row) => {
-    const hairs: { x: number; y: number; z: number; long: number; seen: number; bow: number; tip: number }[] = []
-    for (let i = 0; i < form.hairs; i++) {
+  rows.forEach(({ form, star, puff }, row) => {
+    const S = D.star
+    const P = D.puff
+    const wide = star ? S.wide : puff ? P.wide : D.wide
+    const step = 0.8 * wide
+    const each = step / (Math.sqrt(2 * Math.PI) * wide)
+    const tipFade = star ? S.tipFade : puff ? P.tipFade : D.tipFade
+    const tipWide = puff ? P.tipWide : D.wide * D.tipWide
+    const hairs: { x: number; y: number; z: number; long: number; seen: number; bow: number; tip: number; beadAt: number; beadLong: number }[] = []
+    for (let i = 0, made = 0; made < form.hairs; i++) {
+      // a part drift keeps the hairs of one side only: the others were torn off in the storm
+      if (form.part !== undefined && ((i * 2.3999632) / (2 * Math.PI)) % 1 > form.part) continue
       // even over the cap by area, each hair a golden angle on from the last: no rows and no wedges
-      const up = form.cap[0] + ((form.cap[1] - form.cap[0]) * (i + rng.next())) / form.hairs
+      const up = form.cap[0] + ((form.cap[1] - form.cap[0]) * (made + rng.next())) / form.hairs
+      made++
       const turn = i * 2.3999632 + rng.range(-D.jitter, D.jitter)
       const out = Math.sqrt(Math.max(0, 1 - up * up))
       const fine = rng.next() < D.fineShare
+      // the dense forms take their numbers from the stream in the order they always did
+      const long = star ? rng.range((form.long ?? S.long)[0], (form.long ?? S.long)[1]) : puff ? rng.range(P.long[0], P.long[1]) : rng.range(D.long[0], D.long[1]) * (fine ? D.fineLong : 1)
+      const seen = star ? rng.range((form.weight ?? S.weight)[0], (form.weight ?? S.weight)[1]) : puff ? rng.range(P.weight[0], P.weight[1]) : rng.range(D.weight[0], D.weight[1]) * (fine ? D.fineSeen : 1)
       hairs.push({
         x: out * Math.cos(turn),
         y: out * Math.sin(turn),
         z: up,
-        long: rng.range(D.long[0], D.long[1]) * (fine ? D.fineLong : 1),
-        seen: rng.range(D.weight[0], D.weight[1]) * (fine ? D.fineSeen : 1),
-        bow: rng.range(-D.bow, D.bow),
-        tip: rng.next() < D.tips ? D.tipSeen : 0,
+        long,
+        seen,
+        bow: star ? rng.range(-S.bow, S.bow) : puff ? rng.range(-P.bow, P.bow) : rng.range(-D.bow, D.bow),
+        tip: star ? 0 : puff ? P.tip : rng.next() < D.tips ? D.tipSeen : 0,
+        // a puff's hair can be beaded, its light coming and going along it, each hair at its own place and pace (`puff.bead` is how much: none now)
+        beadAt: puff ? rng.range(0, 2 * Math.PI) : 0,
+        beadLong: puff ? rng.range(P.beadLong[0], P.beadLong[1]) : 1,
       })
     }
     for (let k = 0; k < D.tilts; k++) {
@@ -88,13 +116,16 @@ export function downAtlas(): THREE.DataTexture {
         for (let n = 0; n < count; n++) {
           const t = (n + 0.5) / count
           const side = hr.bow * t * t
-          dab(cx + tx * t - ty * side, cy + ty * t + tx * side, hr.seen * each * (len / count / step) * (1 - D.tipFade * t), x0, y0, D.wide)
+          // a star's hair is a tapered line: stout where it leaves the heart and drawn out to a fine point
+          const open = star ? 1 + S.flare * Math.pow(t, S.flarePow) : 1
+          const bead = puff ? (1 + P.bead * Math.sin(hr.beadAt + (2 * Math.PI * t * len) / (unit * hr.beadLong))) * Math.min(1, t / P.root) : 1
+          dab(cx + tx * t - ty * side, cy + ty * t + tx * side, hr.seen * each * (len / count / step) * (1 - tipFade * t) * bead * Math.pow(open, -S.flareHold), x0, y0, wide * open)
         }
         // a faint tuft at the tip of most hairs: wider than the hair and far dimmer, so the rim of a head is soft and dotted
-        if (hr.tip > 0) dab(cx + tx - ty * hr.bow, cy + ty + tx * hr.bow, hr.tip, x0, y0, D.wide * D.tipWide)
+        if (hr.tip > 0) dab(cx + tx - ty * hr.bow, cy + ty + tx * hr.bow, hr.tip, x0, y0, tipWide)
       }
       // the heart, where every hair meets
-      dab(cx, cy, D.heart, x0, y0, D.heartWide * unit)
+      dab(cx, cy, star ? S.heart : puff ? P.heart : D.heart, x0, y0, (star ? S.heartWide : puff ? P.heartWide : D.heartWide) * unit)
     }
   })
   // every smaller copy down to one pixel, so the sheet is whole on any driver; a card reads no further than `lodMost`
