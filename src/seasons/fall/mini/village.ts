@@ -27,12 +27,13 @@ const SIDE = { power: 0.75, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.2 }
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
-const NEAR = { lamp: { power: 16, reachMm: 13 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 8, reachMm: 5.5, ends: 4 }, door: { power: 7, reachMm: 4.5 } }
-const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 3.6, reachMm: 4.2, ends: 3 }, pumpkin: { power: 8, reachMm: 4.5, ends: 3 }, door: { power: 6, reachMm: 5, ends: 3 } }
+const NEAR = { lamp: { power: 16, reachMm: 13 }, pane: { power: 5, reachMm: 3.2 }, greenPane: { power: 5, reachMm: 3.2 }, atticPane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 8, reachMm: 5.5, ends: 4 }, door: { power: 7, reachMm: 4.5 } }
+const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 1.4, reachMm: 2.4, ends: 3 }, greenPane: { power: 6, reachMm: 1.7, ends: 3 }, atticPane: { power: 3.6, reachMm: 4.2, ends: 3 }, pumpkin: { power: 8, reachMm: 4.5, ends: 3 }, door: { power: 6, reachMm: 5, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.16, hot: 0, bloom: 0.2 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
 const PANE_SIZE = { size: 3.2, rest: 0.3, hot: 0, bloom: 0.3 }
+const GREEN_SIZE = { ...PANE_SIZE, size: 1.5 }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [3.4, 1.25, 0.24]
 const WALL_FILL = 3.8
@@ -43,9 +44,9 @@ const MOSS = { low: [0.7, 0.9, 0.6] as Rgb, high: [0.88, 1.02, 0.86] as Rgb, tal
 // The shared stones run from 0.03 (a joint) over 0.12 (the middle stone) to 0.9 (a few white ones). The approved wall is
 // dark grey green stones between black joints, so the tone is bent: joints stay near black, the middle stone sits at a
 // third of `top`, and only the palest stones reach it, which keeps stone from stone apart without a white one.
-const STONE = { top: 0.115, knee: 0.17, power: 2.2 }
+const STONE = { top: 0.125, knee: 0.17, power: 2.7 }
 // The shared chimney is pale brick. The approved one is the wall's dark stone, a little greyer.
-const CHIMNEY = { tone: [0.9, 0.95, 0.9] as Rgb, top: 0.26, knee: 0.5, power: 2.2, fromMm: 1.5, reachMm: 0.9 }
+const CHIMNEY = { tone: [0.9, 0.95, 0.9] as Rgb, top: 0.28, knee: 0.5, power: 2.8, fromMm: 1.5, reachMm: 0.9 }
 // The shared slates run from 0.02 (a slate's shadowed top edge) to 0.12 (its lit lower edge). The approved roof is big warm
 // slates with bright lower edges over black gaps, so the tone is bent about `mid` and weathered in patches a few slates wide.
 const ROOF = { tone: [1.65, 1.22, 0.95] as Rgb, grey: 0.55, mid: 0.045, bend: 1.6, patch: [0.6, 1.7] as [number, number] }
@@ -83,7 +84,7 @@ const CASING = { tone: [0.1, 0.085, 0.1] as Rgb, reachMm: 1.1, deepMm: 1.4 }
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 // The shared shrubs are one soft mass. Dry leaves stand apart: each takes its own tone and its own depth of shade.
 const BUSH = { gain: 5.2, cap: 2, low: 0.35 }
-const GROUND = { soil: 2.3, leaf: 1.05, leafScale: 0.85, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
+const GROUND = { soil: 1, tint: [0.4, 0.6, 1] as Rgb, mossTone: [0.07, 0.115, 0.055] as Rgb, leaf: 0.95, grey: 0.25, cover: 0.85, moss: 0.12, leafScale: 0.85, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
 const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 4.5, pane: 1.6, pumpkin: 4.5, tight: 0.003, wide: 0.012, wideShare: 0.03, calm: 0.3, lowMm: 3.4, fog: 0.42, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
 
 const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
@@ -147,8 +148,8 @@ const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb): GlowSource[
   ...bounce(),
   { at: flame, color: lampTone, ...on.lamp },
   { at: anchors.window, color: tones.purpleLight, ...on.pane },
-  { at: anchors.sideWindow, color: tones.greenLight, ...on.pane },
-  { at: attic, color: tones.greenLight, ...on.pane },
+  { at: anchors.sideWindow, color: tones.greenLight, ...on.greenPane },
+  { at: attic, color: tones.greenLight, ...on.atticPane },
   ...pumpkinPools.map((at): GlowSource => ({ at, color: tones.pumpkinLight, ...on.pumpkin })),
   { at: doorFoot, color: tones.pumpkinLight, ...on.door },
 ]
@@ -345,8 +346,8 @@ vec4 fallLeaf(vec2 at) {
   vec2 uv = at * ${GROUND.leafScale.toFixed(2)};
   vec4 a = texture2D(uLitter, uv);
   vec4 b = texture2D(uLitter, vec2(0.7071 * (uv.x - uv.y), 0.7071 * (uv.x + uv.y)) * 0.77 + vec2(0.31, 0.57));
-  a.a *= step(1.0 - vSurf.x, a.a);
-  b.a *= step(1.0 - 0.8 * vSurf.x, b.a);
+  a.a *= step(1.0 - ${GROUND.cover.toFixed(2)} * vSurf.x, a.a);
+  b.a *= step(1.0 - ${(0.8 * GROUND.cover).toFixed(3)} * vSurf.x, b.a);
   return a.a >= b.a ? a : b;
 }
 float fallHeight(vec2 uv) {
@@ -363,9 +364,9 @@ vec4 fallE = texture2D(map, vMapUv);
 vec4 fallL = fallLeaf(vMapUv);
 float fallShow = step(0.03, fallL.a);
 float fallWide = texture2D(map, vMapUv * 0.19 + 0.37).a;
-float fallMoss = smoothstep(0.42, 0.62, vSurf.y + 0.55 * (fallE.a - 0.5) + 0.3 * (fallWide - 0.5));
-vec3 fallSoil = mix(fallE.rgb * ${GROUND.soil.toFixed(2)}, ${glsl(tones.moss)} * (0.3 + 0.7 * fallE.a), fallMoss);
-diffuseColor.rgb *= mix(fallSoil, fallL.rgb * ${GROUND.leaf.toFixed(2)}, fallShow);
+float fallMoss = smoothstep(0.42, 0.62, vSurf.y + ${GROUND.moss.toFixed(2)} + 0.55 * (fallE.a - 0.5) + 0.3 * (fallWide - 0.5));
+vec3 fallSoil = mix(fallE.rgb * ${glsl(scaled(GROUND.tint, GROUND.soil))}, ${glsl(GROUND.mossTone)} * (0.3 + 0.7 * fallE.a), fallMoss);
+diffuseColor.rgb *= mix(fallSoil, mix(fallL.rgb, vec3(0.9, 0.82, 0.62) * dot(fallL.rgb, vec3(0.4, 0.45, 0.15)), ${GROUND.grey.toFixed(2)}) * ${GROUND.leaf.toFixed(2)}, fallShow);
 fallRough = mix(0.96, 0.8, fallShow);
 `,
         )
@@ -481,13 +482,13 @@ const scaled = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k]
 
 // The shared pane gives a room, a hot centre and a frost at the corners and the sill: fall dims the room and uses the
 // frost slot as dark grime on the glass. The approved panes have four lights each and pale drapes hanging in folds.
-const PANE = { drape: 0.3, grime: [0.014, 0.013, 0.009] as Rgb, grimeAmount: 0.7, lights: [2, 2] as [number, number] }
-const PURPLE_PANE = { room: 0.24, hot: 0.4 }
-const GREEN_PANE = { room: 0.22, hot: 0.3 }
-const DRAPE = { folds: 3.4, bend: 0.22, gain: 1, flicker: 0.07, cycles: 3 }
+const PANE = { drape: 0.3, grime: [0.014, 0.013, 0.009] as Rgb, grimeAmount: 0.8, lights: [2, 2] as [number, number] }
+const PURPLE_PANE = { room: 0.04, hot: 0.18, grime: [0.012, 0.001, 0.013] as Rgb }
+const GREEN_PANE = { room: 0.22, hot: 0.3, grime: PANE.grime }
+const DRAPE = { folds: 2.3, bend: 0.2, gain: 1.5, patch: [0.4, 0.62] as [number, number], flicker: 0.07, cycles: 3 }
 
-function paneLook(room: Rgb, drape: Rgb, level: { room: number; hot: number }): GlowLook {
-  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.4), flame: tones.flame, room: scaled(room, level.room), curtain: scaled(drape, PANE.drape), frost: PANE.grime, frostAmount: PANE.grimeAmount, flicker: DRAPE.flicker, cycles: DRAPE.cycles, through: THROUGH, paneHot: level.hot, lights: PANE.lights }
+function paneLook(room: Rgb, drape: Rgb, level: { room: number; hot: number; grime: Rgb }): GlowLook {
+  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.4), flame: tones.flame, room: scaled(room, level.room), curtain: scaled(drape, PANE.drape), frost: level.grime, frostAmount: PANE.grimeAmount, flicker: DRAPE.flicker, cycles: DRAPE.cycles, through: THROUGH, paneHot: level.hot, lights: PANE.lights }
 }
 
 const glsl3 = (c: Rgb): string => `vec3(${c[0].toFixed(4)}, ${c[1].toFixed(4)}, ${c[2].toFixed(4)})`
@@ -519,6 +520,16 @@ float drapeHash(float n) {
   q += dot(q, q.yzx + 33.33);
   return fract((q.x + q.y) * q.z);
 }
+float drapeCloud(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = drapeHash(i.x + 57.0 * i.y);
+  float b = drapeHash(i.x + 1.0 + 57.0 * i.y);
+  float c = drapeHash(i.x + 57.0 * (i.y + 1.0));
+  float d = drapeHash(i.x + 1.0 + 57.0 * (i.y + 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
 float drapeNoise(float x) {
   float i = floor(x);
   float f = fract(x);
@@ -533,13 +544,14 @@ void main() {
   if (stageOutside()) discard;
   #endif
   float seed = vKind.w * 17.0;
-  float u = vUv.x * ${DRAPE.folds.toFixed(2)} + ${DRAPE.bend.toFixed(2)} * sin(vUv.y * 2.6 + seed) + 0.5 * drapeNoise(vUv.y * 1.7 + seed);
+  float u = vUv.x * ${DRAPE.folds.toFixed(2)} + ${DRAPE.bend.toFixed(2)} * sin(vUv.y * 2.6 + seed) + 0.4 * drapeNoise(vUv.y * 1.7 + seed);
   float wide = 0.5 + 0.5 * sin(6.2831853 * u);
   float fine = 0.5 + 0.5 * sin(6.2831853 * (u * 1.73 + drapeNoise(seed + 5.0)));
-  float hang = 0.4 + 0.6 * drapeNoise(vUv.y * 3.1 + floor(u + 0.25) * 7.3 + seed);
-  float crest = wide * wide * wide * wide;
+  float cloud = drapeCloud(vec2(u * 1.3, vUv.y * 2.4) + seed) * 0.65 + drapeCloud(vec2(u * 3.1, vUv.y * 5.3) + seed + 9.0) * 0.35;
+  float hang = smoothstep(${DRAPE.patch[0].toFixed(2)}, ${DRAPE.patch[1].toFixed(2)}, cloud * mix(1.25, 0.8, smoothstep(0.35, 0.75, vUv.y)));
+  float crest = wide * wide;
   float thread = fine * fine * fine * fine;
-  float fold = 1.3 * crest * crest * hang + 0.2 * thread * thread;
+  float fold = hang * (0.7 + 0.5 * crest) + 0.1 * thread * thread;
   vec2 bars = (0.5 - abs(fract(vUv * ${lights}) - 0.5)) * vKind.yz / ${lights};
   float open = smoothstep(0.14, 0.34, min(bars.x, bars.y));
   float beat = 1.0 + ${DRAPE.flicker.toFixed(3)} * sin(6.2831853 * (${DRAPE.cycles.toFixed(1)} * uClock + vKind.y)) * (0.6 + 0.4 * sin(6.2831853 * (${(DRAPE.cycles * 3 + 1).toFixed(1)} * uClock + vKind.y * 5.0)));
@@ -575,7 +587,7 @@ export function lights(): THREE.Object3D {
   halos.renderOrder = 3
   const purpleHalo = new THREE.Mesh(haloGeometry([anchors.window], PANE_HALO.radiusMm, [PANE_SIZE], PANE_HALO.wide), haloMaterial(LIGHT, scaled(tones.purple, 0.5), tones.purpleLight, PANE_HALO, clock))
   purpleHalo.renderOrder = 3
-  const greenHalo = new THREE.Mesh(haloGeometry([anchors.sideWindow, attic], PANE_HALO.radiusMm, [PANE_SIZE, PANE_SIZE], PANE_HALO.wide), haloMaterial(LIGHT, scaled(tones.green, 0.5), tones.greenLight, PANE_HALO, clock))
+  const greenHalo = new THREE.Mesh(haloGeometry([anchors.sideWindow, attic], PANE_HALO.radiusMm, [GREEN_SIZE, GREEN_SIZE], PANE_HALO.wide), haloMaterial(LIGHT, scaled(tones.green, 0.5), tones.greenLight, PANE_HALO, clock))
   greenHalo.renderOrder = 3
   return new THREE.Group().add(new THREE.Mesh(glowGeometry(warmPieces), glowMaterial(LIGHT, warm, clock)), purple, green, purpleFolds, greenFolds, halos, purpleHalo, greenHalo)
 }

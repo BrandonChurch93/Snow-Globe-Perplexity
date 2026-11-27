@@ -23,6 +23,7 @@ const PART = 'glass-dressing-fall'
 const RS = config.globe.sphereDiameterMm / 2
 const RI = RS - config.globe.glassThicknessMm
 const GROUND = config.globe.islandLevelMm - (config.globe.baseHeightMm - config.globe.collarDepthMm + RS)
+const COLLAR = config.globe.collarDepthMm - RS
 const RAD = Math.PI / 180
 
 setGlass('fall', { windowTint: [0.8, 0.88, 1], windowGain: [0.15, 0.05, 1, 1], windowSoftDeg: 4, windowGrain: 0.5, rimTint: [0.5, 0.6, 0.55], wallTint: [0.44, 0.55, 0.48], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.15, roomHue: [0.85, 0.95, 1.1], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 3.2, arcTint: [1, 0.42, 0.13], arcCool: 0.4 })
@@ -60,6 +61,12 @@ export const look = {
     lipDeepMm: 8,
     lipRiseMm: 11,
     lipDeep: [0.26, 1.0, 0.32],
+    // The approved's base stands over the lowest of the glass, higher at the front than ours does: the lip goes out from this
+    // far above the collar's line, beside the scene and before it, over `lipFootFadeMm`, and `lipFootLeft` of it stays below.
+    lipFootMm: [8.0, 8.8] as const,
+    lipFootFadeMm: 1.0,
+    lipFootLeft: 0.08,
+    lipFootFront: [20, 40] as const,
     lifted: 0.03,
     liftedMiddle: 0.007,
     liftedFromMm: 45,
@@ -125,9 +132,9 @@ export const look = {
     mistBillowMm: 120,
     mistPatchMm: 62,
     mistPatch: [0.4, 0.62] as const,
-    mistLow: [0.08, 0.135, 0.078],
-    mistTop: [0.036, 0.078, 0.052],
-    mistHigh: [0.04, 0.06, 0.064],
+    mistLow: [0.14, 0.135, 0.088],
+    mistTop: [0.062, 0.058, 0.052],
+    mistHigh: [0.078, 0.062, 0.066],
     mistLeft: 0.3,
     mistLeftMm: [-24, 4] as const,
     mistEven: [0.5, 2.4] as const,
@@ -529,6 +536,8 @@ void main() {
   float rho = ${f(F.lip)} * mix(1.0, ${f(F.lipLifted)}, lift) * top * (0.24 + 1.4 * smoothstep(0.3, 0.75, n.y) * (0.3 + n.x)) * mix(0.6, 1.0, deep) * side;
   float a = 1.0 - exp(-rho);
   a *= seen;
+  float foot = ${f(COLLAR)} + mix(${f(F.lipFootMm[0])}, ${f(F.lipFootMm[1])}, smoothstep(${f(F.lipFootFront[0])}, ${f(F.lipFootFront[1])}, p.z));
+  a *= mix(${f(F.lipFootLeft)}, 1.0, smoothstep(foot, foot + ${f(F.lipFootFadeMm)}, p.y));
   if (a < 0.003) discard;
   // It glows from below: brightest at the collar, where it is deepest, and fading up to the ground's edge.
   float low = clamp((edge - p.y) / ${f(F.lipDeepMm)}, 0.0, 1.0);

@@ -48,6 +48,7 @@ export const CARD_VERT = `
     float keepC = mix(afloat * max(gustC, ${n(CARD.dabCalm)} * uStorm.x * uStorm.w) * mix(${n(CARD.dabKeep[0])}, ${n(CARD.dabKeep[1])}, smoothstep(1.0 - chosen - dabShare - 0.02, 1.0 - chosen - dabShare, own)), 1.0, whole);
     if (${at(SHAPE.seed)} && whole > 0.5 && way.z > 0.5 && u5 >= max(way.x, way.y)) keepC *= max(max(afloat * gustC, uStorm.x * uStorm.w), lying * step(fract(own * 977.0), ${n(CARD.clear.snagSeen)}));
     if (${at(SHAPE.spark)}) keepC = max(mix(${n(CARD.sparkKeep[0])}, ${n(CARD.sparkKeep[1])}, pow(abs(own), mix(${n(CARD.sparkRestSkew)}, ${n(CARD.sparkSkew)}, gust))), smoothstep(mix(${n(CARD.sparkRestClear[0])}, ${n(CARD.sparkClear[0])}, gust), mix(${n(CARD.sparkRestClear[1])}, ${n(CARD.sparkClear[1])}, gust), own));
+    if (${at(SHAPE.spark)}) keepC = max(keepC, ${n(CARD.sparkRestFine[0])} * smoothstep(${n(CARD.sparkRestFine[1])}, ${n(CARD.sparkRestFine[1] + 0.05)}, own) * (1.0 - gust));
     if (${at(SHAPE.fleck)}) keepC = mix(${n(CARD.fleckKeep[0])}, ${n(CARD.fleckKeep[1])}, pow(abs(own), mix(${n(CARD.fleckSkew)}, ${n(CARD.fleckStorm)}, gustC)));
     float stormSize = ${at(SHAPE.petal)} ? ${n(CARD.stormSize[0])} : (${at(SHAPE.leaf)} ? ${n(CARD.stormSize[1])} : 1.0);
     rC *= mix(${at(SHAPE.leaf)} ? ${n(CARD.leafDab)} : ${n(CARD.dabSize)}, mix(1.0, stormSize, gustC * (own > 1.0 - chosen ? 0.0 : 1.0)), whole);
@@ -62,6 +63,7 @@ export const CARD_VERT = `
       vec2 cotL = (atL - vec2(${n(CARD.spark.restCottageAt[0])}, ${n(CARD.spark.restCottageAt[1])})) / vec2(${n(CARD.spark.restCottageWide[0])}, ${n(CARD.spark.restCottageWide[1])});
       keepC *= mix(1.0, step(fract(own * 389.0), ${n(CARD.leafRestShare)} * mix(1.0, ${n(CARD.leafRestRight)}, smoothstep(${n(CARD.leafRestRightFrom[0])}, ${n(CARD.leafRestRightFrom[1])}, atL.x)) * (1.0 - ${n(CARD.leafRestCottage)} * exp(-0.5 * dot(cotL, cotL)))) * (1.0 - smoothstep(${n(CARD.leafRestRim[0])}, ${n(CARD.leafRestRim[1])}, length(atL))), restL);
       rC *= mix(1.0, mix(${n(CARD.leafRestMm[0])}, ${n(CARD.leafRestMm[1])}, pow(fract(vary * 7.0 + own), ${n(CARD.leafRestMm[2])})) / max(aData.x * spreadC, 1e-3), restL);
+      rC = mix(rC, min(rC, uPoint.w * ${n(CARD.leafRestPx)}), restL) * mix(1.0, ${n(CARD.leafLieSize)}, lying * sheet);
     }
     keepC *= mix(1.0, step(fract(h2.z * 57.0), ${at(SHAPE.petal)} ? ${n(CARD.lieKeep[0])} : ${n(CARD.lieKeep[1])}), lying * sheet);
     float lineShare = ${at(SHAPE.petal)} ? ${n(CARD.line.share[0])} : ${n(CARD.line.share[1])};
@@ -363,6 +365,7 @@ export const CARD_VERT = `
       keepC *= mix(lineC > 0.5 ? ${n(CARD.line.stormGapSeen)} : ${n(CARD.line.stormGapHeads)}, 1.0, smoothstep(0.0, ${n(CARD.line.stormArmEdge)}, armS) * (1.0 - smoothstep(${n(CARD.line.stormArmWide)}, ${n(CARD.line.stormArmWide + CARD.line.stormArmEdge)}, armS)));
     }
     float hlC = 0.5 * length(stC);
+    if (shape > ${n(SHAPE.bat - 0.5)}) hlC *= ${n(CARD.batStreak)};
     vec2 alC = hlC > 1e-4 ? stC / (2.0 * hlC) : vec2(1.0, 0.0);
     float arcC = 0.0;
     if (storming && afloat > 0.5 && hlC > 1e-3 && shape < ${n(SHAPE.bat - 0.5)}) {
@@ -384,6 +387,7 @@ export const CARD_VERT = `
     sgC += uPoint.w * (nearC * (${at(SHAPE.spark)} ? mix(${n(CARD.spark.nearPx[0])}, ${n(CARD.spark.nearPx[1])}, pow(fract(h.y * 173.0), ${n(CARD.spark.nearSkew)})) : (${at(SHAPE.light)} ? mix(${n(CARD.glow.nearPx[0])}, ${n(CARD.glow.nearPx[1])}, fract(h.y * 173.0)) : (${at(SHAPE.seed)} ? mix(${n(CARD.hair.lensPx[0])}, ${n(CARD.hair.lensPx[1])}, fract(h.y * 173.0)) : mix(${at(SHAPE.leaf)} ? mix(${n(CARD.leafNearPx[0])}, ${n(CARD.near.px[0])}, gustC) : ${n(CARD.near.px[0])}, ${at(SHAPE.leaf)} ? mix(${n(CARD.leafNearPx[1])}, ${n(CARD.near.px[1])}, gustC) : ${n(CARD.near.px[1])}, fract(h.y * 173.0))))) + farC * (${at(SHAPE.seed)} ? ${n(CARD.hair.farSoft)} : (${at(SHAPE.light)} ? ${n(CARD.glow.farSoft)} : 1.0)) * mix(${n(CARD.far.px[0])}, ${n(CARD.far.px[1])}, fract(h.y * 173.0)) + seedSoft);
     if (shape > ${n(SHAPE.bat - 0.5)}) sgC *= ${n(CARD.batSoft)};
     float s2C = sgC * sgC + ${n(PIXEL_SIGMA2)} * uPoint.w * uPoint.w;
+    if (shape > ${n(SHAPE.bat - 0.5)}) s2C *= ${n(CARD.batEdge)};
     // The film's samples each look through another place of the lens, and so spread a seed or a light over the lens's blur circle
     // at its depth. Drawn once, it is spread by the same circle here, or the app's air holds more of them, and sharper.
     if (${at(SHAPE.seed)} || ${at(SHAPE.light)}) s2C += uWhole * 0.25 * coc * coc * afloat * (${at(SHAPE.seed)} ? (storming ? (lineC > 0.5 ? ${n(CARD.line.stormLens)} : mix(${n(CARD.hair.lens)}, ${n(CARD.hair.stormLens)}, gustC)) : ${n(CARD.hair.lens)}) : ${n(CARD.glow.lens)} * (1.0 - sceneL) * mix(1.0, ${n(CARD.glow.stormLens)}, gustC));
@@ -997,7 +1001,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     float face = (spark ? (1.0 - smoothstep(${n(CARD.spark.discEdge)} * rd - 0.6, rd + 0.6, dd)) * mix(${n(CARD.spark.discVary[0])}, ${n(CARD.spark.discVary[1])}, fract(vL3.x * 113.0)) : 1.0 - smoothstep(${n(CARD.glow.discEdge)} * rd, 1.1 * rd + 0.6, dd)) * (1.0 - (spark ? ${n(CARD.spark.discRim)} : ${n(CARD.glow.discRim)}) * (1.0 - smoothstep(0.45 * rd, rd, dd)));
     core = mix(core, pow(abs(rc * rc / vc), spark ? ${n(CARD.spark.discHold)} : ${n(CARD.glow.discHold)}) * face * (spark ? mix(${n(CARD.spark.restDiscSeen)}, 1.0, vL2.w) : ${n(CARD.glow.discSeen)}), disc);
   }
-  float halo = (spark ? mix(${n(CARD.spark.restHaloShare)}, ${n(CARD.spark.haloShare)}, vL2.w) : ${n(CARD.glow.haloShare)} * mix(${n(CARD.glow.haloSeen[0])}, ${n(CARD.glow.haloSeen[1])}, pow(fract(vL3.y * 43.0), ${n(CARD.glow.haloSeenSkew)})) * (1.0 + ${n(CARD.glow.openHaloSeen - 1)} * openL) * (1.0 - ${n(CARD.glow.stormHalo)} * tightL)) * rh * rh / vh / (1.0 + 0.8 * vStreak.z / sqrt(vh)) * exp(-0.5 * d2 / vh);
+  float halo = (spark ? mix(${n(CARD.spark.restHaloShare)} * mix(${n(CARD.spark.restHaloFaint)}, 1.0, pow(fract(vL3.w * 71.0), ${n(CARD.spark.restHaloVary[2])})), ${n(CARD.spark.haloShare)}, vL2.w) : ${n(CARD.glow.haloShare)} * mix(${n(CARD.glow.haloSeen[0])}, ${n(CARD.glow.haloSeen[1])}, pow(fract(vL3.y * 43.0), ${n(CARD.glow.haloSeenSkew)})) * (1.0 + ${n(CARD.glow.openHaloSeen - 1)} * openL) * (1.0 - ${n(CARD.glow.stormHalo)} * tightL)) * rh * rh / vh / (1.0 + 0.8 * vStreak.z / sqrt(vh)) * exp(-0.5 * d2 / vh);
   // the brightest lights, one in four, have a soft wide glow as well, and before the miniature none has: a point with a tight glow
   float wide = spark ? 0.0 : ${n(CARD.glow.wideShare)} * step(${n(1 - CARD.glow.wideOf)}, fract(vL3.x * 113.0)) * (1.0 - vL3.z) * (1.0 - ${n(CARD.glow.stormHalo)} * tightL) * rw * rw / vw * exp(-0.5 * d2 / vw);
   // a light in the storm is a thin bright streak: it keeps over its path the light the shutter spread thin
@@ -1030,6 +1034,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     float sharp = 1.0 - smoothstep(${n(CARD.spark.hotFrom[0])}, ${n(CARD.spark.hotFrom[1])}, sg / max(rc, 0.6));
     tint = mix(mix(vec3(${CARD.spark.restEmber.map(n).join(', ')}), k.rgb, vL2.w), vec3(${CARD.spark.dying.map(n).join(', ')}), smoothstep(0.55, 1.0, part));
     tint = mix(tint, mix(vec3(${CARD.spark.restHot.map(n).join(', ')}), vec3(${CARD.spark.hot.map(n).join(', ')}), vL2.w), mix(${n(CARD.spark.restHotCore)}, ${n(CARD.spark.hotCore)}, vL2.w) * sharp * (1.0 - disc) * exp(-0.5 * d2 / (mix(${n(CARD.spark.restHotWide)}, ${n(CARD.spark.hotWide)}, vL2.w) * vc)) * (1.0 - 0.7 * part * vL2.w));
+    tint = mix(tint, vec3(${CARD.spark.restFineHot.map(n).join(', ')}), ${n(CARD.spark.restFineSeen[2])} * (1.0 - vL2.w) * (1.0 - smoothstep(${n(CARD.spark.restFineSeen[0])}, ${n(CARD.spark.restFineSeen[1])}, vCore.w)) * (1.0 - smoothstep(0.55, 1.0, part)));
   }
   vec3 col = tint * (k.a * lum) * (1.0 - vFog.a * uTone.z);
   gl_FragColor = vec4(col, cover);

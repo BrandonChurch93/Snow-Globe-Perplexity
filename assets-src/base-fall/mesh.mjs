@@ -132,7 +132,7 @@ function addStrands() {
     if (!steep && mid > 42 && mid < 100 && i % 2 === 0) a0 += 180
     const angle = (rng() < 0.5 ? -1 : 1) * turn
     const slope = Math.tan(angle * RAD) * span * RAD * 53
-    const rad = steep ? r(1.0, 1.45) : i % 4 === 0 ? r(1.6, 2.05) : r(1.15, 1.7)
+    const rad = steep ? r(0.85, 1.2) : i % 4 === 0 ? r(1.3, 1.7) : r(0.95, 1.4)
     push({ a0, span, h0: steep ? r(11, 26) : 5.5 + 27 * ((i * 0.618034) % 1) + r(-1.5, 1.5), slope, bend: steep ? r(-3, 3) : r(-7, 7), amp: steep ? r(0.6, 1.4) : r(1.5, 3.8), k: r(2.4, 6.5), ph: r(0, 6.28), rad, lift: r(1.2, 7.2), sprawl: 1.1, wander: r(1.2, 2.6), thorn: [7, 14], every: 36, layer: 3, open: true, reach: r(3.5, 9.5) })
   }
   // The wires: thin lengths that fill the tangle between the vines.
@@ -152,8 +152,14 @@ function addStrands() {
     const a0 = r(-134, -108)
     const span = r(42, 60)
     const pair = { a0, span, h0: 9 + 8 * i + r(-2, 2), slope: Math.tan((i % 2 ? -1 : 1) * r(16, 38) * RAD) * span * RAD * 53, bend: r(-5, 5), k: r(7, 10), ph: r(0, 6.28), lift: r(5.5, 9), sprawl: 1.2, wander: 1.4, thorn: [5, 9], layer: 3, open: true, reach: r(2, 6), gnarl: 0.4, seed: 9001 + i * 17 }
-    push({ ...pair, amp: 1.5, rad: r(2.2, 2.7), every: 34 })
-    push({ ...pair, amp: -1.5, rad: r(1.4, 1.62), every: 90 })
+    push({ ...pair, amp: 1.5, rad: r(1.6, 2.0), every: 34 })
+    push({ ...pair, amp: -1.5, rad: r(1.1, 1.3), every: 90 })
+  }
+  // Thin vines curve over the bare hide of the right flank.
+  for (let i = 0; i < 11; i++) {
+    const span = r(20, 42)
+    const a0 = r(40, 64)
+    push({ a0, span, h0: 5 + 2.8 * i + r(-2, 2), slope: Math.tan((i % 2 ? -1 : 1) * r(24, 56) * RAD) * span * RAD * 53, bend: r(-9, 9), amp: r(1.5, 3.5), k: r(5, 9), ph: r(0, 6.28), rad: r(0.75, 1.15), lift: r(1.0, 4.5), sprawl: 0.6, wander: 2.0, thorn: [4, 8], every: 70, layer: 3, open: true, reach: r(2, 6) })
   }
 }
 addStrands()
