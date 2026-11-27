@@ -51,7 +51,7 @@ if (keyId) {
   const key = allPics.find((k) => k.id === keyId)
   if (key?.image) {
     const dir = rel('out', 'work', 'stills')
-    const candidates = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.png') && (f.startsWith(`${key.id}-`) || f.startsWith(`${key.season}-${key.state}-${key.camera}-${key.format}-`)) && !/-(ids|standins|ui)\b/.test(f)) : []
+    const candidates = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.png') && (f.startsWith(`${key.id}-`) || f.startsWith(`${key.season}-${key.state}-${key.camera}-${key.format}-`)) && !/-(ids|standins|ui|noair)\b/.test(f)) : []
     let best = candidates.map((f) => path.join(dir, f)).sort((x, y) => fs.statSync(y).mtimeMs - fs.statSync(x).mtimeMs)[0]
     if (!best && args['no-render'] !== true) {
       const { renderBusy } = await import('./lib/page.mjs')
