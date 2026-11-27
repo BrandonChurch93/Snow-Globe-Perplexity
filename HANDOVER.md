@@ -2,9 +2,25 @@
 
 Branch agent/p6-fall-base, head c291a11c: the shader commit d2878876 with main 35d00e1b merged in (fall's scene fifth list and air fourth list). The fifth list changed src/seasons/fall/base.ts only. The mesh is as on the fourth list, whose asset script change still stands: `npm run make -- base-fall` must be run and its files committed by /root (80910 triangles, 1448 more than main's 79462; public glb 1348780 bytes, sha eb905811891fd477 on this VM).
 
-## The tenth step (08:37 UTC), the newest head
+## The eleventh step (about 10:00 UTC), the newest head
 
-Pushed head 0f7d05f9: commit 853bdefc, then main d2013ce3 merged (4f185596), then main 82d0b882 merged. Everything below this section describes older heads.
+Pushed head fc68c28f: commit 069171a2 (base.ts only), then main ade42c8f merged (d48bdad5), then main 3170155e merged. No mesh change: 79,830 triangles, 1,796,373 of 1,800,000 at high, as on the tenth. Everything below this section describes older heads.
+
+What it is, against the tenth: the bare stone of the right flank where the key strikes it. /root ruled b at 09:06 on my measure: approved's lit stone is a fine even pebble on a lit grey ground, ours was pale blotches on near black. DRUM_SHEEN 1.8 to 2.8, DRUM_CRINKLE 1.5 to 0.8, the grain's cell from about 3 px to about 2 px at 3840 (frequency 3.5 to 5.5, offset 0.12 to 0.076), the crinkle's weight in baseScale 0.8 to 0.35 and in the sheen (0.55 + 0.75) to (0.85 + 0.3), the sheen's colour 0.56 0.84 1.3 to 0.72 0.92 1.3, and the sheen's light gate reads three quarters from the wall's own round and one quarter from the bent normal, so the ground between the dots is lit. The shaded stone is not touched.
+
+Measures at 3840 final (steps between neighbours at 1, 2, 4, 8 px; points 40 over ground; median; lit half's blue over red). Approved's one clean lit patch, x 2458 to 2488, y 1664 to 1694: 22.9, 27.3, 16.1, 14.2; 9.8 percent; 106; 1.24. The tenth, box A (x 2326 to 2400, y 1584 to 1624): 15.3, 23.4, 26.0, 21.3; 11.3 percent; 47.5; 1.50. The eleventh, box A: 22.6, 27.4, 21.1, 15.4; 12.4 percent; 81.4; 1.24. The eleventh, box B (x 2444 to 2476, y 1670 to 1740): 25.5, 26.8, 22.8, 24.3; 11.7 percent; 84.4. Shaded stone at hd: approved median 15.9, darkest tenth 10.0; ours 5.1 and 2.1 before and after the step.
+
+Frames 2364 to 2367 at 3840 final (drawn on the shader of 069171a2 before the merges): the stone moves 1.0 px down and 1.5 px left a frame; after that shift the frames correlate 0.983 to 0.986 and 98 to 99 percent of the bright points stay bright. The 2 px cell is kept.
+
+Still wrong: the median stops at 81 to 84 and not 106, held there on purpose since ours shows one large bare wall where approved shows small lit patches; the 4 px step is 21 to 23 against 16.1; points a little over; the wall is evenly lit with no shade of folds; dark violet pixels between dots at six times; at hd the stone is finer than approved (1 px step 28.6 against 20.5); the shaded stone is darker than approved's (5 against 16). The aim rests on one patch of 30 by 30 of the approved.
+
+Next: the twelfth step from /root (08:42): the lines along the left vines broken into short runs of unequal length with dark between (approved 4.1 along the row and 5.2 down the column, ours 7.3 and 5.5; flank 3.7 and 4.8 against 5.1 and 5.3); the lit lines paler and cooler (approved's top 3 percent 234 191 159, ours 233 183 133); the two cells of the grid at 4.20 and 5.87 brought down; the warm stripes of the front band held back to where approved's warm light ends (on the foot rows y 925 to 990 approved's warm bright share is under 2 percent from x 740 on, ours reaches to x 820). No triangle is free.
+
+Tries of the stone are kept in /tmp/look: base.b2.ts is the pushed stone, stone_patch.py makes it from base.f31.ts (the tenth).
+
+## The tenth step (08:37 UTC)
+
+Pushed head 0f7d05f9: commit 853bdefc, then main d2013ce3 merged (4f185596), then main 82d0b882 merged.
 
 What it is, against c291a11c: at the left the body's light falls off to both edges of each tube (round), the bark's field is long along the vine and finer around it and cut to a narrow line, with a small lean round the tube; away from the left the knobs' height in the normal is halved and the key line no longer breaks on the bark, so the flank's highlights join into one line; twigs are thinner (radius 0.24 to 0.42) and the near thorns have 6 sides, 79,830 triangles in the made mesh, 1,796,373 of 1,800,000 at high.
 
