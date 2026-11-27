@@ -102,6 +102,8 @@ const SEEN_PX = FACES.filter((f) => f.seen).map((f) => {
   const k = Math.abs(e[1] - c[1]) / f.tall
   return { x: c[0], y: c[1], rx: (f.rad + 1.3) * k, ry: (f.tall + 1.3) * k }
 })
+// The sheaf's window at the left: no thorn lies across it.
+const overSheaf = (p) => azOf(p) > -72 && azOf(p) < -49 && p[1] > 8 && p[1] < 22
 function crossesFace(p) {
   if (faceGap(azOf(p), p[1], 1.3) < 1 && Math.hypot(p[0], p[2]) < FACE_R + 26) return true
   const s = projectWorld(p, SIZE, L.RIG)
@@ -354,34 +356,46 @@ export function buildIron() {
         refused++
         continue
       }
+      if (probe.some((p) => overSheaf(p))) {
+        r(0, 1)
+        r(0, 1)
+        refused++
+        continue
+      }
       const line = thorn(soup, pts[i], dir, len * 0.92, rad * 1.12, add3([0, r(-1.3, 1.3), 0], t, -sgn * r(0.39, 2.08)), sidesAt(az, 6, 4), 0.85, t)
       tips.push(line[line.length - 1])
       thorns++
     }
   }
-  // The sheaf at the left: thin fibres that stand behind the vines beside the first face, pinched high and fanned out
-  // low, so they cross one another at shallow angles.
+  // The sheaf at the left: thin fibres tied in one knot beside the first face. Below the knot they splay out and
+  // droop, each with its own curl, and a few run straight across the rest.
   const pick = mulberry(5521)
+  const spark = mulberry(5522)
   const f = (a, b) => a + (b - a) * pick()
   let fibres = 0
-  for (let i = 0; i < 52; i++) {
-    const top = [f(-65, -52), f(20, 27)]
-    const foot = [f(-71, -47), f(8, 13)]
-    const out = [f(1.0, 2.0), f(1.3, 3.0)]
-    const sway = f(-1.8, 1.8)
-    const kink = f(-1.3, 1.3)
+  for (let i = 0; i < 62; i++) {
+    const knot = [-59 + f(-3, 3), 22.7 + f(-0.4, 0.4)]
+    const foot = [f(-75, -45), f(10.5, 14.5)]
+    const stray = pick() < 0.3
+    const splay = stray ? f(0.7, 1.0) : f(1.5, 4)
+    const curl = f(0.8, 2.0) * (pick() < 0.5 ? -1 : 1)
+    const turns = f(0.4, 1.0)
     const turn = f(0, 6.28)
-    const rad = f(0.075, 0.125)
-    const lit = f(0.3, 1)
+    const out = pick() < 0.25 || foot[0] > knot[0] + 2 ? [f(1.2, 2.0), f(3.5, 5)] : [f(1.0, 1.6), f(1.3, 3.0)]
+    const rad = f(0.1, 0.15)
+    const lit = f(0.55, 1)
+    const glint = 6.28 * spark()
+    const beat = 1.2 + 1.4 * spark()
     const pts = []
     const radii = []
-    for (let j = 0; j <= 7; j++) {
-      const t = j / 7
-      const h = mix(top[1], foot[1], t)
-      pts.push(place(drumR(h) + mix(out[0], out[1], t) + 0.25 * Math.sin(t * 5 + i), h, mix(top[0], foot[0], t) + sway * Math.sin(t * Math.PI) + kink * Math.sin(t * 2 * Math.PI + turn)))
-      radii.push(rad * (0.55 + 0.45 * Math.sin(Math.PI * Math.min(t * 0.8 + 0.2, 1))))
+    for (let j = 0; j <= 6; j++) {
+      const u = j / 6
+      const h = mix(knot[1], foot[1], u)
+      const az = knot[0] + (foot[0] - knot[0]) * (1 - Math.pow(1 - u, splay)) + curl * u * Math.sin(2 * Math.PI * turns * u + turn)
+      pts.push(place(drumR(h) + mix(out[0], out[1], u) + 0.3 * u * Math.sin(u * 5 + i), h, az))
+      radii.push(rad * (0.6 + 0.4 * Math.sin(Math.PI * Math.min(u * 0.8 + 0.2, 1))))
     }
-    tube(soup, pts, radii, 3, (j) => [lit, 0.65, clamp(radii[j] / 2.5, 0, 1)], 1, i * 0.37)
+    tube(soup, pts, radii, 3, (j) => [lit * (0.5 + 0.5 * Math.pow(0.5 + 0.5 * Math.sin(j * beat + glint), 2)), 0.65, clamp(radii[j] / 2.5, 0, 1)], 1, i * 0.37)
     fibres++
   }
   // Twigs that leave the ring: ends that rise beside the glass at the two shoulders and poke out past the foot at the
