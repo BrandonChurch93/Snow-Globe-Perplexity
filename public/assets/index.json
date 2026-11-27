@@ -423,8 +423,8 @@
         },
         {
           "path": "fall/village-fall.glb",
-          "bytes": 6745800,
-          "sha": "3bdb9e523841c424"
+          "bytes": 6547268,
+          "sha": "3d71681bd302a628"
         },
         {
           "path": "fall/village-litter.srgb.tile.w1024.png",
@@ -745,8 +745,8 @@
         },
         {
           "path": "fall/village-fall.glb",
-          "bytes": 20191840,
-          "sha": "f607acff3e2ea9ce"
+          "bytes": 19775092,
+          "sha": "8002929dedfa7895"
         },
         {
           "path": "fall/village-litter.srgb.tile.w1024.png",
@@ -760,6 +760,6 @@
     "winter": "5c39d16f98d3d0be",
     "spring": "d9b043a56b56f3ea",
     "summer": "bcab9072d85652e2",
-    "fall": "9367ee47bbb9d881"
+    "fall": "df3602f65bbaacf2"
   }
 }
