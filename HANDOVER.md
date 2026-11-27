@@ -300,3 +300,23 @@ Proof on 93d7cf09 (main 63914740): tsc clean; vitest 68 files passed, 1 skipped,
 Parts on both heads: crown 1.56, trunk 1.14, roof 0.98, wall 0.79 (0.792), fence 0.89, litter 0.94, chimney 0.80 (0.804), rest 0.73, whole 0.989. On main 6d459061 the same source read wall 0.81, chimney 0.96, whole 1.000. Fall's air Step A came between: in the still a leaf and a larger glow of a firefly now sit in front of the chimney. Without the air the stack is the same as before. Wall and chimney are on their bars with nothing to spare.
 
 Not seen: the frames played at speed; more than four frames of the film; any other shot; the landed state beyond its draft hash; the low camera.
+
+## The eleventh list, first step: the tree against the approved (read on 93d7cf09, main 63914740)
+
+Pictures 49 to 54. Nothing built yet. The tree's files are the same as main's. Stills for this: fall-rest hero at 3840, review tier, with the air, without it, and the id picture without the air (`out/work/mine/t11/`). The approved is 2816 wide; hd places below are the frame's, the approved brought to 1920.
+
+Form, each count with its picture:
+- Limbs leaving the trunk: approved 10 by hand (picture 49); ours 10, the nine limbs of `src/miniature/trunk.ts` and the leader.
+- Twig ends against the sky: approved 39, ours 52 (picture 51). Ours is not the barer by count.
+- Forks: not counted one by one. In the approved limbs do not cross, so 39 ends on 10 limbs make 29 forks. In ours the build grows 149 boughs and twigs on 51 limbs and twigs of the trunk; the skeleton of its shape has 200 meeting points, forks and crossings together, which it cannot tell apart.
+- Sky ringed by wood: approved 1 sure and up to 4, ours 70 (picture 52). The approved's limbs each stand alone against the sky; ours cross into a thicket at the middle of the crown.
+- By eye, not measured: the approved's twigs bend in long curves and end in fine hooked points; ours are straight runs with kinks and blunt spikes.
+- Reach: approved ends span hd 922 to 1224 and top out at 202; ours 887 to 1220 and 255. Ends with x under 1040 and y under 300: approved 6 (3 of them above 260), ours 4 (none above 260). The approved's trunk leans right to its fork (about hd 1097), ours stands near 1060.
+
+Light on the bark (picture 53; lines laid by hand on limbs of each tree, not pixel to pixel, since the two trees differ in form):
+- Body, the darkest point of each cut: approved luma 19.4, tone 25,18,14; ours with the air 8.9, tone 11,9,8; without the air 6.4, tone 5,6,8. Body over the sky beside it: 0.278, 0.127 with the air.
+- Light at the limb or its edge over the sky beside it: approved median 19.4, 61 percent of cuts over 15 levels, tone there 113,99,89 (pale, warm). Ours with the air median 4.6, 34 percent, 107,94,70 (the air's motes count in); without the air 4.7, 26 percent, tone 92,50,23 (orange).
+- Upper crown alone: approved 56 percent of cuts carry that light, body 17.0; ours without the air 7 percent, body 5.1; with the air 29 percent, body 6.7. Lower limbs: approved 72 percent, ours 49 without the air. So ours is lit where the lamp reaches and black above; the approved carries a thin pale line on the upper side of nearly every limb and twig.
+- Trunk, same box: approved median 43,29,21; ours with the air 16,20,12 (green), without 8,16,11.
+
+The fence against the door pumpkin (picture 54), hero still, hd px: post height 71 approved, 68 tenth. Top of the tallest post near the pumpkin 608 approved, 604 tenth. Pumpkin crown 597 approved, 609 tenth; base 627 and 643; height 29 and 34. So the posts are as tall and stand as high in the frame as the approved's; the pumpkin sits 12 to 16 px lower and is 5 px taller, which puts its crown 5 px under the post top where the approved has it 10 px over. Read by hand off enlarged crops, give or take 2 px; the pumpkin's bounds by an orange mask.
