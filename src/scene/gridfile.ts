@@ -84,3 +84,13 @@ export async function readGrid(file: ReadableStream<Uint8Array>): Promise<SdfGri
 
 /** Where the page finds a season's grid, beside the assets: `version` changes whenever the grid may, so the host can keep the file for good. */
 export const gridAddress = (season: string, version: string): string => `assets/grids/${season}.bin?v=${version}`
+
+/**
+ * A season's grid from the host, taken whole before it is inflated. Inflated as it came, the browser's own record of the
+ * page's requests called summer's file cancelled on five loads of seven, though every byte had come and the grid was whole.
+ */
+export async function fetchGrid(season: string, version: string, base: string): Promise<SdfGrid> {
+  const r = await fetch(new URL(gridAddress(season, version), base))
+  if (!r.ok) throw new Error(`collider did not load: ${season}`)
+  return readGrid(new Blob([await r.arrayBuffer()]).stream())
+}

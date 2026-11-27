@@ -71,6 +71,10 @@ export const look = {
     bank: 0.24,
     bankMm: 9,
     pale: [0.6, 1.0, 0.54],
+    // Thrown up by the shake it is paler and nearer mint than in its pool, and brighter: the approved storm is pale streaks, not an even green.
+    tintLifted: [0.5, 1.0, 0.62],
+    paleLifted: [0.78, 1.0, 0.78],
+    glowStorm: 0.55,
     paleMm: 2.5,
     paleGain: 0.1,
     air: 0.0003,
@@ -93,7 +97,7 @@ export const look = {
     haze: 0.016,
     hazeMm: 12,
     // Far behind the scene a glow stands between the house and the tree, as high as the eaves: the approved picture has it,
-    // and the lamp is a dark shape before it. It ends under where the bats fly, since the fog is drawn over them.
+    // and the lamp is a dark shape before it. It ends under where the bats fly.
     hazeMid: 0.68,
     hazeMidAtMm: -2,
     hazeMidWideMm: 10,
@@ -112,7 +116,7 @@ export const look = {
     // brightest behind the right side of the trunk, and thins to a dark blue green at the top. It is laid on the far half of the
     // wall and drawn before the air, so the bats, the leaves and the sparks stand before it at their full strength.
     mist: 0.74,
-    mistAir: 0.34,
+    mistAir: 0.38,
     mistMm: 15,
     mistLumpMm: 9,
     mistTrunk: 2.6,
@@ -120,13 +124,13 @@ export const look = {
     mistWideMm: 13,
     mistBillowMm: 120,
     mistPatchMm: 62,
-    mistPatch: [0.34, 0.58] as const,
+    mistPatch: [0.4, 0.62] as const,
     mistLow: [0.08, 0.135, 0.078],
-    mistTop: [0.056, 0.074, 0.058],
+    mistTop: [0.036, 0.078, 0.052],
     mistHigh: [0.04, 0.06, 0.064],
     mistLeft: 0.3,
     mistLeftMm: [-24, 4] as const,
-    mistEven: [0.55, 1.1] as const,
+    mistEven: [0.5, 2.4] as const,
     mistHighMm: [44, 78] as const,
     hazeFrontMm: -9,
     hazeBackMm: -24,
@@ -477,11 +481,11 @@ void main() {
   a *= seen;
   if (a < 0.0006 && !dustHere) discard;
   float deep = exp(-max(h, 0.0) / ${f(F.glowDeepMm)});
-  vec3 lit = stageCold(p) * ${f(F.cold)} + grid * ${f(F.warm)} * (1.0 - ${f(F.warmLifted)} * lift) + vec3(${f(F.glow)}) * mix(mix(0.3, 1.0, deep), 1.0, ${f(F.glowLifted)} * lift) * (0.75 + 0.5 * n.y);
+  vec3 lit = stageCold(p) * ${f(F.cold)} + grid * ${f(F.warm)} * (1.0 - ${f(F.warmLifted)} * lift) + vec3(${f(F.glow)}) * mix(mix(0.3, 1.0, deep), 1.0, ${f(F.glowLifted)} * lift) * (0.75 + 0.5 * n.y) * (1.0 + ${f(F.glowStorm)} * lift);
   // Where it is thick it scatters more and goes pale: mint, not green.
   float thick = clamp(rho * ${f(F.paleMm)}, 0.0, 1.0);
   vec3 litHaze = lit - grid * ${f(F.warm * (1 - F.hazeWarm))} * (1.0 - ${f(F.warmLifted)} * lift);
-  vec3 col = mix(mix(${vec(F.tint)}, ${vec(F.pale)}, thick) * lit, ${vec(F.hazeTint)} * litHaze, hazeRho / max(rho, 1e-6)) * (1.0 + ${f(F.paleGain)} * thick);
+  vec3 col = mix(mix(mix(${vec(F.tint)}, ${vec(F.tintLifted)}, lift), mix(${vec(F.pale)}, ${vec(F.paleLifted)}, lift), thick) * lit, ${vec(F.hazeTint)} * litHaze, hazeRho / max(rho, 1e-6)) * (1.0 + ${f(F.paleGain)} * thick);
   col = mix(col, ${vec(F.hazeMidTint)} * (lit + vec3(${f(F.hazeMidGlow)})), midRho / max(rho, 1e-6));
   col = (col * rho + ${vec(F.airTint)} * (1.0 + ${f(F.airGrid)} * (grid.r + grid.g)) * air) / max(rho + air, 1e-6);
   gl_FragColor = vec4(col * a + dust * seen, a);
@@ -714,13 +718,14 @@ function makeFog(): THREE.Mesh {
     change: 'veil',
     uniforms: { uFog: uniforms.uFog, uFogNoise: uniforms.uFogNoise, uFogTurn: uniforms.uFogTurn },
     fragment: FOG,
-    // Drawn with the solid things, after the particles and before the glass stamps its depth: what is inside the liquid is
-    // closed by that stamp to everything drawn later.
+    // Drawn with the solid things, before the particles and before the glass stamps its depth: the leaves, the sparks and the
+    // bats stand before it in their own colour, as the approved storm has them, and what is inside the liquid is closed by that
+    // stamp to everything drawn later.
     params: { ...blend, transparent: false, side: THREE.DoubleSide },
   })
   volumes.push(m)
   const mesh = new THREE.Mesh(sheets(), m)
-  mesh.renderOrder = 5.5
+  mesh.renderOrder = 4.6
   mesh.frustumCulled = false
   return mesh
 }
