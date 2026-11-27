@@ -33,11 +33,11 @@ const STONE = { lift: 1.7, buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, w
 // The bank as the approved image has it: the path's slabs and a row of loaves along the pond's far rim, brown, worn smooth and
 // mossy on top, pebbles at the water's edge and reeds in the shallows. The rubble that lay at the pond's left end is left out;
 // its stones keep their numbers in the run, so that the lawn and the flowers stand where they stood.
-const LOAF = { seed: 5081, dome: 0.85, shear: 0.25, sink: 0.3, wet: 0.45, tones: ['#a8957f', '#b3a08c', '#9c8872', '#bba995'], lumps: 0.12, chips: 0.03, moss: 0.85, mossFrom: 0.35, mossTo: 0.7, mossTone: '#5f7030', lift: 1.0, foot: 0.8, top: 0.3, crease: 0.3, creaseMm: 0.45, heel: 0.45, heelMm: 0.8, row: [[-4.0, -0.5, 2.0, 1.35, 0.7], [-1.5, -0.75, 1.9, 1.3, 0.72], [1.0, -0.45, 2.1, 1.4, 0.68], [3.6, -0.7, 1.9, 1.3, 0.72], [6.0, -0.5, 1.7, 1.2, 0.7], [8.0, -0.4, 1.3, 1.0, 0.62]], hide: [262, 246, 230, 214, 199, 255, 239, 222, 207, 188, 173, 161], fill: 2.2 }
+const LOAF = { seed: 5081, dome: 0.85, shear: 0.25, sink: 0.3, wet: 0.45, tones: ['#a8957f', '#b3a08c', '#9c8872', '#bba995'], lumps: 0.12, chips: 0.03, moss: 0.85, mossFrom: 0.35, mossTo: 0.7, mossTone: '#5f7030', lift: 1.0, foot: 0.8, top: 0.3, crease: 0.3, creaseMm: 0.45, heel: 0.45, heelMm: 0.8, row: [[-4.4, -0.5, 2.4, 1.3, 0.42], [-1.4, -0.75, 2.3, 1.25, 0.44], [1.6, -0.45, 2.5, 1.3, 0.4], [4.6, -0.7, 2.3, 1.25, 0.44], [7.4, -0.45, 1.9, 1.1, 0.42]], was: [[-4.0, -0.5, 2.0, 1.35, 0.7], [-1.5, -0.75, 1.9, 1.3, 0.72], [1.0, -0.45, 2.1, 1.4, 0.68], [3.6, -0.7, 1.9, 1.3, 0.72], [6.0, -0.5, 1.7, 1.2, 0.7], [8.0, -0.4, 1.3, 1.0, 0.62]], hide: [262, 246, 230, 214, 199, 255, 239, 222, 207, 188, 173, 161], fill: 2.2 }
 // The path's slabs keep their flat tops and take the loaves' pale grey brown.
 const SLAB = { tones: ['#a8957f', '#b3a08c', '#9c8872', '#bba995'], lumps: 0.16, chips: 0.04, moss: 0.6, mossFrom: 0.5, mossTo: 0.85, mossTone: '#6f7a3c', lift: 1.0, foot: 0.7, top: 0.4, heel: 0.5, heelMm: 0.6 }
 // Pebbles lie in handfuls at the loaves' feet and along the rims, not in an even string.
-const PEBBLE = { clusters: 22, each: [4, 9], spread: 1.5, size: [0.25, 0.65], fine: 0.45, from: 150, to: 400, feet: 6, clearMm: 0.2, tones: ['#b5a58c', '#cfc2a8', '#9a8a74', '#ddd0b8'], lumps: 0.2, chips: 0.05, moss: 0.25, mossFrom: 0.5, mossTo: 0.85, lift: 0.8, foot: 0.75, top: 0.35, wet: 0.5, crease: 0.35, creaseMm: 0.3, heel: 0.5, heelMm: 0.3 }
+const PEBBLE = { clusters: 22, each: [4, 9], draws: 7, spread: 1.5, size: [0.25, 0.65], fine: 0.45, from: 150, to: 400, feet: 6, clearMm: 0.2, tones: ['#b5a58c', '#cfc2a8', '#9a8a74', '#ddd0b8'], lumps: 0.2, chips: 0.05, moss: 0.25, mossFrom: 0.5, mossTo: 0.85, lift: 0.8, foot: 0.75, top: 0.35, wet: 0.5, crease: 0.35, creaseMm: 0.3, heel: 0.5, heelMm: 0.3 }
 const REED = { blades: 6, tall: [2.5, 4.5], wide: [0.2, 0.32], lean: [0.04, 0.28], standDeg: 5, stands: [[165, 5], [178, 7], [192, 6], [215, 3], [305, 3], [325, 5], [342, 7], [357, 6], [375, 5]], dry: { x: -17.5, z: 24.6, r: 1.5, n: 9, tall: 0.75 }, sun: { rim: [[24, 3], [34, 4], [44, 4], [54, 4], [64, 3], [74, 3], [84, 3], [94, 3], [104, 3], [114, 4], [124, 4], [134, 4], [144, 4], [154, 3]], field: [0.985, 1.03], lawn: [[29, 12, 5, 9], [32, 21, 4.5, 9], [27, 28, 3.5, 6], [19, 10, 3, 4], [-18, 30, 4, 4], [-16, 38, 3, 3], [-1.5, 1.5, 2.6, 9], [4.2, 0.5, 3, 12], [2, -3.5, 3.5, 10]], tries: 6, blades: 7, tall: [1.2, 2.3], rimTall: [0.8, 1.5], wide: [0.15, 0.24], top: TF.SUN_TUFT.top, neck: TF.SUN_TUFT.neck, fan: 0.35, lit: [0.55, 1.0], rimLit: [0.8, 1.0] } }
 const GARLAND = { seed: 5087, r: 5.4, from: 0.1, to: 0.86, over: 18, down: 9, w: [0.6, 1.5], leaves: 13, leaf: 1.1, tone: [0.35, 1.1], shade: 0.4, rose: [0.4, 0.6], roseEvery: 1, shrubRose: 1.35 }
 const TONES = {
@@ -377,6 +377,8 @@ function stone(x, z, rx, rz, rise, rnd, detail, pale = 1, look = null, turn = nu
 const stoneList = []
 const loafList = []
 const loafSet = []
+// The six loaves that lay there before (`LOAF.was`): nothing is built of them, the pebbles read them to keep their numbers.
+const loafWas = []
 function gapTo(list, x, z) {
   let d = Infinity
   for (const [sx, sz, rx, rz, yaw] of list) {
@@ -422,10 +424,10 @@ function shoreAt(deg, field) {
     while (L.pondField(x, z) < 1 && z > -30) z -= 0.02
     return z
   }
-  for (const [i, [x, off, rx, rz, rise]] of LOAF.row.entries()) {
+  for (const [set, row] of [[loafSet, LOAF.row], [loafWas, LOAF.was]]) for (const [i, [x, off, rx, rz, rise]] of row.entries()) {
     const z = rimZ(x) + off
     const h = rx * rise
-    loafSet.push({ x, z, rx, rz, rise, h, yaw: -Math.atan2(rimZ(x + 0.5) - rimZ(x - 0.5), 1) + 0.25 * Math.sin(i * 2.4 + 1), y: L.groundAt(x, z) + TF.riseAt(x, z) + h * (1 - 2 * LOAF.sink) + 0.1 })
+    set.push({ x, z, rx, rz, rise, h, yaw: -Math.atan2(rimZ(x + 0.5) - rimZ(x - 0.5), 1) + 0.25 * Math.sin(i * 2.4 + 1), y: L.groundAt(x, z) + TF.riseAt(x, z) + h * (1 - 2 * LOAF.sink) + 0.1 })
   }
   for (const o of loafSet) loafList.push([o.x, o.z, o.rx, o.rz, stone(o.x, o.z, o.rx, o.rz, o.rise, B, 4, 1, LOAF, o.yaw, loafSet)])
 }
@@ -872,41 +874,55 @@ let pebbles = 0
 }
 
 // Pebbles lie at the water's edge, some half in it, in handfuls: from a run of numbers of their own, after every other stone is set.
+// A loaf more or less on the bank moves the handfuls at the loaves' feet and no pebble along the rims: the handfuls are
+// laid twice from the same numbers, once about the loaves that were, and a pebble that lay then keeps the form it drew then.
 {
-  const P = rng(LOAF.seed + 1)
-  const pr = (a, b) => a + (b - a) * P()
   const shown = stoneList.filter((s) => !s[5])
-  const centres = []
-  for (let i = 0; i < PEBBLE.feet; i++) {
-    const o = loafSet[i % loafSet.length]
-    centres.push([o.x + pr(-1.3, 1.3), o.z + o.rz * pr(0.95, 1.5)])
-  }
-  for (let i = 0; i < PEBBLE.clusters; i++) centres.push(shoreAt(pr(PEBBLE.from, PEBBLE.to), pr(0.99, 1.06)))
-  const set = []
-  for (const [cx, cz] of centres) {
-    const n = Math.round(pr(PEBBLE.each[0], PEBBLE.each[1]))
-    for (let k = 0; k < n; k++) {
-      const a = pr(0, TAU)
-      const d = PEBBLE.spread * Math.sqrt(P())
-      const x = cx + Math.cos(a) * d
-      const z = cz + Math.sin(a) * d * 0.7
-      const w = pr(PEBBLE.size[0], PEBBLE.size[1]) * (k === 0 ? 1.25 : 1)
-      const rx = w * pr(0.9, 1.3)
-      const rz = w * pr(0.7, 1.0)
-      const rise = pr(0.5, 0.8)
-      const yaw = pr(0, TAU)
-      if (gapTo(shown, x, z) < 0.1 || loafGap(x, z) < -0.2 || hardGap(x, z) < 0.3) continue
-      if (set.some((o) => Math.hypot(o.x - x, o.z - z) < 0.5 * (o.rx + rx))) continue
-      const h = rx * rise
-      const y = L.groundAt(x, z) + TF.riseAt(x, z) + h * (1 - 2 * STONE.sink) + 0.1
-      // One that the water would cover is left out.
-      if (L.pondField(x, z) < 1 && y + h < L.moundAt(z) - L.pond.level + PEBBLE.clearMm) continue
-      set.push({ x, z, rx, rz, rise, h, yaw, y })
+  const handfuls = (loaves) => {
+    const P = rng(LOAF.seed + 1)
+    const pr = (a, b) => a + (b - a) * P()
+    const rows = loaves.map((o) => [o.x, o.z, o.rx, o.rz, o.yaw])
+    const centres = []
+    for (let i = 0; i < PEBBLE.feet; i++) {
+      const o = loaves[i % loaves.length]
+      centres.push([o.x + pr(-1.3, 1.3), o.z + o.rz * pr(0.95, 1.5)])
     }
+    for (let i = 0; i < PEBBLE.clusters; i++) centres.push(shoreAt(pr(PEBBLE.from, PEBBLE.to), pr(0.99, 1.06)))
+    const set = []
+    for (const [c, [cx, cz]] of centres.entries()) {
+      const n = Math.round(pr(PEBBLE.each[0], PEBBLE.each[1]))
+      for (let k = 0; k < n; k++) {
+        const a = pr(0, TAU)
+        const d = PEBBLE.spread * Math.sqrt(P())
+        const x = cx + Math.cos(a) * d
+        const z = cz + Math.sin(a) * d * 0.7
+        const w = pr(PEBBLE.size[0], PEBBLE.size[1]) * (k === 0 ? 1.25 : 1)
+        const rx = w * pr(0.9, 1.3)
+        const rz = w * pr(0.7, 1.0)
+        const rise = pr(0.5, 0.8)
+        const yaw = pr(0, TAU)
+        if (gapTo(shown, x, z) < 0.1 || gapTo(rows, x, z) < -0.2 || hardGap(x, z) < 0.3) continue
+        if (set.some((o) => Math.hypot(o.x - x, o.z - z) < 0.5 * (o.rx + rx))) continue
+        const h = rx * rise
+        const y = L.groundAt(x, z) + TF.riseAt(x, z) + h * (1 - 2 * STONE.sink) + 0.1
+        // One that the water would cover is left out.
+        if (L.pondField(x, z) < 1 && y + h < L.moundAt(z) - L.pond.level + PEBBLE.clearMm) continue
+        set.push({ id: `${c}:${k}`, x, z, rx, rz, rise, h, yaw, y })
+      }
+    }
+    return { set, P }
   }
+  const was = handfuls(loafWas).set.map((o) => o.id)
+  const { set, P } = handfuls(loafSet)
+  // A stone draws `PEBBLE.draws` numbers for its form; the run goes on from the handfuls' own, a pebble after a pebble.
+  const numbers = Array.from({ length: PEBBLE.draws * (was.length + set.length) }, P)
+  let fresh = was.length
   const near = [...loafSet, ...set]
   for (const o of set) {
-    stone(o.x, o.z, o.rx, o.rz, o.rise, P, o.rx > PEBBLE.fine ? 1 : 0, 1, PEBBLE, o.yaw, near)
+    const from = PEBBLE.draws * (was.includes(o.id) ? was.indexOf(o.id) : fresh++)
+    let drew = 0
+    stone(o.x, o.z, o.rx, o.rz, o.rise, () => numbers[from + drew++], o.rx > PEBBLE.fine ? 1 : 0, 1, PEBBLE, o.yaw, near)
+    if (drew !== PEBBLE.draws) throw new Error(`village-summer: a pebble drew ${drew} numbers for its form, not ${PEBBLE.draws}`)
     pebbles++
   }
 }
