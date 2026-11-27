@@ -301,7 +301,7 @@ export function buildIron() {
       const far = L.front(azs[from]) > 125
       let to = from
       while (to < pts.length - 1 && L.front(azs[to]) > 125 === far) to++
-      const stride = far ? 3 : 1
+      const stride = far ? 3 : s.rad < 0.55 ? 2 : 1
       const pick = []
       for (let i = from; i < to; i += stride) pick.push(i)
       pick.push(to)
@@ -312,7 +312,7 @@ export function buildIron() {
         const depth = smooth(0, 5, Math.hypot(p[0], p[2]) - drumR(clamp(p[1], 0, 38)))
         return [(0.32 + 0.68 * open) * (0.5 + 0.5 * depth) * (0.75 + 0.25 * smooth(0, 5, p[1])), 0.5, fbm(i * 0.09, a, 64, 8, s.seed + 3, 2)]
       }
-      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far || s.rad < 0.85 ? 5 : s.rad > 1.65 ? 8 : s.rad > 1.25 ? 7 : 6, shade, 1, s.seed * 0.37, far ? 0 : 0.2, s.seed)
+      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), !far && s.rad < 0.55 ? 4 : far || s.rad < 0.85 ? 5 : s.rad > 1.65 ? 8 : s.rad > 1.25 ? 7 : 6, shade, 1, s.seed * 0.37, far ? 0 : 0.2, s.seed)
       from = to
     }
     let next = r(4, s.every)
@@ -529,7 +529,7 @@ export function buildWax() {
       pts.push(place(mix(drumR(clamp(h, 0, 38.3)) + 1.2, outs[i] + rad * 0.55, smooth(0, 0.18, t)), h, d.az + sway))
       radii.push(rad)
     }
-    tube(soup, pts, radii, L.front(d.az) <= 125 ? 14 : 5, (j, a, p, nrm) => [0.6 + 0.4 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]]))), clamp(radii[j] * 0.55, 0, 1), j / n], 0.72)
+    tube(soup, pts, radii, L.front(d.az) <= 125 ? 12 : 4, (j, a, p, nrm) => [0.6 + 0.4 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]]))), clamp(radii[j] * 0.55, 0, 1), j / n], 0.72)
     count++
   }
   for (const run of L.RUNS) {
@@ -565,11 +565,11 @@ export function buildWax() {
       pts.push(place(outs[i] + rad * 0.3, h, start.az + sway * 0.9 * Math.sin(2 * Math.PI * t) * (1 - t) + 0.9 * (fbm(t * 2.5 + run.x, 0.4, 64, 4, 23, 2) - 0.5) * (1 - t)))
       radii.push(rad)
     }
-    tube(soup, pts, radii, 12, (j, a, p, nrm) => [(0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]])))) * (0.5 + 0.5 * smooth(0, 16, p[1])), clamp(radii[j] * 0.55, 0, 1), j / n], 0.85)
+    tube(soup, pts, radii, 8, (j, a, p, nrm) => [(0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]])))) * (0.5 + 0.5 * smooth(0, 16, p[1])), clamp(radii[j] * 0.55, 0, 1), j / n], 0.85)
     count++
     if (run.pool <= 0) continue
     const centre = place(foot + run.pool * 0.12, 0, start.az + (run.x < 1400 ? -1 : 1))
-    const seg = 28
+    const seg = 20
     const rings = 7
     soup.grid(seg + 1, rings, (i, j) => {
       const a = (i / seg) * 2 * Math.PI
