@@ -208,4 +208,31 @@ Still short of the approved picture:
 - Two tufts still show at the wall's foot left of the pumpkin.
 - Not seen: any still at 3840, anything in motion.
 
-Proof on 7c2507f4 merged on main e5671c9c: draft stills fall-rest 2a905f5535cd7ac9, fall-landed 1b7e071702d044a7, the other six equal chain 27s list; M3 at review 0.882 (base 0.913, miniature 0.882); parts crown 1.37, trunk 1.06, roof 0.95, wall 0.79, fence 0.87, litter 0.76, chimney 0.97, the rest 0.67; G15 high 1,765,827 of 1,800,000, medium 999,606, low 451,375; strict pass; miniatures pass 28195801d1942ae2.
+Proof on 7c2507f4 merged on main e5671c9c: draft stills fall-rest 2a905f5535cd7ac9, fall-landed 1b7e071702d044a7, the other six equal chain 27's list; M3 at review 0.882 (base 0.913, miniature 0.882); parts crown 1.37, trunk 1.06, roof 0.95, wall 0.79, fence 0.87, litter 0.76, chimney 0.97, the rest 0.67; G15 high 1,765,827 of 1,800,000, medium 999,606, low 451,375; strict pass; miniatures pass 28195801d1942ae2.
+
+## After the ninth list (23d2268d on main 06954500)
+
+Pictures 38 to 41. The ninth list is 30717e85; bfe82692 widens the gap round each field stone and removes pale flecks under the bargeboard; 23d2268d is the push, with main 06954500 merged (chain 31's b22b5be4 and two status notes).
+
+- Wall: `courses()` is gone. `stone()` draws one field stone (an outline of cut corners and wobble points, a bevel ring with true normals, a face ring and a centre) and `fieldstones()` deals them on a fine grid from the lowest free cell up, a span of stones at a time (`FIELD`). The stones of a span share a height, so a course line runs level along a span and steps at its ends; a few stones stand two cells taller. In the shader `MADE_FACE` holds the chips and the drawn crack back on made stones.
+- A count from the make's own deal, in the band 9.5 to 14.6 mm up the gable: 50 stones, 2 standing two courses tall, widths from 2.1 to 20.7 px at hd with a median of 10.4, 5.5 px tall in the middle. The approved's upper gable by my count on a crop: about 20 stones in the view, widths 4 to 17 px with a median near 13, about 2 spanning two courses, no course line level for more than about 45 px.
+- Chimney: four faces of fall's own stones just proud of the shared stack from the roof to the cap (`STACKED`), about 7 courses of 2 or 3 stones a face; the shared brick behind them is toned dark (`CHIMNEY.top`).
+- Path: one broad slab at each of the layout's five stones after the three steps (`FLAG`), 8 flagstones where 19 were.
+- Roof: 8 rows, slabs 4.0 to 5.6 mm wide, tones of its own and a gain that rises to the ridge (`SHINGLE`).
+- Fence: one thin picket stands between each pair of posts again (`PICKETS` in `mini/props.ts`), `FENCE.keep` 0.92.
+- Door ring: the lamp's light on the near wall is stronger and reaches further (`NEAR_WALL.lamp` power 4.5 from 2.4, reach 14 mm from 9), which warmed the whole right of the gable, so `STONE.top` came down to 0.041. The rest of the right arc's lift is tone (`RING.lampSide`).
+- Flecks: the shared gable stones are cut at the rake; the vertices of their cut tops face up and were toned as roof, which left four or five pale flecks under the right bargeboard (they were there at the eighth list too). `rakeAt()` keeps what lies in the wall's depth below the rake as wall. Seen gone at hd and at 3840.
+
+Tried and taken back: a wall of stones dealt one by one (71 stones in the band, median 6.2 px, a third breaking a line); `gableFloor` 0.45 (depth 21); a finer second read of the grain map on made stones (the wall's sharpness part did not move); gap 0.1 with rim 0.6 (floor luma 29) and gap 0.05 with rim 0.9 (joints 4.0 px again).
+
+Still short of the approved picture:
+- Wall: the sharpness part fell from 0.79 to 0.53. The eighth list's energy came from chipped facets on small blocks, which read as cut blocks. Drawn as energy, the approved's is strongest in the panes and their bars and on the pier right of the door that the lamp lights, and its stones are smaller and more of them than ours, olive where ours are grey. Upper gable without the air at hd: joints 3.0 and 4.0 px against 3.0, depth 19 and 18 against 15, floor luma 33 and 38 against 44 to 48, stone p90 62 and 69 against 68 to 70, spread 28 and 26 against 26 to 28.
+- Chimney: its part fell from 0.97 to 0.50; the 0.97 was a dozen courses of small brick. At 3840 the stones' cut corners show as straight chamfers.
+- Fence: seven posts on the layout's feet where the approved shows five clear ones, and ours are taller and thicker.
+- Roof: reads more violet in picture 38 than the approved's brown mauve, though the two measured regions agree within 7 levels on the lit bands.
+- No tuft shows at the wall's foot left of the pumpkin at hd; the tuft rule was not changed.
+- Not seen: anything in motion; any 3840 still of the landed state.
+
+What the 3840 final still shows (low camera, the gable enlarged four times): each stone has a dark gap of about 2 px round it and a rounded face; the faces are smooth, without the fine grain the approved has inside a stone; the course lines step. The chimney's near face is 3 stones by 6 with straight cut corners. The roof's rows have ragged pale lower edges and grain along the slope. No fleck under the bargeboard.
+
+Proof on bfe82692 with main 4f95670b merged (23d2268d adds only main's status note 06954500; no source file differs, and the two tests that read the status files pass): draft stills fall-rest d40074b68353ab28, fall-landed 118e55536c999575, the other six equal the list for b22b5be4; M3 at review 0.8823 (base 0.884, miniature 0.882); parts crown 1.54, trunk 1.18, roof 0.97, wall 0.53, fence 0.67, litter 0.84, chimney 0.50, the rest 0.68; G15 high 1,758,693 of 1,800,000, medium 1,005,308 of 1,100,000; strict pass; miniatures pass 57a6894bfd2a805a, dressings 528474499f8193ad.
