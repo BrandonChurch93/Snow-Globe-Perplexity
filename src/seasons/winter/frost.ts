@@ -260,9 +260,11 @@ void main() {
 const SLAB_GROW_GLSL = `
 uniform vec4 uTouch;
 float frostSlabGrow(vec2 xz) {
-  vec2 d = xz - uFoot.xy - uLean.xy;
+  // Once contact ends, a new lift cannot move the unfinished growth on the slab.
+  vec2 d = xz;
   float g = uGrow.y;
   if (uTouch.x > 0.0) {
+    d = xz - uFoot.xy - uLean.xy;
     float tilt = length(uLean.zw);
     float far = tilt > 1e-6 ? 0.5 - 0.5 * dot(d / max(length(d), 1.0), uLean.zw / tilt) : 0.0;
     g *= clamp(uTouch.y * (1.0 + uTouch.z) - uTouch.z * far, 0.0, 1.0);
