@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { tierSamples } from '../src/config'
 import { finalVideoArgs, masterVideoArgs } from '../tools/lib/encode.mjs'
 import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
-import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, sampleRule, ruleCount, countFacts, countsLine, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
+import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, sampleRule, ruleCount, pieceCounts, slowPlan, countFacts, countsLine, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
 import { REMOTE_WAITS, Shipper, collectBranches, gitEnv, identityProblem, mainAuthor, withWaits } from '../tools/lib/mastergit.mjs'
 import { levelProblems, pictureLevels, procsProblem } from '../tools/lib/master.mjs'
 import { heldLine, heldRanges, parseTake } from '../tools/lib/master.mjs'
@@ -318,7 +318,7 @@ describe('what the tool says', () => {
     const final = cfg.tiers.final
     expect(cfg.deliver.master.samples['film-b']).toBe(final.samplesPerFrame)
     expect(cfg.deliver.master.samples.loop).toBe(final.samplesPerFrame)
-    expect(sampleRule('film-b')).toEqual({ base: final.samplesPerFrame, motion: { spacingPx: final.motion.spacingPx, maxSamplesPerFrame: final.motion.maxSamplesPerFrame, evenFromPx: final.motion.evenFromPx, spreadFromPx: final.motion.spreadFromPx, spreadFullPx: final.motion.spreadFullPx }, tier: 'final' })
+    expect(sampleRule('film-b')).toEqual({ base: final.samplesPerFrame, motion: { spacingPx: final.motion.spacingPx, maxSamplesPerFrame: final.motion.maxSamplesPerFrame, evenFromPx: final.motion.evenFromPx, spreadFromPx: final.motion.spreadFromPx, spreadFullPx: final.motion.spreadFullPx, slow: { underPx: cfg.deliver.master.slow.underPx, samples: cfg.deliver.master.slow.samples, runFrames: cfg.deliver.master.slow.runFrames } }, tier: 'final' })
     expect(sampleRule('loop').tier).toBe('final')
     expect(sampleRule('film-b', 1)).toEqual({ base: 1, motion: null, tier: null })
     const other = { deliver: { master: { samples: { 'film-b': 32 } } }, tiers: { final: { samplesPerFrame: 24, motion: { spacingPx: 0.75, maxSamplesPerFrame: 96 } } } }
@@ -331,6 +331,56 @@ describe('what the tool says', () => {
     expect(() => ruleCount(rule, 5, { samples: 97 })).toThrow(/whole count from 24 to 96/)
     expect(() => ruleCount(rule, 5, { samples: 24.5 })).toThrow(/whole count/)
     expect(() => ruleCount(rule, 5, undefined)).toThrow(/the page gave null as the samples of frame 5/)
+  })
+
+  it('draws the slow frames of a piece at the slow count, in runs, so the count changes at most once in a run\'s length', () => {
+    const slow = { underPx: 1.5, samples: 96, runFrames: 4 }
+    const px = (s: string) => [...s].map((c) => (c === 's' ? 0.2 : c === 'e' ? 1.4994 : c === 'f' ? 1.4996 : 9))
+    const plan = (s: string, loop = false) => slowPlan(px(s), slow, loop)
+    const marks = (p: { at: boolean[] }) => p.at.map((on) => (on ? 's' : '.')).join('')
+    expect(marks(plan('ssssFFFFssss'))).toBe('ssss....ssss')
+    expect(plan('ssssFFFFssss')).toMatchObject({ runs: [{ first: 0, last: 3, frames: 4 }, { first: 8, last: 11, frames: 4 }], frames: 8, changes: 2 })
+    expect(marks(plan('FsssFFFFsssseF'))).toBe('........sssss.')
+    expect(marks(plan('FssssFFsssssFFFF'))).toBe('.sssssssssss....')
+    expect(plan('FssssFFsssssFFFF')).toMatchObject({ runs: [{ first: 1, last: 11, frames: 11 }], frames: 11, changes: 2 })
+    expect(marks(plan('FssssFsFsssssFFFF'))).toBe('.ssssssssssss....')
+    expect(marks(plan('ssFFFFFFFssss'))).toBe('.........ssss')
+    expect(plan('ssFFFFFFFssss').changes).toBe(1)
+    expect(marks(plan('ssFFFFFFFssss', true))).toBe('ss.......ssss')
+    expect(plan('ssFFFFFFFssss', true)).toMatchObject({ runs: [{ first: 9, last: 1, frames: 6 }], frames: 6, changes: 2 })
+    expect(marks(plan('sssssFFsssss', true))).toBe('ssssssssssss')
+    expect(plan('sssssFFsssss', true).changes).toBe(0)
+    expect(marks(plan('FFFFFFFF'))).toBe('........')
+    expect(plan('ssss')).toMatchObject({ runs: [{ first: 0, last: 3, frames: 4 }], frames: 4, changes: 0 })
+    expect(marks(plan('sfsfsfsfs'))).toBe('.........')
+    for (const s of ['ssssFFFFssssFsFFFFFsssssFFFsssss', 'FsFsssssssFFFsFFFFssssF', 'sssFFFFFsssssFssFFFFFss']) {
+      for (const loop of [false, true]) {
+        const at = plan(s, loop).at
+        const n = at.length
+        let last = -Infinity
+        let changes = 0
+        const from = loop ? at.findIndex((on, i) => on !== at[(i + n - 1) % n]) : 1
+        if (from < 0) continue
+        for (let k = 0; k < (loop ? n : n - 1); k++) {
+          const i = (from + k) % n
+          if (at[i] !== at[(i + n - 1) % n]) {
+            expect(k - last).toBeGreaterThanOrEqual(slow.runFrames)
+            last = k
+            changes++
+          }
+        }
+        expect(changes).toBe(plan(s, loop).changes)
+      }
+    }
+    expect(() => slowPlan([0.1, Number.NaN], slow)).toThrow(/as the travel of frame 1/)
+    const rule = { base: 24, motion: { spacingPx: 0.75, maxSamplesPerFrame: 128, slow }, tier: 'final' }
+    const got = px('ssssFFFFssssF').map((travelPx, i) => ({ samples: i === 5 ? 128 : i === 9 ? 30 : 24, travelPx }))
+    const whole = pieceCounts(rule, got)
+    expect(whole.counts).toEqual([96, 96, 96, 96, 24, 128, 24, 24, 96, 96, 96, 96, 24])
+    expect(whole.plan?.changes).toBe(3)
+    expect(pieceCounts({ base: 24, motion: { spacingPx: 0.75, maxSamplesPerFrame: 128 }, tier: 'final' }, got)).toEqual({ counts: got.map((g) => g.samples), plan: null })
+    expect(countsLine(rule, countFacts(whole.counts, 24, 0))).toBe('the count of a frame follows its motion (tiers.final.motion: a sample every 0.75 px of travel, at most 128; 96 in runs of 4 frames or more under 1.5 px of travel): 9 of these 13 frames draw more than the base of 24 samples, the most is 128 (frame 5); 992 samples in all, 3.18 times the base')
+    expect(() => sampleRule('film-b', undefined, { deliver: { master: { samples: { 'film-b': 24 }, slow } }, tiers: { final: { samplesPerFrame: 24 } } })).toThrow(/deliver\.master\.slow needs tiers\.final\.motion/)
   })
 
   it('says at the start how many frames of the range draw more than the base, and the most', () => {
@@ -723,6 +773,13 @@ describe('the one encode of a master', () => {
       expect(masterConfigProblems(m).join('\n')).toMatch(rx)
     }
     bad((m) => delete m.intermediate, /intermediate is missing/)
+    bad((m) => (m.slow.samples = 24), /slow\.samples \(24\) is not a whole count over tiers\.final\.samplesPerFrame/)
+    bad((m) => (m.slow.samples = 200), /slow\.samples \(200\) .* at most tiers\.final\.motion\.maxSamplesPerFrame/)
+    bad((m) => (m.slow.runFrames = 0), /slow\.runFrames \(0\)/)
+    bad((m) => (m.slow.underPx = 0), /slow\.underPx \(0\)/)
+    const none = JSON.parse(JSON.stringify(M))
+    delete none.slow
+    expect(masterConfigProblems(none)).toEqual([])
     bad((m) => (m.intermediate.partMb = 60), /partMb \(60\) is not above 0 and at most 50/)
     bad((m) => (m.intermediate.crf = 40), /intermediate\.crf \(40\)/)
     bad((m) => (m.final.passes = 1), /passes \(1\) is not 2/)
