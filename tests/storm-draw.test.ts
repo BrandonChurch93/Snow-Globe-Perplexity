@@ -350,6 +350,11 @@ describe('how the storm is drawn', () => {
     expect(glow.restHeartScene).toBeLessThanOrEqual(1.5)
     expect(glow.restBig[0]).toBeGreaterThan(0.3)
     expect(glow.restBig[0]).toBeLessThan(glow.restBig[1])
+    // the tree's lowest boughs hang out past the crown's outline: for a light's size and its focus the crown reaches further than it does for the count, in the calm alone
+    expect(glow.treeReach).toBeGreaterThan(CARD.hair.sceneEdge[1])
+    expect(CARD_VERT).toContain('float treeG = crownG;')
+    expect(CARD_VERT).toContain('if (uStorm.x < 0.99) treeG = max(crownG, (1.0 - smoothstep(')
+    expect(CARD_VERT).toContain('float sceneG = max(max(cotG, treeG), bandG) * afloat * (1.0 - gustC);')
     expect(glow.restTop).toBeLessThanOrEqual(0.6)
     expect(glow.restGlowBig[0]).toBeGreaterThan(glow.restHeart[0] + glow.restHeart[1])
     expect(glow.restGlowBig[1]).toBeLessThanOrEqual(7)
@@ -424,10 +429,23 @@ describe('how the storm is drawn', () => {
     expect(clock.foot[0]).toBeGreaterThan(0)
     expect(clock.footNear[1]).toBeGreaterThan(clock.foot[1])
     expect(clock.stem[1]).toBeLessThan(0.02)
-    // the down is no brighter than about the level that burns to white, and only the stout heads in the low sun go over it
+    // the down is no brighter than about the level that burns to white, and only the stout heads near the eye go over it
     expect(clock.white).toBeLessThanOrEqual(1.1)
     expect(clock.stoutWhite).toBeGreaterThan(clock.white)
     expect(clock.warmShare).toBeLessThanOrEqual(1)
+    // the stout near heads are the warm ones and more, the warm the first of them by the head's one number. A camera nearer than the hero has a near head far out of focus, where a stout hair is a grey bar: there the warm ones alone are stout, in size and in boldness alike, and the hero's own nearest head stands well under where that begins
+    expect(clock.stoutShare).toBeGreaterThanOrEqual(clock.warmShare)
+    expect(clock.stoutShare).toBeLessThanOrEqual(1)
+    const heroMm = config.cameras.hero.distanceMm
+    expect(clock.stoutClose[0]).toBeGreaterThan((1.2 * heroMm) / (heroMm - lensRadiusMm))
+    expect(clock.stoutClose[0]).toBeLessThan(clock.stoutClose[1])
+    expect(CARD_VERT).toContain('), step(cardHairHash((pid & 4095u) * 64u + 63u).y, ')
+    expect(CARD_VERT).toContain(', closeC)))')
+    expect(CARD_FRAG_PARS).toContain('float stoutS = step(ownK.y, ')
+    expect(CARD_FRAG_PARS).toContain('if (clockS > 0.0) stoutS = mix(stoutS, step(ownK.y, ')
+    expect(CARD_FRAG_PARS).toContain(', uPoint.y * gl_FragCoord.w / (uPoint.w * ')
+    expect(CARD_FRAG_PARS).toContain('float warmK = nearS * stoutS;')
+    expect(CARD_FRAG_PARS).toContain('float tintK = nearS * step(ownK.y, ')
     // a stout near head is the larger, by the head's own whole number, which the vertex and the pixel read alike, and its hairs are bold at the hub and taper to a small tuft
     expect(clock.stoutMm).toBeGreaterThan(1)
     expect(clock.stoutMm).toBeLessThanOrEqual(1.5)
