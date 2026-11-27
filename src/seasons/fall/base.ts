@@ -234,7 +234,6 @@ float baseThorn = step(0.75, baseKind);
 float baseDrum = 1.0 - step(0.25, baseKind);
 float baseStrand = (1.0 - baseThorn) * (1.0 - baseDrum);
 float baseBlotch = baseNoise(vBasePos * 0.35) * 0.6 + baseNoise(vBasePos * 1.3) * 0.4;
-// Two fields turned against each other, so the lattice of neither shows.
 vec3 foldT = normalize(vec3(vBasePos.z, 0.0, -vBasePos.x) + vec3(1e-5, 0.0, 0.0));
 float foldHere = baseFold(vBasePos);
 float foldOn = baseFold(vBasePos + foldT * 0.4);
