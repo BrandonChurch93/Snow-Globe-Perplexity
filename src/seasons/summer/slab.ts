@@ -14,22 +14,23 @@ const PART = 'surface-dressing-summer'
 // its own shade. Round it lies an apron a grain or two deep that thins out into single grains, and a low bank along the
 // foot. Everywhere else the table is bare.
 const HEAP = {
-  cone: { x: 59.3, z: 17.2, mm: 10.2, tip: 0.1, foot: 0.2, round: [[-180, 1.05], [5, 1.05], [32, 1.35], [150, 1.35], [180, 1.05]], reach: [[-180, 20], [-90, 21], [-30, 21], [4, 21], [31, 27.5], [60, 28.5], [90, 30], [125, 32], [155, 26], [180, 20]] },
-  apron: { mm: 0.55, from: 0.6, lean: 2.5, extra: [[-180, 6], [-90, 6], [-30, 34], [0, 37], [25, 32], [50, 20], [90, 16], [130, 12], [180, 6]], patch: [-0.5, 0.5, 0.45] },
-  bank: { mm: 2.5, r: 58, w: 6, az: [0, 100], ease: 40 },
-  lumps: [0.06, 0.12, 0.45],
+  cone: { x: 59.3, z: 17.2, mm: 10.2, tip: 0.1, foot: 0.2, round: [[-180, 1.05], [-18, 1.05], [14, 1.35], [150, 1.35], [180, 1.05]], reach: [[-180, 20], [-90, 21], [-50, 21], [-20, 21], [12, 31], [40, 26], [90, 27], [125, 29], [155, 26], [180, 20]] },
+  apron: { mm: 2.0, from: 0.6, lean: 2.5, extra: [[-180, 6], [-90, 6], [-30, 30], [0, 34], [25, 30], [50, 12], [90, 6], [130, 5], [180, 6]], patch: [-0.6, 0.3, 0.5] },
+  bank: { mm: [[-180, 0], [0, 0], [20, 1.6], [55, 1.6], [78, 2.5], [100, 2.5], [135, 0], [180, 0]], r: 58, w: 6 },
+  skirt: { at: [90, -40], mm: [24, 26], high: 0.7, patch: [0.05, 0.5] },
+  lumps: [0.06, 0.22, 0.8],
   sprinkle: { at: [-63.8, -47.6], lit: [-0.918, -0.396], run: [-12, -2, 22, 78], rise: [0, 0.6], core: [0.95, 1.1], veil: [0.5, 6.5] },
-  cover: [0.02, 1.3],
+  cover: [0.02, 3.0],
   ragged: { mm: [1.7, 4.3], most: 0.55 },
   spread: { looseMm: 0.25, onHeap: 0.1, thickMm: 1.6 },
-  proud: { thin: 0.5, flank: 0.25, high: [2.5, 6.0] },
+  proud: { thin: 0.1, flank: 0.25, low: [1.5, 3.5], high: [2.5, 6.0] },
   strewn: { from: 0.8, side: [-5, 20, 0.25], drift: 0.25 },
 }
 // The light on the sand. The stage's lit material is made for the stone of the base; this takes its paint (every grain's
 // own colour and tilt) and the stage's key, sky and card, and lights the sand as dry sand is lit by a low sun from behind.
-export const SAND_LIT = { tilt: 0.25, ramp: [0.02, 0.26], gain: [0.45, 1.4], sun: 4.2, back: 1.0, sky: [3.6, 5.2, 8.0], card: 0.05, knee: 1.8, high: 3.2, pale: 0.6, tint: [1.0, 0.96, 0.86], thin: [0.3, 0.25, 1.0], lone: [1.0, 0.84, 0.66], speck: 1.8, finer: 1.6, rows: 1080, pit: [0.8, 0.33], pitTint: [1.0, 0.75, 0.5], warm: [0.22, 0.45], lean: [0.15, 0.45], tone: [0.6, 1.25], fade: 0.08, fill: [0.5, 1.0], soft: [0.5, 0.035] }
+export const SAND_LIT = { tilt: 0.25, ramp: [0.02, 0.26], gain: [0.45, 1.4], sun: 4.3, back: 1.0, sky: [3.6, 5.2, 8.0], card: 0.05, knee: 1.8, high: 3.2, pale: 0.75, tint: [1.0, 0.98, 0.93], thin: [0.5, 0.3, 4.0], lone: [1.0, 0.92, 0.84], speck: 1.8, finer: 1.6, rows: 1080, pit: [0.8, 0.33], pitTint: [1.0, 0.75, 0.5], warm: [0.22, 0.45], lean: [0.15, 0.45], tone: [0.6, 1.25], fade: 0.14, fill: [0.5, 1.0], soft: [0.8, 0.05], cast: [0.3, 0.1], blur: [1.5, 2.5], small: [0.5, 0.6], crest: { mm: [7.0, 9.5], tint: [0.88, 0.72, 0.6] } }
 export const SPRINKLE = { softMm: 5.0 } as const
-export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 0.5, x: [-150, 142], z: [-232, 216], heap: { x: [-8, 124], z: [-34, 74] } } as const
+export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 0.5, x: [-150, 142], z: [-232, 216], heap: { x: [-8, 132], z: [-78, 74] } } as const
 
 const hash = (x: number, y: number, s: number): number => {
   let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(s | 0, 1274126177)) | 0
@@ -79,7 +80,7 @@ const bank = (x: number, z: number): number => {
   const B = HEAP.bank
   const az = (Math.atan2(x, z) * 180) / Math.PI
   const out = Math.max(Math.hypot(x, z) - B.r, 0) / B.w
-  return B.mm * ease((az - B.az[0]!) / B.ease) * ease((B.az[1]! - az) / B.ease) * Math.exp(-out * out)
+  return toward(B.mm, az) * Math.exp(-out * out)
 }
 
 // The thin sand round the heap: a grain or two deep at the heap's foot, thinner with every millimetre out, and the
@@ -93,12 +94,19 @@ const apron = (x: number, z: number): number => {
   return A.mm * (1 - out ** A.lean) * ease((patch - A.patch[0]! - (A.patch[1]! - A.patch[0]!) * out) / A.patch[2]!)
 }
 
+// The sand that the stream's grains have thrown behind the heap, to the right: a skirt less than a grain deep, in patches.
+const skirt = (x: number, z: number): number => {
+  const K = HEAP.skirt
+  const patch = 0.55 * noise(x / 11 + 4.1, z / 15 + 2.3, 71) + 0.45 * noise(x / 3.7 + 9.3, z / 5.3 + 6.7, 73)
+  return K.high * Math.exp(-(((x - K.at[0]!) / K.mm[0]!) ** 2) - ((z - K.at[1]!) / K.mm[1]!) ** 2) * ease((patch - K.patch[0]!) / K.patch[1]!)
+}
+
 // How high the sand lies at a place: the heap, the bank and the apron, with their lumps. It thins out to nothing; nowhere does it end in a step.
 export function sandHeight(x: number, z: number): number {
   const mid = noise(x / 7.3 + 1.7, z / 7.3 + 9.2, 13)
   const fine = noise(x / 2.1 + 5.3, z / 2.1 + 2.9, 17)
   const grit = noise(x / 1.1 + 4.7, z / 1.1 + 1.3, 31)
-  const heap = Math.hypot(cone(x, z), Math.max(bank(x, z) * (0.8 + 0.4 * mid), apron(x, z)))
+  const heap = Math.hypot(cone(x, z), Math.max(bank(x, z) * (0.8 + 0.4 * mid), apron(x, z), skirt(x, z)))
   const L = HEAP.lumps
   return Math.max(0, heap + (grit - 0.5) * L[0]! * Math.min(1, heap / 1.5) + (fine - 0.5) * L[1]! * Math.min(1, heap / 2.5) + (mid - 0.5) * L[2]! * Math.min(1, heap / 4))
 }
@@ -113,6 +121,11 @@ const keepAt = (x: number, z: number, h: number): number => {
   const R = HEAP.ragged
   const n = 0.55 * noise(x / R.mm[0]! + 3.1, z / R.mm[0]! + 8.7, 59) + 0.45 * noise(x / R.mm[1]! + 6.3, z / R.mm[1]! + 1.9, 61)
   return Math.min(1, Math.max(0, c + (2 * n - 1) * R.most * 4 * c * (1 - c)))
+}
+
+// How deep the sand lies at a place, as the skin's own tone reads it: 0 where a grain lies alone on the table.
+export function sandDeep(x: number, z: number): number {
+  return ease((sandHeight(x, z) - SAND_LIT.thin[1]!) / (SAND_LIT.thin[2]! - SAND_LIT.thin[1]!))
 }
 
 // How many of the landing's loose grains come to lie at a place: on the thin sand and a little way out from its edge.
@@ -163,7 +176,7 @@ export function sandProud(x: number, z: number): number {
   const c = coverAt(h)
   if (c <= 0) return 0
   const P = HEAP.proud
-  return Math.min(1, Math.max(P.flank * c, ease((h - P.high[0]!) / (P.high[1]! - P.high[0]!))) + P.thin * 4 * c * (1 - c))
+  return Math.min(1, Math.max(P.flank * ease((h - P.low[0]!) / (P.low[1]! - P.low[0]!)), ease((h - P.high[0]!) / (P.high[1]! - P.high[0]!))) + P.thin * 4 * c * (1 - c))
 }
 
 // The single grains strewn round the heap: thick where it thins out, fewer with every millimetre beyond (`reach` is the
@@ -228,12 +241,13 @@ function field(): Field {
   const plan = Math.hypot(key[0], key[2])
   const cast = new Float32Array(nx * nz).fill(1)
   const lit = new Float32Array(nx * nz)
+  const C = SAND_LIT.cast
   for (let j = 0; j < nz; j++) {
     for (let i = 0; i < nx; i++) {
       const o = j * nx + i
       if (h[o]! > 0) {
         let least = 1
-        for (let s = step; s < 26 && least > 0; s += step) least = Math.min(least, (h[o]! + (key[1] / plan) * s - soft(i + ((key[0] / plan) * s) / step, j + ((key[2] / plan) * s) / step)) / (0.06 + 0.06 * s) + 0.5)
+        for (let s = step; s < 34 && least > 0; s += step) least = Math.min(least, 0.5 - (soft(i + ((key[0] / plan) * s) / step, j + ((key[2] / plan) * s) / step) - h[o]! - (key[1] / plan) * s) / (C[0]! + C[1]! * s))
         cast[o] = Math.max(least, 0)
       }
       const gx = (at(i + 1, j) - at(i - 1, j)) / (2 * step)
@@ -241,7 +255,28 @@ function field(): Field {
       lit[o] = faceOf((key[1] - gx * key[0] - gz * key[2]) / Math.hypot(gx, 1, gz)) * cast[o]!
     }
   }
-  made = { nx, nz, h, cast, lit }
+  // The edge of that shade is not a line: the skin takes it over a grain or two, and a grain that stands proud takes the
+  // sun a little before the skin under it does.
+  const blurred = (a: Float32Array, cells: number): Float32Array => {
+    const reach = Math.ceil(cells * 2.5)
+    const w: number[] = []
+    for (let k = -reach; k <= reach; k++) w.push(Math.exp(-0.5 * (k / cells) ** 2))
+    const sum = w.reduce((p, c) => p + c, 0)
+    const mid = new Float32Array(nx * nz)
+    const out = new Float32Array(nx * nz)
+    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+      let v = 0
+      for (let k = -reach; k <= reach; k++) v += w[k + reach]! * a[j * nx + Math.min(Math.max(i + k, 0), nx - 1)]!
+      mid[j * nx + i] = v / sum
+    }
+    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+      let v = 0
+      for (let k = -reach; k <= reach; k++) v += w[k + reach]! * mid[Math.min(Math.max(j + k, 0), nz - 1) * nx + i]!
+      out[j * nx + i] = v / sum
+    }
+    return out
+  }
+  made = { nx, nz, h, cast: blurred(cast, SAND_LIT.blur[0]!), lit: blurred(lit, SAND_LIT.blur[1]!) }
   return made
 }
 
@@ -346,6 +381,9 @@ vec3 sandTone(vec3 paint, vec3 sun, vec3 sky) {
   float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
   return mix(c, vec3(l), ${f(SAND_LIT.pale)} * smoothstep(${f(SAND_LIT.knee * 0.5)}, ${f(SAND_LIT.high)}, l));
 }
+vec3 sandCrest(float y) {
+  return mix(vec3(1.0), vec3(${SAND_LIT.crest.tint.map(f).join(', ')}), smoothstep(${f(SAND_LIT.crest.mm[0]!)}, ${f(SAND_LIT.crest.mm[1]!)}, y));
+}
 vec3 sandKnee(vec3 c) {
   float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
   return c * (min(l, ${f(SAND_LIT.knee)}) + ${f(SAND_LIT.high - SAND_LIT.knee)} * (1.0 - exp(-max(l - ${f(SAND_LIT.knee)}, 0.0) / ${f(SAND_LIT.high - SAND_LIT.knee)}))) / max(l, 1e-4);
@@ -375,7 +413,7 @@ vec4 slabCell(vec2 p) {
 vec3 slabGrain(vec2 at, float seed, float keep, vec3 lean) {
   vec2 cell = floor(at);
   vec4 h = slabCell(cell + seed);
-  float size = mix(0.6, 1.0, h.z);
+  float size = mix(0.6, 1.0, h.z) * mix(${f(SAND_LIT.small[0]!)}, 1.0, smoothstep(0.0, ${f(SAND_LIT.small[1]!)}, keep));
   vec2 off = at - cell - 0.5 - (1.0 - size) * (h.xy - 0.5);
   float cover = (1.0 - smoothstep(0.45, 1.0, 2.0 * length(off) / size)) * step(h.w * 0.996 + 0.002, keep);
   float light = mix(${f(SAND_LIT.tone[0]!)}, ${f(SAND_LIT.tone[1]!)}, fract(h.z * 7.0 + h.w * 3.0)) * (1.0 + lean.z * clamp(2.0 * dot(off, lean.xy) / size, -1.0, 1.0));
@@ -396,15 +434,15 @@ float slabAlpha = 1.0;
   vec3 slabN = normalize(mix(nonPerturbedNormal, normal, ${f(SAND_LIT.tilt)}));
   vec3 slabUp = inverseTransformDirection(nonPerturbedNormal, viewMatrix);
   // While the globe stands the stone's shade is its outline, thrown; while it is in the air, the stage's own shadow.
-  float slabShade = mix(stageKeyS, sandBaseShade(vStageWorld - vec3(uSandFoot.x, 0.0, uSandFoot.y), uRigKeyDir), uSandDown) * vSlab.z;
-  float slabSun = sandFace(dot(slabN, stageKeyL)) * slabShade;
+  float slabStone = mix(stageKeyS, sandBaseShade(vStageWorld - vec3(uSandFoot.x, 0.0, uSandFoot.y), uRigKeyDir), uSandDown);
+  float slabSun = sandFace(dot(slabN, stageKeyL)) * vSlab.z * slabStone;
   float slabBack = clamp(dot(-geometryViewDir, stageKeyL) * 0.5 + 0.5, 0.0, 1.0);
   vec3 slabSky = (mix(uRigGround, uRigSky, 0.5 + 0.5 * slabUp.y) + uRigCardCol * (${f(SAND_LIT.card)} * clamp(dot(slabN, normalize(mat3(viewMatrix) * uRigCardDir)) * 0.5 + 0.5, 0.0, 1.0))) * vSlab.y;
   // Where the sand thins out, and where the skin turns from the eye, it is single grains with the table between them;
   // and a grain that lies alone is darker and more of its own colour than sand that lies deep, which is lit by its neighbours too.
   float slabKeep = vSlab.x * smoothstep(0.0, ${f(SAND_LIT.fade)}, dot(normalize(nonPerturbedNormal), geometryViewDir));
-  float slabDeep = smoothstep(${f(SAND_LIT.thin[1]!)}, ${f(SAND_LIT.thin[2]!)}, slabKeep);
-  vec3 slabC = sandTone(diffuseColor.rgb * vec3(${SAND_LIT.tint.map(f).join(', ')}) * mix(vec3(${SAND_LIT.lone.map(f).join(', ')}) * ${f(SAND_LIT.thin[0]!)}, vec3(1.0), slabDeep), stageKeyC * (slabSun * (1.0 + ${f(SAND_LIT.back)} * slabBack * slabBack)), slabSky);
+  float slabDeep = smoothstep(${f(SAND_LIT.thin[1]!)}, ${f(SAND_LIT.thin[2]!)}, vStageWorld.y - ${f(SLAB.liftMm)});
+  vec3 slabC = sandTone(diffuseColor.rgb * vec3(${SAND_LIT.tint.map(f).join(', ')}) * sandCrest(vStageWorld.y) * mix(vec3(${SAND_LIT.lone.map(f).join(', ')}) * ${f(SAND_LIT.thin[0]!)}, vec3(1.0), slabDeep), stageKeyC * (slabSun * (1.0 + ${f(SAND_LIT.back)} * slabBack * slabBack)), slabSky);
   // The lens parts red from blue toward the frame's edge (post.ts), and a grain a pixel wide would come out of it as a
   // red, a green and a blue one. The grain of the sand is laid for each of the three as arrival.ts lays its grains: on the
   // pixels the post reads them from, with its weights.
