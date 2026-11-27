@@ -1,49 +1,49 @@
 {
-  "number": 212,
-  "time": "2026-11-27 12:05 UTC",
+  "number": 214,
+  "time": "2026-11-27 13:21 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 212 · 2026-11-27 12:05 UTC · Phase 6",
+    "Status 214 · 2026-11-27 13:21 UTC · Phase 6",
     "Decision needed from Brandon, unchanged, one thing only he can do: the automation that restarts this build ends Friday noon Mountain Time and a run may not move its own end. He can move the end to Sunday noon in the automation's settings, or write any line in the thread. Open item 252.",
-    "Chain 30 is read and on origin main since 12:03 UTC (`a6fe2ff4`): fall's base, twelfth step, shader only. On it: tsc and build exit 0, \"pass M3 fall-rest: 0.8838\" at review (the base's part 0.884 from 0.913, over my floor of 0.80), the change's eight measures pass and equal chain 29's, two of the eight guard stills changed (fall's two, as they should), triangles unchanged. The whole vitest did not pass in one run: 951 tests passed and one stopped at its own limit of 300 s after 359 s (the making of the four miniatures three ways; 122 to 124 s on the three chains before); nothing was asserted false. Run again alone on the same tree it passed in 119 s and the miniatures' hashes equal chain 29's. I pushed on that and wrote it in the log as a failed whole run, not as a pass. I do not know the cause; my own picture work ran on the same two cores, and that stops beside a chain's test run from now on. Pictures 1 and 2: fall at rest on it beside the approved picture, and the base's right flank at two times as approved, tenth step, twelfth step. The thin white line on the vines is gone on most; the many thin straight thorns, the copper dashes at the left and the towelling wall stand as before. It does not read further than the tenth, so it stays.",
-    "Fall's air, eighth list: held, not merged. Picture 3: approved, main, the list. Each point now sits in a warm glow as the approved's larger points do, a gain over main's hard white dots. But the leaves at rest are the largest of the three and crowd the upper left, and by its builder's count the small orange class is 414 where the approved has 206. The ninth list is ordered with the leaves first: count and sizes to the approved's by one counter with main's number in a third column, the glow on a dealt share only, the upper air's ground as thin slanted streaks on a grain, the storm's measure and the miniature's sharpness share back.",
-    "Summer's tree, twelfth pass: merged here and in chain 31 since 12:04 UTC, not on origin yet. Picture 4: approved, main, the twelfth pass. Beside main's the crown is darker, carries beads on the upper left rims and holds the three notches; at 400 px it reads as one canopy. Decision 190: it is merged although one of its builder's own numbers went further (the leaf fills 61.0 percent of the crown's hull against main's 59.4, approved 51.9), an exception to my rule that such a part is held, taken on the picture and named; the fill is the first item of the thirteenth pass, then the rim as a band two or three leaves thick, then pads less alike and less level.",
-    "4K motion. Winter's frames 630 to 632 at final: the tree's lights are whole streaks, 28 of 30, 40 of 42 and 40 of 45 unbroken by the builder's count, the flagged ones gaps of 1 to 2 px or several lights run together; I looked at 631 enlarged three times and see streaks, not rows of dots. The beads I saw earlier came from the review tier's 8 samples, which the masters do not use. The lawn: with the lens shut the large steps grow two to four times, so the lens points are not the cause; a joint deal of place, lens and time at 24 samples reads no better (25 and 69 steps over 20 levels against 20 and 43); 48 samples read 10 and 32; 96 read 1 and 6. The builder states that its model failed against the picture and that only the count moves the numbers. By the rule logged at 11:12 no arm at 24 or 48 meets the bar, only 96. One more test is drawing: 96 samples that repeat the present 24 four times, so that only the shadow's per sample seed differs; if that reads like the true 96, the fault is the shadow's grain and can be mended at its taps without the hours. Hours, the builder's estimate from its own logs, a fifth either way: film B about 158 machine hours as now (my 140 was too low), about 221 with the slow frames at 48, about 350 at 96. A cut from 24 to 96 samples inside the film gives one frame with 2.7 times the usual steps on the lawn, because the two sets' mean places differ by 0.05 px; centring each set would take that out. Not ruled yet; the seed test comes first.",
-    "The change of season: its builder's checks on its own head read green by its report (eight guards equal, 24 of 24 lines, no black in the app's shake at high); one pair of frames, 1388 to 1389, moves the glass's mean by 6.2, named and not tuned; its push with final tier frames is expected about 13:20 UTC.",
-    "Below the bar, plainly. Summer: the crown's rim and fill, the base (grey weathered wood where the approved is pale packed sand), seeds as cream stars, lights as even dots, the landing's swirl, the sand stream (it boils at 4K, in rework), the lawn at the close camera, the pond. Fall: the air's leaves and ground, the tree bare of lights, the cottage small and dark, the wall and the fence, the base's thorns, sheaf and wall. Spring: the crest, the roots, the moss's lower edge, the trickle. The change of season, 4K motion on the lawn and the controls.",
-    "Next: chain 31 read and the merged summer set beside the approved before any push; summer's miniature when its report is read; the seed test and the ruling on the samples; Round 23 on summer when its lists are in.",
-    "Render counts since the last status. Drawn here: chain 30 whole (8 stills, one review still, the change's frames, the whole vitest and one file again), chain 31 in work. On helper machines by their reports: 3 winter frames at 3840 final and 2 at review, 3 pairs of the lawn at 3840 (lens shut, joint deal, 48 samples) and one more pair drawing, the tree's and the air's proofs. No frame of the masters yet.",
+    "Nothing was merged since Status 213 and no chain is running; origin main is `4f95670b`. Three builders reported and each part is held on its builder's own numbers, with the next step ordered.",
+    "Fall's base, thirteenth step: held. Pictures 1 and 2: approved, main, the step. The vines are matt now with no long streak, the thorns are fewer, longer and bent, the web's threads bow; those are gains. But a wide grey band makes the vines read grey where the approved's read black: by its builder's count the flank's bright runs went to 6.0 and 5.6 from 5.2 and 5.3 (approved 3.7 and 4.8), and on its own three rows I read the right flank's 90th percentile at 67.7 approved, 80.6 main, 103.5 the step. The fourteenth step is ordered: the band at a third of the vine's width and lower, one push that I merge; then the pumpkin faces (hard cut edges and ribs, they read 0.33 to 0.58 of the approved's sharpness), the sheaf as curled fibre and not straight straw, the wall as larger smooth facets, the web to the foot.",
+    "Summer's miniature: the proof I ordered is in. Picture 3: the cottage's wall at 4K, main left and the held list right. The list's wall is a speckle one or two pixels wide where main's is round stones; its builder ruled so itself before the count and put the wall back to main's. The fence, the rail, the sand's foot, the water and the pebbles stay; its report comes with its push and goes into chain 32. Its count found no flicker on its wall in the film's hold, and it names the test as weak because the wall hardly moves there; nobody has seen the wall under travel. Ruled on its question: the lawn is judged at the film's interior camera and at the hero at 4K, not at the closest camera, which the film uses only in winter. The lawn's fault is visible in picture 3 on both: right of the door it stands as pale flat wedges.",
+    "Spring's base, eighth list: held. Picture 4: approved above, the list below. The crest is level now as the approved's (its trace reads sd 1.95 px against 5.2 before and 2.06 on the approved) and the base's part of M3 reads 0.922. Held on two of its builder's own numbers: at the change into summer the low crest uncovers the miniature's foot along the front (M4 0.8937 against main's 0.8957), and a new term on the right shoulder flickers more than any other place on the base by its count (6.9 and 11.3 percent), not watched in motion. A third number, M3 whole under main's by 0.0069, it proved to be the measure's doing and I accepted it. Ninth list ordered: the moss as a broad cushion over the glass's foot as on the approved, which covers the dark band and closes the strip; then the shoulder. Its builder asked for my word instead of steering the build to a number.",
+    "4K motion: the three other seasons' slow pairs are drawing on a helper machine, tables expected about 13:50 UTC; the sampler in the master tool and the hours table about 15:00 UTC.",
+    "Below the bar, plainly. Summer: the crown (too open and thin, the rim one row of dots), the base (grey weathered wood where the approved is pale packed sand), seeds as cream stars, lights as even dots, the landing's swirl, the sand stream, the lawn (flat pale wedges), the pond. Fall: the air's leaves and ground, the tree bare of lights, the cottage small and dark, the wall and the fence, the base's vines, sheaf, wall and pumpkin faces. Spring: the base's cushion, roots, stones, moss's lower edge and trickle. The change of season, the controls, and 4K motion on the lawn until the masters draw at 96.",
+    "Next: chain 32 with summer's miniature and whichever of fall's base and fall's air is in and read; the slow pairs; the change's push; Round 23 on summer when its lists are in.",
+    "Render counts since the last status. Drawn here: nothing. On helper machines by their reports: 8 frames at 3840 final for summer's wall (two heads, four frames) and one more, 4 for fall's base, 4 for spring's base, 2 at 72 samples, and the three seasons' slow pairs drawing. No frame of the masters yet.",
     "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
-    "phase 6: 33.26 h used of its 12.00 h box",
-    "allowance (after the review): 33.26 h used of 12.00 h allowed",
+    "phase 6: 34.53 h used of its 12.00 h box",
+    "allowance (after the review): 34.53 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-212-1.jpg",
-      "caption": "Fall at rest on chain 30 with the base's twelfth step, approved picture left and build right, on origin now, below the bar",
-      "w": 1200,
-      "h": 536
+      "file": "out/stills/status/status-214-1.jpg",
+      "caption": "Fall's base, approved picture above, main in the middle, the thirteenth step below, held, below the bar",
+      "w": 800,
+      "h": 938
     },
     {
-      "file": "out/stills/status/status-212-2.jpg",
-      "caption": "Fall's base at the right flank at two times, approved picture left, the tenth step in the middle, the twelfth step right, on origin now, below the bar",
-      "w": 1200,
-      "h": 300
+      "file": "out/stills/status/status-214-2.jpg",
+      "caption": "Fall's vines and wall close up, approved picture left, main in the middle, the thirteenth step right, held, below the bar",
+      "w": 1199,
+      "h": 480
     },
     {
-      "file": "out/stills/status/status-212-3.jpg",
-      "caption": "Fall's air, approved picture left, main in the middle, the eighth list right, held, below the bar",
-      "w": 1200,
-      "h": 400
+      "file": "out/stills/status/status-214-3.jpg",
+      "caption": "Summer's cottage wall at 4K at two times, main left and the miniature's held list right, the wall goes back to main's",
+      "w": 1126,
+      "h": 640
     },
     {
-      "file": "out/stills/status/status-212-4.jpg",
-      "caption": "Summer's tree, approved picture left, main in the middle, the twelfth pass right, in chain 31, below the bar",
-      "w": 1200,
-      "h": 449
+      "file": "out/stills/status/status-214-4.jpg",
+      "caption": "Spring's base, approved picture above and the eighth list below, held, below the bar",
+      "w": 940,
+      "h": 804
     }
   ]
 }
