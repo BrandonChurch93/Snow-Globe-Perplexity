@@ -191,8 +191,8 @@ const FOOT = { glass: 1.08, scallop: 1.2, cockle: 1.2, snail: 1.25, olive: 1.0, 
 // and has a thin shade under it, no two are as wide or as deep, and each comes and goes along its run. Right of the middle the hand has
 // dabbed more than drawn: there the ridges are short and wavy and the sand between them is pitted. The mesh holds the swells; the carve map
 // holds the ridges, the creases, the pits and the crumbs. All of it parts round the things set in the sand as water parts round a stone.
-const SWIRL = { apart: 9.5, slope: 0.4, most: 0.6, least: 0.12, crumb: 0.034, notch: 0.15, crest: 0.2 }
-const RIDGE = { apart: 2.6, deep: 0.36, peak: 0.36, pit: 0.16, gouge: 0.14, crack: 0.08 }
+const SWIRL = { apart: 9.5, slope: 0.4, most: 0.6, least: 0.12, crumb: 0.034, notch: 0.035, crest: 0.2 }
+const RIDGE = { apart: 2.6, deep: 0.36, peak: 0.36, pit: 0.16, gouge: 0.14, crack: 0.02 }
 // A roll of moulded sand in section, from the crease under it (0) to the crease over it (1): it stands out quickly to its crest and falls
 // back slowly, and where it meets the next roll the line is sharp.
 const roll = (x, crest) => Math.max(x < crest ? Math.sin((0.5 * Math.PI * x) / crest) : Math.cos((0.5 * Math.PI * (x - crest)) / (1 - crest)), 0) ** 0.85
@@ -225,7 +225,7 @@ function swirlCoord(m, az, s, h, r) {
 }
 // The roll under the glass lies on the body as a crust: from the left flank to the middle its lower edge is a ragged step, high on the left
 // and lower toward the middle, its height in mm.
-const crustEdge = (A, a180) => 34.0 - 0.093 * (clamp(a180, -58, -6) + 10) + 2.6 * (fbm(A * 46 + 1, 0.5, 46, 4, 191, 4) - 0.5) + 0.9 * (fbm(A * 170 + 7, 0.5, 170, 4, 205, 2) - 0.5)
+const crustEdge = (A, a180) => 34.0 - 0.093 * (clamp(a180, -58, -6) + 10) + 3.6 * (fbm(A * 46 + 1, 0.5, 46, 4, 191, 4) - 0.5) + 1.5 * (fbm(A * 170 + 7, 0.5, 170, 4, 205, 2) - 0.5)
 // Low on the left flank the sand is folded over itself: a lip, a deep crease under it and the foot's roll standing out below. How much of
 // that fold there is at an azimuth.
 const foldAt = (az) => {
@@ -286,7 +286,7 @@ function bare(m, az, s) {
   // The trough above the foot is a real crease: the foot's roll stands out under it.
   const gh = stainH(az)
   const fold = foldAt(az)
-  const crease = -(0.4 + 0.65 * fold) * mix(1, 0.5, smooth(0, 30, a180)) * Math.exp(-(((q.h - gh) / (2.3 + 0.8 * fold)) ** 2)) * (0.55 + 0.45 * fbm(A * 12 + 3, 0.5, 12, 4, 167, 2)) + 0.5 * fold * Math.exp(-(((q.h - gh - 3.5) / 1.3) ** 2))
+  const crease = -(0.4 + 1.3 * fold) * mix(1, 0.5, smooth(0, 30, a180)) * Math.exp(-(((q.h - gh) / (2.3 + 0.8 * fold)) ** 2)) * (0.55 + 0.45 * fbm(A * 12 + 3, 0.5, 12, 4, 167, 2)) + 0.9 * fold * Math.exp(-(((q.h - gh - 4.0) / 2.0) ** 2))
   // Loose sand lies on the top of the roll up to the glass, thicker right of the middle, and ends over the roll's shoulder in a soft edge.
   const driftEdge = 38.6 - 2.2 * smooth(6, 30, a180) * smooth(100, 70, a180) + 1.4 * (fbm(A * 40 + 5, 0.5, 40, 4, 193, 3) - 0.5)
   const drift = smooth(driftEdge - 0.9, driftEdge + 0.9, q.h)
@@ -298,7 +298,7 @@ function bare(m, az, s) {
   const rk = Math.floor(rp)
   const rx = rp - rk
   const rRun = smooth(0.14, 0.46, mix(fbm(A * 18 + 0.37 * rk, 0.61 * rk + 0.5, 18, 64, 219, 2), fbm(A * 46 + 0.37 * rk, 0.61 * rk + 0.5, 46, 64, 231, 2), dabbed))
-  const rOn = Math.max(0.4 * smooth(-100, -84, a180) * smooth(-10, -28, a180) * smooth(23.5, 27, h), smooth(-40, -20, a180) * smooth(44, 22, a180) * mix(0.4, 1, smooth(9, 15, h)) * smooth(5, 9, h), 0.3 * smooth(5, 9, h)) * underLedge * mix(1, 0.2, dabbed) * mix(0.25, 1, Math.max(smooth(-45, -22, a180), smooth(20, 24, h)))
+  const rOn = Math.max(0.2 * smooth(-100, -84, a180) * smooth(-10, -28, a180) * smooth(23.5, 27, h), smooth(-40, -20, a180) * smooth(44, 22, a180) * mix(0.4, 1, smooth(9, 15, h)) * smooth(5, 9, h), 0.3 * smooth(5, 9, h)) * underLedge * mix(1, 0.2, dabbed) * mix(0.25, 1, Math.max(smooth(-45, -22, a180), smooth(20, 24, h)))
   const ridge = RIDGE.deep * (0.35 + 0.65 * hashInt(rk, 3, 217)) * rRun * roll(rx, RIDGE.peak) * rOn
   // A pit where a grain or two fell out, a crumb where a few stand proud: each in its own cell, most where the hand dabbed.
   const pu = A * 232
@@ -318,7 +318,10 @@ function bare(m, az, s) {
   // Crumbs: grain scale roughness, most on the side of a swell that is turned up and on the loose sand.
   const crumbs = Math.max(0.35 + 0.65 * smooth(-0.2, 0.5, wave * live * body), 1.5 * drift) * fade
   const crumb = SWIRL.crumb * 2.4 * grit * crumbs
-  const small = (ridge + pit + gouge + crack - notch) * body * fade + crumb
+  // Under the roll on the left the sand lies in thin beds: five or six soft grooves, near level and each a little bent.
+  const bedH = h + 0.55 * Math.sin((a180 + 37) * 0.11) + 2.0 * (fbm(A * 13 + 5, h / 14 + 2, 13, 64, 251, 2) - 0.5)
+  const beds = -0.09 * (0.5 - 0.5 * Math.cos(2 * Math.PI * frac(bedH / 1.5))) ** 2 * smooth(-88, -74, a180) * smooth(-16, -30, a180) * smooth(25.5, 27.5, h) * smooth(-0.4, -1.6, over) * (0.5 + 0.5 * smooth(0.3, 0.55, fbm(A * 9 + 1, h / 7 + 4, 9, 64, 253, 2)))
+  const small = (ridge + pit + gouge + crack - notch + beds) * body * fade + crumb
   const fine = swirl * (1 - held) * fade + small
   const d = ((swell + ripple) * (1 - 0.55 * onTop) + swirl * held + hold + lumps + dabs + crust + crease + heap) * fade
   // What the light from above reads: every part of the relief that makes a face turned up or down.
