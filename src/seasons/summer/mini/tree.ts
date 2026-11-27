@@ -76,7 +76,7 @@ const CAP = { reachMm: 3.0, cellMm: 0.5, from: 0.1, to: 0.9, body: 0.74, lift: 1
 // the band is two or three of them thick and every bead stays on its leaf as the leaf moves; a bead's edge is never drawn finer
 // than the picture can hold (`soft`, of a pixel). The sprig's dark leaves keep `dark` of it (`speck`). A leaf shut in under another
 // pad keeps `shut` of it.
-const BEAD = { power: 5.0, tone: [1.0, 0.68, 0.36] as Rgb3, rim: [0.5, 0.8] as const, hem: 0.5, toward: [-0.6, 0.8] as const, from: -0.1, to: 0.5, around: 0.1, speck: [0.3, 1.0] as const, dark: 0.5, tip: [0.45, 0.75] as const, shut: 0.5, mm: 0.26, size: [0.36, 0.5] as const, dim: 0.6, soft: 0.6 }
+const BEAD = { power: 5.0, tone: [1.0, 0.61, 0.24] as Rgb3, rim: [0.5, 0.8] as const, hem: 0.5, toward: [-0.6, 0.8] as const, from: -0.1, to: 0.5, around: 0.1, speck: [0.3, 1.0] as const, dark: 0.5, tip: [0.45, 0.75] as const, shut: 0.5, mm: 0.26, size: [0.36, 0.5] as const, dim: 0.6, soft: 0.6 }
 // A flat pad's leaves stand farther above it than it is thick. For the choice of the pad a leaf is lit on, a pad counts as at least
 // this thick (mm), so that the leaves on a flat pad's top are lit as its top and not as the underside of a dome that hangs over it.
 const PAD_THICK = 1.5
