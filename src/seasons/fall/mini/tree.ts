@@ -26,11 +26,11 @@ const LAMP_TONE: [number, number, number] = [1, 0.52, 0.3]
 const LAMP_SHIFT: Vec3 = [-4, 0, -8]
 const PUMPKIN_ON_WOOD = { power: 8, reachMm: 6, wrap: 0.1 }
 const POND_ON_WOOD = { power: 2, reachMm: 22, wrap: 0.2 }
-const FILL_ON_WOOD = { power: 40, reachMm: 9, wrap: 0.5 }
+const FILL_ON_WOOD = { power: 36, reachMm: 9, wrap: 0.5 }
 const EDGE_ON_WOOD = { power: 70, reachMm: 6, wrap: 0.3 }
 const FILL_FROM: Vec3 = [7, 6, 10]
 const EDGE_FROM: Vec3 = [9, 4, -3]
-const SKY: [number, number, number] = [0.14, 1, 1.1]
+const SKY: [number, number, number] = [0, 1, 1.1]
 const EDGE_TONE: [number, number, number] = [0.5, 1, 0.8]
 const GROUP = { power: 0.06, reachMm: 5.5, along: 0.72 }
 const HALO = { radiusMm: 0.4, strength: 1.0, hot: 3.2, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
@@ -50,7 +50,7 @@ const GLINT_POND = { power: 0.05, reachMm: 24 }
 // The approved bark is black and wet: on the side turned from the lamp the trunk's edge takes a soft grey green line from
 // the air. It is read off the limb's own round, not the bark's relief, so it is one even edge and not a row of bright
 // ridges, and it stays on the trunk: the boughs above keep their warm ember rims.
-const RIM = { tone: [0.62, 0.66, 0.55] as [number, number, number], power: 0.7, sharp: 3, relief: 0.08, ridge: [0.9, 0.7] as [number, number], axis: [2, 12] as [number, number], far: [0, 0.6] as [number, number], at: [3, 7, 3] as Vec3, reachMm: 7 }
+const RIM = { tone: [0.55, 0.66, 0.6] as [number, number, number], power: 0.5, sharp: 3, relief: 0.08, ridge: [0.9, 0.7] as [number, number], axis: [2, 12] as [number, number], far: [0, 0.6] as [number, number], at: [3, 7, 3] as Vec3, reachMm: 7 }
 
 const clock = { value: 0 }
 const emberGain = { value: EMBER_GAIN }
