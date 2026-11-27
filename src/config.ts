@@ -57,7 +57,9 @@ export interface TierMotion {
   maxSamplesPerFrame: number
   /** The travel, in px a shutter, from which a frame is drawn with even sample times (film/motion.ts, `evenSet`). */
   evenFromPx: number
-  /** The travel, in px a shutter, from which the spread of a sample has its full reach; it grows from none at `evenFromPx` (film/motion.ts, `spreadReach`). */
+  /** The travel, in px a shutter, under which a sample is not spread at all (film/motion.ts, `spreadReach`). */
+  spreadFromPx: number
+  /** The travel, in px a shutter, from which the spread of a sample has its full reach; it grows from none at `spreadFromPx`. */
   spreadFullPx: number
 }
 export const tiers = raw.tiers as Record<string, { samplesPerFrame: number; motion?: TierMotion }>

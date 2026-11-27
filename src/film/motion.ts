@@ -112,6 +112,100 @@ const frac = (x: number) => x - Math.floor(x)
 /** How far a moment may be moved, in parts of the shutter: where the ball turns round its pace is near nothing and the move would be without end. */
 const REACH = 2
 
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+
+/**
+ * Which lens point the sample of each rank in time takes, in a frame whose travel points along (`dx`, `dy`). The places
+ * in the pixel and the moments are new, so a lens point left with its rank would lean with them otherwise than in the
+ * set as it stands, and what lies a little out of focus would be drawn sharper or softer than in a frame at rest, and
+ * by the direction of the travel. The lens points are dealt out again: first in even strides through their own order,
+ * the stride and start under which the lens point leans with the place in the pixel and with the moment most nearly as
+ * it does in the set as it stands, then pairs change places for as long as that brings it nearer. The set of lens points
+ * is the same, and so is the outcome for the same set and travel.
+ */
+export function lensOrder(set: readonly Sample[], dx = 1, dy = 0): number[] {
+  const n = set.length
+  if (n < 3) return set.map((_, k) => k)
+  const centred = (v: number[]) => {
+    const m = v.reduce((a, b) => a + b, 0) / n
+    const w = v.map((x) => x - m)
+    const norm = Math.sqrt(w.reduce((a, b) => a + b * b, 0)) || 1
+    return w.map((x) => x / norm)
+  }
+  const dot = (a: number[], b: number[]) => a.reduce((x, v, k) => x + v * b[k]!, 0)
+  const mine = [
+    centred(set.map((_, k) => frac(0.5 + ALONG * (k + 1)) - 0.5)),
+    centred(set.map((_, k) => frac(0.5 + ACROSS * (k + 1)) - 0.5)),
+    centred(set.map((_, k) => k)),
+  ]
+  const lu = centred(set.map((s) => s.lu))
+  const lv = centred(set.map((s) => s.lv))
+  const px = centred(set.map((s) => s.px))
+  const py = centred(set.map((s) => s.py))
+  const t = centred(set.map((s) => s.t))
+  const was = [
+    [dx * dot(px, lu) + dy * dot(py, lu), dx * dot(px, lv) + dy * dot(py, lv)],
+    [-dy * dot(px, lu) + dx * dot(py, lu), -dy * dot(px, lv) + dx * dot(py, lv)],
+    [dot(t, lu), dot(t, lv)],
+  ]
+  let best = Infinity
+  let stride = 1
+  let start = 0
+  for (let a = 1; a < n; a++) {
+    if (gcd(a, n) !== 1) continue
+    for (let s = 0; s < n; s++) {
+      let off = 0
+      for (let m = 0; m < mine.length; m++) {
+        let x = -was[m]![0]!
+        let y = -was[m]![1]!
+        for (let k = 0; k < n; k++) {
+          const j = (a * k + s) % n
+          x += mine[m]![k]! * lu[j]!
+          y += mine[m]![k]! * lv[j]!
+        }
+        off += x * x + y * y
+      }
+      if (off < best - 1e-15) {
+        best = off
+        stride = a
+        start = s
+      }
+    }
+  }
+  const order = set.map((_, k) => (stride * k + start) % n)
+  const sums = mine.map((m, i) => [m.reduce((x, v, k) => x + v * lu[order[k]!]!, 0) - was[i]![0]!, m.reduce((x, v, k) => x + v * lv[order[k]!]!, 0) - was[i]![1]!])
+  for (let sweep = 0; sweep < 12; sweep++) {
+    let changed = false
+    for (let i = 0; i < n - 1; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const du = lu[order[j]!]! - lu[order[i]!]!
+        const dv = lv[order[j]!]! - lv[order[i]!]!
+        let now = 0
+        let then = 0
+        for (let m = 0; m < mine.length; m++) {
+          const d = mine[m]![i]! - mine[m]![j]!
+          const x = sums[m]![0]!
+          const y = sums[m]![1]!
+          now += x * x + y * y
+          then += (x + d * du) * (x + d * du) + (y + d * dv) * (y + d * dv)
+        }
+        if (!(then < now - 1e-12)) continue
+        for (let m = 0; m < mine.length; m++) {
+          const d = mine[m]![i]! - mine[m]![j]!
+          sums[m]![0]! += d * du
+          sums[m]![1]! += d * dv
+        }
+        const keep = order[i]!
+        order[i] = order[j]!
+        order[j] = keep
+        changed = true
+      }
+    }
+    if (!changed) break
+  }
+  return order
+}
+
 /** One sample of a moving frame: what the stage draws it with, and its moment as a share of the shutter. */
 export interface Timed {
   sample: Sample
@@ -128,21 +222,25 @@ export interface Timed {
  * short run fills the pixel evenly, so the few copies that overlap at one spot of a streak settle its edge;
  * and each moment is moved by the time the ball takes to cross the sample's place along the travel, so the copies of
  * what moves with the ball lie at even steps on the picture whatever their place in the pixel. What stands still keeps
- * the whole pixel. The lens points and the numbers of the samples stay with their rank in time.
+ * the whole pixel. The numbers of the samples stay with their rank in time; the lens points are dealt out again (`lensOrder`).
  */
 export function evenSet(set: readonly Sample[], pace: (u: number) => readonly [number, number]): Timed[] {
   const n = set.length
+  const [mx, my] = pace(0.5)
+  const mid = Math.hypot(mx, my)
+  const lens = mid > 1e-6 ? lensOrder(set, mx / mid, my / mid) : lensOrder(set)
   const out: Timed[] = set.map((s, k) => {
     const u = (k + 0.5) / n
     const along = frac(0.5 + ALONG * (k + 1)) - 0.5
     const across = frac(0.5 + ACROSS * (k + 1)) - 0.5
+    const { lu, lv } = set[lens[k]!]!
     const [vx, vy] = pace(u)
     const speed = Math.hypot(vx, vy)
-    if (!(speed > 1e-6)) return { sample: { ...s, px: along, py: across, t: u }, at: u }
+    if (!(speed > 1e-6)) return { sample: { ...s, px: along, py: across, lu, lv, t: u }, at: u }
     const dx = vx / speed
     const dy = vy / speed
     const move = Math.max(-REACH / n, Math.min(REACH / n, along / speed))
-    return { sample: { ...s, px: along * dx - across * dy, py: along * dy + across * dx, t: u }, at: Math.max(0, Math.min(1, u + move)) }
+    return { sample: { ...s, px: along * dx - across * dy, py: along * dy + across * dx, lu, lv, t: u }, at: Math.max(0, Math.min(1, u + move)) }
   })
   return out.sort((a, b) => a.at - b.at || a.sample.index - b.sample.index)
 }

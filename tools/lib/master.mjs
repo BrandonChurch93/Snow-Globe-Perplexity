@@ -544,7 +544,7 @@ export function sampleRule(what, given = /** @type {any} */ (undefined), c = cfg
   const final = c.tiers.final
   if (base !== final.samplesPerFrame) throw new Error(`deliver.master.samples.${what} is ${base} and tiers.final.samplesPerFrame is ${final.samplesPerFrame}. The count of a master frame follows its motion by the rule of the final tier, which starts from the final tier's count, so the two must be one number. Nothing was drawn.`)
   const m = final.motion
-  return { base, motion: m ? { spacingPx: m.spacingPx, maxSamplesPerFrame: m.maxSamplesPerFrame, ...(m.evenFromPx !== undefined ? { evenFromPx: m.evenFromPx } : {}), ...(m.spreadFullPx !== undefined ? { spreadFullPx: m.spreadFullPx } : {}) } : null, tier: 'final' }
+  return { base, motion: m ? { spacingPx: m.spacingPx, maxSamplesPerFrame: m.maxSamplesPerFrame, ...(m.evenFromPx !== undefined ? { evenFromPx: m.evenFromPx } : {}), ...(m.spreadFromPx !== undefined ? { spreadFromPx: m.spreadFromPx } : {}), ...(m.spreadFullPx !== undefined ? { spreadFullPx: m.spreadFullPx } : {}) } : null, tier: 'final' }
 }
 
 /** What the page says a frame takes: a whole count, never under the base, never over the rule's most. */
@@ -574,7 +574,7 @@ export function countFacts(counts, base, first = 0) {
 
 export function countsLine(rule, facts) {
   const s = (n) => `${n} ${n === 1 ? 'sample' : 'samples'}`
-  const how = rule.motion ? `the count of a frame follows its motion (tiers.final.motion: a sample every ${rule.motion.spacingPx} px of travel, at most ${rule.motion.maxSamplesPerFrame}${rule.motion.evenFromPx !== undefined ? `, even sample times from ${rule.motion.evenFromPx} px of travel` : ''}${rule.motion.spreadFullPx !== undefined ? `, the full spread from ${rule.motion.spreadFullPx} px` : ''})` : rule.tier ? 'tiers.final holds no motion, so no frame follows its motion' : 'the count was given with --samples, so no frame follows its motion'
+  const how = rule.motion ? `the count of a frame follows its motion (tiers.final.motion: a sample every ${rule.motion.spacingPx} px of travel, at most ${rule.motion.maxSamplesPerFrame}${rule.motion.evenFromPx !== undefined ? `, even sample times from ${rule.motion.evenFromPx} px of travel` : ''}${rule.motion.spreadFromPx !== undefined ? `, a spread from ${rule.motion.spreadFromPx} px` : ''}${rule.motion.spreadFullPx !== undefined ? `, the full spread from ${rule.motion.spreadFullPx} px` : ''})` : rule.tier ? 'tiers.final holds no motion, so no frame follows its motion' : 'the count was given with --samples, so no frame follows its motion'
   if (!facts.over) return `${how}: ${facts.frames === 1 ? 'the one frame draws' : `every one of these ${facts.frames} frames draws`} the base of ${s(rule.base)}`
   return `${how}: ${facts.over} of these ${facts.frames} frames ${facts.over === 1 ? 'draws' : 'draw'} more than the base of ${s(rule.base)}, the most is ${facts.most} (frame ${facts.mostAt}); ${facts.sum} samples in all, ${(facts.sum / (facts.frames * rule.base)).toFixed(2)} times the base`
 }

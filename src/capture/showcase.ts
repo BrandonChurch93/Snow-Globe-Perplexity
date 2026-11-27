@@ -304,7 +304,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     const even = tierEvenFromPx(t)
     const travelPx = motion || even !== undefined ? shutterTravelPx(from, shutter, globe, pose, format.width, format.height) : 0
     const samples = framesamples(tierSamples(t), motion, () => travelPx)
-    return even !== undefined && travelPx >= even ? { samples, travelPx, travel: { globe, pace: (sec) => centrePacePx(sec, shutter, globe, pose, format.width, format.height), reach: spreadReach(travelPx, even, tierTravelRule(t)?.spreadFullPx ?? even) } } : { samples, travelPx }
+    return even !== undefined && travelPx >= even ? { samples, travelPx, travel: { globe, pace: (sec) => centrePacePx(sec, shutter, globe, pose, format.width, format.height), reach: spreadReach(travelPx, tierTravelRule(t)?.spreadFromPx ?? even, tierTravelRule(t)?.spreadFullPx ?? even) } } : { samples, travelPx }
   }
   const filmGlobe: Globe = (sec) => globePoseAt(getFilm(), sec)
   const filmShot = (t: string, i: number, pose: (sec: number) => Pose) => shot(t, frameTime(i), filmGlobe, pose)
