@@ -1,19 +1,19 @@
-// Radius and height in mm, foot to collar: a rounded toe that flares past the body, a body that leans in as it rises, and a
-// collar that stands up round the glass as a nest does, so the sphere sits in the moss and not on it (references/approved/spring-rest.png:
-// the moss meets the glass's outline where the sphere is about 100 mm wide, and its shoulder is round).
+// Radius and height in mm, foot to collar: the foot is the widest place, the body leans in all the way up from the table, and a
+// collar stands up round the glass as a nest does, so the sphere sits in the moss and not on it (references/approved/spring-rest.png:
+// the outline is 1.00 of the glass's diameter at the table, 0.97 at mid height and 0.93 under the cap).
 export const PROFILE = [
-  [58.8, 0],
-  [60.9, 2.0],
-  [61.5, 5.2],
-  [60.9, 9.5],
-  [59.6, 14.5],
-  [58.0, 19.5],
-  [56.4, 24],
-  [55.2, 28.5],
-  [54.6, 32.5],
-  [54.2, 36],
-  [53.4, 39],
-  [52.0, 41.2],
+  [59.4, 0],
+  [60.4, 1.6],
+  [60.3, 4.0],
+  [59.2, 8.5],
+  [57.6, 13.5],
+  [55.8, 18.5],
+  [53.6, 23.5],
+  [51.7, 28.5],
+  [50.6, 32.5],
+  [50.8, 36],
+  [51.5, 39],
+  [51.5, 41.2],
   [50.4, 42.4],
   [48.6, 42.6],
 ]

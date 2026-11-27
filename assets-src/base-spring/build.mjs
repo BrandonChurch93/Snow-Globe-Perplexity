@@ -307,6 +307,8 @@ for (let y = 0; y < H; y++) {
     const deep = mix(2.8, 4.6, smooth(S_TOP + 4, S_MAP - 4, s)) * mix(0.78, 1, smooth(-100, -58, az)) * mix(1, 1.25, flank) * (1 - 0.72 * flank * smooth(S_MAP - 10, S_MAP - 3, s)) * (1 - smooth(S_MAP - 3.2, S_MAP - 0.3, s))
     const heap = fbm((x / W) * 40, (y / H) * 5, 40, 5, 541, 3)
     cap[k] = capOn[k] * Math.pow(smooth(0, 3.2, s - capEdge[x] + 1.6), 0.55) * deep * (0.7 + 0.1 * dome * (0.3 + 1.4 * clump.id[k]) + 0.36 * heap) * smooth(1.0, 3.0, band[k])
+    // The top line is no drawn curve: clumps and tufts of uneven height stand up out of the crest.
+    cap[k] += capOn[k] * smooth(S_MAP - 8, S_MAP - 4.5, s) * (1 - smooth(S_MAP - 2, S_MAP - 0.3, s)) * (2.6 * dome * dome * clump.id[k] * clump.id[k] + 0.9 * mound * tuft.id[k] - 1.2)
     height[k] = mix(rock[k], mix(rock[k] + 0.12, filled, smooth(S_TOP - 13, S_TOP - 3, s)) + thick * mix(1, 0.5, capOn[k]), smooth(0.12, 0.6, c)) + cap[k]
   }
 }
@@ -517,7 +519,7 @@ function swell(az, h) {
   const u = (az + 180) / 360
   const belly = Math.exp(-(((h - 15) / 11) ** 2))
   const foot = smooth(16, 0, h)
-  return belly * (7 * fbm(u * 5, 0.5, 5, 1, 401, 3) - 1.5) - 1.8 * Math.exp(-(((h - 33) / 5) ** 2)) - 1.6 * smooth(21, 29, h) + foot * (5 * fbm(u * 9, 0.5, 9, 1, 409, 3) - 3.4) + smooth(40, 6, h) * 4.6 * (fbm(u * 17, h / 14, 17, 64, 419, 3) - 0.5)
+  return belly * (6 * fbm(u * 5, 0.5, 5, 1, 401, 3) - 2.2) - 1.8 * Math.exp(-(((h - 33) / 5) ** 2)) - 1.6 * smooth(21, 29, h) + foot * (5 * fbm(u * 9, 0.5, 9, 1, 409, 3) - 3.4) + smooth(40, 6, h) * 4.6 * (fbm(u * 17, h / 14, 17, 64, 419, 3) - 0.5)
 }
 function seatOf(s) {
   return 1 - smooth(S_MAP - 3, S_MAP, s)
