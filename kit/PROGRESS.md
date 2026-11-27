@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 182 · 2026-11-26 23:35 UTC
+Status 183 · 2026-11-27 00:05 UTC
 
-- `out/stills/status/status-182-1.jpg`: Spring at 3840 in motion, two beads and the dew at eight times, four frames, before above and after below
-- `out/stills/status/status-182-2.jpg`: The change of season, winter into spring at film frame 676, the rework's first picture, below the bar
-- `out/stills/status/status-182-3.jpg`: Fall's base at two times, approved picture left and build right, below the bar
-- `out/stills/status/status-182-4.jpg`: Still: fall landed hero, hd, draft
+- `out/stills/status/status-183-1.jpg`: The four seasons as the app opens today: the first pictures of the page, drawn again from today's build
+- `out/stills/status/status-183-2.jpg`: Fall's miniature after its builder's pass, approved picture left and build right, below the bar
+- `out/stills/status/status-183-3.jpg`: Summer as approved, as built, and as built without its air (a measuring aid)
+- `out/stills/status/status-183-4.jpg`: Still: fall rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 23:35 UTC
-clock: phase 6, tick of 26.6 minutes
-phase 6: 20.76 h used of its 12.00 h box
-allowance (after the review): 20.76 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 20.76 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 00:05 UTC
+clock: phase 6, tick of 30.5 minutes
+phase 6: 21.27 h used of its 12.00 h box
+allowance (after the review): 21.27 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 21.27 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
