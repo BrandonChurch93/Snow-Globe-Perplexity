@@ -164,6 +164,8 @@ export const CARD_VERT = `
       vec2 topG = (atG - vec2(${n(CARD.glow.topAt[0])}, ${n(CARD.glow.topAt[1])})) / vec2(${n(CARD.glow.topWide[0])}, ${n(CARD.glow.topWide[1])});
       float outG = max(${n(CARD.glow.swarmOut)} * (1.0 - smoothstep(${n(CARD.glow.swarmFrom[0])}, ${n(CARD.glow.swarmFrom[1])}, swarmG)) * (1.0 - ${n(CARD.glow.moreKeep)} * moreG), ${n(CARD.glow.cottageOut)} * cotG);
       outG = max(outG, max(${n(CARD.glow.fieldOut)} * (1.0 - moreG), ${n(CARD.glow.topOut)} * exp(-0.5 * dot(topG, topG))));
+      // the lights that hover in still air are more than the approved holds: of them this share is not drawn, wherever they stand and before any camera
+      outG = max(outG, ${n(CARD.glow.stillOut)});
       // before the cottage and the tree a light is a small point with a tight glow: they are few there, none is thrown out of focus, and none is large
       float crownG = 1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.hair.sceneEdge[1])}, length((atG - vec2(${n(CARD.hair.crownAt[0])}, ${n(CARD.hair.crownAt[1])})) / vec2(${n(CARD.hair.crownWide[0])}, ${n(CARD.hair.crownWide[1])})));
       // the lanterns, the trunk and the yard between the two are the miniature as well
@@ -393,6 +395,8 @@ export const CARD_VERT = `
     if (${at(SHAPE.seed)} || ${at(SHAPE.light)}) s2C += uWhole * 0.25 * coc * coc * afloat * (${at(SHAPE.seed)} ? (storming ? (lineC > 0.5 ? ${n(CARD.line.stormLens)} : mix(${n(CARD.hair.lens)}, ${n(CARD.hair.stormLens)}, gustC)) : ${n(CARD.hair.lens)}) : ${n(CARD.glow.lens)} * (1.0 - sceneL) * mix(1.0, ${n(CARD.glow.stormLens)}, gustC));
     float reachC = ((${at(SHAPE.seed)} ? ${n(CARD.hair.reach)} : ${n(CARD.bound)}) + abs(bends.x) + abs(bends.y)) * rC + 2.2 * sqrt(s2C) + 1.0;
     if (shape > ${n(SHAPE.light - 0.5)} && shape < ${n(SHAPE.spark + 0.5)}) reachC = ${n(CARD.glow.wide)} * 2.2 * rC + 2.6 * sqrt(s2C) + 1.0;
+    // an ember's card is fall's and keeps its reach; a light's wide glow is summer's own
+    if (${at(SHAPE.light)}) reachC = ${n(CARD.glow.lightWide)} * 2.2 * rC + 2.6 * sqrt(s2C) + 1.0;
     // a light's glow has a least width on the picture (cardGlow): the card holds it
     if (${at(SHAPE.light)}) reachC = max(reachC, ${n(2.2 * CARD.glow.widePx)} * uPoint.w + 2.6 * sqrt(s2C) + 1.0);
     float headC = 0.0;
@@ -852,7 +856,7 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   if (storm && vL2.w > 0.0) {
     // no two heads fly alike: about half keep the whole wheel of their down, the others are drawn together by their own share
     float fanK = smoothstep(${n(CARD.hair.stormFanFrom[0])}, ${n(CARD.hair.stormFanFrom[1])}, fract(vL3.x * 61.0));
-    float fa = atan(q.x, q.y) * mix(1.0, ${n(CARD.hair.stormFan)}, vL2.w * fanK);
+    float fa = (dot(q, q) > 0.0 ? atan(q.x, q.y) : 0.0) * mix(1.0, ${n(CARD.hair.stormFan)}, vL2.w * fanK);
     fanS = 1.0 - vL2.w * smoothstep(0.0, 0.25, fanK) * smoothstep(${n(0.8 * Math.PI)}, ${n(Math.PI)}, abs(fa));
     q = length(q) * vec2(sin(fa), cos(fa));
   }
@@ -978,7 +982,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
   // no two lights alike: the point of each and the glow round it are each of their own size, most points tiny and sharp
   float rc = (spark ? mix(${n(CARD.spark.restCore)}, ${n(CARD.spark.core)}, vL2.w) : ${n(CARD.glow.core)} * mix(${n(CARD.glow.coreVary[0])}, ${n(CARD.glow.coreVary[1])}, pow(fract(vL3.x * 113.0), ${n(CARD.glow.coreSkew)}))) * r;
   float rh = (spark ? mix(${n(CARD.spark.restHalo)} * mix(${n(CARD.spark.restHaloVary[0])}, ${n(CARD.spark.restHaloVary[1])}, pow(fract(vL3.w * 71.0), ${n(CARD.spark.restHaloVary[2])})), ${n(CARD.spark.halo)}, vL2.w) : ${n(CARD.glow.halo)} * mix(${n(CARD.glow.haloVary[0])}, ${n(CARD.glow.haloVary[1])}, pow(fract(vL3.w * 71.0), ${n(CARD.glow.haloSkew)}))) * r;
-  float rw = ${n(CARD.glow.wide)} * r;
+  float rw = ${n(CARD.glow.lightWide)} * r;
   float tightL = max(vL2.w, uStorm.x);
   float openL = spark ? 0.0 : (1.0 - ${n(1 - CARD.glow.sceneOpen)} * vL3.z) * (1.0 - tightL);
   // a light is a hot point in a glow of its own: however small the point is drawn, the point is no smaller than corePx on the picture, the glow round it than haloPx (each by its own share) and the faint wide glow than widePx. Before the miniature the glow is the tighter
@@ -994,7 +998,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
   // over its path a light is spread thin by the shutter; a light of the storm keeps the larger share of it, so its streak is bright and never a pale bar
   float core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * exp(-0.5 * d2 / vc) * fade;
   float sg = sqrt(vStreak.w);
-  float disc = smoothstep(${n(CARD.glow.discFrom[0])}, ${n(CARD.glow.discFrom[1])}, sg / max(rc, 0.6)) * (1.0 - uStorm.x);
+  float disc = smoothstep(${n(CARD.glow.discFrom[0])}, ${n(CARD.glow.discFrom[1])}, sg / max(rc, 0.6)) * (spark ? 1.0 : 1.0 - uStorm.x);
   if (disc > 0.0) {
     float rd = ${n(CARD.glow.discWide)} * sg;
     float dd = sqrt(d2);
@@ -1026,7 +1030,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
   // in the storm the lights are warmer: from yellow green toward a warm yellow
   if (!spark) own *= mix(vec3(1.0), vec3(${CARD.glow.stormTint.map(n).join(', ')}), vL2.w);
   // the middle of a light is hot and pale, and its own colour stands round it
-  vec3 tint = mix(own, vec3(${CARD.glow.hot.map(n).join(', ')}), (spark ? ${n(CARD.glow.sparkPale)} : mix(${n(CARD.glow.pale)}, ${n(CARD.glow.stormPale)}, vL2.w) * exp(-${n(CARD.glow.paleIn)} * d2 / vc)) * (1.0 - disc) * core / max(core + halo + wide, 1e-4));
+  vec3 tint = mix(own, spark ? vec3(1.0, 1.0, 0.86) : vec3(${CARD.glow.hot.map(n).join(', ')}), (spark ? ${n(CARD.glow.sparkPale)} : mix(${n(CARD.glow.pale)}, ${n(CARD.glow.stormPale)}, vL2.w) * exp(-${n(CARD.glow.paleIn)} * d2 / vc)) * (1.0 - disc) * core / max(core + halo + wide, 1e-4));
   // the soft wide glow is the paler: light spread thin in the liquid, where the tight glow keeps the light's own colour
   if (!spark) tint = mix(tint, vec3(${CARD.glow.hot.map(n).join(', ')}), ${n(CARD.glow.widePale)} * wide / max(core + halo + wide, 1e-4));
   if (spark) {
