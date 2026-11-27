@@ -1,27 +1,32 @@
 # Fall's air, handover
 
-Branch `agent/p6-fall-air`. Second list (leaves, discs, pale lines, mist, sparks, bats).
+Branch `agent/p6-fall-air` at de2c4dce (merge of main fe261991). Third list: leaves, sparks, bats, upper air, the storm at the landing.
 
-## What is in it
-- `src/particles/draw/cards.ts`, `src/particles/draw/looks.ts`: leaves at rest take their own size (`leafRestMm`, 1.35 to 2.9 mm), linger with the face to the eye (`leafFace`), are fewer at the right (`leafRestRight`), before the cottage (`leafRestCottage`) and none at the limb (`leafRestRim`); more rust and dark ones (`leafRed`, `leafDark`, `leafShade`). Sparks at rest: fewer specks (`sparkRestSkew`, `sparkRestClear`; the storm keeps `sparkSkew` and `sparkClear` as before), fewer and softer discs of several sizes (`spark.nearShare`, `nearField`, `discEdge`, `discVary`), thinned at the rim. Bats 2.1.
-- `src/seasons/fall/glass.ts`: the long pale lines were the crack; now `bright` 1.5 (was 3.6), `bowMm` 1.5, `spreadPx` 1.25, a neutral tint. A mist (`mist...`, shader `MIST`, mesh `makeMist`) on the inner wall at render order 4.5, before the particles, so bats, leaves and sparks stand before it; the mesh is a whole ring drawn back faces only, so only the far half shows whichever way the ball is turned; it fades with the storm (`uFog.y`). `tests/no-air.test.ts` line 113 names its render order among fall's air (by grant). `airRest` halves the orange dust at rest; `hazeWarm` takes the warm light out of the low haze. The crack's sphere went from 96 x 64 to 96 x 58 so fall's triangles are not more (high 1,790,853 against main's 1,791,317; 68 draw calls against 66).
-- `config/showcase.json`: fall's bats 3.
+## What the third list put in
+- `src/particles/draw/cards.ts`: the leaf's edge line reads `CARD.leafEdge` (leaf only); the bat's wing chord is slimmed by `CARD.batSlim`; at rest the dim sparks go and the ones that stay take the core (`keepC` by the spark's own number to the fourth power); the halo's radius at rest differs spark by spark (`restHaloVary`); the hot core is not cut by the spark's life at rest. Only the spark, leaf and bat branches changed; winter's, spring's and summer's six stills are the same bytes as main's.
+- `src/particles/draw/looks.ts`: `leafShade`, `leafEdge`, `leafSheen`, `leafMost`, `leafGold`; `sparkRestSkew`, `sparkRestClear`; the spark's `rest...` numbers; `batRestTilt`, `batSlim`, `batRaise`.
+- `src/particles/engine/kinds.ts`: bat `sizeMm` [5, 6.6]. `config/showcase.json`: fall's bats 2. `src/seasons/fall/veil.ts`: the leaf colour.
+- `src/seasons/fall/glass.ts`: the pooled fog's sheets draw at render order 4.6 (was 5.5), before the particles at 5 and after the mist at 4.5, so leaves, sparks and bats stand before the storm's fog; the fog is paler, nearer mint and brighter when lifted (`tintLifted`, `paleLifted`, `glowStorm`); the mist is darker, greener and patchy (`mistPatch`, `mistTop`, `mistAir`, `mistEven`).
+- `tests/no-air.test.ts` line 113 (by grant): fall's air orders are [4.5, 4.6, 5.4]; the same three meshes.
 
-## Read (head 71340c5b on main fe0f0202; before is main 99712bfc, one line of the glass's limb older; hd, review tier, the M3 comparison picture, inside the ball above the ground band)
-- Orange blobs by area (1 to 3, 4 to 14, 15 to 39, 40 to 119, 120 and over): approved 206 112 59 43 14; before 443 205 86 30 15; after 334 123 46 39 18.
-- The scene with one leaf and one ember already reads 191 49 3 0 1 (rim 79, roof 32, tree 61, open air 19 in the smallest class), so the smallest class cannot reach the approved's 206 through the air.
-- By place after (rim, roof, tree box, open air): 42 7 3 1 3; 49 12 2 3 0; 108 53 19 14 7; 135 51 22 21 8. Approved: 33 9 2 3 1; 10 6 0 1 0; 61 43 18 17 3; 102 54 39 22 10.
-- Upper third: approved mean 57 53 48, median luminance 51.5; before 63 54 47, 40.8; after 62 58 51, 49.8.
-- Peaks (total, crown box, outside): approved 2372 888 1484; before 1704 705 999; scene alone (an older scene) 832 371 461; after 1388 621 767.
+## Read (hd, review tier, d75dd46b unless said; approved first)
+- Orange blobs by area (1 to 3, 4 to 14, 15 to 39, 40 to 119, 120 and over): 206 112 59 43 14; before 334 123 46 39 18; after 411 115 46 38 24. The scene without the air alone reads 197 55 14 1 1.
+- Peaks (all, crown box, outside): 2372 888 1484; before 1388 621 767; after 1893 962 931; the scene without the air 805 293 512.
+- Leaf blob medians: 15 to 39 px 157 94 56 against 159 97 52; 40 to 119 px 160 94 55 against 175 102 48 (red 15 over, outside the 12).
+- Upper third luminance 10/25/50/75/90: 13.5 32.9 51.5 66.4 92.8 against 15.0 39.7 49.6 76.0 127.3. Inside 0.85 of the radius: 41.2 47.7 57.4 74.0 103.0 against 40.6 44.2 51.4 70.4 107.0. The rim zone: 11.7 13.1 16.5 50.2 66.9 against 13.9 15.1 16.9 105.5 155.3 (the warm band).
+- Bats at rest: approved two, span 63 px, middles near (935,187) and (898,262); here two, span 57 and 70 px, middles (1054,174) and (945,258).
+- Storm, the glass of the landed still against the approved shake (de2c4dce): mean 130 120 82 against 119 104 66; luminance 10/50/90 74 116 175 against 59 106 148; share over 150: 0.21 against 0.09.
+- Fall high 1,789,083 triangles (main's a55e7ee6 the same), 68 draw calls. With the mist hidden: 1,787,243 and 66; the two extra calls are the mist's one mesh drawn in two passes.
+- M3 fall 0.7228 (base 0.723, miniature 1.405; with the mist hidden 1.395). M4 0.9694 0.9049 0.9546 0.9602, M5 0.993 1 0.9688 0.9997.
 
 ## Still short of the approved, worst first
-1. Sparks: the approved's are crisp white hot cores with an orange halo and there are far more dim ones; ours are softer, paler gold and fewer. The blob count and the peak count pull against each other: halving the specks took the peaks from 1704 to 1388.
-2. Leaves: flatter lit and paler (ochre) than the approved's vivid orange with highlights; the 15 to 39 px class is 46 against 59. The share of whole leaves at rest is capped by `CARD.chosen[1]`, a shared number not in this brief.
-3. The mist is an even pale grey green over the upper air; the approved's upper air is darker teal with warm glows and mottled green patches. The 90th percentile of luminance in the upper third is 116 against 93.
-4. A warm pale band along the upper left rim (the glass, not the air).
-5. Specks before the roof (49 against 10) and at the rim (42 against 33) come from the scene.
-6. M3 fails on the base part (0.700), which is the pedestal's region, not the air; the miniature part reads 0.824.
+1. Sparks: the smallest blob class rose (411 against 206) because each hot core now has a halo whose fragments count; the approved's sparks are finer and more of its brightest ones are orange. Peaks outside the crown box 931 against 1484.
+2. The warm pale band along the upper left rim (157 121 72 where the approved has 68 61 47) is in the still without the air (152 110 63) and with the mist hidden (156 112 65): the shell or the room, not the air.
+3. The bottom of the ball at the front: the pooled fog's bright band stands about 12 px lower than where the approved's vines begin (fall-lip-pair.jpg). It is the fog of `glass.ts`; one trial that faded the lip mesh above the collar at the front moved no pixel, so the band is drawn elsewhere (the fog's sheets, or the lens shows another part of the wall there). Not mended.
+4. Bats: the upper one is about 110 px right of the approved's place and both are softer than the approved's crisp ones.
+5. Leaves: the 40 to 119 px class is 15 levels too red; most leaves are larger than the approved's many small ones.
+6. Storm: the share of pale streaks (0.09 against 0.21) and the brightness low in the ball.
 
-## Not done
-- The change into fall at film frame 2116 went to the change's finisher.
-- Not seen: the mist with the ball turned by hand (the live orbit goes to 35 degrees); the storm frame without the mist beside the one with it.
+## Not seen
+- The mist with the ball turned was seen only on the drag sheet (12 frames of 383 px, yaw to 35 degrees), not at full size.
+- Nothing was measured on main d13d29c6 (fall's base third list); the branch is not merged with it.

@@ -1,6 +1,4 @@
-fall-rest-trio.jpg: fall at rest, hero, hd, review tier, one to one, the left of the glass (x 640 to 1040, y 110 to 710 of the hd picture). Left the approved picture, middle before (main 99712bfc), right after (this branch, 71340c5b on main fe0f0202).
-fall-rest-trio-right.jpg: the same, the right of the glass (x 1000 to 1400, y 110 to 710).
-fall-rest-after.jpg: fall at rest after, hero, hd, review tier, the glass at one to one (x 560 to 1360, y 40 to 840).
-fall-shake-pair.jpg: left references/approved/fall-shake.png cut to the glass, right fall just landed (hero, hd, review tier) on this branch, both shown at 600 px.
-fall-peak-before.jpg: film frames at draft tier, from the first list. Top left 2110, top right 2116, bottom left 2122 (summer into fall, the tree and the cottage show pale through the fog), bottom right 676 (winter leaving, nothing shows).
-fall-peak-trial.jpg: film frames 2116, 2120 and 2124 at draft tier, a trial of the first list that is NOT in the branch: the fog thicker at the full flood. Taken out again; the item went to the change's finisher.
+fall-rest-trio.jpg: fall at rest, hero, hd, review tier, one to one, the left of the glass (x 640 to 1040, y 110 to 710 of the hd picture). Left the approved picture, middle before the third list (71340c5b on main 0f5c2dbe), right after (d75dd46b, the third list on main a55e7ee6; de2c4dce adds only main's outline hairline to it).
+fall-rest-after.jpg: fall at rest after, the same still, the glass at one to one (x 560 to 1360, y 40 to 840).
+fall-shake-pair.jpg: left references/approved/fall-shake.png cut to the glass, right fall just landed (hero, hd, review tier) on de2c4dce, both shown at 600 px. The fog's sheets are drawn before the particles now, so leaves, sparks and bats stand before the fog.
+fall-lip-pair.jpg: the bottom of the ball (x 600 to 1320, y 600 to 800), top the approved picture, bottom this branch at rest. At the front the pooled fog's bright band stands about 12 px lower than where the approved's vines begin. Not mended.
