@@ -1,4 +1,4 @@
-# Handover: spring's base (phase 6, eighth list)
+# Handover: spring's base (phase 6, ninth list)
 
 Branch `agent/p6-spring-base`. Files: `src/seasons/spring/base.ts`, `assets-src/base-spring/build.mjs`, `layout.mjs`, `RECIPE.md`. Assets to make again: `npm run make -- base-spring`, then `npm run texpack -- --group spring` (texpack also rewrites `public/assets/spring/village-spring.glb`, which is not this job's; restore it with `git checkout`).
 
@@ -50,3 +50,34 @@ The eighth list's stills were drawn on 51269646 (main a6fe2ff4 merged) and the r
 - cap face, box 1900,1530: 0.0 and 0.0. Right shoulder with the new heads, box 2360,1440: 6.9 and 11.3, fine 4.67. Water with the moss beside it, box 1250,1500: 1.2 and 1.7.
 - film frame 1030, the base's box (2400,800,3600,2080): pure white 0, deep blue 532 (647 on the seventh list).
 Three frames are not the film: nobody has watched this at 60 a second.
+
+## Ninth list (head 056ed155, main bbdd4b03 merged; the sections above describe the eighth list and are kept for what did not change)
+What was built:
+- The cushion. `PROFILE` in `layout.mjs` now runs on along the glass after 39.6 mm: (51.6, 41.5), (52.3, 43.5), (52.9, 45.5), (52.9, 46.9), (52.2, 47.6). In `build.mjs`, `seam(az)` gives the height of the moss's seat on the glass for each azimuth (4.65 mm over the old 42.9 at the middle, more toward 34 degrees, 1.2 at the sides, nothing behind 135), `surf()` lifts every point toward it by `ease(h)` and moves it out with the glass (`glassR`), and `brow(az, h, s)` lays a straight bank of 4.4 mm on the front between 39.2 and 43.2 mm. `dip()` lost its constant at the front. The rock sheet's normals take one sign from the winding (`wound`, `face`); a thin tan line of turned normals under the brow went with that.
+- The light in `base.ts`: `baseBank` marks the bank at the front (how far the point lies toward +z, faded out past x 24 to 38 mm) and `baseAo` on it falls to 0.16 where the glass is nearer than 3.5 mm, so the bank lies in the glass's shade and the brow keeps the light. `liveHeads` no longer reaches the shoulder above 37 mm (`smoothstep(30, 38, x) * smoothstep(37, 34.5, y)`, or x over 42 to 50).
+- The dew's 20 lines are byte for byte as on main (hash 15b5bfc744510ff3 on both).
+- Made size: rock 106,029, growth 22,844, water 2,768, 131,641 triangles in all, 4.88 MB.
+
+What it reads (one counter each, approved, main's base, the ninth):
+- M4 of shake 2 at draft: 0.9647 (main 0.8957, eighth 0.8937); 118,607 of 122,948 miniature pixels hidden. M4 of shakes 1, 3, 4: 0.9694, 0.9567, 0.9592, as main. M5: 0.9919, 1, 0.9811, 0.9998 (main 0.993, 1, 0.9811, 0.9998).
+- The detail line at review: 0.9072, base 0.911 over 171,740, miniature 0.907 over 96,078 (main's base 0.8666: 0.909, 0.867; eighth 0.8597: 0.922, 0.860).
+- The dark band of the miniature's underside above the lit line is gone on the pair at one to one (pictures 33, 34).
+- The crest's trace on the ids view, x 790 to 1190: sd 3.00 about its slow line, range -3.3 to +7.9, no dip over 3.4 (eighth 1.95). The seat follows the rim of the slab's wall, which itself runs y 688, 705, 680 across that span.
+- The moss line over the glass's lowest point: middle 140 px (eighth 107), sides 157 and 149 (156 and 142).
+- Build outside the traced outline: 52,951 px (eighth 31,774), of which 26,602 above the traced top line (5,409) and 25,807 under the table line (unchanged).
+
+What is short of the approved picture on the ninth list:
+- The cap is about twice as tall as the approved's: its lower edge did not move and its top rose about 5 mm. It reads as a lid with square upper corners where the approved has a rim with a sloped lit top.
+- The lit line is a soft olive band about 15 px high without the approved's beads, about 12 px higher than the approved's; the face under the brow is near black (14 to 23 against 29 to 41).
+- The left third of the bank is dark: x 700 to 800 brightest quarter (59,66,35) against the approved's (86,82,77). Between x 800 and 900 it is too bright: (92,95,50) against (38,44,31).
+- The crest's trace at sd 3.0 is over the bar of about 2.
+- Not started: the heads toward beads of 3 px, the front right crown, the limb's thickness, the moss's lower edge, the trickle.
+
+At 3840 in motion (film frames 1200 to 1202, final, drawn on the ninth list's tree before the commit; the rest still at review has the same hash on 056ed155). Share over 12 at the fine shift, 1200/1201 and 1200/1202:
+- shoulder, box 2360,1440: 6.4 and 9.8 (main's base 10.0 and 13.2, seventh 9.7 and 14.4, eighth 6.9 and 11.3; with the heads still on the shoulder 6.5 and 10.1). The heads term is not what moves there: what differs is the edges of the sunlit patches, the mushroom's rim and the root, which shift by (-3, 4) where the middle shifts by (1, 4.6) (picture 35).
+- middle 1900,1420: 0.9 and 2.4; right rim 2240,1395: 1.8 and 7.0; face 1900,1530: 0.0 and 0.0; water 1250,1500: 1.3 and 1.7.
+
+Single pixels (film frames 1251 and 1252, 3840 final, `spk.py`: a pixel counts when one channel stands at least T over all eight neighbours):
+- box 2496,1560, 96 by 80: T 32: 15 and 13; T 64: 1 and 0; T 96: 0 and 0. Whole base region (1100,1280 to 2760,2080): T 64: 11 and 12; T 40: 108 and 125.
+- They are yellow green single pixels in the dark moss under the caps, with red and blue beside them from the lens. With the dew's grains switched off for a trial (not kept), frame 1251: box T 32: 1, T 64: 0; region T 64: 4, T 40: 68. So the source is the dew's pinpoint, a grain of about one pixel at 3840, in the 20 lines that belong to the drops mender. Tried for them, frame 1251 only, not kept: `1.8` in place of `1.22` in `liveWide`: box T 32: 1, T 64: 0; region T 64: 4, T 40: 77 (picture 36). Its look at hd was not seen.
+Three frames and two frames are not the film: nobody has watched this at 60 a second.
