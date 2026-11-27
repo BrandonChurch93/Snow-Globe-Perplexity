@@ -23,7 +23,7 @@ const SIZE = 1024
 const ATTIC = PROPS.ATTIC
 const PUMPKINS = PROPS.PUMPKINS
 const STONES = PROPS.STONES
-const LEAF_TONES = ['#c8541a', '#d9812a', '#a8371a', '#e0a030', '#7a3a18', '#b5651d', '#c9451c', '#8f5a1e'].map(lin)
+const LEAF_TONES = ['#a8501e', '#b8742c', '#8a3a1e', '#c09038', '#6a3a1c', '#96602a', '#a84a22', '#7a5424'].map(lin)
 const GRASS_TONES = ['#4f6a26', '#62782e', '#8f7a34', '#3f5620', '#86572a'].map(lin)
 
 const LITTER = { base: 0.1, patch: 0.3, fence: 0.2, tree: 0.14, wall: 0.1, leaves: 640 }
@@ -75,7 +75,7 @@ const mossAt = (x, z) => {
 }
 
 {
-  const rings = 110
+  const rings = 100
   const around = 320
   const skirt = 8
   const r = L.innerRadiusMm - 0.6
@@ -337,6 +337,7 @@ for (const p of PUMPKINS) pumpkin(p)
 
 // The approved roof is thick, uneven, weathered shingles in a few staggered rows, dark brown violet, with a ridge that
 // sags. These lie just over the shared slope (its fine slates stay underneath, unseen), so the cottage keeps its place and size.
+const CAP = { fromMm: 17.6, keep: 0.84, out: 0.42, thick: 0.9 }
 const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], rise: [0.5, 0.72], gap: 0.16, eave: 0.3, ends: 0.34, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#a9805e') }
 {
   const RS = rng(9241)
@@ -363,12 +364,12 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
         const thick = SHINGLE.thick[0] + (SHINGLE.thick[1] - SHINGLE.thick[0]) * RS()
         const rise = SHINGLE.rise[0] + (SHINGLE.rise[1] - SHINGLE.rise[0]) * RS()
         const seed = RS() * 90
-        const skew = (RS() - 0.5) * 0.22
-        const curl = 0.1 * RS()
+        const skew = (RS() - 0.5) * 0.4
+        const curl = 0.2 * RS()
         const g = slab(b - a - SHINGLE.gap, thick, long, { round: 0.08, sx: 5, sy: 2, sz: 6, warp: 0.035, seed })
         const P = g.getAttribute('position')
         const col = new Float32Array(P.count * 3)
-        const tone = mul3(pick(SHINGLE.tones), 0.28 + 0.36 * RS())
+        const tone = mul3(pick(SHINGLE.tones), 0.2 + 0.5 * RS())
         const halfW = (b - a - SHINGLE.gap) / 2
         for (let i = 0; i < P.count; i++) {
           const x = P.getX(i)
@@ -376,7 +377,7 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
           const z = P.getZ(i)
           const k = clamp(z / long + 0.5)
           const edge = smooth(0.72, 1, k)
-          const ragged = edge * (0.16 * noise(x * 2.1 + seed, 3.3, 1) + 0.07 * noise(x * 6.3 + seed, 1.1, 2))
+          const ragged = edge * (0.3 * noise(x * 2.1 + seed, 3.3, 1) + 0.14 * noise(x * 6.3 + seed, 1.1, 2))
           const down = lo - long / 2 + z + ragged + skew * x * edge
           const side = Math.abs(x) / halfW
           const lift = 0.06 + rise * k + y + thick / 2 + curl * edge * side * side + 0.05 * noise(x * 1.7 + seed, z * 1.7, 4) + sag(mid + x)
@@ -385,7 +386,7 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
           const top = smooth(-0.1, 0.1, y)
           const streak = 0.72 + 0.5 * noise(x * 4.5 + seed, z * 0.8, 7)
           const lit = top * smooth(0.84, 1, k) * (0.35 + 0.65 * smooth(0.5, 1, noise(x * 3.1 + seed, 9.2, 5) + 0.5))
-          const c = mix3(mul3(tone, streak * (0.42 + 0.58 * top) * (0.6 + 0.4 * k)), SHINGLE.worn, 0.6 * lit)
+          const c = mix3(mul3(tone, streak * (0.42 + 0.58 * top) * (0.6 + 0.4 * k)), SHINGLE.worn, 0.8 * lit)
           col.set(c, i * 3)
         }
         g.setAttribute('color', new THREE.BufferAttribute(col, 3))
@@ -490,7 +491,7 @@ const conform = (g, x, z, yaw, lift) => {
   return g
 }
 // The approved path is warm, pinkish slate under the lamp; the cold key light greys a neutral stone, so the flags lean red.
-const FLAG_TONE = [1.08, 0.86, 0.7]
+const FLAG_TONE = [1.02, 0.9, 0.78]
 // Where a stone stands in the pond it is wet: dark and smooth from the waterline up to a soak line, on the side toward the water.
 const WET = { soakMm: 0.85, dark: 0.34, rough: 0.22 }
 const wetAt = (p) => {
@@ -500,7 +501,7 @@ const wetAt = (p) => {
 const cobble = (x, z, w, l, h, yaw, lift, dark = 1, flat = false, shore = false) => {
   const seed = R() * 40
   const g = slab(w, h, l, { round: Math.min(h * 0.48, flat ? 0.16 : 0.34), sx: flat ? 9 : 7, sy: 2, sz: flat ? 9 : 7, warp: 0.11, seed })
-  const pick = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(flat ? 0.7 : 0.8, flat ? 1.9 : 1.75) * dark)
+  const pick = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(flat ? 0.95 : 0.8, flat ? 2.3 : 1.75) * dark)
   const tone = flat ? [pick[0] * FLAG_TONE[0], pick[1] * FLAG_TONE[1], pick[2] * FLAG_TONE[2]] : pick
   const side = flat ? 0.1 : 0.2
   shade(g, (px, py, pz) => (side + (1 - side) * smooth(flat ? h * 0.1 : -h * 0.2, h * 0.45, py)) * (0.45 + 1.15 * fbm(px * 2.4 + seed, pz * 2.4, py * 2, 3)) * (0.55 + 0.45 * smooth(0, 0.45, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
@@ -524,7 +525,7 @@ let flagCount = 0
     const g = slab(step[1], 1.7, 2.6, { round: 0.24, sx: 26, sy: 3, sz: 10, warp: 0.1, seed })
     shade(g, (px, py, pz) => (0.12 + 0.88 * smooth(-0.2, 0.5, py)) * (0.45 + 1.15 * fbm(px * 2.2 + seed, pz * 2.2, py * 2, 3)) * (0.7 + 0.6 * smooth(0.35, 0.65, 0.5 + 0.5 * noise(px * 5.5 + seed, pz * 5.5, py * 3))))
     const M = frame([at[0], L.groundAt(at[0], at[2]) + 0.3 + 0.42 * (2 - k), at[2]], V3, UP, U3)
-    decor.add(g, { matrix: M, color: mul3(STONE_TONES[k % STONE_TONES.length], 0.55), surf: [surf(KIND.stone, 0.88), 0], renormal: true })
+    decor.add(g, { matrix: M, color: mul3(STONE_TONES[k % STONE_TONES.length], 0.8), surf: [surf(KIND.stone, 0.88), 0], renormal: true })
     flagCount++
   }
 }
@@ -630,7 +631,7 @@ for (const r of PROPS.ROCKS) {
     Z.addScaledVector(Y, -Z.dot(Y)).normalize()
     const X = new THREE.Vector3().crossVectors(Y, Z)
     const seed = R() * 50
-    const g = slab(b.wide, len, b.thick, { round: 0.1, sx: 3, sy: Math.max(4, Math.round(len * 0.9)), sz: 1, warp: 0.07, seed })
+    const g = slab(b.wide, len, b.thick, { round: 0.1, sx: 5, sy: Math.max(4, Math.round(len * 0.9)), sz: 1, warp: 0.07, seed })
     const P = g.getAttribute('position')
     for (let i = 0; i < P.count; i++) {
       const x = P.getX(i)
@@ -640,16 +641,31 @@ for (const r of PROPS.ROCKS) {
       P.setXYZ(i, (x + bite) * (1 - 0.55 * top * top) + (b.post ? 0.12 * top : 0), y - 0.25 * top * Math.abs(x), P.getZ(i) * (1 - 0.3 * top))
     }
     shade(g, (x, y, z) => {
-      const grain = 0.5 + 0.8 * noise(x * 6.5 + seed, y * 0.7, z * 6.5)
+      const grain = 0.35 + 1.1 * noise(x * 6.5 + seed, y * 0.7, z * 6.5)
       const split = 1 - 0.75 * smooth(0.55, 0.7, noise(x * 9 + 3, y * 0.35 + seed, 1.7))
       const end = 0.7 + 0.7 * smooth(len / 2 - 0.7, len / 2, Math.abs(y))
       const foot = b.post ? 0.5 + 0.5 * smooth(-len / 2 + 0.4, -len / 2 + 2.2, y) : 1
-      return grain * split * end * foot
+      const worn = 1 + 1.7 * smooth(b.wide / 2 - 0.16, b.wide / 2 - 0.02, Math.abs(x))
+      return grain * split * end * foot * worn
     })
     const mid = [(b.a[0] + b.b[0]) / 2, (b.a[1] + b.b[1]) / 2, (b.a[2] + b.b[2]) / 2]
     const M = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(mid[0], mid[1], mid[2])
     decor.add(g, { matrix: M, color: mul3(WOOD[Math.floor(R() * WOOD.length)], between(0.8, 1.15)), surf: [surf(KIND.wood, 0.84), 0], renormal: true })
   }
+}
+
+// The stack's cap: one wider course of dark stone at its top, as the approved chimney has.
+{
+  const ch = C.chimney
+  const top = CAP.fromMm + (ch.top - CAP.fromMm) * CAP.keep
+  const g = slab(2 * (ch.half + CAP.out), CAP.thick, 2 * (ch.halfAlong + CAP.out), { round: 0.16, sx: 6, sy: 2, sz: 6, warp: 0.09, seed: 17 })
+  const P = g.getAttribute('position')
+  shade(g, (x, y, z) => (0.55 + 0.45 * smooth(-0.2, 0.3, y)) * (0.7 + 0.6 * fbm(x * 2.4, y * 2.4, z * 2.4 + 3, 3)) * (1 - 0.6 * smooth(0.03, 0.12, 0.12 - Math.abs(noise(x * 2.2 + 1, z * 2.2, 8)))))
+  for (let i = 0; i < P.count; i++) {
+    const q = L.cottagePoint(ch.across + P.getX(i), top - 0.25 + P.getY(i), ch.along + P.getZ(i))
+    P.setXYZ(i, q[0], q[1], q[2])
+  }
+  decor.add(g, { color: lin('#62625a'), surf: [surf(KIND.stone, 0.92), 0], renormal: true })
 }
 
 
@@ -827,7 +843,7 @@ const earthBytes = writePng(
 const litter = new Float32Array(SIZE * SIZE * 4)
 {
   const RL = rng(90211)
-  const tones = ['#c2521a', '#d98a2c', '#9a3418', '#e2aa3a', '#6e3516', '#b4601c', '#c43f1a', '#8a551c', '#d06a22', '#54301a'].map(hexRgb)
+  const tones = ['#8e4a26', '#a8703a', '#6e3420', '#b89050', '#553020', '#84522a', '#96422a', '#6c4a2a', '#b46a30', '#402820'].map(hexRgb)
   const n = 190
   for (let k = 0; k < n; k++) {
     const cx = RL() * SIZE
@@ -838,7 +854,7 @@ const litter = new Float32Array(SIZE * SIZE * 4)
     const ca = Math.cos(ang)
     const sa = Math.sin(ang)
     const tone = tones[Math.floor(RL() * tones.length)]
-    const dark = 0.65 + 0.5 * RL()
+    const dark = 0.3 + 1.0 * RL()
     const rank = 0.06 + 0.94 * ((k + 0.5) / n)
     const lobes = 5 + Math.floor(RL() * 3)
     const ph = RL() * 9
@@ -861,7 +877,7 @@ const litter = new Float32Array(SIZE * SIZE * 4)
         const rib = 1 - 0.38 * Math.exp(-(lv * lv) / 0.0025)
         const vein = 1 - 0.22 * Math.pow(Math.abs(Math.sin((along * 5 + av * 2.2) * Math.PI)), 12) * smooth(0.05, 0.2, av)
         const mott = 0.82 + 0.3 * noise(x * 0.09, y * 0.09, k * 1.37, 0)
-        const s = dark * rib * vein * mott * (0.55 + 0.45 * edge)
+        const s = dark * rib * vein * mott * (0.35 + 0.65 * edge)
         litter[o] = tone[0] * s
         litter[o + 1] = tone[1] * s
         litter[o + 2] = tone[2] * s
