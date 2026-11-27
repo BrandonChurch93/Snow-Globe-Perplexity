@@ -69,6 +69,11 @@ const CREST = { power: 60.0, pale: 0.75, from: -0.4, to: 0.1, open: [0.05, 0.5] 
 // leaf of its own pad within `reachMm` of it (mm, on a grid of `cellMm`). The leaves down to `from` under the top take `lift` of
 // the light, the scene's and the sky's; those deeper than `to` keep `body` of it.
 const CAP = { reachMm: 3.0, cellMm: 0.5, from: 0.1, to: 0.9, body: 0.74, lift: 1.3 }
+// The beads on a pad's outline: where a pad's own body turns away from the lens (`tight`, with `hem` of the single lump) and up
+// and to the left as the lens sees it (`toward`, `from`, `to`; the rest of the outline keeps `around`), the brightest leaves at
+// the tips of the tufts (`speck`, `tip`) are lit pale and warm, one leaf at a time, so that the edge reads as a string of beads
+// and not as a band. A leaf shut in under another pad keeps `shut` of it.
+const BEAD = { power: 8.0, tone: [1.0, 0.72, 0.38] as Rgb3, tight: 3.0, hem: 0.5, toward: [-0.6, 0.8] as const, from: -0.1, to: 0.5, around: 0.3, speck: [1.3, 2.1] as const, tip: [0.4, 0.8] as const, shut: 0.5 }
 // A flat pad's leaves stand farther above it than it is thick. For the choice of the pad a leaf is lit on, a pad counts as at least
 // this thick (mm), so that the leaves on a flat pad's top are lit as its top and not as the underside of a dome that hangs over it.
 const PAD_THICK = 1.5
@@ -227,6 +232,9 @@ function leafHook(shader: Shader): void {
   float treePool = pow(clamp(1.0 - treeFar / ${(LEAF_POOL.reachMm * fork.radius).toFixed(2)}, 0.0, 1.0), 2.0) * smoothstep(${LEAF_POOL.from.toFixed(2)}, ${LEAF_POOL.to.toFixed(2)}, 2.0 * dot(treeLobe.xyz, treeTo / treeFar)) * smoothstep(0.0, ${LOBE.seam.toFixed(2)}, treeLobe.w) * mix(1.0, ${LEAF_POOL.top.toFixed(2)}, treeUp);
   reflectedLight.indirectDiffuse += treeTone * ${glsl3(paper(fork))} * (${LEAF_POOL.power.toFixed(2)} * treePool * lanternLevel(${fork.order.toFixed(1)}));
   reflectedLight.indirectDiffuse += vGlow.rgb * uTwinkle.z * ${glsl3(PAD.warmTone)} * (${PAD.warm.toFixed(3)} * mix(1.0, ${PAD.warmLobe.toFixed(2)}, treeTop) * (1.0 - treeUp) * (1.0 - treeUp) * smoothstep(${PAD.warmFrom.toFixed(2)}, ${PAD.warmTo.toFixed(2)}, vGlow.r) * mix(${PAD.dapEven.toFixed(2)}, 1.0, smoothstep(${PAD.leafFrom.toFixed(2)}, ${PAD.leafTo.toFixed(2)}, treeLum)));
+  float treeBead = treeCard ? smoothstep(${BEAD.speck[0].toFixed(2)}, ${BEAD.speck[1].toFixed(2)}, treeLum) * treeInside * smoothstep(${BEAD.tip[0].toFixed(2)}, ${BEAD.tip[1].toFixed(2)}, fract(vMapUv.y * 1.999)) : 0.0;
+  float treeEdge = pow(clamp(1.0 - dot(normalize(treePad + ${BEAD.hem.toFixed(2)} * normalize(vNormal)), treeV), 0.0, 1.0), ${BEAD.tight.toFixed(1)}) * mix(${BEAD.around.toFixed(2)}, 1.0, smoothstep(${BEAD.from.toFixed(2)}, ${BEAD.to.toFixed(2)}, dot(treePad.xy, vec2(${BEAD.toward[0].toFixed(2)}, ${BEAD.toward[1].toFixed(2)}))));
+  reflectedLight.indirectDiffuse += ${glsl3(BEAD.tone)} * (${BEAD.power.toFixed(2)} * treeEdge * treeBead * mix(${BEAD.shut.toFixed(2)}, 1.0, treeOpen));
   reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.rimTone)} * (min(${PAD.cap.toFixed(2)}, treeHem * treeTurn * smoothstep(${PAD.patchFrom.toFixed(2)}, ${PAD.patchTo.toFixed(2)}, treeMid) * mix(${PAD.rimShut.toFixed(2)}, 1.0, treeOpen) * mix(${PAD.rimBelow.toFixed(2)}, 1.0, treeHigh) * (${PAD.fringe.toFixed(2)} * treeLeaf + ${PAD.rim.toFixed(2)} * treeDot) * (treeCard ? smoothstep(${PAD.tipFrom.toFixed(2)}, ${PAD.tipTo.toFixed(2)}, fract(vMapUv.y * 1.999)) : ${PAD.tipBody.toFixed(2)})) * mix(${PAD.shade.toFixed(2)}, 1.0, stageKeyS));
 }`,
   )
