@@ -2,8 +2,10 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CARD_FRAG_PARS, CARD_VERT } from '../src/particles/draw/cards'
-import { CARD, SHAPE, STORM_FLOOD, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC } from '../src/particles/draw/looks'
+import { CARD, SEED_RESTS, SHAPE, STORM_FLOOD, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC } from '../src/particles/draw/looks'
+import { seatsOn } from '../src/particles/draw/points'
 import { VERT_MAIN } from '../src/particles/draw/shader'
+import { gridOf } from '../src/scene/layout'
 import { config } from '../src/config'
 import { VEIL_LOOK, veilUniforms } from '../src/core/chunks/veil'
 import type { KitMoment } from '../src/seasons/kit'
@@ -69,7 +71,7 @@ describe('how the storm is drawn', () => {
     }
   })
 
-  it('the seed of summer alone is turned to the whirl on its own path: in the storm its stroke is a curved swish of its own length and width, and none is a bit of green leaf', () => {
+  it('the seed of summer alone is turned to the whirl on its own path: in the storm its stroke is a curved swish of its own length and width, and the leaves among the strokes are few and dark', () => {
     expect(CARD_VERT).toContain('mix(mvC, curC * (length(mvC) * (dot(mvC, curC) < 0.0 ? -1.0 : 1.0)), mix(')
     expect(CARD.line.stormAlign[0]).toBeGreaterThan(0)
     expect(CARD.line.stormAlign[1]).toBeLessThanOrEqual(1)
@@ -77,9 +79,54 @@ describe('how the storm is drawn', () => {
     expect(CARD.line.stormWidePx[0]).toBeLessThan(CARD.line.stormWidePx[1])
     expect(CARD.line.stormBow[1]).toBeLessThanOrEqual(CARD.line.stormBowMost)
     expect(CARD.line.stormBowMost).toBeLessThanOrEqual(STREAK_ARC.most)
-    // nothing green and flat flies in summer's storm: the seeds, the lights and their streaks are all of it
-    expect(CARD.line.stormLeaves).toBe(0)
+    // the storm's leaves are few and dark and ride in the strokes' own draw (the landing list asked for about a dozen): under one stroke in a hundred, at less than a stroke's own light, and nothing bright, green and flat
+    expect(CARD.line.stormLeaves).toBeGreaterThanOrEqual(0)
+    expect(CARD.line.stormLeaves).toBeLessThanOrEqual(0.01)
+    expect(CARD.line.stormLeafGain).toBeLessThanOrEqual(0.5)
+    expect(CARD.line.stormLeafGain).toBeLessThan(CARD.line.stormGain)
+    expect(CARD_VERT).toContain('float bitC = storming &&')
     expect(CARD.line.stormDwellPx).toBeGreaterThan(0)
+  })
+
+  it("a laid head of summer's crown sits on the crown as it is made, whatever crown that is; the other seats stand as listed", () => {
+    // a made scene: one slab under the crown's columns with its top at a height, and nothing else
+    const slab = (top: number) => gridOf((x, y, z) => Math.max(y - top, Math.abs(x - 16) - 20, Math.abs(z + 3) - 12))
+    const [first, past] = SEED_RESTS.follow.crown
+    const low = seatsOn(slab(3))
+    SEED_RESTS.at.forEach((listed, i) => {
+      const seat = low[i]!
+      if (i < first || i >= past) {
+        expect(seat).toBe(listed)
+        return
+      }
+      expect(seat[1]).toBeCloseTo(3 + SEED_RESTS.follow.rise, 1)
+      expect(seat[4]).toBeGreaterThan(0.95)
+      expect(Math.hypot(seat[0]! - listed[0], seat[2]! - listed[2])).toBeLessThanOrEqual(SEED_RESTS.follow.seek + 1e-6)
+      expect(seat[6]).toBe(listed[6])
+    })
+    // the crown made higher: the seats go with it
+    const high = seatsOn(slab(12))
+    for (let i = first; i < past; i++) expect(high[i]![1]).toBeCloseTo(12 + SEED_RESTS.follow.rise, 1)
+    // nothing under a column: the listed place stands
+    const none = seatsOn(gridOf(() => 10))
+    for (let i = first; i < past; i++) expect(none[i]).toBe(SEED_RESTS.at[i])
+  })
+
+  it("a head lies only on a seat of the list, no seat holds two, and the crown's seats that follow the crown hold one each", () => {
+    const held: readonly number[] = SEED_RESTS.held
+    expect(held.length).toBeGreaterThan(0)
+    expect(new Set(held).size).toBe(held.length)
+    for (const i of held) {
+      expect(Number.isInteger(i)).toBe(true)
+      expect(i).toBeGreaterThanOrEqual(0)
+      expect(i).toBeLessThan(SEED_RESTS.at.length)
+    }
+    const [first, past] = SEED_RESTS.follow.crown
+    for (let i = first; i < past; i++) expect(held).toContain(i)
+    expect(SEED_RESTS.size).toBeGreaterThan(0)
+    expect(SEED_RESTS.seen[0]).toBeGreaterThan(0)
+    expect(SEED_RESTS.seen[1]).toBeGreaterThanOrEqual(SEED_RESTS.seen[0])
+    expect(SEED_RESTS.seen[1]).toBeLessThanOrEqual(1)
   })
 
   it("out of another season summer's held storm takes the shared storm over by ratio: the change stays under the whole flood, and after it no line of sight opens by more than a sixth between two frames, at the swap window's end or anywhere; a shake of summer alone and the time after a landing are as they were", () => {
@@ -249,5 +296,58 @@ describe('how the storm is drawn', () => {
     expect(TAKE.fromFrames).toBe(-3)
     expect((TAKE.fromFrames + TAKE.frames) / perBeat).toBeLessThan(VEIL_LOOK.openToBeats)
     expect(w.toBeat + (TAKE.fromFrames + TAKE.frames + 6) / perBeat).toBeLessThanOrEqual(config.shake.liftBeats + config.shake.strokeBeats + config.shake.setDownBeats)
+  })
+
+  it("summer's storm lies on one swirl with no eye: a stroke is turned to the circle about one point and strays by its own angle, more in the lower half and at the sides, and a lock is many fine hairs that fan toward the tail", () => {
+    const line = CARD.line
+    expect(CARD_VERT).toContain('swirlC')
+    expect(line.stormSwirl).toBeGreaterThan(0.5)
+    expect(line.stormSwirl).toBeLessThanOrEqual(1)
+    expect(Math.hypot(line.stormSwirlAt[0], line.stormSwirlAt[1])).toBeLessThan(0.5)
+    expect(line.stormEye[0]).toBeLessThan(line.stormEye[1])
+    // the lower half and the sides spread by 20 to 30 degrees and more, the upper middle less
+    expect(line.stormStrayLow).toBeGreaterThan(line.stormStray)
+    expect(line.stormStrayLow).toBeGreaterThanOrEqual((20 * Math.PI) / 180)
+    expect(line.stormStrayLow).toBeLessThanOrEqual(Math.PI / 4)
+    expect(line.stormStrayTop[0]).toBeLessThan(line.stormStrayTop[1])
+    expect(line.stormStraySide[0]).toBeLessThan(line.stormStraySide[1])
+    // fewer strokes, and longer
+    expect(line.stormKeep).toBeGreaterThan(0)
+    expect(line.stormKeep).toBeLessThan(1)
+    expect(line.stormLong[0]).toBeLessThan(line.stormLong[1])
+    // a lock is many fine hairs, not three or four, and narrower at the head than behind it
+    expect(line.stormLockRows).toBeGreaterThanOrEqual(6)
+    expect(line.stormLockFan[0]).toBeLessThan(line.stormLockFan[1])
+    expect(line.stormLockFan[1]).toBeLessThan(1)
+    expect(line.stormLockShare).toBeGreaterThan(0.5)
+  })
+
+  it("summer's lights are streaks along the swirl in the storm and soft glows with a bright heart and no edge at rest; a seed at rest is a round tuft, in sizes, with a stalk on about one in eight", () => {
+    const glow = CARD.glow
+    expect(glow.stormStreakPx[0]).toBeLessThan(glow.stormStreakPx[1])
+    expect(glow.stormStreakSkew).toBeGreaterThan(1)
+    expect(glow.stormTail).toBeLessThan(1)
+    // no ring and no edge on a light out of focus, and the wide faint glows are few
+    expect(glow.discRim).toBe(0)
+    expect(glow.discEdge).toBe(0)
+    expect(glow.openCorePx[0]).toBeLessThan(glow.openCorePx[1])
+    expect(glow.wideOf).toBeLessThanOrEqual(0.05)
+    expect(glow.nearShare).toBeLessThanOrEqual(0.05)
+    // the largest head is nearly three times the smallest across
+    expect(CARD.hair.restSpread[1] / CARD.hair.restSpread[0]).toBeGreaterThan(2.5)
+    expect(CARD.hair.stalks).toBeCloseTo(1 / 8, 6)
+    // a tuft has no ray longer than its radius and no blunt end: its hairs are many, of nearly one length, and fade to the tip
+    for (const form of CARD.down.puffs) expect(form.hairs).toBeGreaterThanOrEqual(40)
+    expect(CARD.down.puff.long[1]).toBeLessThanOrEqual(1)
+    expect(CARD.down.puff.long[0]).toBeGreaterThan(0.7)
+    expect(CARD.down.puff.tipFade).toBeGreaterThan(0.5)
+    expect(CARD.down.puff.bead).toBe(0)
+  })
+
+  it("the held storm's bank lies low and thin and is the floor the take over's way stands on", () => {
+    expect(STORM.bank.density).toBeGreaterThanOrEqual(0.005)
+    expect(STORM.bank.level).toBeLessThan(0)
+    expect(STORM.calms).toBeLessThanOrEqual(1)
+    expect(STORM.white).toBeGreaterThan(0)
   })
 })
