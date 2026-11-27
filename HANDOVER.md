@@ -81,3 +81,17 @@ Still short of the approved picture:
 ## Second list, third push (on main 9c5c595c)
 
 The trunk's flank away from the lamp is darker (less fill, less of the pumpkin's light on the wood) and the pumpkin throws less light on the litter. M3 at review: miniature 0.804. The list of what is still short in the section above stands, except that the trunk's right flank is now dark, though not black with a cool rim as approved.
+
+## Third list (57ca3da3 on main 7e543b87)
+
+Files touched: `src/seasons/fall/mini/tree.ts`, `src/seasons/fall/mini/props.ts`, `src/seasons/fall/mini/village.ts`, `assets-src/village-fall/build.mjs`, `assets-src/village-fall/RECIPE.md`. Make target changed: `village-fall` (282,938 triangles, was 283,454). `tree-fall` is unchanged (37,058).
+
+- Trunk and boughs: the lamp on the wood is weaker and stands level with the trunk so it lights the lamp's flank only (`LAMP_ON_WOOD`, `LAMP_SHIFT`). The fill is a near grey green light low on the far side that fades up the crown (`FILL_FROM`, `FILL_ON_WOOD`, `SKY`). A rim is added per fragment on edges that face away from the lamp (`RIM`), fading with distance from the lamp so the twigs do not go pale. Lamp glints are a little weaker (`GLINT_LAMP.power 1.15`).
+- The orange over the trunk came from fall's own lamp in the air: `LAMP` in `village.ts` lit the air 14 mm out, which reached the trunk. It is now `power 3, reachMm 10`. With it at 14 the trunk's body could not read under about 41 red with the air on, whatever the bark did.
+- Fence: seven flat boards 1.95 to 2.25 mm wide and 0.6 mm thick with rounded tops (the top rows of each slab are pressed under an arc), heights 9.2 to 12.1 mm, each with its own lean. The two rails run behind the boards and tilt from board to board. Wood is darker with pale worn edges. The fence's line on the ground is unchanged. The count of random draws in the maker is the same as before, so nothing else in the village moved because of the fence.
+- Litter: less of it (`LITTER`, 520 loose leaves, were 640), leaf tones in brown and rust with a few orange (`LEAF_TONES`, the tile's tones), the pumpkin lights the ground less (`NEAR.pumpkin.power 8`), the soil is a little lighter (`GROUND.soil 2.3`).
+- Purple window: not changed. All three fall panes are drawn by the shared pane with one upright and two cross bars (`src/miniature/glow.ts` line 228, `fract(vUv * vec2(2.0, 3.0))`). To give the green panes one cross bar that line needs a row count from the look.
+
+Reads, my boxes, approved against the hd review still with the air (median RGB): trunk body 25,37,24 against 25,33,21; lamp flank 83,46,24 against 72,45,23; right edge 74,77,58 against 42,48,36. The with air reads move by a few levels from run to run of the proof with the leaves in the air.
+
+Still short: the rim on the far side is a broken line of pale ridge edges, not the even soft edge of the approved, and its median is 30 levels under. The lamp flank's ridges are broader than the approved's thin glints. The fence has no short thin pickets between the boards and is seen more end on than in the approved (the shared layout). The ground under the tree and behind the fence is darker and greyer than the approved's red brown earth. M3's miniature number rose to 1.330; what carries it was not broken down.
