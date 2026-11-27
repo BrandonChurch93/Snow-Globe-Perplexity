@@ -506,6 +506,8 @@ def shade(a, crown, lit, leaf, air, name='', say=True, out=None, seam=SEAM_MM):
         print(f"   SHADE {name}: the body read is {100 * body.sum() / crown.sum():.0f}% of the crown; lower third over upper third: " + '; '.join(rows) + f"; the five pads together {got['five pads: lower over upper']:.2f} ({mean(lows & body):.0f} over {mean(ups & body):.0f})")
         print(f"   SHADE seams over pads {got['seams over pads']:.2f} ({mean(seams & body):.0f} over {mean(padded & body):.0f}, {int((seams & body).sum())} and {int((padded & body).sum())} px)")
         print(f"   SHADE depth: core {mean(core):.0f}; top (to 1 mm in) {mean(top):.0f}, {got['top over core']:.2f} of the core; top from 1 to 2 mm in {mean(top2):.0f}, {got['top, 1 to 2 mm in, over core']:.2f}; underside (to 1 mm in) {mean(low):.0f}, {got['underside over core']:.2f}")
+        tone = lambda m: '(%.0f, %.0f, %.0f)' % tuple(a[m].mean(axis=0)) if m.any() else '(none)'
+        print(f"   SHADE depth's colours: core {tone(core)}; top (to 1 mm in) {tone(top)}; top from 1 to 2 mm in {tone(top2)}; underside (to 1 mm in) {tone(low)}")
         print(f"   SHADE inside (deeper than 1 mm): level {p5:.0f}, {p50:.0f}, {p95:.0f} (a twentieth, a half, nineteen twentieths under); mean colour ({c[0]:.0f}, {c[1]:.0f}, {c[2]:.0f}), hue {hue:.0f} degrees (the darker half {got['inside: hue of the darker half']:.0f}, the lighter half {got['inside: hue of the lighter half']:.0f}), saturation {got['inside: saturation']:.2f}; vivid green {got['inside: vivid green share']:.1f}%; lighter than 48: {got['inside: share lighter than 48']:.1f}% with mean colour ({lc[0]:.0f}, {lc[1]:.0f}, {lc[2]:.0f})")
     if out:
         H, W = crown.shape

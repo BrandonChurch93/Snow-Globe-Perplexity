@@ -64,7 +64,14 @@ const PAD = { soft: 7, round: 0.7, upFrom: -0.75, upTo: 0.55, under: 0.22, sky: 
 // `lowAt` and `highAt`, mm up). The light is paler than the leaf (`pale` of it is the leaf's grey). A lobe's seam keeps `seam` of
 // it, so that the lobes still read. `under` is the warm of the lanterns and the ground on the undersides, which the approved's
 // carry.
-const CREST = { power: 60.0, pale: 0.75, from: -0.4, to: 0.1, open: [0.05, 0.5] as const, shut: 0.6, line: [0.0, 0.7] as const, seam: 0.3, even: 0.06, blade: [1.0, 2.0] as const, tone: [1.2, 1.06, 0.8] as Rgb3, under: [0.55, 0.2, 0.1] as Rgb3, leftAt: -4, rightAt: 4, right: 0.2, lowAt: 18, highAt: 30, low: 1.0 }
+const CREST = { power: 60.0, pale: 0.75, from: -0.4, to: 0.1, open: [0.05, 0.5] as const, shut: 0.6, line: [0.0, 0.7] as const, seam: 0.3, even: 0.06, blade: [1.0, 2.0] as const, tone: [1.2, 1.06, 0.8] as Rgb3, under: [2.2, 1.3, 0.4] as Rgb3, leftAt: -4, rightAt: 4, right: 0.2, lowAt: 18, highAt: 30, low: 1.0 }
+// The sun on the tops. The approved's pads carry a gold green light on their tops: the leaf in the top millimetre of a pad reads
+// (52, 51, 32) there and (42, 46, 33) in the next, against the core's (34, 39, 28), where ours read (38, 40, 26) and (37, 40, 27).
+// So every leaf that faces up on its pad takes this light by how near it lies to the top of its own pad (`line`, mm under the
+// pad's highest leaf, `aTop.x`), in the sun's gold on the leaf's own green (`tone`, `power`); a pad under another pad keeps `shut`
+// of it and a lobe's seam `seam` of it. It lies on the leaf's own tone, so the single leaves still read, and it is added after
+// the leaf's light is made pale, so it keeps its colour. The leaf's own tone, and with it the body's hue, stays as it is.
+const SUN = { power: 5.5, tone: [1.9, 1.02, 0.6] as Rgb3, line: [0.0, 2.2] as const, shut: 0.3, seam: 0.6 }
 // A pad is a body: the leaves at its top catch the light and the rest of it does not. `aTop.x` is how far a leaf lies under the highest
 // leaf of its own pad within `reachMm` of it (mm, on a grid of `cellMm`). The leaves down to `from` under the top take `lift` of
 // the light, the scene's and the sky's; those deeper than `to` keep `body` of it.
@@ -266,6 +273,7 @@ function leafHook(shader: Shader): void {
   vec3 treePale = mix(treeTone, vec3(dot(treeTone, vec3(0.2126, 0.7152, 0.0722))), ${CREST.pale.toFixed(2)});
   reflectedLight.indirectDiffuse += treePale * ${glsl3(CREST.tone)} * (${CREST.power.toFixed(2)} * treeCrest * mix(${CREST.seam.toFixed(2)}, 1.0, treeTop) * mix(${CREST.even.toFixed(2)}, 1.0, smoothstep(${CREST.blade[0].toFixed(2)}, ${CREST.blade[1].toFixed(2)}, treeLum)));
   reflectedLight.indirectDiffuse += treePale * ${glsl3(CREST.under)} * ((1.0 - treeUp) * (1.0 - treeUp));
+  reflectedLight.indirectDiffuse += treeTone * ${glsl3(SUN.tone)} * (${SUN.power.toFixed(2)} * (1.0 - smoothstep(${SUN.line[0].toFixed(2)}, ${SUN.line[1].toFixed(2)}, vPad.z)) * treeUp * treeUp * mix(${SUN.shut.toFixed(2)}, 1.0, vPad.w) * mix(${SUN.seam.toFixed(2)}, 1.0, treeTop));
   float treeTurn = smoothstep(${PAD.rimFrom.toFixed(2)}, ${PAD.rimTo.toFixed(2)}, treeToSun);
   float treeOpen = smoothstep(${PAD.openFrom.toFixed(2)}, ${PAD.openTo.toFixed(2)}, vCard.y);
   float treeHem = pow(clamp(1.0 - dot(normalize(treePad + ${PAD.hem.toFixed(2)} * normalize(vNormal)), treeV), 0.0, 1.0), ${PAD.rimTight.toFixed(1)});
