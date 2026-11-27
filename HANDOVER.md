@@ -122,3 +122,29 @@ Proofs on fa2ea2e2: six guard stills equal main's list, fall-rest f2d573d57dfed6
 Still short, worst first: the leaves are larger and more crowded at the upper middle left than the approved's, and fewer are gold or lobed; the small orange class is twice the approved's; the patches are blotches, not thin streaks; no dim glow without a centre is made; M5 of shake-3 is 0.008 under main's.
 
 Not seen: the film played; anything above hd; the lip and the air with the ball turned.
+
+## Ninth list: the leaves at rest taken back, the glow dealt, streaks in the upper air (4f04e5f1, proved on c63f3770 with main 4f95670b)
+
+Files: `src/particles/draw/cards.ts`, `src/particles/draw/looks.ts`, `src/seasons/fall/glass.ts`. Nothing else differs from main.
+
+What changed. Leaves at rest: `leafRestShare` 0.64 (was 0.95), `leafRestMm` [0.65, 3.5, 6.5] (was [0.7, 4.2, 2.6]), `leafRestPx` 15 (was 24), `leafRestMaple` 0.18 (was 0.1; by eye 7 of about 38 leaves in the approved's upper left quarter are lobed), `leafMapleHue` [0.55, 1], `leafFace` 0.45 (was 0.32, so fewer leaves are seen on edge). Points at rest: the glow goes to the wide class (one in six), to `restGlowShare` 0.04 of the others and to every point out of focus (`restGlowPx` [0.7, 0.95] px of blur); the others are bare with the tint `restBare` [1, 0.57, 0.46]. Mist: the deal's noise is seven times finer across the lean (`mistDealLean` fourth number) and 0.3 along it; a grain of the same noise at `mistGrainMm` 5 under it (`mistGrain` [0.2, 1.8]).
+
+Counts at hd, review tier, the same counter on each, as approved, main (4f95670b), mine (c63f3770).
+
+1. Leaves. Window x 700 to 860, y 230 to 400: 10, 17, 11 leaves; longest 23.1, 33.2, 22.9 px; classes (under 12, 12 to 20, 20 to 30, over 30) 7 1 2 0, 7 6 3 1, 5 3 3 0. Upper left quarter (x 600 to 958, y 60 to 417): 29, 31, 25 leaves; classes 17 7 4 1, 13 13 4 1, 16 6 3 0 (the approved's one over 30 is a streak at the rim and no leaf). Over the upper glass 88, 110, 85. The counter (`leaf3.py`: orange blobs with a sharp edge, 7 px or longer) misses dark leaves and leaves that lie over a glow, and joins a leaf with a disc it touches; by eye the window holds about 13 leaves in the approved and about 20 in mine with the thin dark ones, about 14 that read as leaves.
+
+2. Points. Small orange class over the whole glass 206, 273, 243 (the bar is 165 to 247). By region: rim 33, 24, 37; roof 10, 25, 20; tree 61, 104, 103; air 102, 120, 83. With all of fall's air off the scene and the glass alone read 169 (rim 30, roof 17, tree 87, air 35). Points found in the left air 90, 98, 105; point width 25/50/75 1.3 1.7 2.3, 1.2 1.6 2.2, 1.3 1.7 2.5 px; glow width 3.2 3.9 10.9, 2.7 3.7 5.9, 3.3 3.9 9.4 px; share with a glow over four times the point 27, 9, 20 percent; the middle class (2.5 to 4.5 px wide) glow 13.4, 6.2, 9.8 px.
+
+3. Upper air. Streaks crossed along the rows y 150, 200, 250 (green over its own wide median, warm things left out): 4 6 14, 0 0 0, 2 10 9; their width 3 3 4 px, none, 12 5 6 px. Grain (the luma's step between neighbours, median and ninth tenth): 2.1 6.6, 0.7 1.9, 1.0 3.1. A finer grain (tile 2.5 mm) put 35 more pieces into the small orange class (rim 35 to 59), so it was not kept.
+
+4. M5 of shake-3 at draft: main 0.9811, mine 0.9846. Each part back to main's once: the glass 0.9846; the leaves' numbers at rest 0.977; the glow off 0.9846; the discs hard 0.9846; the cards and looks whole as main's 0.9811. It is the leaves at rest (c) that move it: the eighth list's large ones took it down, the ninth's fewer and smaller ones leave it above main's. Nothing was taken out of the storm.
+
+5. The miniature's share of M3 at review: main 0.957, mine 0.924. Each part back to main's once: the glass 0.935; the leaves' numbers at rest 0.937; the glow off 0.937; the discs hard 0.924; the cards and looks whole 0.946. Three items cost about a third each (streaks, fewer leaves, bare points); it is not back at 0.95.
+
+Proofs on c63f3770: six guard stills equal main's list (winter 0cab5cd137ba09d9, a7ab4af383606ed0; spring 78ee21faa1da0061, c9d7c918a050607a; summer 086768daf3d1707d, ea9ae9d60385cd0d); fall-rest 850ceb14c75b767d, fall-landed da57001a29034654; strict pass; M4 0.9694, 0.8957, 0.9567, 0.9592; M5 0.993, 1, 0.9846, 0.9998; M3 fall-rest 0.8838 at review (base 0.884, miniature 0.924); triangles 1,765,827; tsc 0; vitest 68 files passed, 948 tests passed, 8 skipped (four mix tests skip here for want of the film's tracks), 294 s whole.
+
+Below the bar, worst first: the miniature's share of M3 (0.924 against 0.95); the streaks are 5 to 6 px wide against 3 to 4 and the top row holds 2 against 4; the grain is half the approved's; the points found are 105 against 90 and the 75th width 2.5 px against 2.3 (main 2.2); the air's region of the small class is 83 against 102 (main 120); the quarter holds 25 leaves against 29 (main 31); by eye mine still holds more leaves in the window than the approved; the fine points' middle is dimmer than the approved's ([127, 94, 86] against [162, 110, 93]).
+
+Not seen: the film played; anything above hd; the lip and the air with the ball turned; which moment of the shake shake-3 reads.
+
+Tools of this list (in /tmp/w/s10, not committed): `leaf3.py` (the leaf counter), `grid.py`, `streak.py`, `tr.sh` (a trial), `mainstill.sh` (main's still), `sw4.sh`, `swset.sh`, `swsub.sh` (the switching), `off.sh` (the air off).
