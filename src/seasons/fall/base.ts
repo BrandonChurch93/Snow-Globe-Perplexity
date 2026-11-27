@@ -68,8 +68,8 @@ const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, CAR
 const DRUM_SHEEN = 1.6
 const DRUM_FOLD = 3.5
 const DRUM_CRINKLE = 0.8
-const DRUM_GRAIN = 3.1
-const WALL = { CELLS: 34, TALL: 6.6, WARP: 0.7, SEAM: 0.13, FACET: 0.4, DOME: 0.15, ROLL: 0.8, DARK: 0.12, GLOSS: 0.6, GLOSS_POW: 40, COPPER: 0.3, BARK_DARK: 0.2, CREASE_WIDE: 0.08, CREASE_DARK: 0.4, CREASE_TILT: 0.4 }
+const DRUM_GRAIN = 3.5
+const WALL = { CELLS: 34, TALL: 6.6, WARP: 0.7, SEAM: 0.13, FACET: 0.4, DOME: 0.15, ROLL: 0.8, DARK: 0.12, GLOSS: 0.6, GLOSS_POW: 40, COPPER: 0.3, BARK_DARK: 0.2, CREASE_WIDE: 0.08, CREASE_DARK: 0.4, CREASE_TILT: 0.4, WEST: 0.1 }
 const PUMPKIN_BODY = 0.042
 const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}\n#define DRUM_FOLD ${DRUM_FOLD.toFixed(3)}\n#define DRUM_CRINKLE ${DRUM_CRINKLE.toFixed(3)}\n#define DRUM_GRAIN ${DRUM_GRAIN.toFixed(3)}\n${Object.entries(WALL).map(([k, v]) => `#define WALL_${k} ${v.toFixed(3)}`).join('\n')}`
 const flicker: { a: number; b: number; c: number }[] = []
@@ -366,7 +366,7 @@ const IRON_AFTER = `
   // The key rakes the bare leather of the right flank: a broad grey sheen, grained by the hide.
   reflectedLight.directSpecular += ironKeyOpen * vec3(0.76, 0.92, 1.35) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * mix(0.25, 1.0, creaseOn) * mix(ironKl, smoothstep(0.0, 0.2, dot(ironRound, ironKey)), 0.4) * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.03 + 1.3 * smoothstep(0.08, 0.5, foldHere)) * (0.85 + 0.3 * smoothstep(0.05, 0.6, crinkleHere)) * baseAo * lumpShade;
   // Each lump of the wall turns one glossy facet to the key.
-  vec3 facetN = normalize(normalMatrix * baseBend(lumpTilt + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * 0.3 + vec2(grainHere - grainOn, grainHere - grainUp) * 1.8));
+  vec3 facetN = normalize(normalMatrix * baseBend(lumpTilt + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * 0.3 + vec2(grainHere - grainOn, grainHere - grainUp) * 2.0));
   reflectedLight.directSpecular += ironKeyOpen * vec3(0.8, 0.94, 1.25) * (WALL_GLOSS * pow(abs(max(dot(facetN, normalize(ironKey + geometryViewDir)), 0.0)), WALL_GLOSS_POW) * smoothstep(0.0, 0.15, dot(facetN, ironKey)) * lumpOn * mix(0.25, 1.0, creaseOn) * baseDrum * baseAo * smoothstep(8.0, 46.0, vBasePos.x));
   float ironEdge = pow(abs(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
@@ -398,6 +398,11 @@ const IRON_AFTER = `
   ironEdge *= baseDim;
   reflectedLight.directSpecular += uBaseRimCol * vec3(1.0, 0.62, 0.38) * (WALL_COPPER * smoothstep(0.58, 0.72, wallBark) * wallWest * mix(0.3, 1.0, baseAo) * mix(0.4, 1.0, smoothstep(6.0, 20.0, vBasePos.y)));
   reflectedLight.indirectSpecular += (uRigSky * 0.35 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen * (1.0 - 0.7 * baseThorn);
+  float wallNight = mix(1.0, WALL_WEST, wallWest);
+  reflectedLight.directDiffuse *= wallNight;
+  reflectedLight.indirectDiffuse *= wallNight;
+  reflectedLight.directSpecular *= wallNight;
+  reflectedLight.indirectSpecular *= wallNight;
 }
 `
 
