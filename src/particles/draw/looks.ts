@@ -290,9 +290,9 @@ export const CARD = {
   lieKeep: [0.6, 0.35] as const,
   /** A leaf lit from behind glows in its own deepened colour, and no leaf is drawn brighter than this, so that orange stays orange and does not burn to yellow. */
   leafThrough: 0.9,
-  leafMost: 0.44,
+  leafMost: 0.47,
   /** The tints of the palest and of the reddest leaves against the row's orange, the share of the pale ones, and where the red ones start and are full along the leaves' own numbers. */
-  leafGold: [1.0, 1.25, 1.2] as const,
+  leafGold: [1.0, 1.18, 1.15] as const,
   leafGoldShare: 0.3,
   leafRed: [0.92, 0.5, 0.5] as const,
   leafRedFrom: [0.5, 0.95] as const,
@@ -302,9 +302,11 @@ export const CARD = {
   /** The maple among the leaf outlines: its share of the leaves, its middle along the card, the lengths, places (as angles from the tip) and half widths of its tip, side and base lobes, how pointed they are, the rim between them and the depth of its teeth. */
   maple: { share: 0.3, mid: -0.12, long: [1.05, 0.9, 0.55] as const, at: [1.08, 2.1] as const, wide: [0.52, 0.5, 0.45] as const, point: 0.75, floor: 0.42, teeth: 0.12 },
   /** A leaf's own shading from the side turned from the key to the side turned to it, the darkening of a leaf that lies, and the waxy sheen of its curl. */
-  leafShade: [0.32, 1.3] as const,
+  leafShade: [0.26, 1.25] as const,
+  /** A leaf's tint from its middle to its edge: the edge is the thin part, where the light comes through. */
+  leafEdge: [0.72, 1.2] as const,
   leafLie: 0.7,
-  leafSheen: 0.22,
+  leafSheen: 0.35,
   /** Of the rest, the share that is a solid small dab in the storm, and how much the others and they are seen. */
   dabShare: [0.2, 0.12, 0.42] as const,
   dabKeep: [0, 1] as const,
@@ -335,16 +337,18 @@ export const CARD = {
   litMost: 1.25,
   sparkKeep: [0.012, 1] as const,
   sparkSkew: 7,
-  sparkRestSkew: 11,
+  sparkRestSkew: 30,
   /** The embers that are seen as clear points: from this one of the embers' own numbers on an ember is drawn whole, whatever its share above. */
   sparkClear: [0.76, 0.85] as const,
-  sparkRestClear: [0.9, 0.96] as const,
+  sparkRestClear: [0.66, 0.74] as const,
   batFlap: 0.3,
   batBank: 0.7,
   /** At rest a bat holds its wings near level, as the approved bats do: this much of the bank and of the lean is left. */
-  batRestTilt: 0.4,
+  batRestTilt: 0.8,
+  /** How much narrower a bat's wing is from its leading to its trailing edge than the plain outline: the approved bats are slender. */
+  batSlim: 1.9,
   /** How far a bat holds its wings raised about which they beat, and the spread of the bats' sizes: no two bats of a picture share a silhouette. */
-  batRaise: 0.12,
+  batRaise: 0.05,
   batSpread: [0.78, 1.2] as const,
   /** How far a bat leans its head the way it is going across the picture. */
   batLean: 0.5,
@@ -352,7 +356,7 @@ export const CARD = {
   batRim: 1.5,
   /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. In the storm: how much brighter a light is (`stormGain`), how much of its wide glow is taken off (`stormHalo`), and the share of its path through the shutter it is held back from (`stormHold`), so that it is a short stroke and not a faint thread. */
   glow: { unlit: 0.4, gain: 5.6, lightHide: 0, stormHalo: 0.6, stormHold: 0.8, stormGain: 3.2, discSeen: 0.55, swarm: [9, 1.3, 8, 0.4, 15, 2] as const, swarmFine: 0.45, swarmFrom: [-0.35, 0.45] as const, swarmEdge: 0.4, swarmFly: [2, 5] as const, swarmOut: 0.97, cottageOut: 0.75, spread: [0.42, 2, 5] as const, nearPx: [8, 13] as const, discEdge: 0.7, discFrom: [3.5, 6] as const, discWide: 1.55, discRim: 0.3, discHold: 0.8, core: 0.26, coreVary: [0.6, 1.5] as const, coreSkew: 2, halo: 0.95, haloVary: [0.5, 1.8] as const, haloSkew: 1.5, haloSeen: [0.4, 1.8] as const, wide: 4.5, haloShare: 0.15, wideShare: 0.01, soft: 0.1, hide: 0.6, blinkLow: 0.25, blinkSkew: 1.2, lensFilm: 0.5, pale: 0.7, sparkPale: 0.65, nearShare: 0.05, lowAt: [-0.25, -0.28] as const, lowWide: [0.7, 0.26] as const, ring: [0.95, 0.4] as const, moreKeep: 1, fieldOut: 0.5, topAt: [-0.05, 0.7] as const, topWide: [0.6, 0.3] as const, topOut: 0.92, green: [0.9, 1, 0.9] as const, gold: [1, 0.82, 1.4] as const, goldFrom: [0.4, 0.8] as const },
-  spark: { gain: 2.1, core: 0.3, halo: 1.3, haloShare: 0.07, restGain: 7.5, restCore: 0.13, restHalo: 0.65, restHaloShare: 0.05, restHotWide: 0.5, restDiscSeen: 0.22, restHot: [1, 0.8, 0.56] as const, restHotCore: 0.9, restOutField: 0.5, restOutScene: 0.92, restOutRim: 0.85, restRim: [0.74, 0.9] as const, restEdge: 0.3, restUpAt: [-0.4, 0.42] as const, restUpWide: [0.45, 0.4] as const, restCrownAt: [0.45, 0.2] as const, restCrownWide: [0.42, 0.42] as const, restCottageAt: [-0.1, -0.12] as const, restCottageWide: [0.34, 0.26] as const, tail: 1.6, calmTail: 0.1, hotCore: 0.8, hotWide: 0.3, hotFrom: [0.8, 2.2] as const, discHold: 0.25, discRim: 0.08, discEdge: 0.72, discVary: [0.55, 1.1] as const, soft: 0.12, nearShare: 0.06, nearField: 0.4, nearFrom: [0.05, 0.45] as const, nearPx: [7, 15] as const, nearSkew: 1.3, calmStreak: 0.08, small: 1.8, large: 0.75, fromMm: [0.12, 0.7] as const, hot: [1, 0.68, 0.2] as const, dying: [0.85, 0.17, 0.03] as const },
+  spark: { gain: 2.1, core: 0.3, halo: 1.3, haloShare: 0.07, restGain: 10, restCore: 0.12, restHalo: 0.42, restHaloVary: [0.7, 2.2, 3] as const, restHaloShare: 0.14, restEmber: [1, 0.25, 0.03] as const, restHotWide: 2, restDiscSeen: 0.1, restHot: [1, 0.86, 0.62] as const, restHotCore: 1, restOutField: 0.15, restOutScene: 0.92, restOutRim: 0.6, restRim: [0.74, 0.9] as const, restEdge: 0.3, restUpAt: [-0.4, 0.42] as const, restUpWide: [0.45, 0.4] as const, restCrownAt: [0.45, 0.2] as const, restCrownWide: [0.42, 0.42] as const, restCottageAt: [-0.1, -0.12] as const, restCottageWide: [0.34, 0.26] as const, tail: 1.6, calmTail: 0.1, hotCore: 0.8, hotWide: 0.3, hotFrom: [0.8, 2.2] as const, discHold: 0.25, discRim: 0.08, discEdge: 0.72, discVary: [0.55, 1.1] as const, soft: 0.05, nearShare: 0.06, nearField: 0.4, nearFrom: [0.05, 0.45] as const, nearPx: [7, 15] as const, nearSkew: 1.3, calmStreak: 0.08, small: 1.8, large: 0.75, fromMm: [0.12, 0.7] as const, hot: [1, 0.68, 0.2] as const, dying: [0.85, 0.17, 0.03] as const },
   // `stormHold` is the share of a head's path through the shutter that it is held back from: a head of the storm smears by about its own width and keeps its tuft.
   // `inside` is the share of the ball's outline on the picture that no part of a seed is drawn past, and `insidePad` a seed's spare room to it in its own radius.
   // In the storm: `stormScene` of the heads before the cottage, the lanterns and the trunk (the cottage's own place, and the low band at `stormLowAt` of the width `stormLowWide`, in radii of the ball on the picture) and `stormCrown` of those before the crown are not drawn, but only those in front of the miniature (`stormFront`, depth in radii toward the eye): the ones behind it stay and are the bright air in its gaps. `stormThin` of all the others is taken off outside the upper left (`stormUpAt`, `stormUpWide`) and the right limb (`stormLimb`), where the storm is thickest. At rest `puffSeen` is how much of a far puff is seen: a crowd of small bright ones reads as snow.
