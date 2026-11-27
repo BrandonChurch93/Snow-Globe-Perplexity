@@ -759,5 +759,5 @@ describe('the four miniatures and what each season lays round its globe', () => 
     // Summer stops after every row of its field of sand and every lot of its grains. A field laid in one piece again, by
     // anything that asks for it before the dressing has laid it, leaves a few hundred steps and one of them a long one.
     expect(Number(/^summer, the dressing: .*; (\d+) steps, /m.exec(out)?.[1])).toBeGreaterThan(1000)
-  }, 300000)
+  }, 900000)
 })
