@@ -240,6 +240,21 @@ export const SEED_RESTS = {
   ] as const,
 } as const
 
+/**
+ * The storm's down as the globe is set down (decision 222, the see through at the landing). The storm at its full is `CARD.line` and
+ * `CARD.hair` below: dense, and what the take over out of another season was proved on. From the take over's end to the landing the
+ * storm's look goes over to this one, so that the cottage, the lanterns and the tree are seen through the down when the globe
+ * lands: fewer sheets, fewer and finer locks of fewer and fainter hairs with next to no haze between them, small heads, and still
+ * fewer of all of it before the miniature. Each number here stands for the one of the same name in `CARD.line` or `CARD.hair`, and
+ * the draw reads both and how far the storm has gone from the one to the other (cards.ts, `uStormLanding`; the course is summer's:
+ * seasons/summer/veil.ts, `landingLook`). Only summer's seeds read them, so no kind of another season moves by them; the numbers of
+ * the storm at its full do not move at all.
+ */
+export const STORM_LANDING = {
+  line: { stormMist: 0.02, stormPullShare: 0.3, stormScene: 1, stormKeep: 0.6, stormLockShare: 0.55, stormLockRows: 6, stormLockPx: [0.7, 1.8] as const, stormLockSeen: [0.06, 0.25] as const, stormLockHaze: 0.02, stormWhite: 0.5 },
+  hair: { stormScene: 0.92, stormCrown: 0.7, stormSize: 0.7 },
+} as const
+
 export const CARD = {
   thick: 0.1,
   petalThick: 0.42,
