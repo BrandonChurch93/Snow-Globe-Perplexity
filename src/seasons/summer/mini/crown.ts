@@ -3,10 +3,10 @@ import { crownOffset, foot, limbs, padAxes, type Limb, type Pad } from '../../..
 import type { Vec3 } from '../../kit'
 import { lanterns, stringEnds } from './lanterns'
 
-// The crown is a handful of rounded clumps of unlike size. Each is a dome of leaf on a nearly flat underside: `at` is the middle of
-// that underside, `size` the clump's half width, its height and its half depth (millimetres, in the trunk's own frame) and `dir` the
-// way it stands. Lumps stand proud of the dome and make its lobes; small ones hang under it, some lower than others (`underDrop`),
-// and break the underside into unequal lobes.
+// The crown is six domes of unlike size that overlap, each made of a few rounded clumps. A clump is a dome of leaf over a shallow
+// belly: `at` is the middle of its underside, `size` the clump's half width, its height and its half depth (millimetres, in the
+// trunk's own frame) and `dir` the way it stands. Lumps stand proud of the dome and make its lobes; small ones hang under it, some
+// lower than others (`underDrop`), and break the underside into unequal lobes.
 export interface Clump {
   at: Pad['at']
   size: Pad['size']
@@ -50,8 +50,8 @@ export const clumps: readonly Clump[] = [
   seen(-4.8, 29.4, 2.6, [1.9, 3.4, 2.4], 0.1),
   // The low left dome, over the left limb, and a smaller one that climbs toward the stem. A slit parts them from the large dome:
   // it closes at the smaller dome's inner end, and a bough runs in it.
-  seen(-13.6, 21.4, 2.4, [3.6, 1.8, 2.6], -0.25),
-  seen(-6.6, 23.6, 3.6, [3.0, 1.3, 2.0], -0.1),
+  seen(-13.6, 21.6, 2.4, [3.6, 1.8, 2.6], -0.08),
+  seen(-6.6, 23.9, 3.6, [3.0, 1.3, 2.0], -0.1),
   // A low lobe at the right of the fork, in front of the stem.
   seen(2.8, 25.2, 3.2, [1.9, 1.0, 1.8]),
   // The low right dome. Its underside rises toward the fork, so that the boughs under it stand clear, and its right end hangs as a
@@ -173,7 +173,7 @@ const knobs = (x: number, h: number, z: number): number => {
 // Notches through the crown, as the hero camera sees it: each is an ellipse in the plane that faces the camera (its middle, its half
 // width and half height in millimetres, and its tilt in degrees) and runs straight through along the line of sight, which climbs by
 // PITCH for every millimetre toward the camera. The sprigs on their walls close about a millimetre of each side. None is cut now:
-// the notches are what the clumps leave between them, each a wedge that opens at the outline.
+// the slits between the domes and the holes by the fork are what the clumps leave between them.
 export const holes: readonly (readonly [number, number, number, number, number])[] = []
 
 const cuts = holes.map((o) => ({ x: o[0], h: o[1], a: o[2], b: o[3], cos: Math.cos((o[4] * Math.PI) / 180), sin: Math.sin((o[4] * Math.PI) / 180) }))
