@@ -65,11 +65,11 @@ const baseUniforms = {
 const FLOOR_SHARE = 0.1
 // The brambles' tones, measured against the approved image in boxes at the review tier.
 const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 55, CARD_WEST: 36, TOP: 0, BARK: 0.7, LIFT: 0.005, LIFT_WEST: 75, FILL: 0.08, SOFT: 1.18, SOFT_EAST: 8, KNOB: 9, FISSURE: 1.8, BODY: 5, THORN: 0.2, SHEAF: 2.2 }
-const DRUM_SHEEN = 1.7
-const DRUM_FOLD = 5
+const DRUM_SHEEN = 1.75
+const DRUM_FOLD = 3.5
 const DRUM_CRINKLE = 0.8
-const DRUM_GRAIN = 5.5
-const WALL = { CELLS: 44, TALL: 5.2, WARP: 0.7, SEAM: 0.2, FACET: 0.5, DOME: 0.8, ROLL: 1.2, DARK: 0.12, GLOSS: 3.2, GLOSS_POW: 40 }
+const DRUM_GRAIN = 1.8
+const WALL = { CELLS: 34, TALL: 6.6, WARP: 0.7, SEAM: 0.13, FACET: 0.4, DOME: 0.15, ROLL: 0.8, DARK: 0.12, GLOSS: 0.6, GLOSS_POW: 40, COPPER: 0.3, BARK_DARK: 0.2 }
 const PUMPKIN_BODY = 0.042
 const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}\n#define DRUM_FOLD ${DRUM_FOLD.toFixed(3)}\n#define DRUM_CRINKLE ${DRUM_CRINKLE.toFixed(3)}\n#define DRUM_GRAIN ${DRUM_GRAIN.toFixed(3)}\n${Object.entries(WALL).map(([k, v]) => `#define WALL_${k} ${v.toFixed(3)}`).join('\n')}`
 const flicker: { a: number; b: number; c: number }[] = []
@@ -255,7 +255,8 @@ function hookOf(uniforms: Record<string, THREE.IUniform>, at: Stages): (shader: 
 // The ring of thorns: the drum under it, the vines, the sheaf of fibres and the thorns. The paint of a vertex is its
 // shade, its kind (0 the drum, a half the vines, 0.65 the fibres, 1 the thorns) and how far along a thorn it is, or a
 // vine's radius over 2.5 mm. Vines are matt black bark under a soft broad grey light, beaded warm at the left; the
-// fibres are lit gold along their whole length. The drum is black rock in lumps, one glossy facet on each.
+// fibres are lit gold along their whole length. The drum is black rock in lumps under a fine
+// grain, and bark behind the sheaf.
 const IRON_PAINT = `
 float baseAo = vBasePaint.x * mix(0.2, 1.0, smoothstep(39.6, 38.9, vBasePos.y)) * mix(mix(0.2, 1.0, smoothstep(2.0, 24.0, vBasePos.y)), 1.0, max(smoothstep(-18.0, -44.0, vBasePos.x), 0.5 * smoothstep(24.0, 46.0, vBasePos.x)));
 float baseKind = vBasePaint.y;
@@ -263,7 +264,8 @@ float baseThorn = step(0.75, baseKind);
 float baseDrum = 1.0 - step(0.25, baseKind);
 float baseStrand = (1.0 - baseThorn) * (1.0 - baseDrum);
 float baseFibre = step(0.58, baseKind) * baseStrand;
-vec4 lump = baseLump(vec2((dot(vBasePos.xz, vBasePos.xz) > 0.0 ? atan(vBasePos.x, vBasePos.z) : 0.0) * (WALL_CELLS / 6.2831853), vBasePos.y / WALL_TALL) + (vec2(baseNoise(vBasePos * 0.16 + 5.0), baseNoise(vBasePos * 0.16 + 37.0)) - 0.5) * WALL_WARP);
+float wallTurn = dot(vBasePos.xz, vBasePos.xz) > 0.0 ? atan(vBasePos.x, vBasePos.z) : 0.0;
+vec4 lump = baseLump(vec2(wallTurn * (WALL_CELLS / 6.2831853), vBasePos.y / WALL_TALL) + (vec2(baseNoise(vBasePos * 0.16 + 5.0), baseNoise(vBasePos * 0.16 + 37.0)) - 0.5) * WALL_WARP);
 float lumpOn = smoothstep(0.0, WALL_SEAM, lump.z);
 float lumpShade = mix(mix(0.7, WALL_DARK, smoothstep(0.0, 30.0, vBasePos.x)), 1.0, lumpOn);
 float lumpTurn = 6.2831853 * fract(lump.w * 7.31);
@@ -286,7 +288,11 @@ float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * baseD
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
 // The leather of the drum is black where the key from the right does not reach it.
 float baseDim = mix(1.0, mix(0.32, 1.0, smoothstep(-16.0, 42.0, vBasePos.x)), baseDrum);
-diffuseColor.rgb *= baseDim * mix(1.0, lumpShade, baseDrum);
+// Behind the sheaf the wall is bark: upright ridges, dark between them, that the lamps light copper.
+float wallWest = baseDrum * smoothstep(-16.0, -34.0, vBasePos.x);
+float wallLean = wallTurn + (baseNoise(vec3(wallTurn * 12.0, vBasePos.y * 0.25, 41.0)) - 0.5) * 0.03;
+float wallBark = baseNoise(vec3(wallLean * 210.0, vBasePos.y * 0.35, 9.0)) * 0.55 + baseNoise(vec3(wallLean * 80.0, vBasePos.y * 0.16, 27.0)) * 0.45;
+diffuseColor.rgb *= baseDim * mix(1.0, lumpShade, baseDrum) * mix(1.0, mix(WALL_BARK_DARK, 0.5, smoothstep(0.35, 0.5, wallBark)), wallWest);
 float baseWrap = 0.1;
 float baseNear = 1.0 - baseDrum;
 float baseCandle = 1.0 / baseDim;
@@ -356,7 +362,7 @@ const IRON_AFTER = `
   // The key rakes the bare leather of the right flank: a broad grey sheen, grained by the hide.
   reflectedLight.directSpecular += ironKeyOpen * vec3(0.72, 0.92, 1.3) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * mix(ironKl, smoothstep(0.0, 0.2, dot(ironRound, ironKey)), 0.4) * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.03 + 1.3 * smoothstep(0.08, 0.5, foldHere)) * (0.85 + 0.3 * smoothstep(0.05, 0.6, crinkleHere)) * baseAo * lumpShade;
   // Each lump of the wall turns one glossy facet to the key.
-  vec3 facetN = normalize(normalMatrix * baseBend(lumpTilt + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * 0.3 + vec2(grainHere - grainOn, grainHere - grainUp) * 4.5));
+  vec3 facetN = normalize(normalMatrix * baseBend(lumpTilt + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * 0.3 + vec2(grainHere - grainOn, grainHere - grainUp) * 1.2));
   reflectedLight.directSpecular += ironKeyOpen * vec3(0.8, 0.94, 1.25) * (WALL_GLOSS * pow(abs(max(dot(facetN, normalize(ironKey + geometryViewDir)), 0.0)), WALL_GLOSS_POW) * smoothstep(0.0, 0.15, dot(facetN, ironKey)) * lumpOn * baseDrum * baseAo * smoothstep(8.0, 46.0, vBasePos.x));
   float ironEdge = pow(abs(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
@@ -386,6 +392,7 @@ const IRON_AFTER = `
   reflectedLight.directSpecular = mix(reflectedLight.directSpecular, ironBefore + uBaseRimCol * mix(vec3(0.8, 0.46, 0.4), vec3(1.0, 0.88, 1.25), vBasePaint.x * vBasePaint.x) * (BRAMBLE_SHEAF * vBasePaint.x * vBasePaint.x * vBasePaint.x * mix(0.3, 1.0, smoothstep(7.0, 16.0, vBasePos.y))), baseFibre);
   reflectedLight.directSpecular = ironBefore + (reflectedLight.directSpecular - ironBefore) * baseDim;
   ironEdge *= baseDim;
+  reflectedLight.directSpecular += uBaseRimCol * vec3(1.0, 0.62, 0.38) * (WALL_COPPER * smoothstep(0.58, 0.72, wallBark) * wallWest * mix(0.3, 1.0, baseAo) * mix(0.4, 1.0, smoothstep(6.0, 20.0, vBasePos.y)));
   reflectedLight.indirectSpecular += (uRigSky * 0.35 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen * (1.0 - 0.7 * baseThorn);
 }
 `

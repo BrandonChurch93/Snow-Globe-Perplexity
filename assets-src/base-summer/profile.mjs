@@ -255,9 +255,156 @@ function swirlCoord(m, az, s, h, r) {
   }
   return psi
 }
-// The roll under the glass lies on the body as a crust: from the left flank to the middle its lower edge is a ragged step, high on the left
-// and lower toward the middle, its height in mm.
-const crustEdge = (A, a180) => 34.0 - 0.093 * (clamp(a180, -58, -6) + 10) + 3.6 * (fbm(A * 46 + 1, 0.5, 46, 4, 191, 4) - 0.5) + 1.5 * (fbm(A * 110 + 7, 0.5, 110, 4, 205, 3) - 0.5)
+// The roll under the glass lies on the body as a ledge: from the left flank to the middle its lower edge is a step, high on the left and
+// lower toward the middle. Read on the approved: left of the middle that edge is a soft turn. One chip stands on it, whose face comes
+// to a point below the edge, and right of the chip a lump of sand lies along it and hangs lower still. From there to the middle the edge
+// is torn. What is handed out is how far a place lies over that edge, in mm.
+const lineAt = (pts, x) => {
+  for (let i = 1; i < pts.length; i++) if (x <= pts[i][0]) return mix(pts[i - 1][1], pts[i][1], clamp((x - pts[i - 1][0]) / (pts[i][0] - pts[i - 1][0])))
+  return pts[pts.length - 1][1]
+}
+// How much of a closed outline covers a place. Each side of it has its own softness: from so far outside it to so far inside it, in mm.
+const coverAt = (pts, a, h, k, soft) => {
+  let odd = false
+  let near = 9
+  let side = 0
+  let cover = 1
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const ax = pts[j][0]
+    const ay = pts[j][1]
+    if (ay > h !== pts[i][1] > h && a < ax + ((h - ay) / (pts[i][1] - ay)) * (pts[i][0] - ax)) odd = !odd
+    const ex = (pts[i][0] - ax) * k
+    const ey = pts[i][1] - ay
+    const t = clamp(((a - ax) * k * ex + (h - ay) * ey) / (ex * ex + ey * ey))
+    const dist = Math.hypot((a - ax) * k - t * ex, h - ay - t * ey)
+    const s = soft(j)
+    cover = Math.min(cover, smooth(s[0], s[1], dist))
+    if (dist < near) {
+      near = dist
+      side = j
+    }
+  }
+  const s = soft(side)
+  return odd ? cover : smooth(s[0], s[1], -near)
+}
+// How far a place lies from a line drawn through points, in mm, and how far along that line the nearest place on it is, from nothing to one.
+const pathAt = (pts, a, h, k) => {
+  let near = 9
+  let along = 0
+  for (let i = 1; i < pts.length; i++) {
+    const ex = (pts[i][0] - pts[i - 1][0]) * k
+    const ey = pts[i][1] - pts[i - 1][1]
+    const t = clamp(((a - pts[i - 1][0]) * k * ex + (h - pts[i - 1][1]) * ey) / (ex * ex + ey * ey))
+    const dist = Math.hypot((a - pts[i - 1][0]) * k - t * ex, h - pts[i - 1][1] - t * ey)
+    if (dist < near) {
+      near = dist
+      along = (i - 1 + t) / (pts.length - 1)
+    }
+  }
+  return { near, along }
+}
+const spotAt = (p, a, h, k) => Math.hypot((a - p[0]) * k, h - p[1])
+// A heap of clods: how near a place lies to the gap round its own clod (mm), which clod that is, and where its middle lies from the place.
+const clodAt = (a, h, k, size, seed) => {
+  const u = (a * k) / size
+  const v = h / size
+  let d1 = 9
+  let d2 = 9
+  let one = 0
+  let da = 0
+  let dh = 0
+  for (let j = Math.floor(v) - 1; j <= Math.floor(v) + 1; j++) {
+    for (let i = Math.floor(u) - 1; i <= Math.floor(u) + 1; i++) {
+      const du = i + 0.04 + 0.92 * hashInt(i, j, seed) - u
+      const dv = j + 0.04 + 0.92 * hashInt(i, j, seed + 2) - v
+      const dist = Math.hypot(du, dv)
+      if (dist < d1) {
+        d2 = d1
+        d1 = dist
+        one = hashInt(i, j, seed + 4)
+        da = (du * size) / k
+        dh = dv * size
+      } else if (dist < d2) d2 = dist
+    }
+  }
+  return { gap: (d2 - d1) * size, one, da, dh }
+}
+// Every outline here was read on the approved hero and carried to this base's own azimuths (degrees) and heights (mm) through a grid drawn
+// on the base and rendered from the hero's camera, so that what is read at a pixel of the picture lies on the base within a pixel of it.
+// The lower outline of the ledge and of what stands on it: the crumbled patch, the rim, the chip, the turn between, the lump and its tail.
+const EDGE = [[-64, 37.95], [-54.21, 37.837], [-50.56, 37.635], [-49.55, 37.242], [-48.78, 36.858], [-48.1, 36.685], [-47.37, 36.43], [-46.95, 36.566], [-46.68, 36.863], [-45.82, 37.077], [-45.12, 37.306], [-44.46, 37.258], [-43.62, 37.137], [-42.83, 37.062], [-41.8, 36.963], [-40.79, 36.855], [-39.77, 36.718], [-38.95, 36.59], [-38.83, 37.17], [-37.79, 36.777], [-35.98, 36.088], [-35.83, 36.0], [-34.96, 35.947], [-34.53, 35.92], [-34.27, 36.064], [-34.1, 36.314], [-33.88, 36.483], [-33.42, 36.583], [-32.04, 36.671], [-31.51, 36.662], [-30.83, 36.662], [-30.04, 36.654], [-29.24, 36.617], [-28.24, 36.522], [-27.25, 36.424], [-26.29, 36.379], [-25.36, 36.372], [-24.75, 36.459], [-24.28, 36.427], [-23.55, 36.435], [-22.46, 36.43], [-21.61, 36.329], [-21.29, 36.006], [-20.91, 35.881], [-20.55, 35.868], [-20.16, 35.53], [-19.79, 35.39], [-19.43, 35.33], [-19.08, 35.3], [-18.74, 35.3], [-18.37, 35.0], [-18.01, 34.87], [-17.68, 34.9], [-17.36, 34.96], [-17.02, 35.13], [-16.69, 35.31], [-16.36, 35.4], [-16.02, 35.49], [-15.69, 35.58], [-15.37, 35.69], [-15.04, 35.79], [-14.71, 35.88], [-14.38, 36.014], [-14.29, 36.116], [-13.74, 36.272], [-13.08, 36.372], [-12.41, 36.331], [-11.51, 36.42], [-10.93, 36.473], [-10.28, 36.539]]
+// The chip's face, round from its left corner over its top to its point and back: its top is soft, its lower left edge crisp.
+const CHIP = [[-39.41, 37.394], [-39.56, 37.61], [-39.37, 37.85], [-39.08, 38.025], [-38.74, 38.19], [-38.13, 38.288], [-36.21, 38.4], [-35.59, 38.286], [-35.0, 38.198], [-34.5, 38.089], [-34.07, 38.074], [-33.58, 37.965], [-32.9, 37.868], [-32.4, 37.58], [-32.01, 37.326], [-31.51, 36.662], [-32.04, 36.671], [-33.42, 36.583], [-33.88, 36.483], [-34.1, 36.314], [-34.27, 36.064], [-34.53, 35.92], [-34.96, 35.947], [-35.83, 36.0], [-35.98, 36.088]]
+const chipSoft = (j) => (j >= 1 && j <= 11 ? [-0.25, 0.7] : j >= 12 && j <= 14 ? [-0.1, 0.12] : j >= 18 && j <= 23 ? [-0.09, 0.09] : [-0.06, 0.06])
+// What marks that face: a crack across it and a shorter one over that, one pit, and a dim tail of sand right of it.
+const CHIP_CRACK = [[-37.08, 36.882], [-36.35, 36.751], [-35.84, 36.617], [-35.12, 36.652], [-34.53, 36.566]]
+const CHIP_CRACK2 = [[-37.85, 37.222], [-37.05, 36.997]]
+const CHIP_PIT = [-33.01, 36.902]
+const CHIP_TAIL = [[-32.1, 37.376], [-30.9, 37.393]]
+// From the chip's right corner one lit streak runs down the wall to the right.
+const BAND = [[-31.72, 36.649], [-31.25, 36.497], [-30.96, 36.347], [-30.48, 36.083], [-30.19, 35.861], [-29.53, 35.632], [-29.02, 35.507]]
+// The rim left of the chip, along its middle: thin at its left end, thick where it ends under the chip's corner.
+const RIM = [[-45.26, 37.481], [-44.56, 37.393], [-43.75, 37.299], [-42.97, 37.244], [-41.96, 37.179], [-40.97, 37.111], [-39.97, 37.015], [-39.12, 36.907]]
+// The crumbled patch the rim ends in, with one straight top.
+const PATCH = [[-49.97, 38.182], [-47.46, 38.389], [-46.64, 38.208], [-45.75, 37.917], [-45.1, 37.594], [-45.14, 37.333], [-45.84, 37.104], [-46.7, 36.89], [-46.97, 36.579], [-47.37, 36.43], [-48.12, 36.712], [-49.16, 36.985], [-49.95, 37.571], [-50.13, 37.92]]
+// The lump's cream body, round from its left toe over its top to its right end and back along its lower side.
+const LUMP = [[-24.77, 36.541], [-24.39, 36.782], [-24.01, 36.995], [-23.86, 37.332], [-23.69, 37.614], [-23.32, 37.85], [-23.0, 37.973], [-22.66, 38.056], [-22.33, 38.166], [-21.99, 38.235], [-21.26, 38.252], [-20.43, 38.231], [-19.9, 38.008], [-19.51, 37.928], [-19.1, 37.768], [-18.67, 37.525], [-18.29, 37.43], [-17.98, 37.263], [-17.77, 37.134], [-17.39, 37.009], [-17.11, 36.909], [-16.75, 36.879], [-16.39, 36.781], [-16.01, 36.626], [-15.65, 36.512], [-15.29, 36.425], [-14.93, 36.323], [-14.58, 36.221], [-14.29, 36.116], [-14.38, 36.014], [-14.71, 35.88], [-15.04, 35.79], [-15.37, 35.69], [-15.69, 35.58], [-16.02, 35.49], [-16.36, 35.4], [-16.69, 35.31], [-17.02, 35.13], [-17.36, 34.96], [-17.68, 34.9], [-18.01, 34.87], [-18.37, 35.0], [-18.74, 35.3], [-19.08, 35.3], [-19.43, 35.33], [-19.79, 35.39], [-20.16, 35.53], [-20.55, 35.868], [-20.91, 35.881], [-21.29, 36.006], [-21.61, 36.329], [-22.46, 36.43], [-23.55, 36.435], [-24.28, 36.427]]
+const lumpSoft = (j) => (j <= 4 ? [-0.08, 0.3] : j <= 27 ? [-0.08, 0.1] : j <= 49 ? [-0.07, 0.08] : [-0.05, 0.28])
+// The crease that parts the roll at its foot from the body over it, the knobs of that roll, and two pits in the body.
+const CREASE = [[-20.22, 35.97], [-19.5, 35.88], [-18.78, 35.68], [-18.09, 35.71], [-17.41, 35.76], [-16.75, 35.96], [-16.09, 36.12]]
+const KNOBS = [[-19.9, 35.62], [-19.32, 35.5]]
+const LUMP_PITS = [[-20.45, 36.893], [-20.74, 36.673]]
+// Over the lump's right shoulder the sand slopes away from the sun and runs out to the right as a tail: dim, with one small ring on it.
+const SLOPE = [[-20.5, 38.431], [-20.26, 38.522], [-19.53, 38.509], [-19.12, 38.363], [-18.03, 38.32], [-17.28, 38.197], [-16.89, 38.101], [-16.14, 37.936], [-15.73, 37.664], [-15.02, 37.63], [-14.64, 37.463], [-13.91, 37.264], [-13.56, 37.191], [-13.03, 37.066], [-12.49, 36.899], [-11.96, 36.69], [-11.0, 36.74], [-10.0, 36.8], [-9.3, 36.78], [-9.3, 36.62], [-10.28, 36.539], [-10.93, 36.473], [-11.51, 36.42], [-12.41, 36.331], [-13.08, 36.372], [-13.74, 36.272], [-14.29, 36.116], [-14.58, 36.221], [-14.93, 36.323], [-15.29, 36.425], [-15.65, 36.512], [-16.01, 36.626], [-16.39, 36.781], [-16.75, 36.879], [-17.11, 36.909], [-17.39, 37.009], [-17.77, 37.134], [-17.98, 37.263], [-18.29, 37.43], [-18.67, 37.525], [-19.1, 37.768], [-19.51, 37.928], [-19.9, 38.008], [-20.43, 38.231]]
+const RING = [-15.26, 37.146]
+// How much of the low sun the lump and the slope over it take toward their right end, by azimuth.
+const LUMP_RIGHT = [[-19, 1], [-18, 0.82], [-17, 0.5], [-15.5, 0.42], [-14.3, 0.36]]
+const ROLL_RIGHT = [[-16.5, 1], [-15.2, 0.92], [-14.6, 0.75], [-14.3, 0.5]]
+const SLOPE_RIGHT = [[-15.5, 0.38], [-13.8, 0.33], [-12.2, 0.2], [-10.5, 0.1], [-9.3, 0]]
+// Under that outline the wall is not dark, it is rust. By azimuth: how deep the red right under a crisp edge is and how far down it
+// goes in mm; how much rust the sand under it holds and how far down that goes; and whether it holds that rust all the way down (under
+// the rim, where it goes down to the wall's second line) or thins out. Under the turn between the chip and the lump the shade is brown.
+const SHADE = [
+  [-52, 0, 0.4, 0, 0.6, 0],
+  [-47.5, 0, 0.4, 0.5, 1.2, 0],
+  [-45.4, 0.9, 0.4, 0.5, 2.1, 1],
+  [-38.95, 0.9, 0.4, 0.5, 2.3, 1],
+  [-38.83, 1.5, 0.75, 0.6, 2.9, 1],
+  [-37, 1.5, 0.75, 0.9, 2.6, 0],
+  [-36, 1.5, 0.75, 0.9, 2.6, 0],
+  [-34.6, 1.5, 0.75, 0.8, 2.4, 0],
+  [-33.8, 0.5, 0.6, 0.55, 1.2, 0],
+  [-32.5, 0.3, 0.6, 0.35, 1.3, 0],
+  [-29.8, 0.3, 0.6, 0.35, 1.2, 0],
+  [-28.4, 1.1, 0.8, 0.8, 1.6, 0],
+  [-25, 1.2, 0.75, 0.8, 1.9, 0],
+  [-22.5, 1.0, 0.75, 0.8, 1.9, 0],
+  [-20, 0.95, 0.75, 0.8, 1.7, 0],
+  [-16.5, 0.75, 0.6, 0.7, 1.5, 0],
+  [-14.6, 0.5, 0.4, 0.3, 0.8, 0],
+  [-12.5, 0, 0.4, 0, 0.8, 0],
+]
+const shadeAt = (x) => {
+  for (let i = 1; i < SHADE.length; i++) {
+    if (x > SHADE[i][0]) continue
+    const t = clamp((x - SHADE[i - 1][0]) / (SHADE[i][0] - SHADE[i - 1][0]))
+    return SHADE[i].map((v, c) => mix(SHADE[i - 1][c], v, t))
+  }
+  return SHADE[SHADE.length - 1]
+}
+// What the low sun's own light reads of the carve starts at this much of a face turned up.
+const SPOT = 0.22
+const crustOver = (A, a180, h, hTrue) => {
+  const torn = 3.6 * (fbm(A * 46 + 1, 0.5, 46, 4, 191, 4) - 0.5) + 1.5 * (fbm(A * 110 + 7, 0.5, 110, 4, 205, 3) - 0.5)
+  return mix(h - 34.0 + 0.093 * (clamp(a180, -58, -6) + 10) - torn, hTrue - lineAt(EDGE, a180), smooth(-64, -56, a180) * smooth(-13, -15.5, a180))
+}
+// Read on the approved: under the ledge the left wall is combed into shelves about a millimetre and a half high. Each ends below in a
+// soft line of rust that falls toward the middle, a millimetre in six degrees; the face between two lines is pale, palest low on it.
+// No two lines are one strength and each comes and goes along its length. Here the picture has lines, and they are the grooves themselves.
+// The first line runs from the chip's point to under the lump and on; the second lies under the rim.
+const WALL = { top: 39.2, fall: 0.16, apart: 1.58, deep: 0.02, lit: 0.3, half: 0.5, pale: 0.06 }
+// How strong the second line is along its length: it comes in under the patch, is strongest under the rim and thins out under the chip.
+const WALL_SECOND = [[-50, 0.2], [-48.7, 0.35], [-46.8, 0.6], [-44.8, 0.85], [-43, 1], [-39.4, 1], [-37.7, 0.7], [-36.1, 0.4], [-34, 0.3], [-32, 0]]
 // Low on the left flank the sand is folded over itself: a lip, a deep crease under it and the foot's roll standing out below. How much of
 // that fold there is at an azimuth.
 const foldAt = (az) => {
@@ -331,11 +478,11 @@ function bare(m, az, s) {
   // Low on the front the hand has patted the sand: there an edge runs a finger's width and ends. On the sunlit left the swirls stay round.
   // On the right flank the edge is gone: a piece of it alone on smooth sand draws as a hair.
   const patted = smooth(17, 12, h) * smooth(-34, -24, a180) * smooth(30, 10, a180)
-  const kink = SWIRL.kink * drawn * (mix(2 * ledge(frac(t1), SWIRL.edge, 1) - 1, 2 * ledge(frac(0.5 * t1 + 0.0955), SWIRL.edge, 1) - 1, pair) - wave) * smooth(-38, -22, a180) * smooth(50, 36, a180) * mix(1, (stroke - 0.15) / 0.85, patted) * (Math.floor(t1) === SWIRL.one ? 1 : 0)
+  const kink = SWIRL.kink * drawn * (mix(2 * ledge(frac(t1), SWIRL.edge, 1) - 1, 2 * ledge(frac(0.5 * t1 + 0.0955), SWIRL.edge, 1) - 1, pair) - wave) * smooth(-20, -13, a180) * smooth(50, 36, a180) * mix(1, (stroke - 0.15) / 0.85, patted) * (Math.floor(t1) === SWIRL.one ? 1 : 0)
   // Under the one edge the shade does not end with the cut: it fades down the sand below it, over two millimetres on the approved left
   // of the middle and over half of that right of it.
   const below = (SWIRL.one - t1) / rate
-  const cut = clamp(drawn / 0.4) * smooth(-38, -22, a180) * smooth(24, 14, a180) * mix(1, (stroke - 0.15) / 0.85, patted) * (1 - pair)
+  const cut = clamp(drawn / 0.4) * smooth(-20, -13, a180) * smooth(24, 14, a180) * mix(1, (stroke - 0.15) / 0.85, patted) * (1 - pair)
   const thin = smooth(-8, 2, a180)
   const tail = below > 0 ? -SWIRL.tail * cut * mix(1, 0.6, thin) * clamp(1 - below / mix(SWIRL.reach, 0.9, thin)) : 0
   // The first roll under that edge lies clear of its shade, and right of the middle the top of the ledge over it is one clean face.
@@ -343,14 +490,87 @@ function bare(m, az, s) {
   // The crease at the bottom of a hollow: there on one stretch, gone on the next.
   const sharp = smooth(0.34, 0.6, fbm(A * 7 + 11, h / 9 + 2, 7, 64, 203, 2))
   const notch = SWIRL.notch * smooth(-0.6, -1, wave) ** 2 * sharp * live * clamp(deep / 0.3, 0.4, 1) * mix(1, 0.25, dabbed)
-  const over = h - crustEdge(A, a180)
-  // The crust is broken into flakes: its step is high on one, low on the next, and nowhere does it end in a straight cut.
+  const over = crustOver(A, a180, h, q.h)
   const flake = 0.25 + 0.75 * smooth(0.32, 0.62, fbm(A * 30 + 3, 0.5, 30, 4, 197, 2))
-  const crustOn = smooth(-62, -52, a180) * smooth(-16, -32, a180) * flake
-  const crust = 0.45 * smooth(-0.22, 0.1, over) * crustOn
-  // The sun lies on the face of the roll above the ledge, from left of the middle to the middle.
-  const lipSoft = mix(0.3, 1.0, smooth(-31, -25, a180))
-  const lip = smooth(-lipSoft, lipSoft, over) * smooth(4.6, 0.6, over + 2.2 * (fbm(A * 50 + 9, h / 3, 50, 64, 207, 3) - 0.5)) * Math.max(smooth(-42, -39, a180) * smooth(-28, -31, a180), 0.6 * smooth(-27, -20, a180) * smooth(-5, -16, a180)) * (0.3 + 0.7 * flake)
+  // Read on the approved: left of the middle the ledge is one even strip of fine sand, and its edge is a soft turn with no line under it.
+  // The low sun falls on what stands on that edge and on nothing round it: a chip, a rim left of it that ends in a crumbled patch, and
+  // a lump right of it. All of it is sand: gritty, pitted, soft where it runs into the ledge, and orange where it takes less of the sun.
+  const stepOn = smooth(-52, -47, a180) * smooth(-13.5, -17, a180)
+  const kx = RAD * q.r
+  const set = a180 > -51 && a180 < -8.4 && q.h > 34.4 && q.h < 39.2
+  const grit2 = set ? fbm(A * 1700 + 3, q.h / 0.2 + 1, 1700, 256, 359, 2) : 0.5
+  const pitted = 1 - 0.42 * smooth(0.5, 0.72, grit2)
+  // The chip: a flake with a lit face, a crack across it and a crisp lower edge that runs down to its point. Its right end is broken up.
+  const chip = set && a180 < -31 ? coverAt(CHIP, a180, q.h, kx, chipSoft) : 0
+  const chipCrack = chip > 0 ? Math.max(smooth(0.22, 0.07, pathAt(CHIP_CRACK, a180, q.h, kx).near), 0.5 * smooth(0.16, 0.05, pathAt(CHIP_CRACK2, a180, q.h, kx).near)) : 0
+  const chipFace = 0.97 * mix(1, pitted, 0.5) * (1 - 0.3 * chipCrack) * (1 - 0.5 * smooth(0.24, 0.08, spotAt(CHIP_PIT, a180, q.h, kx))) * mix(1, 0.35 + 0.65 * smooth(0.36, 0.56, fbm(A * 700 + 5, q.h / 0.45 + 2, 700, 128, 365, 2)), smooth(-33.0, -32.1, a180))
+  const tailAt = set && a180 > -33 && a180 < -30 ? pathAt(CHIP_TAIL, a180, q.h, kx) : { near: 9, along: 0 }
+  const chipTail = 0.46 * smooth(0.2, 0.06, tailAt.near) * mix(1, 0.5, tailAt.along)
+  // The streak from the chip's right corner down the wall: bright where it leaves the chip, orange where it ends.
+  const bandAt = set && a180 > -32.6 && a180 < -28.2 ? pathAt(BAND, a180, q.h, kx) : { near: 9, along: 0 }
+  const band = smooth(0.21, 0.07, bandAt.near) * mix(0.72, 0.4, bandAt.along) * smooth(1, 0.8, bandAt.along)
+  // The rim is thicker and paler toward the chip and ends under the chip's left corner with a gap of shade between them.
+  const rimAt = set && a180 > -46.2 && a180 < -38.5 ? pathAt(RIM, a180, q.h, kx) : { near: 9, along: 0 }
+  const rimHalf = mix(0.12, 0.33, rimAt.along)
+  const rimOn = smooth(rimHalf + 0.08, rimHalf - 0.08, rimAt.near) * smooth(-38.95, -39.2, a180)
+  const rim = rimOn * (mix(0.5, 0.62, smooth(0, 0.6, rimAt.along)) + 0.36 * smooth(0.7, 0.95, rimAt.along) + 0.16 * (fbm(A * 380 + 2, 0.5, 380, 4, 351, 2) - 0.5))
+  // Left of the rim the edge is a patch of crumbs, each lit on its top.
+  const patchOn = set && a180 < -44.5 ? coverAt(PATCH, a180, q.h, kx, () => [-0.08, 0.08]) : 0
+  const crumbled = patchOn * mix(0.12, 0.44, smooth(0.4, 0.6, fbm(A * 620 + 4, q.h / 0.42 + 2, 620, 128, 361, 2))) * (0.85 + 0.3 * grit2)
+  // The lump is a heap of clods. Its top is cream; lower down it takes less of the sun, and one crease parts the knobbed roll at its
+  // foot from the body over it. Its left flank and the left of its lower side run out soft, and both its ends are dimmer.
+  // No two clods are one size or one shape, and only here and there does a gap between two of them go deep.
+  const cell = set && a180 > -25.8 ? clodAt(a180 + (1.3 * (fbm(A * 280 + 3, q.h / 1.1 + 2, 280, 64, 371, 2) - 0.5)) / kx, q.h + 1.3 * (fbm(A * 280 + 8, q.h / 1.1 + 6, 280, 64, 373, 2) - 0.5), kx, 0.52, 357) : { gap: 1, one: 0.5, da: 0, dh: 0 }
+  const parted = set ? smooth(0.36, 0.62, fbm(A * 420 + 5, q.h / 0.7 + 3, 420, 128, 375, 2)) : 0
+  const lumpBody = set && a180 > -25.6 ? coverAt(LUMP, a180 - 0.6 * cell.da, q.h - 0.6 * cell.dh, kx, lumpSoft) : 0
+  const lumpOver = q.h - lineAt(EDGE, a180)
+  const creased = smooth(-20.6, -20.0, a180) * smooth(-15.9, -16.5, a180)
+  const rollTop = lumpBody > 0 ? mix(lineAt(EDGE, a180), lineAt(CREASE, a180), creased) : 0
+  let knob = 0
+  if (lumpBody > 0) for (const p of KNOBS) knob = Math.max(knob, smooth(0.42, 0.1, spotAt(p, a180, q.h, kx)))
+  const creaseAt = lumpBody > 0 ? pathAt(CREASE, a180, q.h, kx).near : 9
+  const lumpPit = lumpBody > 0 ? Math.max(smooth(0.2, 0.06, spotAt(LUMP_PITS[0], a180, q.h, kx)), smooth(0.2, 0.06, spotAt(LUMP_PITS[1], a180, q.h, kx))) : 0
+  const lumpLow = mix(0.75, 0.3, smooth(-21.5, -20, a180))
+  // Right of its two knobs the roll at the foot is lit along its whole length, a little less toward its right end.
+  const footOn = smooth(-18.7, -18.2, a180) * smooth(-14.3, -14.9, a180)
+  const footLit = 0.92 * footOn * smooth(0, 0.1, lumpOver) * smooth(0.62, 0.42, lumpOver) * lineAt(ROLL_RIGHT, a180)
+  // Between two clods the sand lies in a gap, deeper low on the heap, and each clod's own lower right is turned from the sun.
+  const clodLit = (1 - mix(0.5, 0.78, smooth(1.4, 0.5, lumpOver)) * mix(0.15, 1, parted) * smooth(0.14, 0.03, cell.gap)) * (1 - 0.15 * smooth(0, 0.5, (0.8 * cell.dh - 0.6 * cell.da * kx) / 0.52))
+  const lumpFace = Math.max(q.h > rollTop ? mix(lumpLow, 0.96, smooth(0.1, 0.6, q.h - rollTop)) * lineAt(LUMP_RIGHT, a180) : mix(0.26, 0.94, Math.max(knob, footOn)), footLit) * (1 - 0.86 * creased * smooth(0.17, 0.04, creaseAt)) * (1 - 0.4 * lumpPit) * mix(1, pitted, 0.6) * clodLit * mix(0.55, 1, smooth(-24.7, -23.5, a180))
+  const lump = lumpBody * lumpFace
+  // Over its right shoulder the sand slopes away from the sun, hatched along the top, and runs on to the right as a tail.
+  const slopeOn = set && a180 > -21 ? coverAt(SLOPE, a180, q.h, kx, () => [-0.1, 0.22]) : 0
+  const slope = slopeOn * lineAt(SLOPE_RIGHT, a180) * (1 + 0.14 * Math.sin((2 * Math.PI * a180) / 0.66 + 5 * fbm(A * 160 + 9, q.h / 2 + 3, 160, 64, 369, 2))) * (0.8 + 0.4 * grit2)
+  const ring = 0.5 * smooth(0.13, 0.04, Math.abs(spotAt(RING, a180, q.h, kx) - 0.3))
+  // The chip's face stands out most at its lower edge and is cut back under it; the lump is thickest low down, every clod of it a round back.
+  const chipU = q.h - lineAt(EDGE, a180)
+  const crust = 0.1 * smooth(-0.9, 0.1, over) * stepOn + 0.16 * chip * smooth(1.6, 0, chipU) - 0.05 * chip * chipCrack + 0.3 * lumpBody * (1 - 0.6 * creased * smooth(0.2, 0.05, creaseAt)) * (0.72 + 0.28 * mix(0.3, 1, parted) * smooth(0, 0.25, cell.gap)) * (0.85 + 0.3 * cell.one) * mix(0.6, 1, smooth(1.2, 0, lumpOver)) + 0.08 * Math.max(rim, crumbled)
+  // Under that outline the wall keeps its light and turns to rust: deep red right under a crisp edge, thinner further down.
+  const under = lumpOver
+  const shade = under < 0 && under > -3.6 && a180 > -52 && a180 < -12.5 ? shadeAt(a180) : [0, 0, 1, 0, 1, 0]
+  const streaked = Math.max(band, chipTail)
+  const deepRed = shade[1] * smooth(shade[2], 0.4 * shade[2], -under)
+  const far = -under / shade[4]
+  const rustHeld = mix(1, 0.7, clamp(far)) * smooth(1.12, 0.95, far)
+  const rusted = under < 0 ? Math.max(deepRed, shade[3] * mix(smooth(1, 0.25, far), rustHeld, shade[5])) * (1 - streaked) : 0
+  // Only under the rim does the sand turn under toward the wall's second line and lose light on the way down.
+  const edgeShade = under < 0 ? -(0.08 * Math.min(deepRed, 1) + 0.05 * shade[5] * smooth(0.25, 0.9, far) * smooth(1.15, 0.95, far)) * (1 - streaked) : 0
+  // Right of the lump the face under the outline is turned up, and the low sun's own light would read it: there it is held under that.
+  const kept = under < 0 ? 0.45 * smooth(-18.2, -16.8, a180) * smooth(-8.4, -9.4, a180) * smooth(0.05, -0.2, under) * smooth(-3.2, -2.4, under) : 0
+  // Left of that, under the lump and its toe, the wall lies in the ledge's own shade: no face in it takes the light, whichever way it is turned.
+  const laid = under < 0 ? smooth(-29.2, -28.2, a180) * smooth(-17.2, -18.2, a180) * smooth(-0.05, -0.3, under) * smooth(-3.0, -2.2, under) * (1 - streaked) : 0
+  const laidAt = -0.05 * smooth(-27.5, -24.5, a180)
+  // Right under the lump's left end the wall takes light all the same: there that shade is laid on the sand's own tone as well.
+  const laidTone = under < 0 ? 0.55 * smooth(-26.8, -24.0, a180) * smooth(-19.8, -21.4, a180) * smooth(-0.1, -0.45, under) * smooth(-1.5, -0.95, under) : 0
+  // The rim, the crumbled patch, the chip's cracks and the lump's dimmer sand are rust in the grain too.
+  const tinted = Math.max(0.5 * rimOn, 0.2 * patchOn, 0.7 * chip * chipCrack, 0.55 * lumpBody * Math.max(smooth(0.9, 0.5, lumpFace), 0.75 * smooth(-20.5, -17.5, a180)), 0.5 * slopeOn * (1 - lumpBody))
+  // How much of the low sun each of them takes: the chip and the lump's top nearly all of it, the rim and the lump's foot about half.
+  const spotLit = (v) => SPOT * smooth(0, 0.08, v) + (1 - SPOT) * v
+  const lipLeft = Math.max(spotLit(Math.max(chip * chipFace, chipTail, band, rim, crumbled, lump, slope * (1 - lumpBody), ring * (1 - lumpBody))), 0.06 * stepOn * smooth(-0.1, 0.3, over) * smooth(39.6, 38.9, q.h))
+  // From there to the middle the sun lies on the face of the roll above the ledge.
+  const lipRight = smooth(-1, 1, over) * smooth(4.6, 0.6, over + 2.2 * (fbm(A * 50 + 9, h / 3, 50, 64, 207, 3) - 0.5)) * 0.6 * smooth(-5, -16, a180) * (0.3 + 0.7 * flake)
+  // As far as the low sun's own light reaches, the roll's lit face stays under what that light reads.
+  const lip = Math.max(lipLeft * smooth(-8.6, -9.6, a180), lipRight * smooth(-16.5, -14, a180) * mix(0.36, 1, smooth(-10.2, -8.6, a180)))
   // The trough above the foot is a real crease: the foot's roll stands out under it.
   const gh = stainH(az)
   const fold = foldAt(az)
@@ -361,8 +581,6 @@ function bare(m, az, s) {
   const driftEdge = 38.6 - 2.2 * smooth(6, 30, a180) * smooth(100, 70, a180) + 1.4 * (fbm(A * 40 + 5, 0.5, 40, 4, 193, 3) - 0.5)
   const drift = smooth(driftEdge - 0.9, driftEdge + 0.9, q.h)
   const heap = drift * (0.28 + 0.3 * smooth(6, 30, a180) * smooth(100, 70, a180) + 0.5 * (fbm(A * 90 + 2, q.r / 2.4, 90, 64, 195, 3) - 0.5))
-  // Left of the middle the roll's shoulder is crumbly: lumps of one to three millimetres as the picture shows them, so its edge is broken and their tops take the sun.
-  const knobs = 1.3 * (fbm((56 * Math.sin(a180 * RAD)) / 1.4 + 70, (q.r + q.h) / 1.5 + 2, 256, 256, 259, 2) - 0.5) * smooth(driftEdge - 2.4, driftEdge - 0.2, q.h) * smooth(47.9, 49.4, q.r) * smooth(-78, -62, a180) * smooth(-8, -22, a180)
   // Over the roll's top the height stands still: the run inward carries the grain on, or it draws there as ribs.
   const grit = fbm(A * 560 + 3, (h + Math.max(0, 52.6 - q.r)) / 0.62 + 1, 560, 128, 181, 2) - 0.5
   const underLedge = mix(1, smooth(-0.2, -1.5, over), smooth(-62, -52, a180) * smooth(-4, -14, a180)) * smooth(35.5, 33, h)
@@ -376,7 +594,21 @@ function bare(m, az, s) {
   const rx = (rp - rk) ** mix(0.8, 1.3, clamp(0.5 * hashInt(rk, 5, 273) + fbm(A * 24 + 0.53 * rk, 0.29 * rk + 0.5, 24, 64, 275, 2) - 0.25))
   // Where the hand patted, a roll is a short piece with two ends, and no two pieces are one length.
   const rRun = mix(smooth(0.14, 0.46, mix(fbm(A * 18 + 0.37 * rk, 0.61 * rk + 0.5, 18, 64, 219, 2), fbm(A * 46 + 0.37 * rk, 0.61 * rk + 0.5, 46, 64, 231, 2), dab)), smooth(0.4, 0.62, fbm(A * 46 + 0.37 * rk, 0.61 * rk + 0.5, 46, 64, 263, 2)), patted)
-  const rOn = Math.max(smooth(-40, -20, a180) * smooth(44, 22, a180) * mix(0.7, 1, smooth(9, 15, h)) * smooth(2.5, 6, h), smooth(5, 9, h)) * underLedge * mix(0.5, 1, Math.max(smooth(-45, -22, a180), smooth(20, 24, h)))
+  // The comb lies under the ledge and, toward the middle, under the one edge.
+  const wp = (WALL.top - WALL.fall * (a180 + 60) - q.h + 0.3 * (fbm(A * 22 + 3, h / 9 + 1, 22, 64, 331, 2) - 0.5) + 0.12 * (fbm(A * 60 + 5, h / 4 + 2, 60, 64, 333, 2) - 0.5)) / WALL.apart
+  const wk = Math.round(wp)
+  const combOn = smooth(-12, -19, a180) * smooth(-92, -78, a180) * smooth(25.5, 27, h) * mix(smooth(37.8, 36.6, h), smooth(-0.1, -0.8, over), smooth(-62, -52, a180)) * mix(1, below > 0 ? smooth(0.2, 1.0, below) : 0, smooth(-20, -13, a180))
+  const wallRead = wk === 0 ? 0.6 * smooth(-35, -33.5, a180) * smooth(-10, -13, a180) : wk === 1 ? lineAt(WALL_SECOND, a180) : wk === 3 ? 0.5 * smooth(-50.5, -48.5, a180) * smooth(-37.5, -40, a180) : 0
+  const wallLine = Math.max(0.5 * (0.55 + 0.45 * hashInt(wk, 9, 335)) * (0.2 + 0.8 * smooth(0.3, 0.62, fbm(A * 16 + 0.41 * wk, 0.37 * wk + 0.5, 16, 64, 337, 2))) * (wk === 2 ? 1 - smooth(-51, -49.5, a180) * smooth(-35, -36.5, a180) : 1), wallRead)
+  // Where the wall under the outline is rust the lines begin where that rust thins out.
+  const rut = combOn * mix(1, smooth(0.6, 1, far), clamp(shade[3] / 0.35)) * wallLine * smooth(WALL.half, 0, Math.abs(wp - wk))
+  const wf = wp - Math.floor(wp)
+  const wallPale = WALL.pale * combOn * smooth(0.25, 0.6, wf) * smooth(0.97, 0.72, wf) * (1 - clamp(rusted))
+  const comb = -WALL.deep * rut
+  // Low on the wall the stone's own light reads the carve at four tenths: above that line a groove is laid down that much fainter.
+  const wallX = q.r * Math.sin(a180 * RAD)
+  const combLit = -WALL.lit * rut * mix(0.4, 1, smooth(-20, -38, wallX) * smooth(0.3, -1.2, q.h - 32.2 + 0.094 * wallX))
+  const rOn = Math.max(smooth(-40, -20, a180) * smooth(44, 22, a180) * mix(0.7, 1, smooth(9, 15, h)) * smooth(2.5, 6, h), smooth(5, 9, h)) * underLedge * mix(0.5, 1, Math.max(smooth(-45, -22, a180), smooth(20, 24, h))) * (1 - combOn)
   // Right of the middle, where the hand dabbed, most of the sand is smooth: one roll in three stands, and stands lower.
   const rFew = mix(1, 0.75 * smooth(0.62, 0.74, hashInt(rk, 7, 279)), smooth(14, 24, a180))
   const rAmp = (0.7 + 0.3 * hashInt(rk, 3, 217)) * rRun * mix(mix(0.6, 0.9, mid * smooth(17, 22, h)), 1.1, smooth(0.3, 0.6, fbm(A * 34 + 0.71 * rk, 0.43 * rk + 0.5, 34, 64, 277, 2))) * rOn * rFew * mix(0.72, 1, smooth(-48, -26, a180))
@@ -425,21 +657,19 @@ function bare(m, az, s) {
   // Crumbs: grain scale roughness, most on the side of a swell that is turned up and on the loose sand.
   const crumbs = Math.max(0.35 + 0.65 * smooth(-0.2, 0.5, wave * live * body), 1.5 * drift) * fade
   const crumb = SWIRL.crumb * 2.4 * grit * crumbs
-  // Under the roll on the left the sand lies in low smooth rolls, near level and each a little bent.
-  const bedH = h + 0.55 * Math.sin((a180 + 37) * 0.11) + 2.0 * (fbm(A * 13 + 5, h / 14 + 2, 13, 64, 251, 2) - 0.5)
-  const beds = 0.08 * (shelf(frac(bedH / 2.1), RIDGE.crest) - 0.5) * smooth(-88, -74, a180) * smooth(-16, -30, a180) * smooth(25.5, 27.5, h) * smooth(-0.4, -1.6, over) * (0.5 + 0.5 * smooth(0.3, 0.55, fbm(A * 9 + 1, h / 7 + 4, 9, 64, 253, 2)))
-  const small = (ridge + pit + gouge + crack - notch * (1 - patted) + beds - 0.05 * comma) * body * fade + crumb
+  const small = (ridge + pit + gouge + crack - notch * (1 - patted) + comb - 0.05 * comma) * body * fade + crumb
   // The crust's torn step is narrower than the mesh's cells: the carve map holds it, or the mesh draws it as a saw.
   const drawnOut = mix(1, 0.35, patted)
   const fine = (swirl * (1 - held) + kink * drawnOut + crust) * fade + small
-  const d = ((swell + ripple) * (1 - 0.55 * onTop) + swirl * held + hold + lumps + dabs + heap + knobs) * fade + form
-  // What the light from above reads: every part of the relief that makes a face turned up or down.
+  const d = ((swell + ripple) * (1 - 0.55 * onTop) + swirl * held + hold + lumps + dabs + heap) * fade + form
+  // What the light from above reads: every part of the relief that makes a face turned up or down. Left of the middle the ledge's edge
+  // is left out of it: its light and its shade are laid down as they were read.
   // Of the swirls only the one edge is read as a ledge: the others are swells under the rolls, and the rolls carry the light.
-  const edged = smooth(SWIRL.one - 0.45, SWIRL.one - 0.15, t1) * smooth(SWIRL.one + 0.95, SWIRL.one + 0.6, t1) * smooth(24, 14, a180)
+  const edged = smooth(SWIRL.one - 0.45, SWIRL.one - 0.15, t1) * smooth(SWIRL.one + 0.95, SWIRL.one + 0.6, t1) * smooth(24, 14, a180) * smooth(-20, -13, a180)
   // The rolls are left out of it: their light is laid down as it was read, and their form is in the normal. The dabs are low and
   // round: the mesh carries them, and here they count for less than half, or every one of them draws a streak of shade.
-  const rel = ((swirl * mix(SWIRL.under * mix(1, 0.3, smooth(12, 26, a180)), 1, edged) * mix(1, stroke, patted) + kink) * drawnOut + 0.15 * dabs + crust + crease - ridge * body) * fade + small - crumb
-  return { d, fine, rel, roll: ((mix(ROLL.lit * litOn, rollOn * lit, clear) + rAmp * rLip * clear) * body + tail - 0.42 * comma + shelfLit) * fade, form, bulge, lip: lip * fade, grain: 2 * grit * Math.min(crumbs, 1), drift, w, k, f, q, onTop, gh }
+  const rel = ((swirl * mix(SWIRL.under * mix(1, 0.3, smooth(12, 26, a180)), 1, edged) * mix(1, stroke, patted) + kink) * drawnOut + 0.15 * dabs + crust * (1 - smooth(-64, -56, a180) * smooth(-13, -15.5, a180)) + crease - ridge * body) * fade + small - crumb - comb * body * fade
+  return { d, fine, rel, roll: ((mix(ROLL.lit * litOn, rollOn * lit, clear) + rAmp * rLip * clear + combLit) * body + tail - 0.42 * comma + shelfLit + edgeShade - kept) * fade, laid: laid * fade, laidAt, laidTone: laidTone * fade, form, bulge, lip: lip * fade, rut: (Math.max(rut * body, rusted, tinted) - wallPale * body) * fade, grain: 2 * grit * Math.min(crumbs, 1), drift, w, k, f, q, onTop, gh }
 }
 export function relief(m, az, s) {
   const b = bare(m, az, s)
@@ -451,6 +681,7 @@ export function relief(m, az, s) {
   let rel = b.rel
   let roll = b.roll
   let lip = b.lip
+  let rut = b.rut
   let grain = b.grain
   let seat = 0
   let halo = 0
@@ -493,6 +724,7 @@ export function relief(m, az, s) {
     rel *= 1 - inside
     roll *= 1 - inside
     lip *= 1 - inside
+    rut *= 1 - inside
     grain *= 1 - inside
     seat = Math.max(seat, inside)
     halo = Math.max(halo, 1 - smooth(0.88 * foot, foot + 0.7 + 0.14 * foot, dist))
@@ -504,6 +736,6 @@ export function relief(m, az, s) {
     const distS = Math.hypot(alongS * (fan ? long : 1), upS / long) / (it.kind === 'glass' ? shardAt(it, Math.atan2(upS / long, alongS)) : 1)
     under = Math.max(under, 1 - smooth(0.85 * foot, 1.18 * foot + 0.5, distS))
   }
-  return { d, fine, rel, roll, lip, grain, drift: b.drift, w: b.w, k: b.k, f: b.f, h: q.h, seat, halo, under, onTop: b.onTop, gh: b.gh }
+  return { d, fine, rel, roll, lip, rut, grain, drift: b.drift, w: b.w, k: b.k, f: b.f, h: q.h, seat, halo, under, laid: b.laid, laidAt: b.laidAt, laidTone: b.laidTone, onTop: b.onTop, gh: b.gh }
 }
 export const clamp01 = (v) => clamp(v)
