@@ -22,32 +22,40 @@ const seen = (x: number, hs: number, z: number, size: Pad['size'], lx = 0, lz = 
 }
 
 export const clumps: readonly Clump[] = [
+  // The top clump, left of the middle, with a knob on its left shoulder and a smaller one at its right.
   seen(-0.8, 37.6, 0.3, [4.4, 4.4, 4.0], 0.03),
   seen(-2.6, 40.5, 0.7, [2.2, 2.2, 2.8], -0.05),
   seen(3.4, 38.6, 0.6, [2.0, 1.6, 2.6], 0.08),
+  // The upper left clump, and a small body behind and under it.
   seen(-11.7, 35.5, 2.0, [1.7, 3.1, 2.6], -0.2),
   seen(-7.8, 35.9, 1.5, [2.6, 3.6, 3.0], 0.1),
   seen(-9.6, 29.4, -2.2, [1.6, 1.4, 1.6]),
+  // The right mass: lobes that step down to the right, and a tip.
   seen(6.0, 31.0, 3.0, [2.9, 3.4, 3.5], 0.05),
   seen(7.2, 35.4, 2.2, [2.6, 2.8, 3.2], 0.1),
   seen(12.2, 32.0, 1.6, [2.5, 2.9, 3.5], 0.3),
   seen(13.8, 29.6, 1.8, [1.1, 1.2, 2.0], 0.15),
+  // The large left mass: it reaches farthest out and hangs lower than the rest.
   seen(-13.9, 29.3, 2.6, [3.0, 1.5, 3.3]),
   seen(-8.7, 28.9, 3.1, [3.0, 2.4, 3.9], 0.08),
   seen(-11.6, 26.8, 3.4, [1.7, 1.8, 2.2], -0.05),
   seen(-4.4, 29.3, 3.2, [1.7, 1.6, 3.0], 0.1),
   seen(-5.2, 32.4, 2.4, [1.4, 1.5, 2.4], 0.1),
+  // The pad low at the left, over the left limb: thin, with a tip that droops.
   seen(-16.6, 20.8, 1.4, [1.5, 1.0, 2.0], 0.08),
   seen(-13.0, 23.0, 3.6, [3.0, 0.5, 3.0], -0.22),
   seen(-10.9, 24.0, 4.8, [1.7, 0.7, 1.4], -0.06),
   seen(-8.4, 23.2, 3.6, [2.6, 0.6, 3.0], -0.18),
+  // Right of the stem: a small clump at the fork, a lobe over the right limb and a lump that hangs into the notch above it.
   seen(2.8, 24.8, 2.6, [1.3, 1.3, 1.6]),
   seen(7.0, 24.4, 3.1, [2.4, 1.6, 3.7], 0.15),
   seen(4.9, 28.3, 3.6, [0.7, 1.4, 1.0]),
+  // The mass low at the right, and two sprays of leaves that break the right limb's bare length.
   seen(11.6, 21.2, 2.8, [2.8, 4.4, 3.9], 0.03),
   seen(15.8, 20.0, 1.8, [2.3, 2.6, 2.9], 0.12),
   seen(10.4, 17.6, 3.8, [0.9, 1.2, 1.3], -0.05),
   seen(10.0, 14.6, 3.5, [1.0, 0.9, 1.0], 0.05),
+  // Bodies about the stem that fill the middle between the masses.
   seen(0.5, 33.6, -0.6, [4.8, 3.6, 3.3]),
   seen(-0.3, 31.0, 3.6, [3.4, 3.0, 2.4]),
   seen(5.8, 24.0, -2.2, [2.0, 1.4, 2.4], 0.1),
@@ -146,7 +154,8 @@ const knobs = (x: number, h: number, z: number): number => {
 
 // Notches through the crown, as the hero camera sees it: each is an ellipse in the plane that faces the camera (its middle, its half
 // width and half height in millimetres, and its tilt in degrees) and runs straight through along the line of sight, which climbs by
-// PITCH for every millimetre toward the camera. The sprigs on their walls close about a millimetre of each side.
+// PITCH for every millimetre toward the camera. The sprigs on their walls close about a millimetre of each side. One lies under
+// the upper left clump, one beside the stem under the top clump.
 export const holes: readonly (readonly [number, number, number, number, number])[] = [
   [-9.9, 33.9, 3.2, 1.6, 2],
   [1.2, 32.2, 1.7, 2.1, -8],

@@ -8,6 +8,7 @@ import { rel } from '../../tools/lib/paths.mjs'
 import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } from '../trunk/source.mjs'
 
 const TAU = Math.PI * 2
+// The leaf surface is cut in cells of this size (millimetres): a little coarser than a finer crown would take, so that the fuller masses stay under the count.
 const LEAF_CELL = 0.87
 const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
