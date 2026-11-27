@@ -13,7 +13,7 @@ Date: 2026-11-25
 ## assets-full/fall/village-litter.srgb.tile.w1024.png
 Made by: `assets-src/village-fall/build.mjs`
 From: nothing but the seeded stream `village-fall`
-Prompt or command: `npm run make -- village-fall`. Leaf outlines of four shapes drawn one over another with a midrib and curled edges, in rust, orange, ochre and brown. Colour in rgb. Alpha is the stacking rank of the leaf at that texel and 0 where no leaf lies, so the ground shader can thin the litter leaf by leaf.
+Prompt or command: `npm run make -- village-fall`. Leaf outlines of four shapes drawn one over another with a midrib and curled edges, in brown and rust with a few orange. Colour in rgb. Alpha is the stacking rank of the leaf at that texel and 0 where no leaf lies, so the ground shader can thin the litter leaf by leaf.
 Takes: rebuilt each time the script changed, the last build kept
 Why this one: single leaves with edges, never a smear of colour
 Date: 2026-11-25
@@ -21,7 +21,7 @@ Date: 2026-11-25
 ## assets-full/fall/village-fall.glb
 Made by: `assets-src/village-fall/build.mjs` (three 0.187 in Node, `tools/lib/glb.mjs`)
 From: `assets-src/village/layout.mjs`, `src/seasons/fall/mini/props.ts`, `src/scene/layout.ts`
-Prompt or command: `npm run make -- village-fall`, after `npm run make -- village`. Meshes: `ground` (the island with its relief, litter and moss weights in uv1), `water` (the pond surface), `decor` (two pumpkins with ribs and faces cut through the shell, their stems, two gravestones, the frame of the attic window, loose leaves with real thickness, grass tufts, the leaning rail fence of seven posts and twelve rails from `fenceBoards()`, four craggy rocks from `ROCKS`, three door steps, the flagstone path along `PATH_LINE`, pond rim stones, pebbles; each primitive carries its own lighter index lists for medium and low, `addLevels` of `tools/lib/glblevels.mjs`, error 0.08 and 0.2), `glow` (the lit inside of each pumpkin and the rims of its cuts), `pane-attic`. The record is `out/work/village/build-fall.json`.
+Prompt or command: `npm run make -- village-fall`, after `npm run make -- village`. Meshes: `ground` (the island with its relief, litter and moss weights in uv1), `water` (the pond surface), `decor` (two pumpkins with ribs and faces cut through the shell, their stems, two gravestones, the frame of the attic window, loose leaves with real thickness, grass tufts, the leaning fence of seven flat boards with rounded tops, each of its own height and lean, on twelve rail lengths behind them, from `fenceBoards()`, four craggy rocks from `ROCKS`, three door steps, the flagstone path along `PATH_LINE`, pond rim stones, pebbles; each primitive carries its own lighter index lists for medium and low, `addLevels` of `tools/lib/glblevels.mjs`, error 0.08 and 0.2), `glow` (the lit inside of each pumpkin and the rims of its cuts), `pane-attic`. The record is `out/work/village/build-fall.json`.
 Takes: rebuilt each time the script changed, the last build kept
 Why this one: every prop is a closed solid with a cut face, so the light inside is seen through real holes
 Date: 2026-11-25
