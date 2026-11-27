@@ -44,7 +44,7 @@ const LOOK = {
   jump: { count: 8600, shade: 0.3, reach: 0.2, onHeap: 0.1, hopMm: [0.15, 1.0], within: 0.05, radiusMm: [0.04, 0.1] },
   fall: { count: 1371, gravity: 7000, bands: 12, strands: 4, surge: 1, fill: 0.8, stray: 0.45, sway: 0.1, lines: 70, fold: 1, turns: [3, 4, 5], long: [2.9, 10], ends: 0.15, looks: [0, 7, 1, 8, 15, 3, 9, 4, 5, 10, 12, 4, 13, 6, 11, 14], picks: { stand: [0.02, 0.78], surge: [0.82, 0.95] }, part: [0.02, 0.9], azDeg: [92, 86], off: [1.05, 1.25], h: [38.9, 39.1], outMmS: [72, 150], downMmS: [10, 40], radiusMm: [0.04, 0.05], wide: [0.0004, 0.0006], finePx: 0.7, bow: 16, kink: 0.004, core: [80, 148], tone: [0.3, 10], knee: 1.3, over: 0.15, cream: [1, 1.4], stone: 0.22, redder: [1, 1.08, 1.2], warm: [1, 0.82, 0.81], faint: 0.9, shutter: 1, cover: 0.95, keep: 100, rise: 0.012, pale: 0.3, plain: 0.4, lit: 1.3, shaded: 0.08, deep: { threads: 30, grains: 8, every: 6, turns: 3, span: 0.88, stray: 0.4, dashS: [0.012, 0.032], radiusMm: [0.2, 0.28], wide: [0.0024, 0.0033], cover: 0.95, faint: 1, tone: [0.04, 0.065, 0.09, 1] }, loose: { count: 40, outMmS: [152, 175], lean: 2, sinkMmS: [45, 90], offMm: [0.05, 0.3], azDeg: [85, 87], radiusMm: 0.085, most: 12, stepS: 0.002, floorMm: 3.2, solid: 0.9, lit: 1.3 } },
   loose: { x: [16, 136], z: [-70, 112], kind: { proud: [0.26, 0.08] }, thinPx: 0.3, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, under: 3500, radiusMm: [0.07, 0.17, 0.45], small: 0.6, lean: 1.6, thin: 0.45, sunk: 0.3, vary: [0.6, 1.2], apart: 0.3 }, dust: { count: 12400, radiusMm: [0.03, 0.07], reach: 0.13, cover: 0.6 }, grain: { count: 2600, radiusMm: [0.05, 0.1], lean: 1.4, reach: 0.15 }, crumb: { count: 40, radiusMm: [0.12, 0.17], lean: 1.6, reach: 0.35 }, strewn: { behind: [3, 17], thinMm: 0.6, runMm: [0.5, 1, 2, 3, 5, 7, 10, 14], thins: 5, front: 0.1, skinMm: 1.2 }, vary: [0.1, 0.42], warm: [1.0, 0.8, 0.56] },
-  sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
+  sprinkle: { count: 2400, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.05, 0.13] }, glints: { count: 300, d: [13, 46], mm: [0.06, 0.13], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 0.5, round: [1.6, 4.0], clear: 6 },
   slope: { clearMm: 0.25, keeps: 0.75, roll: 0.5, bulge: 0.0038, crestMm: [60.6, 61.75], offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.9, 32.4], [52.6, 34.3], [52, 36], [51.2, 37.5], [50.2, 38.8], [49.2, 39.9]] },
   flow: { stand: 0.8, seconds: 1.6, gapMm: [0.3, 2.5], shadeMm: [0.5, 60], pick: [0, 17.7], slack: 0.001 },
@@ -806,7 +806,7 @@ export function grainRows(): Rows {
     const [x, z] = sandSprinkleAt(along, d)
     if (Math.hypot(x, z) < 61.5 || keep > (core || glint ? sandSprinkleRun(x, z) : sandSprinkle(x, z))) continue
     const at = [x, SLAB.liftMm + radius * 0.7, z]
-    put(at, at, [0, 0, 0, radius], [id, 2, phase, core ? 0.5 : glint ? 1 : 0])
+    put(at, at, [sandLitAt(x, z), 0, 0, radius], [id, 2, phase, core ? 0.5 : glint ? 2 : 0])
     laid++
   }
   return { width: GRAIN_ROW, mark: firstFall, data: rows.subarray(0, n * GRAIN_ROW) }
