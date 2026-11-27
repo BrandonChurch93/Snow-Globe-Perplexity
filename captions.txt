@@ -1,4 +1,4 @@
-01-base-approved-before-after-1to1.jpg: the base at rest, hero camera, hd review, one to one. Top the approved picture scaled to 1920, middle main before this branch, bottom this branch at 15ad02bc (after).
-02-rest-400-approved-after.jpg: spring at rest, whole frame at 400 px wide, hd review. Left the approved picture, right this branch at 15ad02bc (after).
-03-landed-base.jpg: spring at the landing (--state landed), hero camera, hd review, the base at one to one, after: the trickle has begun at the lip.
-04-3840-right-moss-4-frames-1to1.jpg: film frames 1100 to 1103 at 3840 final, the lit moss of the right flank at one to one, each frame moved back by whole pixels to lie on the first, after.
+01-base-approved-before-after-1to1.jpg: the base at rest, hero camera, hd review, one to one, crop (560,640,1380,1020). Top the approved picture scaled to 1920, middle the first base at df49a7e6 (before), bottom this branch at 2df09fc9, the second list (after).
+02-rest-400-approved-before-after.jpg: spring at rest, whole frame at 400 px wide each, hd review. Left the approved picture, middle df49a7e6 (before), right the second list (after).
+03-3840-right-moss-4-frames-1to1.jpg: film frames 1100 to 1103 at 3840 final, the lit moss of the right flank at one to one, each frame moved back by whole pixels to lie on the first, after.
+04-3840-right-moss-4-frames-x8.jpg: the same place, 36 by 30 px, at eight times in the four frames (nearest pixel). Top row df49a7e6 (before), bottom row the second list (after).
