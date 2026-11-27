@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { ROOM_RIG } from '../../scene/lighting'
+import { inSteps, stepsOf, whole } from '../../scene/steps'
 import type { KitMoment } from '../kit'
 import * as arrivalPart from './arrival'
 import { sandMaterial } from './base'
@@ -210,12 +211,15 @@ interface Field {
   lit: Float32Array
 }
 let made: Field | undefined
+let laying: Generator<void, Field> | undefined
 
 // The heap on a grid: its height, the shade its own lumps and crest throw along the key, and the sun each place takes.
 // The shade is thrown as by a sun lower than the room's, so the near face lies in it from the crest to the floor and a
 // little way out on the floor, where it ends softly and not in a line.
-function field(): Field {
-  if (made) return made
+// It is laid a row of the grid at a time, with a place to stop after each (src/scene/steps.ts): laid in one piece it held
+// the page's thread for a fifth of a second while the picture was being drawn. Each row is a plain function of its own,
+// so that the numbers are worked through as they were and come out the same to the last bit.
+function* fieldRows(): Generator<void, Field> {
   const step = SLAB.stepMm
   const [x0, x1] = SLAB.heap.x
   const [z0, z1] = SLAB.heap.z
@@ -232,7 +236,13 @@ function field(): Field {
     const gone = SLAB.footMm - r
     return Math.max(0, sandHeight(x * k, z * k) - SLAB.repose * gone * (0.8 + 0.4 * noise(x / 3.1 + 2.3, z / 3.1 + 6.1, 19)) - 0.02 * gone * gone)
   }
-  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) h[j * nx + i] = under(x0 + i * step, z0 + j * step)
+  const high = (j: number): void => {
+    for (let i = 0; i < nx; i++) h[j * nx + i] = under(x0 + i * step, z0 + j * step)
+  }
+  for (let j = 0; j < nz; j++) {
+    high(j)
+    yield
+  }
   const at = (i: number, j: number): number => h[Math.min(Math.max(j, 0), nz - 1) * nx + Math.min(Math.max(i, 0), nx - 1)]!
   const soft = (u: number, v: number): number => {
     const i = Math.floor(u)
@@ -258,21 +268,33 @@ function field(): Field {
   // ground a stretch of eight steps begun over it can pass, and a stretch that cannot lower the answer is not walked.
   // The steps that are walked are the same ones, so the field is the same to the last bit, from a fraction of the samples.
   const STRETCH = 8
-  const over = (dir: readonly [number, number]): Float32Array => {
+  function* over(dir: readonly [number, number]): Generator<void, Float32Array> {
     const span = (k: number): [number, number] => [Math.floor(Math.min(0, k * (STRETCH - 1))) - 1, Math.ceil(Math.max(0, k * (STRETCH - 1))) + 2]
     const [ax, bx] = span(dir[0])
     const [az, bz] = span(dir[1])
     const along = new Float32Array(nx * nz)
     const top = new Float32Array(nx * nz)
-    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
-      let most = -Infinity
-      for (let d = ax; d <= bx; d++) most = Math.max(most, at(i + d, j))
-      along[j * nx + i] = most
+    const across = (j: number): void => {
+      for (let i = 0; i < nx; i++) {
+        let most = -Infinity
+        for (let d = ax; d <= bx; d++) most = Math.max(most, at(i + d, j))
+        along[j * nx + i] = most
+      }
     }
-    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
-      let most = -Infinity
-      for (let d = az; d <= bz; d++) most = Math.max(most, along[Math.min(Math.max(j + d, 0), nz - 1) * nx + i]!)
-      top[j * nx + i] = most
+    const down = (j: number): void => {
+      for (let i = 0; i < nx; i++) {
+        let most = -Infinity
+        for (let d = az; d <= bz; d++) most = Math.max(most, along[Math.min(Math.max(j + d, 0), nz - 1) * nx + i]!)
+        top[j * nx + i] = most
+      }
+    }
+    for (let j = 0; j < nz; j++) {
+      across(j)
+      yield
+    }
+    for (let j = 0; j < nz; j++) {
+      down(j)
+      yield
     }
     return top
   }
@@ -293,9 +315,9 @@ function field(): Field {
     }
     return Math.max(least, 0)
   }
-  const overWay = over(way)
-  const overTurned = over(turned)
-  for (let j = 0; j < nz; j++) {
+  const overWay = yield* over(way)
+  const overTurned = yield* over(turned)
+  const shaded = (j: number): void => {
     for (let i = 0; i < nx; i++) {
       const o = j * nx + i
       cast[o] = march(i, j, way, overWay, key[1] / plan, C[2]!, 0.5, C[0]!, C[1]!)
@@ -306,35 +328,64 @@ function field(): Field {
       face[o] = faceOf((key[1] - gx * key[0] - gz * key[2]) / Math.hypot(gx, 1, gz))
     }
   }
+  for (let j = 0; j < nz; j++) {
+    shaded(j)
+    yield
+  }
   // The edge of that shade is not a line: the skin takes it over a grain or two, and a grain that stands proud takes the
   // sun a little before the skin under it does.
-  const blurred = (a: Float32Array, cells: number): Float32Array => {
+  function* blurred(a: Float32Array, cells: number): Generator<void, Float32Array> {
     const reach = Math.ceil(cells * 2.5)
     const w: number[] = []
     for (let k = -reach; k <= reach; k++) w.push(Math.exp(-0.5 * (k / cells) ** 2))
     const sum = w.reduce((p, c) => p + c, 0)
     const mid = new Float32Array(nx * nz)
     const out = new Float32Array(nx * nz)
-    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
-      let v = 0
-      for (let k = -reach; k <= reach; k++) v += w[k + reach]! * a[j * nx + Math.min(Math.max(i + k, 0), nx - 1)]!
-      mid[j * nx + i] = v / sum
+    const across = (j: number): void => {
+      for (let i = 0; i < nx; i++) {
+        let v = 0
+        for (let k = -reach; k <= reach; k++) v += w[k + reach]! * a[j * nx + Math.min(Math.max(i + k, 0), nx - 1)]!
+        mid[j * nx + i] = v / sum
+      }
     }
-    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
-      let v = 0
-      for (let k = -reach; k <= reach; k++) v += w[k + reach]! * mid[Math.min(Math.max(j + k, 0), nz - 1) * nx + i]!
-      out[j * nx + i] = v / sum
+    const down = (j: number): void => {
+      for (let i = 0; i < nx; i++) {
+        let v = 0
+        for (let k = -reach; k <= reach; k++) v += w[k + reach]! * mid[Math.min(Math.max(j + k, 0), nz - 1) * nx + i]!
+        out[j * nx + i] = v / sum
+      }
+    }
+    for (let j = 0; j < nz; j++) {
+      across(j)
+      yield
+    }
+    for (let j = 0; j < nz; j++) {
+      down(j)
+      yield
     }
     return out
   }
-  const wide = blurred(near, T.blur)
+  const wide = yield* blurred(near, T.blur)
   for (let o = 0; o < cast.length; o++) {
     cast[o] = Math.min(cast[o]!, wide[o]!)
     lit[o] = face[o]! * cast[o]!
   }
-  made = { nx, nz, h, cast: blurred(cast, SAND_LIT.blur[0]!), lit: blurred(lit, SAND_LIT.blur[1]!) }
-  return made
+  return { nx, nz, h, cast: yield* blurred(cast, SAND_LIT.blur[0]!), lit: yield* blurred(lit, SAND_LIT.blur[1]!) }
 }
+
+// There is one field, and one laying of it for all who ask: whoever asks next lays the next row. A second dressing made
+// beside the first, or a grain that asks for its sun in between, lays no field of its own and waits for no other.
+function* fieldInSteps(): Generator<void, Field> {
+  laying ??= fieldRows()
+  for (;;) {
+    if (made) return made
+    const row = laying.next()
+    if (row.done) return (made = row.value)
+    yield
+  }
+}
+
+const field = (): Field => made ?? whole(fieldInSteps())
 
 // The sun a grain that lies at a place takes, as the skin under it does.
 export function sandLitAt(x: number, z: number): number {
@@ -352,8 +403,8 @@ export function sandLitAt(x: number, z: number): number {
 
 // The skin is drawn from every second node of the field, each with the slope the fine field has there. A cell none of
 // whose corners has cover enough for one grain, whole or growing (slabGrain draws none under 0.002), is not drawn.
-function heapGeometry(): THREE.BufferGeometry {
-  const F = field()
+function* heapGeometry(): Generator<void, THREE.BufferGeometry> {
+  const F = yield* fieldInSteps()
   const step = SLAB.stepMm
   const { nx, nz, h } = F
   const at = (i: number, j: number): number => h[Math.min(Math.max(j, 0), nz - 1) * nx + Math.min(Math.max(i, 0), nx - 1)]!
@@ -384,7 +435,7 @@ function heapGeometry(): THREE.BufferGeometry {
     const o = j * nx + i
     return Math.max(coverAt(h[o]!), keepAt(SLAB.heap.x[0] + i * step, SLAB.heap.z[0] + j * step, h[o]!)) >= SLAB.bare
   }
-  for (let j = 0; j + m < nz; j += m) {
+  const strip = (j: number): void => {
     for (let i = 0; i + m < nx; i += m) {
       if (!shows(i, j) && !shows(i + m, j) && !shows(i, j + m) && !shows(i + m, j + m)) continue
       const a = vertex(i, j)
@@ -393,6 +444,10 @@ function heapGeometry(): THREE.BufferGeometry {
       const d = vertex(i + m, j + m)
       index.push(a, c, b, b, c, d)
     }
+  }
+  for (let j = 0; j + m < nz; j += m) {
+    strip(j)
+    yield
   }
   const g = new THREE.BufferGeometry()
   const count = position.length / 3
@@ -643,20 +698,24 @@ export async function prepare(): Promise<void> {}
 
 const heaps: THREE.Mesh[] = []
 
-export function dressing(): THREE.Object3D {
+// Made in steps where the page is drawing (src/scene/steps.ts): the same statements in the same order as in one piece,
+// with a place to stop after the pool, after each row of the field and of the skin, and after each lot of grains.
+export const dressing = inSteps(function* (): Generator<void, THREE.Object3D> {
   const group = new THREE.Group()
   const pool = (glassPart as { surfacePool?: () => THREE.Object3D }).surfacePool?.()
   if (pool) group.add(pool)
-  const sand = new THREE.Mesh(heapGeometry(), slabSand())
+  yield
+  const sand = new THREE.Mesh(yield* heapGeometry(), slabSand())
   sand.castShadow = true
   sand.receiveShadow = true
   sand.renderOrder = 3
   heaps.push(sand)
-  const loose = arrivalPart.grains()
+  yield
+  const loose = yield* stepsOf(arrivalPart.grains)
   loose.renderOrder = 4
   group.add(sand, loose)
   return group
-}
+})
 
 export function update(moment: KitMoment): void {
   const grown = arrivalPart.sandGrown(moment)

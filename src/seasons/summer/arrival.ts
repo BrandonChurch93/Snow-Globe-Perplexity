@@ -5,6 +5,7 @@ import { meshLevel } from '../../core/models'
 import { stream } from '../../core/rng'
 import { grade } from '../../post/grade'
 import { readRows, rowsAddress, type Rows } from '../../scene/rowsfile'
+import { ROW, inSteps } from '../../scene/steps'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
 import { SAND_COLOUR, sinceLoose } from './base'
@@ -645,7 +646,12 @@ export function grainRows(): Rows {
 
 let baked: Rows | null = null
 
-function grainGeometry(): THREE.BufferGeometry {
+/** How many grains are put into the card's lists before the making stops for a frame: as many as have a ROW of corners four times over. */
+const LOT = ROW * 4
+
+// The lists are filled a lot of grains at a time, with a place to stop after each (src/scene/steps.ts): filled in one
+// piece, sixty thousand grains held the page's thread for longer than any step of a miniature does.
+function* grainGeometry(): Generator<void, THREE.BufferGeometry> {
   const { data, mark: firstFall } = baked ?? grainRows()
   const n = data.length / GRAIN_ROW
   const to = new Float32Array(n * 12)
@@ -654,38 +660,51 @@ function grainGeometry(): THREE.BufferGeometry {
   const seed = new Float32Array(n * 16)
   const corner = new Float32Array(n * 8)
   const index = new Uint32Array(n * 6)
-  for (let q = 0; q < n; q++) {
-    const r = q * GRAIN_ROW
-    for (let k = 0; k < 4; k++) {
-      const o = q * 4 + k
-      for (let i = 0; i < 3; i++) {
-        to[o * 3 + i] = data[r + i]!
-        from[o * 3 + i] = data[r + 3 + i]!
+  const fill = (first: number, end: number): void => {
+    for (let q = first; q < end; q++) {
+      const r = q * GRAIN_ROW
+      for (let k = 0; k < 4; k++) {
+        const o = q * 4 + k
+        for (let i = 0; i < 3; i++) {
+          to[o * 3 + i] = data[r + i]!
+          from[o * 3 + i] = data[r + 3 + i]!
+        }
+        for (let i = 0; i < 4; i++) {
+          flight[o * 4 + i] = data[r + 6 + i]!
+          seed[o * 4 + i] = data[r + 10 + i]!
+        }
+        corner[o * 2] = k % 2 === 0 ? -1 : 1
+        corner[o * 2 + 1] = k < 2 ? -1 : 1
       }
-      for (let i = 0; i < 4; i++) {
-        flight[o * 4 + i] = data[r + 6 + i]!
-        seed[o * 4 + i] = data[r + 10 + i]!
-      }
-      corner[o * 2] = k % 2 === 0 ? -1 : 1
-      corner[o * 2 + 1] = k < 2 ? -1 : 1
     }
+  }
+  for (let q = 0; q < n; q += LOT) {
+    fill(q, Math.min(q + LOT, n))
+    yield
   }
   let firstSurge = firstFall
   while (firstSurge > 0 && data[(firstSurge - 1) * GRAIN_ROW + 11] === 1) firstSurge--
-  still = n - firstFall
-  aloft = n - firstSurge
 
   // The fall and the loose grains are first in the list, so that at rest they alone are drawn; then the surge's own
   // grains of the fall, then the jumping grains. Within each kind the order is shuffled.
-  const order = (first: number, count: number, at: number, stride: number): void => {
-    for (let k = 0; k < count; k++) {
-      const q = first + ((k * stride) % count)
-      index.set([q * 4, q * 4 + 1, q * 4 + 2, q * 4 + 2, q * 4 + 1, q * 4 + 3], (at + k) * 6)
+  function* order(first: number, count: number, at: number, stride: number): Generator<void, void> {
+    const lot = (k0: number, end: number): void => {
+      for (let k = k0; k < end; k++) {
+        const q = first + ((k * stride) % count)
+        index.set([q * 4, q * 4 + 1, q * 4 + 2, q * 4 + 2, q * 4 + 1, q * 4 + 3], (at + k) * 6)
+      }
+    }
+    for (let k = 0; k < count; k += LOT) {
+      lot(k, Math.min(k + LOT, count))
+      yield
     }
   }
-  order(firstFall, n - firstFall, 0, LOOK.stride)
-  order(firstSurge, firstFall - firstSurge, n - firstFall, 1)
-  order(0, firstSurge, n - firstSurge, LOOK.stride)
+  yield* order(firstFall, n - firstFall, 0, LOOK.stride)
+  yield* order(firstSurge, firstFall - firstSurge, n - firstFall, 1)
+  yield* order(0, firstSurge, n - firstSurge, LOOK.stride)
+  // Said after the last stop, so that no other making of the grains stands between the saying and the reading (`grains`).
+  still = n - firstFall
+  aloft = n - firstSurge
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.BufferAttribute(to, 3))
   g.setAttribute('aFrom', new THREE.BufferAttribute(from, 3))
@@ -732,9 +751,9 @@ export async function prepare(): Promise<void> {
 
 // The grains lie on the slab and fall past the foot, outside the glass, so they are drawn with the surface dressing (slab.ts
 // adds them to its group); nothing of this arrival is inside the globe.
-export function grains(): THREE.Mesh {
+export const grains = inSteps(function* (): Generator<void, THREE.Mesh> {
   const m = stageShader({ part: PART, standIn: false, change: 'surface-dressing', vertexPars: VERT_PARS, vertexMain: VERT_MAIN, fragment: fragment(), uniforms: grainUniforms, params: { side: THREE.DoubleSide, transparent: true, depthWrite: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor } })
-  const mesh = new THREE.Mesh(grainGeometry(), m)
+  const mesh = new THREE.Mesh(yield* grainGeometry(), m)
   mesh.frustumCulled = false
   const whole = mesh.geometry.index!.count / 6
   const fall = still
@@ -749,7 +768,7 @@ export function grains(): THREE.Mesh {
     mesh.geometry.setDrawRange(0, Infinity)
   }
   return mesh
-}
+})
 
 export function arrival(): THREE.Object3D {
   return new THREE.Group()
