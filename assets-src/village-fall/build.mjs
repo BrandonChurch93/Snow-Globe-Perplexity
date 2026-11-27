@@ -5,10 +5,10 @@ import { addLevels } from '../../tools/lib/glblevels.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadSource } from '../trunk/source.mjs'
 import { loadLayout } from '../village/layout.mjs'
-import { Bag, KIND, TILE_MM, clamp, fbm, frame, lin, mix3, mul3, noise, rng, shade, slab, smooth, surf, writePng } from '../village/kit.mjs'
+import { Bag, KIND, TILE_MM, clamp, fbm, frame, grainUv, lin, mix3, mul3, noise, rng, shade, slab, smooth, surf, writePng } from '../village/kit.mjs'
 
 const L = await loadLayout()
-const [PROPS] = await loadSource(['/src/seasons/fall/mini/props.ts'])
+const [PROPS, RF] = await loadSource(['/src/seasons/fall/mini/props.ts', '/src/miniature/roof.ts'])
 const C = L.cottage
 const F = L.cottageFrame()
 const U3 = [F.u[0], 0, F.u[1]]
@@ -26,7 +26,7 @@ const STONES = PROPS.STONES
 const LEAF_TONES = ['#c8541a', '#d9812a', '#a8371a', '#e0a030', '#7a3a18', '#b5651d', '#c9451c', '#8f5a1e'].map(lin)
 const GRASS_TONES = ['#4f6a26', '#62782e', '#8f7a34', '#3f5620', '#86572a'].map(lin)
 
-const LITTER = { base: 0.1, patch: 0.3, fence: 0.2, tree: 0.14, wall: 0.1, leaves: 230 }
+const LITTER = { base: 0.1, patch: 0.3, fence: 0.2, tree: 0.14, wall: 0.1, leaves: 640 }
 const LEVELS = { medium: { error: 0.08, worth: 1 }, low: { error: 0.2, worth: 1 } }
 const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => [c[0] * 1.2, c[1] * 1.04, c[2] * 0.86])
 const ground = new Bag('ground')
@@ -227,7 +227,7 @@ function pumpkin(o) {
   const pos = []
   const col = []
   const inner = []
-  const tone = lin('#cf5a12')
+  const tone = lin('#e2681a')
   const deep = lin('#4a1604')
   for (let j = 0; j <= nv; j++)
     for (let i = 0; i <= nu; i++) {
@@ -238,7 +238,7 @@ function pumpkin(o) {
       pos.push(p[0], p[1], p[2])
       inner.push(q[0], q[1], q[2])
       const low = smooth(-0.9, 0.2, p[1] / H)
-      const c = mul3(mix3(deep, tone, 0.06 + 0.94 * smooth(0.05, 0.7, p[3])), (0.5 + 0.5 * low) * (0.9 + 0.2 * noise(th * 5, ph * 7, 3 + o.r)))
+      const c = mul3(mix3(deep, tone, 0.04 + 0.96 * smooth(0.16, 0.86, p[3])), (0.5 + 0.5 * low) * (0.78 + 0.3 * noise(th * 5, ph * 7, 3 + o.r) + 0.24 * noise(th * 19, ph * 23, 7 + o.r)))
       col.push(c[0], c[1], c[2])
       cut.push(Math.abs(th) < 1.2 && face(th, p[1] / H))
     }
@@ -335,6 +335,101 @@ function pumpkin(o) {
 }
 for (const p of PUMPKINS) pumpkin(p)
 
+// The approved roof is thick, uneven, weathered shingles in a few staggered rows, dark brown violet, with a ridge that
+// sags. These lie just over the shared slope (its fine slates stay underneath, unseen), so the cottage keeps its place and size.
+const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], rise: [0.5, 0.72], gap: 0.16, eave: 0.3, ends: 0.34, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#a9805e') }
+{
+  const RS = rng(9241)
+  const pick = (a) => a[Math.floor(RS() * a.length)]
+  const ch = C.chimney
+  const len = RF.roofLength
+  const slope = RF.slopeLength
+  const e = slope / SHINGLE.rows
+  const sag = (along) => SHINGLE.ends * Math.pow(Math.abs(along) / len, 2)
+  for (const sd of [-1, 1])
+    for (let r = 0; r < SHINGLE.rows; r++) {
+      let t = -len - 0.12 + (r % 2 ? 0 : -0.6) - 0.5 * RS()
+      while (t < len + 0.1) {
+        const w = SHINGLE.wide[0] + (SHINGLE.wide[1] - SHINGLE.wide[0]) * RS()
+        const a = Math.max(t, -len - 0.14)
+        const b = Math.min(t + w, len + 0.14)
+        t += w
+        if (b - a < 0.5) continue
+        const mid = (a + b) / 2
+        const lo = slope + (r === 0 ? SHINGLE.eave : 0) - r * e + (RS() - 0.5) * 0.34
+        const long = e * SHINGLE.over * (0.94 + 0.12 * RS())
+        const across = sd * (lo - long / 2) * Math.cos(RF.pitch)
+        if (Math.abs(across - ch.across) < ch.half - 0.1 && Math.abs(mid - ch.along) < ch.halfAlong - 0.1) continue
+        const thick = SHINGLE.thick[0] + (SHINGLE.thick[1] - SHINGLE.thick[0]) * RS()
+        const rise = SHINGLE.rise[0] + (SHINGLE.rise[1] - SHINGLE.rise[0]) * RS()
+        const seed = RS() * 90
+        const skew = (RS() - 0.5) * 0.22
+        const curl = 0.1 * RS()
+        const g = slab(b - a - SHINGLE.gap, thick, long, { round: 0.08, sx: 5, sy: 2, sz: 6, warp: 0.035, seed })
+        const P = g.getAttribute('position')
+        const col = new Float32Array(P.count * 3)
+        const tone = mul3(pick(SHINGLE.tones), 0.28 + 0.36 * RS())
+        const halfW = (b - a - SHINGLE.gap) / 2
+        for (let i = 0; i < P.count; i++) {
+          const x = P.getX(i)
+          const y = P.getY(i)
+          const z = P.getZ(i)
+          const k = clamp(z / long + 0.5)
+          const edge = smooth(0.72, 1, k)
+          const ragged = edge * (0.16 * noise(x * 2.1 + seed, 3.3, 1) + 0.07 * noise(x * 6.3 + seed, 1.1, 2))
+          const down = lo - long / 2 + z + ragged + skew * x * edge
+          const side = Math.abs(x) / halfW
+          const lift = 0.06 + rise * k + y + thick / 2 + curl * edge * side * side + 0.05 * noise(x * 1.7 + seed, z * 1.7, 4) + sag(mid + x)
+          const q = RF.roofAt(sd, down, mid + x, lift)
+          P.setXYZ(i, q[0], q[1], q[2])
+          const top = smooth(-0.1, 0.1, y)
+          const streak = 0.72 + 0.5 * noise(x * 4.5 + seed, z * 0.8, 7)
+          const lit = top * smooth(0.84, 1, k) * (0.35 + 0.65 * smooth(0.5, 1, noise(x * 3.1 + seed, 9.2, 5) + 0.5))
+          const c = mix3(mul3(tone, streak * (0.42 + 0.58 * top) * (0.6 + 0.4 * k)), SHINGLE.worn, 0.6 * lit)
+          col.set(c, i * 3)
+        }
+        g.setAttribute('color', new THREE.BufferAttribute(col, 3))
+        decor.add(g, { surf: [surf(KIND.wood, 0.74 + 0.12 * RS()), 0], uv: grainUv([sd * V3[0] * Math.cos(RF.pitch), -Math.sin(RF.pitch), sd * V3[2] * Math.cos(RF.pitch)]), uvOffset: [RS() * 7, RS() * 7], renormal: true })
+      }
+    }
+  const tanp = Math.tan(RF.pitch)
+  let t = -len - 0.2
+  let n = 0
+  while (t < len + 0.2) {
+    const w = 2.0 + 0.7 * RS()
+    const a = t
+    const b = Math.min(t + w + 0.35, len + 0.24)
+    t += w
+    if (b - a < 0.8) continue
+    const mid = (a + b) / 2
+    const reach = 1.25 + 0.3 * RS()
+    const thick = 0.3 + 0.1 * RS()
+    const seed = RS() * 90
+    const tip = (RS() - 0.5) * 0.12
+    const g = slab(b - a, thick, 2 * reach, { round: 0.08, sx: 5, sy: 2, sz: 8, warp: 0.03, seed })
+    const P = g.getAttribute('position')
+    const col = new Float32Array(P.count * 3)
+    const tone = mul3(pick(SHINGLE.tones), 0.8 + 0.7 * RS())
+    for (let i = 0; i < P.count; i++) {
+      const x = P.getX(i)
+      const y = P.getY(i)
+      const z = P.getZ(i)
+      const along = mid + x
+      const lap = 0.16 * ((x + (b - a) / 2) / (b - a))
+      const up = RF.ridgeY + 0.78 + sag(along) + lap + tip * x + y - (Math.sqrt(z * z + 0.09) - 0.3) * tanp + 0.04 * noise(x * 1.9 + seed, z * 1.9, 3)
+      const q = L.cottagePoint(z, up, along)
+      P.setXYZ(i, q[0], q[1], q[2])
+      const top = smooth(-0.1, 0.1, y)
+      const edge = smooth(0.7, 1, Math.abs(z) / reach)
+      const c = mix3(mul3(tone, (0.45 + 0.55 * top) * (0.75 + 0.45 * noise(x * 0.9 + seed, z * 4.2, 6))), SHINGLE.worn, 0.45 * top * edge)
+      col.set(c, i * 3)
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3))
+    decor.add(g, { surf: [surf(KIND.wood, 0.8), 0], uv: grainUv(V3), uvOffset: [n * 1.7, n * 0.9], renormal: true })
+    n++
+  }
+}
+
 const stoneList = []
 for (const s of STONES) {
   const g = slab(s.w, s.h, s.d, { round: 0.14, sx: 6, sy: 10, sz: 2, warp: 0.07, seed: R() * 30 })
@@ -395,7 +490,7 @@ const conform = (g, x, z, yaw, lift) => {
   return g
 }
 // The approved path is warm, pinkish slate under the lamp; the cold key light greys a neutral stone, so the flags lean red.
-const FLAG_TONE = [1.3, 0.92, 0.66]
+const FLAG_TONE = [1.08, 0.86, 0.7]
 // Where a stone stands in the pond it is wet: dark and smooth from the waterline up to a soak line, on the side toward the water.
 const WET = { soakMm: 0.85, dark: 0.34, rough: 0.22 }
 const wetAt = (p) => {
@@ -404,11 +499,11 @@ const wetAt = (p) => {
 }
 const cobble = (x, z, w, l, h, yaw, lift, dark = 1, flat = false, shore = false) => {
   const seed = R() * 40
-  const g = slab(w, h, l, { round: Math.min(h * 0.48, flat ? 0.16 : 0.34), sx: 3, sy: 2, sz: 3, warp: 0.11, seed })
-  const pick = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(flat ? 0.55 : 0.62, flat ? 1.5 : 1.3) * dark)
+  const g = slab(w, h, l, { round: Math.min(h * 0.48, flat ? 0.16 : 0.34), sx: flat ? 9 : 7, sy: 2, sz: flat ? 9 : 7, warp: 0.11, seed })
+  const pick = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(flat ? 0.7 : 0.8, flat ? 1.9 : 1.75) * dark)
   const tone = flat ? [pick[0] * FLAG_TONE[0], pick[1] * FLAG_TONE[1], pick[2] * FLAG_TONE[2]] : pick
   const side = flat ? 0.1 : 0.2
-  shade(g, (px, py, pz) => (side + (1 - side) * smooth(flat ? h * 0.1 : -h * 0.2, h * 0.45, py)) * (0.6 + 0.85 * fbm(px * 1.6 + seed, pz * 1.6, py * 2, 3)) * (0.85 + 0.15 * smooth(0, 0.5, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
+  shade(g, (px, py, pz) => (side + (1 - side) * smooth(flat ? h * 0.1 : -h * 0.2, h * 0.45, py)) * (0.45 + 1.15 * fbm(px * 2.4 + seed, pz * 2.4, py * 2, 3)) * (0.55 + 0.45 * smooth(0, 0.45, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
   if (shore) {
     decor.add(conform(g, x, z, yaw, lift), {
       color: (p) => mul3(tone, 1 - (1 - WET.dark) * wetAt(p)),
@@ -426,10 +521,10 @@ let flagCount = 0
   for (const [k, step] of [[1.35, 7.4], [3.7, 6.8], [6.1, 6.0]].entries()) {
     const at = L.cottagePoint(d.across + 0.25 * k, 0, C.halfLength + step[0])
     const seed = R() * 40
-    const g = slab(step[1], 1.7, 2.6, { round: 0.24, sx: 6, sy: 2, sz: 3, warp: 0.1, seed })
-    shade(g, (px, py, pz) => (0.22 + 0.78 * smooth(-0.2, 0.5, py)) * (0.6 + 0.85 * fbm(px * 1.4 + seed, pz * 1.4, py * 2, 3)))
+    const g = slab(step[1], 1.7, 2.6, { round: 0.24, sx: 26, sy: 3, sz: 10, warp: 0.1, seed })
+    shade(g, (px, py, pz) => (0.12 + 0.88 * smooth(-0.2, 0.5, py)) * (0.45 + 1.15 * fbm(px * 2.2 + seed, pz * 2.2, py * 2, 3)) * (0.7 + 0.6 * smooth(0.35, 0.65, 0.5 + 0.5 * noise(px * 5.5 + seed, pz * 5.5, py * 3))))
     const M = frame([at[0], L.groundAt(at[0], at[2]) + 0.3 + 0.42 * (2 - k), at[2]], V3, UP, U3)
-    decor.add(g, { matrix: M, color: mul3(STONE_TONES[k % STONE_TONES.length], 0.95), surf: [surf(KIND.stone, 0.88), 0], renormal: true })
+    decor.add(g, { matrix: M, color: mul3(STONE_TONES[k % STONE_TONES.length], 0.55), surf: [surf(KIND.stone, 0.88), 0], renormal: true })
     flagCount++
   }
 }
@@ -497,7 +592,7 @@ let rimCount = 0
     const x = L.pond.x + dx * t
     const z = L.pond.z + dz * t
     if (R() < 0.3 + 0.7 * west && cottageGap(x, z) > 1 && rockGap(x, z) > 0.2) {
-      cobble(x, z, size, size * between(0.6, 0.9), size * between(0.55, 0.8), Math.atan2(-dx, dz) + between(-0.3, 0.3), size * 0.16, 0.85, false, true)
+      cobble(x, z, size, size * between(0.6, 0.9), size * between(0.55, 0.8), Math.atan2(-dx, dz) + between(-0.3, 0.3), size * 0.16, 1.05, false, true)
       rimCount++
     }
     deg += (size * 1.02 * 180) / Math.PI / (Math.hypot(dx * t, dz * t) || 1)
@@ -526,7 +621,7 @@ for (const r of PROPS.ROCKS) {
 }
 
 {
-  const WOOD = ['#8f7658', '#7c654d', '#9c8263', '#6e5b49'].map(lin)
+  const WOOD = ['#6f5c48', '#5c4c3d', '#7b6650', '#4f4337'].map(lin)
   for (const b of PROPS.fenceBoards()) {
     const e = [b.b[0] - b.a[0], b.b[1] - b.a[1], b.b[2] - b.a[2]]
     const len = Math.hypot(e[0], e[1], e[2])
@@ -545,9 +640,9 @@ for (const r of PROPS.ROCKS) {
       P.setXYZ(i, (x + bite) * (1 - 0.55 * top * top) + (b.post ? 0.12 * top : 0), y - 0.25 * top * Math.abs(x), P.getZ(i) * (1 - 0.3 * top))
     }
     shade(g, (x, y, z) => {
-      const grain = 0.62 + 0.55 * noise(x * 6.5 + seed, y * 0.7, z * 6.5)
-      const split = 1 - 0.5 * smooth(0.55, 0.75, noise(x * 9 + 3, y * 0.35 + seed, 1.7))
-      const end = 0.75 + 0.45 * smooth(len / 2 - 0.7, len / 2, Math.abs(y))
+      const grain = 0.5 + 0.8 * noise(x * 6.5 + seed, y * 0.7, z * 6.5)
+      const split = 1 - 0.75 * smooth(0.55, 0.7, noise(x * 9 + 3, y * 0.35 + seed, 1.7))
+      const end = 0.7 + 0.7 * smooth(len / 2 - 0.7, len / 2, Math.abs(y))
       const foot = b.post ? 0.5 + 0.5 * smooth(-len / 2 + 0.4, -len / 2 + 2.2, y) : 1
       return grain * split * end * foot
     })
@@ -579,7 +674,7 @@ let leafCount = 0
     const curl = between(0.02, 0.13) * len
     const tilt = between(-0.35, 0.35)
     const lift = between(0.05, 0.22) + (pathGap(x, z) < 1.2 ? 0.75 : 0)
-    const tone = mul3(LEAF_TONES[Math.floor(R() * LEAF_TONES.length)], between(0.45, 1.0))
+    const tone = mul3(LEAF_TONES[Math.floor(R() * LEAF_TONES.length)], between(0.5, 1.35))
     const y = earthAt(x, z) + lift
     const M = new THREE.Matrix4().makeRotationX(tilt).premultiply(new THREE.Matrix4().makeRotationY(yaw)).setPosition(x, y, z)
     const lobes = 5
@@ -599,16 +694,16 @@ let leafCount = 0
       col.push(tone[0] * k, tone[1] * k, tone[2] * k)
     }
     for (let k = 0; k < ring.length - 1; k++) {
-      push(mid, 0.82)
+      push(mid, 0.55)
       push(ring[k], 1)
       push(ring[k + 1], 1)
     }
-    push(mid, 0.82)
-    push(base, 0.8)
+    push(mid, 0.55)
+    push(base, 0.5)
     push(ring[0], 1)
-    push(mid, 0.82)
+    push(mid, 0.55)
     push(ring[ring.length - 1], 1)
-    push(base, 0.8)
+    push(base, 0.5)
     leafCount++
   }
   const g = new THREE.BufferGeometry()
@@ -660,7 +755,7 @@ let tuftCount = 0
         for (const [qi, q] of quad.entries()) {
           pos.push(q[0], q[1], q[2])
           const t = qi === 2 || qi >= 4 ? t1 : t0
-          const sh = 0.32 + 1.15 * t * t
+          const sh = 0.2 + 1.7 * t * t
           col.push(k[0] * sh, k[1] * sh, k[2] * sh)
         }
       }
@@ -668,7 +763,7 @@ let tuftCount = 0
     tuftCount++
   }
   let tries = 0
-  while (tuftCount < 360 && tries++ < 40000) {
+  while (tuftCount < 560 && tries++ < 60000) {
     const a = R() * TAU
     const rr = 54 * Math.sqrt(R())
     const x = rr * Math.cos(a)
