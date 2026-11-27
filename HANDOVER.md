@@ -269,3 +269,34 @@ Still short of the approved picture:
 - Roof: greyer than the approved's red brown (lit 74,56,42 against 80,57,48 with its air).
 - The pumpkins' grid is 5 percent coarser, done for the triangle count and outside the list.
 - Not seen: anything in motion; the landed state beyond its draft hash; the low camera; a 3840 still of the merged tree (the two 3840 stills were drawn before chain 32 was merged, with the same miniature source).
+
+## The fence in motion (bf897c55 on main 0fda3658; 93d7cf09 on main 63914740)
+
+Pictures 46 to 48. No source of mine changed after d106be20. bf897c55 is the tenth list with chain 33 merged, 93d7cf09 the same with chain 34 merged. The pickets were not changed.
+
+How it was drawn: `node tools/shutter-frame.mjs --what film-b --frames 2364,2365,2366,2367 --tier final --format uhd`, once on main 0fda3658 with its own made files and once on bf897c55. 3840 by 2160, 24 samples a frame, travel 1.80 to 1.79 px a frame (fall's hold shot, frames 2160 to 2735). The fence's box: left 1350, top 1070, 480 by 220 (105,600 px).
+
+Correlation of fine detail (luma less its own blur of 2 px) between neighbouring frames, pairs 2364/65, 65/66, 66/67:
+- As drawn: main 0.528, 0.525, 0.527; head 0.360, 0.351, 0.348.
+- Each at its own best shift: main 0.772, 0.773, 0.771 (0.62 px, the wall's travel); head 0.732, 0.743, 0.737 (1.31 px, the fence's travel).
+- Both held on the fence's travel: main 0.704, 0.709, 0.707; head 0.732, 0.743, 0.737.
+- Both held on the wall's travel: main 0.772, 0.773, 0.771; head 0.657, 0.663, 0.655.
+The head's box holds two layers that travel at different speeds, the taller fence in front and the wall behind, so no one shift fits both and the as-drawn number falls. That is parallax, not flicker.
+
+Events that live for one frame (a pixel brighter than both neighbours in time by over 20 levels of luma, or darker than both), frames 2365 and 2366, bright then dark:
+- As drawn: main 2438 and 625, 2384 and 661; head 3303 and 1237, 3197 and 1204.
+- Neighbours slid by the box's best shift: main 1307 and 281, 1262 and 271; head 1114 and 515, 1062 and 413.
+- Left when the fence's travel, the wall's travel and no shift are each tried and an event must stand under all three: main 889 and 65, 811 and 62; head 777 and 159, 753 and 92. On the map nearly all are the air's motes and leaves, in both heads.
+- Small events (groups of 4 px or fewer): main 97 and 117 px, head 76 and 71 px. Of those, in six strips 14 px wide on the pickets: head 16 and 8, main (no pickets there) 28 and 28. In seven strips on the posts: head 10 and 14, main 30 and 26.
+
+Looked at: the four frames laid on the fence's travel and enlarged three times. Pickets, posts and rails are the same in each. No crawl or flicker seen. The wall's pits sit in the same places across the four frames. The posts of the head are taller than main's, so in this camera the door pumpkin is partly behind the fence.
+
+The door pumpkin's outline at hd without the air, ninth (grid 220 by 100) against tenth (208 by 96): bounds 841 to 888 by 602 to 649 against 841 to 888 by 602 to 650; 1,373 px against 1,393; 46 px differ, a short run one row lower at the lower left foot and single pixels along the cuts of the face.
+
+Proof on bf897c55 (main 0fda3658): tsc clean; vitest 68 files passed, 1 skipped, 948 tests passed, 8 skipped; strict pass; miniatures pass; G15 pass with high 1,786,236 of 1,800,000. Draft hashes: the six of winter, spring and summer equal chain 33's list; fall-rest a55ee7ec95beb17a, fall-landed 86372154aa263666. M3 fall-rest at review 0.8833 (base 0.883, miniature 0.989) against main's 0.8835 (base 0.883, miniature 0.935).
+
+Proof on 93d7cf09 (main 63914740): tsc clean; vitest 68 files passed, 1 skipped, 950 tests passed, 8 skipped (main's note says 954 passed and 4 skipped; the four that skip here are in `tests/mix.test.ts`, and `tests/shake-looks.test.ts` skips whole); strict pass; miniatures pass; G15 pass with high 1,786,236 of 1,800,000, the same count, so the base's cut faces added no triangles. Draft hashes: the six others equal chain 34's list; fall-rest 9d79c4dc1f01af24, fall-landed d2f77fad7acbf205. M3 fall-rest at review 0.9702 (base 0.970 over 174,443 px, miniature 0.989 over 106,539 px) against main's 0.9354 (base 0.970, miniature 0.935).
+
+Parts on both heads: crown 1.56, trunk 1.14, roof 0.98, wall 0.79 (0.792), fence 0.89, litter 0.94, chimney 0.80 (0.804), rest 0.73, whole 0.989. On main 6d459061 the same source read wall 0.81, chimney 0.96, whole 1.000. Fall's air Step A came between: in the still a leaf and a larger glow of a firefly now sit in front of the chimney. Without the air the stack is the same as before. Wall and chimney are on their bars with nothing to spare.
+
+Not seen: the frames played at speed; more than four frames of the film; any other shot; the landed state beyond its draft hash; the low camera.
