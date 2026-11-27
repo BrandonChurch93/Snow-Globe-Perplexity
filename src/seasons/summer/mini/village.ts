@@ -31,7 +31,7 @@ const NEAR_LAWN = { lamp: { power: 0.55, reachMm: 7 }, pane: { power: 0.55, reac
 // takes it from the lantern drawn up to it, the turf from a point just over it; the lamp post lays its own on the path.
 // It follows its lantern up after the landing (the times are the tree's, `LANTERN` in tree.ts) and never burns: what it adds
 // bends over under `cap`.
-const POOL = { patch: 2, patchReach: 1.3, patchCap: 0.05, ember: [1, 0.4, 0.1] as Rgb, emberShare: 0.8, down: 0.55, face: 0.3, frontMm: 8, leaf: 0.015, hug: 1.1, lawn: 0.55, lawnReach: 2.4, overMm: 3, ends: 2.2, wrap: 0.22, post: 10, postReachMm: 4.5, postOverMm: 2.5, wash: 0.12, cap: 0.2, dim: 0.4, firstStepS: 0.23, firstRampS: 0.42, rampS: 0.8, stepS: 0.6, orange: [1, 0.5, 0.17] as Rgb, cream: [1, 0.68, 0.34] as Rgb, gold: [1, 0.75, 0.42] as Rgb, straw: [0.26, 0.185, 0.16] as Rgb, strawShare: 0.7 }
+const POOL = { patch: 2, patchReach: 1.3, patchCap: 0.05, ember: [1, 0.4, 0.1] as Rgb, emberShare: 0.8, down: 0.55, face: 0.3, frontMm: 8, leaf: 0.015, hug: 1.1, lawn: 0.33, lawnReach: 2.4, overMm: 3, ends: 2.2, wrap: 0.22, post: 10, postReachMm: 4.5, postOverMm: 2.5, wash: 0.12, cap: 0.2, dim: 0.4, firstStepS: 0.23, firstRampS: 0.42, rampS: 0.8, stepS: 0.6, orange: [1, 0.5, 0.17] as Rgb, cream: [1, 0.68, 0.34] as Rgb, gold: [1, 0.75, 0.42] as Rgb, straw: [0.26, 0.185, 0.16] as Rgb, strawShare: 0.7 }
 // The liquid is lit: it lies between the eye and every dark thing in the ball, so nothing in it is black.
 const LIFT: Rgb = [0.0145, 0.012, 0.0085]
 // Slate in the evening shade takes the sky's blue, not the lanterns' gold.
@@ -51,20 +51,46 @@ const SAND = { white: [0.93, 0.86, 0.72] as Rgb, whiten: 0.9, clumpPerMm: 1.1, m
 const TURF_LOOK = { wetFrom: 1.0, wetTo: 1.1, tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.2, wrap: 0.5, sun: 0.3, moss: [0.15, 0.2, 0.34] as Rgb, rim: 0.9, rimFromMm: 30, rimToMm: 46 }
 // Where the low sun reaches the floor: the same pools as `sunAt` in assets-src/village-summer/build.mjs, which the grass carries.
 const SUN_POOLS: readonly [number, number, number, number, number][] = [[1.5, 24, 4, 13, 9], [0.7, 6, -4, 9, 6], [0.4, -24, 21, 6, 5], [1.0, 24, 22, 9, 6], [1.2, -17.5, 24.6, 2.4, 2.0]]
-const GRASS_LOOK = { wideMm: 0.4, cutPx: 0.3, keepFrom: 0.5, keepTo: 1.4, mean: [0.0654, 0.086, 0.0183] as Rgb, vary: 0.8, toneTop: 2.2, catch: 0.6, liftVary: 0.6, lift: [0.0115, 0.0128, 0.0072] as Rgb, sunTint: [0.26, 0.2, 0.1] as Rgb, sunShare: 0.5, lit: 0.81, pool: 0.8, fill: 0.05, wrap: 1.0, through: 0.16, near: 0.13, sun: 1.4, patchLow: 0.12, moss: [0.15, 0.2, 0.34] as Rgb, patchPerMm: 0.3, sunRoot: 0.12, rightDark: 0.35, rightGlow: 0.15, rightFromMm: 1, rightToMm: 6, shade: [0.26, 0.3, 0.45] as Rgb }
+const GRASS_LOOK = { wideMm: 0.4, cutPx: 0.3, keepFrom: 0.5, keepTo: 1.4, mean: [0.0654, 0.086, 0.0183] as Rgb, vary: 0.8, toneTop: 2.2, catch: 0.6, liftVary: 0.6, lift: [0.0115, 0.0128, 0.0072] as Rgb, sunTint: [0.26, 0.2, 0.1] as Rgb, sunShare: 0.5, lit: 0.81, pool: 0.8, fill: 0.05, wrap: 1.0, through: 0.16, near: 0.055, sun: 1.4, patchLow: 0.12, moss: [0.15, 0.2, 0.34] as Rgb, patchPerMm: 0.3, sunRoot: 0.12, rightDark: 0.35, rightGlow: 0.15, rightFromMm: 1, rightToMm: 6, shade: [0.26, 0.3, 0.45] as Rgb }
 const ROOF = { slate: [0.07, 0.11, 0.21] as Rgb, chimney: [0.21, 0.225, 0.25] as Rgb, vary: 0.75, varyMm: 1.3, gableMm: 0.55, gableDeepMm: 0.9, underMm: 0.7, pitch: 0.2, stoneMm: 1.4, picket: [0.85, 0.5, 0.27] as Rgb, picketMm: 1.6, boardMm: 0.9, boardVary: 0.9, grainMm: 0.22, grainVary: 0.5, boardFoot: 0.7, boardTall: 3.2, pale: 0.25, rail: [2.3, 1.1, 0.5] as Rgb, railTop: 2.0, door: [0.4, 0.2, 0.2] as Rgb, doorInMm: 0.45, doorOutMm: 0.12, doorHalfMm: 2.56, doorFootMm: 0.5, cutOutMm: 0.0, cutFromMm: 2.45, cutToMm: 4.3, cutFootMm: 1.6, sillHalfMm: 2.6, sillFromMm: 2.5, sillToMm: 3.6, sideOutMm: 0.25, sideHalfMm: 2.5, sideFromMm: 3.0, sideToMm: 3.8, slabTopMm: 0.45, verge: [0.11, 0.085, 0.07] as Rgb, sheen: 1.5, sheenMm: 3.5, reachMm: 0.4, buryMm: 1.5 }
 // The side windows are unlit, not black: a twentieth of the room's light comes through them, which keeps the pane between the ivy's leaves over the floor of the picture.
 const DARK_PANE = { room: 0.8, through: 0.045 }
 // The last sun comes low from behind, under the crown: it stands in the far lawn between the house and the trunk and right of
 // the trunk as one blaze of gold, and stops at the brow of the slope, which lies in its own shade (read off the approved image).
 // Each pool: its strength, where it lies across the lawn and how wide, and the two depths between which it ends toward the lens.
-// The one behind the lamp stops short of the post, so the yard and the pool at the door keep the lanterns' light alone.
-const BLAZE = { gain: 1.5, tint: [1.0, 0.78, 0.46] as Rgb, pools: [[1.0, 7.0, 4.5, -1.0, 3.5], [1.0, 28.0, 12.0, 2.0, 7.0]] as const, turf: 0.5, low: 0.25, vary: 0.7, cap: 1.5 }
-const blazeAt = (p: string): string => `clamp(${BLAZE.pools.map(([k, x, r, zFrom, zTo]) => `${k.toFixed(2)} * exp(-(${p}.x - ${x.toFixed(2)}) * (${p}.x - ${x.toFixed(2)}) / ${(r * r).toFixed(2)}) * (1.0 - smoothstep(${zFrom.toFixed(2)}, ${zTo.toFixed(2)}, ${p}.y))`).join(' + ')}, 0.0, 1.0)`
+// It reaches the bank right of the pond (`banks`: strength, place and half widths) and the strip of lawn between the pond's near
+// rim and the sand (`rim`, in the pond's own measure), and it is brightest round the lamp post, where the lawn glows as one field
+// (`lamp`). Elsewhere it falls through the crown in dapples (`clump`), longer toward the lens than across, since the lens looks
+// along the ground: where the lens tells blade from blade the turf between the dapples stays in shade, deep on the near banks and
+// shallow in the far meadow; where it cannot, lawn and turf keep a share of the dapple small enough to settle (`thinEven`).
+// The trunk stands between that sun and the lawn before it, so its shade falls toward the lens (`shades`), and the bank's
+// face toward the pond lies turned from it (`face`, in the
+// pond's own measure, a narrow strip at the far bank and a wide one on the right flank): the approved's dark mound at the tree's
+// foot and its dark mass at the pond's right end. Past the trunk the sun comes through again (the second of `banks`).
+const BLAZE = { tint: [1.0, 0.66, 0.4] as Rgb, gapTint: [1.0, 0.6, 0.3] as Rgb, gap: 0.4, grain: [1.3, 0.4] as const, grainFine: 0.35, pools: [[1.0, 6.0, 5.5, -2.5, 1.5], [1.0, 28.0, 12.0, 2.0, 7.0]] as const, banks: [[1.0, 31.0, 20.0, 10.0, 12.0], [1.0, 19.0, 4.5, 4.5, 4.5]] as const, rim: { k: 0.9, from: 0.93, to: 0.99, outFrom: 1.16, outTo: 1.34, zFromMm: 24, zToMm: 32 }, lamp: { x: 0.8, z: 1.5, rx: 6.0, rz: 4.5, cutFromMm: -5.4, cutToMm: -3.8, turf: 5.0, blade: 2.7, even: 0.3, root: 0.3, tint: [1.0, 0.54, 0.36] as Rgb }, shades: [[0.7, 11.5, 4.5, 6.5, 4.0]] as const, face: { k: 0.9, far: 1.14, flank: 1.44, soft: 0.08, widenFromMm: 8, widenToMm: 16, xFromMm: 11, xToMm: 15, zFromMm: 24, zToMm: 30 }, turf: 3.0, blade: 3.6, thin: [0.8, 1.2] as const, thinEven: 0.6, thinFrom: 0.5, thinTo: 2.5, gapFrom: 0.4, gapTo: 1.5, nearMm: 0.2, farMm: 0.33, low: 0.3, cap: 7.0, clumpPerMm: 4.5, clumpDeep: 3.0, clumpLowFar: 0.35, clumpLow: 0.15, lowFromMm: 6, lowToMm: 12, clumpFrom: 0.33, clumpTo: 0.58, clumpMean: 0.574 }
+const POND_GLSL = `float turfPond(vec2 p) {
+  vec2 turfPondD = p - vec2(${pond.x.toFixed(2)}, ${pond.z.toFixed(2)});
+  vec2 turfPondL = abs(vec2(${Math.cos(pond.yaw).toFixed(4)} * turfPondD.x - ${Math.sin(pond.yaw).toFixed(4)} * turfPondD.y, ${Math.sin(pond.yaw).toFixed(4)} * turfPondD.x + ${Math.cos(pond.yaw).toFixed(4)} * turfPondD.y) / vec2(${pond.rx.toFixed(2)}, ${pond.rz.toFixed(2)}));
+  return pow(abs(pow(abs(turfPondL.x), ${pond.power.toFixed(1)}) + pow(abs(turfPondL.y), ${pond.power.toFixed(1)})), ${(1 / pond.power).toFixed(4)});
+}`
+const bell = ([k, x, z, rx, rz]: readonly [number, number, number, number, number]): string => `${k.toFixed(2)} * exp(-dot((p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)}), (p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)})))`
+const BLAZE_GLSL = `float blazeLamp(vec2 p) {
+  return ${bell([1, BLAZE.lamp.x, BLAZE.lamp.z, BLAZE.lamp.rx, BLAZE.lamp.rz])} * smoothstep(${BLAZE.lamp.cutFromMm.toFixed(1)}, ${BLAZE.lamp.cutToMm.toFixed(1)}, p.x);
+}
+float blazeAt(vec2 p, float blazePond) {
+  return clamp(${[...BLAZE.pools.map(([k, x, r, zFrom, zTo]) => `${k.toFixed(2)} * exp(-(p.x - ${x.toFixed(2)}) * (p.x - ${x.toFixed(2)}) / ${(r * r).toFixed(2)}) * (1.0 - smoothstep(${zFrom.toFixed(2)}, ${zTo.toFixed(2)}, p.y))`), ...BLAZE.banks.map(bell)].join(' + ')} + ${BLAZE.rim.k.toFixed(2)} * smoothstep(${BLAZE.rim.from.toFixed(2)}, ${BLAZE.rim.to.toFixed(2)}, blazePond) * (1.0 - smoothstep(${BLAZE.rim.outFrom.toFixed(2)}, ${BLAZE.rim.outTo.toFixed(2)}, blazePond)) * smoothstep(${BLAZE.rim.zFromMm.toFixed(1)}, ${BLAZE.rim.zToMm.toFixed(1)}, p.y) + blazeLamp(p), 0.0, 1.0);
+}
+float blazeClump(vec2 p, float far) {
+  return mix(mix(${BLAZE.clumpLowFar.toFixed(2)}, ${BLAZE.clumpLow.toFixed(2)}, smoothstep(${BLAZE.lowFromMm.toFixed(1)}, ${BLAZE.lowToMm.toFixed(1)}, p.y)), 1.0, mix(smoothstep(${BLAZE.clumpFrom.toFixed(2)}, ${BLAZE.clumpTo.toFixed(2)}, 0.5 + 0.5 * sin(p.x * ${BLAZE.clumpPerMm.toFixed(2)} + 1.7 * sin(p.y * ${((BLAZE.clumpPerMm / BLAZE.clumpDeep) * 0.72).toFixed(3)} + 0.6)) * sin(p.y * ${((BLAZE.clumpPerMm / BLAZE.clumpDeep) * 1.11).toFixed(3)} + 1.3 * sin(p.x * ${(BLAZE.clumpPerMm * 0.65).toFixed(3)}) + 2.1)), ${BLAZE.clumpMean.toFixed(3)}, ${BLAZE.thinEven.toFixed(2)} * far));
+}
+float blazeShade(vec2 p, float blazePond) {
+  float blazeFace = mix(${BLAZE.face.far.toFixed(2)}, ${BLAZE.face.flank.toFixed(2)}, smoothstep(${BLAZE.face.widenFromMm.toFixed(1)}, ${BLAZE.face.widenToMm.toFixed(1)}, p.y));
+  return ${BLAZE.shades.map((b) => `(1.0 - ${bell(b)})`).join(' * ')} * (1.0 - ${BLAZE.face.k.toFixed(2)} * (1.0 - smoothstep(blazeFace - ${BLAZE.face.soft.toFixed(2)}, blazeFace, blazePond)) * smoothstep(${BLAZE.face.xFromMm.toFixed(1)}, ${BLAZE.face.xToMm.toFixed(1)}, p.x) * (1.0 - smoothstep(${BLAZE.face.zFromMm.toFixed(1)}, ${BLAZE.face.zToMm.toFixed(1)}, p.y)));
+}`
 // The tufts at the water and on the banks stand between the eye and the low sun: it comes through a blade from a third of the
 // way up, and where a blade is finer than a pixel it glows evenly at `mean`, so its point does not spark.
-const TUFT = { gain: 1.0, tint: [1.0, 0.87, 0.39] as Rgb, from: 0.2, to: 0.55, mean: 0.5 }
-const STONE_TOP = { sky: 2.4, from: 0.55, to: 0.75, fromMm: 2, toMm: 4 }
+const TUFT = { gain: 1.25, tint: [1.0, 0.8, 0.55] as Rgb, from: 0.2, to: 0.55, mean: 0.34 }
+const STONE_TOP = { sky: 3.2, from: 0.6, to: 0.68, fromMm: 2, toMm: 4 }
 // The shared stone map lies stretched along the walls and reads as courses of logs. The approved's walls are round cobbles of
 // unlike size in dark joints, lit on their upper left: cells drawn pixel by pixel in place of the map's grain, the bump laid flat.
 // The lanterns' patch is capped and would level the stones out: it takes their light and dark after the cap.
@@ -310,11 +336,8 @@ float sandNoise(vec3 p) {
   return mix(mix(mix(sandHash(i), sandHash(i + vec3(1.0, 0.0, 0.0)), f.x), mix(sandHash(i + vec3(0.0, 1.0, 0.0)), sandHash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
     mix(mix(sandHash(i + vec3(0.0, 0.0, 1.0)), sandHash(i + vec3(1.0, 0.0, 1.0)), f.x), mix(sandHash(i + vec3(0.0, 1.0, 1.0)), sandHash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
 }
-float turfPond(vec2 p) {
-  vec2 turfPondD = p - vec2(${pond.x.toFixed(2)}, ${pond.z.toFixed(2)});
-  vec2 turfPondL = abs(vec2(${Math.cos(pond.yaw).toFixed(4)} * turfPondD.x - ${Math.sin(pond.yaw).toFixed(4)} * turfPondD.y, ${Math.sin(pond.yaw).toFixed(4)} * turfPondD.x + ${Math.cos(pond.yaw).toFixed(4)} * turfPondD.y) / vec2(${pond.rx.toFixed(2)}, ${pond.rz.toFixed(2)}));
-  return pow(abs(pow(abs(turfPondL.x), ${pond.power.toFixed(1)}) + pow(abs(turfPondL.y), ${pond.power.toFixed(1)})), ${(1 / pond.power).toFixed(4)});
-}
+${POND_GLSL}
+${BLAZE_GLSL}
 float turfSunAt(vec2 p) {
   // No pool of sun on the bank of the pond: it lies under the grass that hangs over the water.
   return smoothstep(1.06, 1.4, turfPond(p)) * clamp(${SUN_POOLS.map(([k, x, z, rx, rz]) => `${k.toFixed(2)} * exp(-dot((p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)}), (p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)})))`).join(' + ')}, 0.0, 1.0);
@@ -334,7 +357,8 @@ diffuseColor.rgb *= ${glsl(TURF_LOOK.moss)} * mix(1.0, ${TURF_LOOK.rim.toFixed(2
 // The sand is a thin layer under the mound: the turf comes down over it, and its upper edge is soft.
 float sandAmt = smoothstep(0.0, ${SAND.edgeSoft.toFixed(2)}, vSurf.y + ${SAND.edgeVary.toFixed(2)} * (turfT.g - 0.5));
 // The mud at the water's edge is wet and dark: a lantern's pool lies on it as on any dark thing, not as on straw.
-float turfDry = smoothstep(${TURF_LOOK.wetFrom.toFixed(2)}, ${TURF_LOOK.wetTo.toFixed(2)}, turfPond(vStageLocal.xz));
+float turfRing = turfPond(vStageLocal.xz);
+float turfDry = smoothstep(${TURF_LOOK.wetFrom.toFixed(2)}, ${TURF_LOOK.wetTo.toFixed(2)}, turfRing);
 float sandFineB = sandNoise(vStageLocal * ${SAND.clumpPerMm.toFixed(2)});
 float sandFineC = sandNoise(vStageLocal * ${SAND.grainPerMm.toFixed(2)} + 7.3);
 // A middle grain, half a millimetre wide: the one the hero lens resolves. It carries the sparkle of the lit grains.
@@ -362,7 +386,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb, ${glsl(SAND.white
 }
 `,
         )
-      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * uGlowGain * material.diffuseContribution;\n${poolLight(`mix(material.diffuseContribution, ${glsl(POOL.straw)}, ${POOL.strawShare.toFixed(2)} * (1.0 - sandAmt) * turfDry)`)}\n{\n  float sandBank = sandAmt;\n  vec3 sandBody = stageKeyC * (RECIPROCAL_PI * ${SAND.body.toFixed(2)} * mix(${SAND.floor.toFixed(2)}, 1.0, stageWrap(dot(geometryNormal, stageKeyL), ${SAND.wrap.toFixed(2)})) * mix(vec3(1.0), ${glsl(SAND.foot)}, smoothstep(${SAND.footFrom.toFixed(2)}, ${SAND.footTo.toFixed(2)}, vSurf.y))) * material.diffuseContribution;\n  // The low sun whitens the lip of the sand where it meets the ground and leaves the face against the glass in warm shade, deepest at the left end.\n  float sandLip = (1.0 - smoothstep(${SAND.lipFrom.toFixed(2)}, ${SAND.lipTo.toFixed(2)}, vSurf.y + 0.1 * (sandNoise(vStageLocal * 0.3 + 2.3) - 0.5)));\n  // The shelf is not one white band: heaps catch the sun, the hollows between them stay in shade.\n  float sandBreak = smoothstep(0.25, 0.75, 0.6 * sandNoise(vStageLocal * ${SAND.breakPerMm.toFixed(2)} + 9.7) + 0.4 * sandFineB);\n  sandBody *= mix(${glsl(SAND.shade)} * mix(${SAND.shadeLow.toFixed(2)}, 1.0, sandBreak), ${glsl(SAND.lipTint)} * (1.0 + mix(${SAND.lipLow.toFixed(2)}, ${SAND.lip.toFixed(2)}, sandBreak) + ${SAND.glint.toFixed(2)} * sandSpark), sandLip) * (1.0 + ${SAND.left.toFixed(2)} * (1.0 - smoothstep(${SAND.leftFromMm.toFixed(1)}, ${SAND.leftToMm.toFixed(1)}, vStageLocal.x))) * mix(vec3(1.0), ${glsl(SAND.right)}, smoothstep(${SAND.rightFromMm.toFixed(1)}, ${SAND.rightToMm.toFixed(1)}, vStageLocal.x)) * mix(${SAND.mottleLow.toFixed(2)}, ${SAND.mottle.toFixed(2)}, 0.5 * sandFineB + 0.5 * sandFineM);\n  reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, sandBody, sandBank);\n}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${TURF_LOOK.wrap.toFixed(2)}) + ${SLOPE.ground.toFixed(2)} * smoothstep(0.0, 0.25, -vSurf.y))) * material.diffuseContribution;\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.sun.toFixed(2)} * turfSunAt(vStageLocal.xz) * (1.0 - sandAmt) * (1.0 - ${GRASS_LOOK.rightDark.toFixed(2)} * smoothstep(${GRASS_LOOK.rightFromMm.toFixed(1)}, ${GRASS_LOOK.rightToMm.toFixed(1)}, vStageLocal.x))) * mix(material.diffuseContribution, vec3(0.19, 0.17, 0.12), 0.3);\n{\n  float turfTurn = 1.0 - max(dot(geometryNormal, geometryViewDir), 0.0);\n  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${RIM.turf.toFixed(2)} * turfTurn * turfTurn * turfTurn * smoothstep(-0.2, 0.5, dot(geometryNormal, stageKeyL)) * (1.0 - sandAmt)) * mix(material.diffuseContribution, ${glsl(POOL.straw)}, ${POOL.strawShare.toFixed(2)});\n}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${(BLAZE.gain * BLAZE.turf).toFixed(3)} * ${blazeAt('vStageLocal.xz')} * (1.0 - sandAmt) * (0.8 + 0.4 * turfT.g)) * ${glsl(BLAZE.tint)};\ntotalEmissiveRadiance += mix(${glsl(GRASS_LOOK.lift)}, ${glsl(LIFT)}, sandAmt);`)
+      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * uGlowGain * material.diffuseContribution;\n${poolLight(`mix(material.diffuseContribution, ${glsl(POOL.straw)}, ${POOL.strawShare.toFixed(2)} * (1.0 - sandAmt) * turfDry)`)}\n{\n  float sandBank = sandAmt;\n  vec3 sandBody = stageKeyC * (RECIPROCAL_PI * ${SAND.body.toFixed(2)} * mix(${SAND.floor.toFixed(2)}, 1.0, stageWrap(dot(geometryNormal, stageKeyL), ${SAND.wrap.toFixed(2)})) * mix(vec3(1.0), ${glsl(SAND.foot)}, smoothstep(${SAND.footFrom.toFixed(2)}, ${SAND.footTo.toFixed(2)}, vSurf.y))) * material.diffuseContribution;\n  // The low sun whitens the lip of the sand where it meets the ground and leaves the face against the glass in warm shade, deepest at the left end.\n  float sandLip = (1.0 - smoothstep(${SAND.lipFrom.toFixed(2)}, ${SAND.lipTo.toFixed(2)}, vSurf.y + 0.1 * (sandNoise(vStageLocal * 0.3 + 2.3) - 0.5)));\n  // The shelf is not one white band: heaps catch the sun, the hollows between them stay in shade.\n  float sandBreak = smoothstep(0.25, 0.75, 0.6 * sandNoise(vStageLocal * ${SAND.breakPerMm.toFixed(2)} + 9.7) + 0.4 * sandFineB);\n  sandBody *= mix(${glsl(SAND.shade)} * mix(${SAND.shadeLow.toFixed(2)}, 1.0, sandBreak), ${glsl(SAND.lipTint)} * (1.0 + mix(${SAND.lipLow.toFixed(2)}, ${SAND.lip.toFixed(2)}, sandBreak) + ${SAND.glint.toFixed(2)} * sandSpark), sandLip) * (1.0 + ${SAND.left.toFixed(2)} * (1.0 - smoothstep(${SAND.leftFromMm.toFixed(1)}, ${SAND.leftToMm.toFixed(1)}, vStageLocal.x))) * mix(vec3(1.0), ${glsl(SAND.right)}, smoothstep(${SAND.rightFromMm.toFixed(1)}, ${SAND.rightToMm.toFixed(1)}, vStageLocal.x)) * mix(${SAND.mottleLow.toFixed(2)}, ${SAND.mottle.toFixed(2)}, 0.5 * sandFineB + 0.5 * sandFineM);\n  reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, sandBody, sandBank);\n}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${TURF_LOOK.wrap.toFixed(2)}) + ${SLOPE.ground.toFixed(2)} * smoothstep(0.0, 0.25, -vSurf.y))) * material.diffuseContribution;\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.sun.toFixed(2)} * turfSunAt(vStageLocal.xz) * (1.0 - sandAmt) * (1.0 - ${GRASS_LOOK.rightDark.toFixed(2)} * smoothstep(${GRASS_LOOK.rightFromMm.toFixed(1)}, ${GRASS_LOOK.rightToMm.toFixed(1)}, vStageLocal.x))) * mix(material.diffuseContribution, vec3(0.19, 0.17, 0.12), 0.3);\n{\n  float turfTurn = 1.0 - max(dot(geometryNormal, geometryViewDir), 0.0);\n  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${RIM.turf.toFixed(2)} * turfTurn * turfTurn * turfTurn * smoothstep(-0.2, 0.5, dot(geometryNormal, stageKeyL)) * (1.0 - sandAmt)) * mix(material.diffuseContribution, ${glsl(POOL.straw)}, ${POOL.strawShare.toFixed(2)});\n}\n{\n  float blazeL = blazeLamp(vStageLocal.xz);\n  float blazeC = blazeClump(vStageLocal.xz, smoothstep(${BLAZE.nearMm.toFixed(2)}, ${BLAZE.farMm.toFixed(2)}, length(dFdx(vStageLocal))));\n  // Lit turf is not one plane of light: clumps catch it and the gaps between them glow deeper, drawn out toward the lens, which looks along the ground.\n  vec3 blazeT = texture2D(map, vMapUv * vec2(${BLAZE.grain[0].toFixed(2)}, ${BLAZE.grain[1].toFixed(2)}) + 0.17).rgb;\n  float blazeG = smoothstep(0.3, 0.7, mix(blazeT.g, blazeT.r, ${BLAZE.grainFine.toFixed(2)}));\n  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * min(mix(${BLAZE.turf.toFixed(2)} * blazeC, ${BLAZE.lamp.turf.toFixed(2)}, blazeL) * blazeAt(vStageLocal.xz, turfRing), ${BLAZE.cap.toFixed(2)}) * mix(${BLAZE.gap.toFixed(2)}, 1.0, blazeG) * (1.0 - sandAmt)) * mix(${glsl(BLAZE.gapTint)}, mix(${glsl(BLAZE.tint)}, ${glsl(BLAZE.lamp.tint)}, blazeL), blazeG);\n  reflectedLight.directDiffuse *= blazeShade(vStageLocal.xz, turfRing);\n}\ntotalEmissiveRadiance += mix(${glsl(GRASS_LOOK.lift)}, ${glsl(LIFT)}, sandAmt);`)
     },
   })
 }
@@ -385,7 +409,7 @@ function grassMaterial(): THREE.MeshStandardMaterial {
       Object.assign(shader.uniforms, { uGlowGain: gain, uPoolSince: since })
       shader.vertexShader = shader.vertexShader.replace('#include <uv_pars_vertex>', `#include <uv_pars_vertex>\n${SURFACE_VERT_PARS}\n${POOL_VERT_PARS}`).replace('#include <uv_vertex>', `#include <uv_vertex>\n${SURFACE_VERT_MAIN}\n${POOL_VERT_MAIN}`)
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <map_pars_fragment>', `#include <map_pars_fragment>\n${BUMP_GLSL}\n${POOL_FRAG_PARS}`)
+        .replace('#include <map_pars_fragment>', `#include <map_pars_fragment>\n${BUMP_GLSL}\n${POOL_FRAG_PARS}\n${POND_GLSL}\n${BLAZE_GLSL}`)
         .replace(
           '#include <map_fragment>',
           `// A blade ends in a point, and a point finer than the picture's pixel cannot settle from one frame to the next: where the
@@ -405,6 +429,8 @@ diffuseColor.rgb *= ${glsl(GRASS_LOOK.moss)} * mix(1.0, ${TURF_LOOK.rim.toFixed(
 diffuseColor.rgb *= grassOwn;
 // Tuft by tuft the lawn has its own depth of green: how far this blade stands over or under the lawn's mean.
 float grassTone = mix(1.0, clamp(dot(grassOwn, vec3(0.3, 0.6, 0.1)) * ${(1 / (0.3 * GRASS_LOOK.mean[0] + 0.6 * GRASS_LOOK.mean[1] + 0.1 * GRASS_LOOK.mean[2])).toFixed(2)}, 0.0, ${GRASS_LOOK.toneTop.toFixed(2)}), ${GRASS_LOOK.vary.toFixed(2)});
+// In the blaze a blade keeps part of its own tone however fine it is, within a step the picture's samples settle.
+float blazeTone = mix(mix(${BLAZE.thin[0].toFixed(2)}, ${BLAZE.thin[1].toFixed(2)}, clamp((dot(vColor.rgb, vec3(0.3, 0.6, 0.1)) * ${(1 / (0.3 * GRASS_LOOK.mean[0] + 0.6 * GRASS_LOOK.mean[1] + 0.1 * GRASS_LOOK.mean[2])).toFixed(2)} - ${BLAZE.thinFrom.toFixed(2)}) / ${(BLAZE.thinTo - BLAZE.thinFrom).toFixed(2)}, 0.0, 1.0)), grassTone, grassKeep);
 // A lantern's pool is caught tuft by tuft as the sun is: one stands in it, the next in the shade of its neighbour.
 float grassCatch = mix(1.0, grassTone, ${GRASS_LOOK.catch.toFixed(2)});`,
         )
@@ -426,10 +452,17 @@ reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${GRASS_LOOK.sun.to
 reflectedLight.directDiffuse *= 1.0 - ${GRASS_LOOK.rightDark.toFixed(2)} * smoothstep(${GRASS_LOOK.rightFromMm.toFixed(1)}, ${GRASS_LOOK.rightToMm.toFixed(1)}, vStageLocal.x);
 reflectedLight.indirectDiffuse *= 1.0 - ${GRASS_LOOK.rightGlow.toFixed(2)} * smoothstep(${GRASS_LOOK.rightFromMm.toFixed(1)}, ${GRASS_LOOK.rightToMm.toFixed(1)}, vStageLocal.x);
 // In the blaze a blade is lit through along its whole body and least at its point, so that no bright sliver stands against the dark behind the lawn.
-reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * min(${BLAZE.gain.toFixed(3)} * ${blazeAt('vStageLocal.xz')} * (${BLAZE.low.toFixed(2)} + ${(1 - BLAZE.low).toFixed(2)} * grassBody) * mix(1.0, grassTone, ${BLAZE.vary.toFixed(2)}), ${BLAZE.cap.toFixed(2)}) * (1.0 - grassTuft)) * ${glsl(BLAZE.tint)};
-reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TUFT.gain.toFixed(3)} * grassTuft * (vSurf.y - 2.0) * mix(${TUFT.mean.toFixed(2)}, smoothstep(${TUFT.from.toFixed(2)}, ${TUFT.to.toFixed(2)}, vSurf.x), grassKeep)) * ${glsl(TUFT.tint)};
+float blazeL = blazeLamp(vStageLocal.xz);
+float blazeTuft = grassTuft * (1.0 - blazeL);
+float blazeBody = mix(mix(1.0, ${BLAZE.low.toFixed(2)} + ${((1 - BLAZE.low) * 4).toFixed(2)} * vSurf.x * (1.0 - vSurf.x), grassKeep), 1.0, ${BLAZE.lamp.root.toFixed(2)} * blazeL);
+float blazeRing = turfPond(vStageLocal.xz);
+float blazeLit = min(${BLAZE.blade.toFixed(2)} * mix(1.0, ${BLAZE.lamp.blade.toFixed(2)}, blazeL) * blazeAt(vStageLocal.xz, blazeRing) * mix(blazeClump(vStageLocal.xz, 1.0 - grassKeep), 1.0, ${BLAZE.lamp.even.toFixed(2)} * blazeL) * blazeBody * blazeTone, ${BLAZE.cap.toFixed(2)});
+// What stands low in the blaze is not grey: the light that reaches it has come through straw.
+reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * blazeLit * (1.0 - blazeTuft)) * mix(${glsl(BLAZE.gapTint)}, mix(${glsl(BLAZE.tint)}, ${glsl(BLAZE.lamp.tint)}, blazeL), smoothstep(${BLAZE.gapFrom.toFixed(2)}, ${BLAZE.gapTo.toFixed(2)}, blazeLit));
+reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TUFT.gain.toFixed(3)} * blazeTuft * (vSurf.y - 2.0) * mix(${TUFT.mean.toFixed(2)}, smoothstep(${TUFT.from.toFixed(2)}, ${TUFT.to.toFixed(2)}, vSurf.x), grassKeep)) * ${glsl(TUFT.tint)};
 // A blade stands against the low sun behind it and lets it through along its length, most at its middle: a soft stroke, not a spark at the tip.
 reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * mix(${RIM.body.toFixed(2)}, ${RIM.bodyFar.toFixed(2)}, smoothstep(${GRASS_LOOK.rightFromMm.toFixed(1)}, ${GRASS_LOOK.rightToMm.toFixed(1)}, vStageLocal.x)) * grassBody * grassTone * mix(${RIM.tipLow.toFixed(2)}, 1.0, smoothstep(0.3, 0.75, grassPatch))) * mix(material.diffuseContribution, ${glsl(RIM.tipTint)}, ${RIM.tipShare.toFixed(2)});
+reflectedLight.directDiffuse *= blazeShade(vStageLocal.xz, blazeRing);
 // The shade between the blades is green: what light reaches it has come through them.
 totalEmissiveRadiance += ${glsl(GRASS_LOOK.lift)} * mix(1.0, grassTone, ${GRASS_LOOK.liftVary.toFixed(2)});`,
       )
