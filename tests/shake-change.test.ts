@@ -5,13 +5,13 @@ import { FRAME } from '../src/app/framing'
 import * as THREE from 'three'
 import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, PASS_EVEN, passCount, passLevel, passShare, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS, stageUniforms, stillLevel } from '../src/core/materials'
 import { STILL_SIDE, stillBytes } from '../src/core/still'
-import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeShown, changeSpan, coverShown, LEAVE_OUT, leaveOut, partChange, SEASONAL_PARTS, VEIL_LEAVE, veilCrossed } from '../src/shake/change'
+import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeShown, changeSpan, coverShown, LEAVE_OUT, leaveKept, leaveOut, partChange, PILED_LEAVE, piledLeft, SEASONAL_PARTS, VEIL_LEAVE, veilCrossed } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 import { loopMoment, timelineMoment } from '../src/film/moments'
 import { loopSeconds } from '../src/film/loop'
 import { eventSeconds, filmTimeline, stillTimeline, type ShakeEvent, type Timeline } from '../src/film/timeline'
 import { CHANGE_BLOOM } from '../src/scene/lighting'
-import { makeSlab, REFLECT_MIX, ReflectMix, reflectStep } from '../src/scene/surface'
+import { LUMPS_LEAVE, makeSlab, REFLECT_MIX, ReflectMix, reflectStep } from '../src/scene/surface'
 import { STILL_FILE, stillSource } from '../tools/lib/stilltile.mjs'
 
 const s = config.shake
@@ -290,6 +290,72 @@ describe('the change number', () => {
       expect(text, file).toContain('leaveOut(')
       expect(text, file).not.toContain("partChange('surface-leave'")
     }
+  })
+
+  it("takes a pile's own light from it as it goes, and the pile from the table before what it lies on begins to thin", () => {
+    const P = PILED_LEAVE
+    const d = DRESSING_CHANGE
+    // One share for everything that thins on its way: 1 until it begins, 0 from where it is gone, a straight line between.
+    expect(leaveKept(0, 80, 40)).toBe(1)
+    expect(leaveKept(40, 80, 40)).toBe(1)
+    expect(leaveKept(60, 80, 40)).toBeCloseTo(0.5, 12)
+    expect(leaveKept(80, 80, 40)).toBe(0)
+    expect(leaveKept(500, 80, 40)).toBe(0)
+    // `leaveOut` reads it for the thing itself, to the last bit.
+    for (let k = 0; k <= 96; k++) {
+      const go = leaveOut(true, d.leaveFrom + ((d.leaveTo - d.leaveFrom) * k) / 96, null, LUMPS_LEAVE.reachMm, LUMPS_LEAVE.thinFromMm)
+      expect(go.kept).toBe(leaveKept(go.out, LUMPS_LEAVE.reachMm, LUMPS_LEAVE.thinFromMm))
+    }
+    // At rest, and in a change that does not take the thing away, a pile has all of its light and all of itself: 1 and 1.
+    expect(piledLeft(0)).toEqual({ lit: 1, kept: 1 })
+    for (const c of [0, d.leaveFrom, (d.leaveFrom + d.leaveTo) / 2, 1]) expect(piledLeft(leaveOut(false, c, null, LUMPS_LEAVE.reachMm, LUMPS_LEAVE.thinFromMm).out)).toEqual({ lit: 1, kept: 1 })
+    expect(piledLeft(leaveOut(true, d.leaveFrom, null, LUMPS_LEAVE.reachMm, LUMPS_LEAVE.thinFromMm).out)).toEqual({ lit: 1, kept: 1 })
+    // The light falls from the first of the way, with no step from the still pile, and only falls: by the square of what
+    // is left of the way to `darkMm`, where it is out. The pile only thins, from `thinFromMm` to `goneMm`.
+    expect(piledLeft(1).lit).toBeGreaterThan(0.95)
+    let before = { lit: 1, kept: 1 }
+    for (let out = 0; out <= LUMPS_LEAVE.reachMm; out += 0.25) {
+      const now = piledLeft(out)
+      expect(now.lit).toBeCloseTo(Math.max(0, 1 - out / P.darkMm) ** 2, 12)
+      expect(now.kept).toBe(leaveKept(out, P.goneMm, P.thinFromMm))
+      expect(now.lit).toBeLessThanOrEqual(before.lit)
+      expect(now.kept).toBeLessThanOrEqual(before.kept)
+      if (out <= P.thinFromMm) expect(now.kept).toBe(1)
+      if (out >= P.darkMm) expect(now.lit).toBe(0)
+      if (out >= P.goneMm) expect(now.kept).toBe(0)
+      before = now
+    }
+    // The order of it: the pile is whole until its own light is all but out, so it is never seen thin and bright; its light
+    // is out while most of it is still there, so what thins away is lit as the frost beside it; and it is gone before the
+    // thing it lies on begins to thin.
+    expect(P.thinFromMm).toBeGreaterThan(0)
+    expect(piledLeft(P.thinFromMm).lit).toBeLessThan(0.05)
+    expect(piledLeft(P.darkMm).kept).toBeGreaterThan(0.7)
+    expect(P.goneMm).toBeLessThanOrEqual(LUMPS_LEAVE.thinFromMm)
+    // Winter's frost reads these shares and works none of them out for itself. The piled snow (the shapes) thins by the
+    // pile's share and the sheet by the frost's; the heap's own light takes its share in the leaving alone, so at rest the
+    // shader reads nothing new.
+    const text = readFileSync('src/seasons/winter/frost.ts', 'utf8')
+    const shader = (name: string): string => {
+      const open = `\nconst ${name} = \`\n`
+      const at = text.indexOf(open)
+      expect(at, name).toBeGreaterThanOrEqual(0)
+      return text.slice(at + open.length, text.indexOf('`\n', at + open.length))
+    }
+    expect(text).toContain('const pile = piledLeft(go.out)\n  frostUniforms.uGonePile.value.set(pile.lit, pile.kept)')
+    expect(text).not.toContain('PILED_LEAVE.')
+    expect(text).toContain('uGonePile: { value: new THREE.Vector2(1, 1) }')
+    const shapes = shader('SHAPES')
+    expect(shapes.split('uGonePile.y').length).toBe(3)
+    expect(shapes).toContain('if (alpha * uGonePile.y < 0.012) discard;')
+    expect(shapes).not.toContain('uGoneAt.w')
+    const sheet = shader('SHEET')
+    expect(sheet).toContain('cover *= uGoneAt.w;')
+    expect(sheet).not.toContain('uGonePile')
+    const light = shader('SLAB_GLSL')
+    expect(light.split('uGonePile').length).toBe(2)
+    expect(light).toContain('if (uGone.x > 0.0) own *= uGonePile.x;')
+    expect(light).toContain('0.45) * own);')
   })
 
   it('raises a cover that comes up fast, is whole across the span and dies away as a tail past the end of the window', () => {
