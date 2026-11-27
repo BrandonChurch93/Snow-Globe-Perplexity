@@ -95,7 +95,7 @@ try {
   for (const index of list) {
     await page.evaluate(([on, m]) => window.showcase.dev.watchSamples(on, m ?? undefined), [watch, mark])
     const samples = counts.get(index)
-    const tier = tierOf(samples)
+    const tier = tierOf(samples, rule)
     const png = await run.frame({ ...track, tier }, page, index)
     const sane = await page.evaluate(() => window.showcase.dev.sanity())
     const seen = watch ? await page.evaluate(() => window.showcase.dev.sampleFacts().map((f) => ({ ...f, peak: f.peak, at: f.at ? f.at.map((v) => (Number.isFinite(v) ? v : String(v))) : null, before: f.before ? f.before.map((v) => (Number.isFinite(v) ? v : String(v))) : null }))) : []

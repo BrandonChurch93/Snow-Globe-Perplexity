@@ -8,7 +8,7 @@ import { readRows, rowsAddress, type Rows } from '../../scene/rowsfile'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
 import { SAND_COLOUR, sinceLoose } from './base'
-import { SAND_LIT, SLAB, SPRINKLE, sandHeight, sandLoose, sandOpen, sandShade, sandSpread, sandSprinkle, sandSprinkleAt, sandSprinkleRun } from './slab'
+import { SAND_GLSL, SAND_LIT, SLAB, SPRINKLE, sandDeep, sandHeight, sandLitAt, sandProud, sandSpread, sandSprinkle, sandSprinkleAt, sandSprinkleRun, sandStrewn } from './slab'
 
 const PART = 'arrival-summer'
 const RAD = Math.PI / 180
@@ -22,22 +22,22 @@ const RAD = Math.PI / 180
 // function of the time since the landing and of the clock, nothing is kept from frame to frame. The mirror of the slab
 // gets none of the grains; medium and low draw a share.
 //
-// A grain is drawn where it is when the shutter opens, with its own short blur along its path, and does not move through
-// the samples of one picture: across a whole shutter a falling grain is a line dozens of pixels long, and a line drawn
-// from a few samples is a row of dashes.
+// A falling grain is drawn as a camera sees it: as the line it travels while the shutter is open, with its light spread
+// along that line, so the fall is a veil of fine streaks and not grains that stand at a new place in every frame. The
+// line is the same in every sample of one picture: drawn from a few samples it would be a row of dashes.
 const LOOK = {
   gravity: 3400,
   lift: { stop: 0.25, share: 0.6, nearMm: [61.5, 69.0], late: 0.4, upMmS: [70, 170], inMm: 1.1 },
   ledge: { r: [46.5, 52.0], h: 42.6 },
-  jump: { count: 14000, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
-  fall: { count: 32000, gravity: 7000, az: 81, spread: 4.5, most: 2.0, off: [0.35, 1.6], h: [29.0, 30.5], outMmS: [70, 185], lean: 2.2, fliers: { share: 0.02, far: [1.2, 1.6] }, fanDeg: 2, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.035, 0.085], fine: 2.5, fadeFrom: 0.9, core: [0.3, 70, 160], exposure: 0.3, longMm: 1.0, thinPx: 0.24, grains: 1.9, mass: 2.4, sizes: [0.7, 0.9], soft: { share: 0.2, wide: 1.4, cover: 0.3 }, cover: 0.26, rise: 0.012, low: [0.66, 0.6, 0.56], shine: [0.4, 1.0], pale: 0.4, least: [0.03, 0.12], bright: [0.75, 1.9], even: 0.15, lit: 1.8, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
-  loose: { count: 800, radiusMm: [0.03, 0.06, 0.26], small: 0.8, lean: 2.4, glint: { one: 40, lit: 4.0, cover: 0.9 }, x: [-140, 136], z: [-70, 150], fromX: 0, thinPx: 0.5, veil: 0.15, vary: [0.08, 0.75], warm: [1.0, 0.74, 0.48], big: { share: 0.09, mm: [0.3, 0.7], underMm: 1.0, cover: [0.25, 0.5, 0.4], squash: [1.0, 2.4], bend: 0.7 } },
+  jump: { count: 8600, thin: 0.24, shade: 0.3, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
+  fall: { count: 24000, gravity: 7000, az: 80, spread: 2.5, most: 2.0, off: [0.35, 1.6], h: [29.0, 30.5], outMmS: [60, 150], lean: 1.7, fliers: { share: 0, far: [1.2, 1.6] }, fanDeg: 1.5, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.03, 0.07], fine: 2.5, core: [0.3, 70, 160], edge: [95, 130, 0.85], thinPx: 0.6, sizes: [0.7, 0.9], soft: { share: 0.5, wide: 2.2 }, cover: 2.7, rise: 0.012, low: [0.66, 0.6, 0.56], shine: [0.4, 1.0], pale: 0.4, least: [0.03, 0.12], bright: [0.75, 1.0], lit: 1.8, shaded: 0.08, mist: { seconds: 0.07, outMmS: [5, 40], upMmS: [5, 45], cover: 0.012, mm: [0.25, 0.5], turn: 0.45 } },
+  loose: { x: [16, 136], z: [-70, 112], kind: { proud: [0.26, 0.08] }, thinPx: 1.0, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, under: 3500, radiusMm: [0.07, 0.17, 0.45], small: 0.6, lean: 1.6, thin: 0.45, sunk: 0.3, vary: [0.6, 1.2] }, dust: { count: 14000, radiusMm: [0.03, 0.07], reach: 0.13, cover: 0.6 }, grain: { count: 1000, radiusMm: [0.07, 0.22], lean: 2.5, reach: 0.15 }, crumb: { count: 40, radiusMm: [0.3, 0.8], lean: 1.6, reach: 0.35 }, vary: [0.1, 0.42], warm: [1.0, 0.8, 0.56] },
   sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 1.0, round: [1.6, 4.0], clear: 6 },
   slope: { clearMm: 0.25, keeps: 0.75, roll: 0.5, bulge: 0.0038, crestMm: [60.6, 66], crestLean: 1.6, offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
   flow: { stand: 0.8, seconds: 1.6, gapMm: [0.3, 2.5], shadeMm: [0.5, 60] },
   exposure: 0.15,
-  gold: [1, 0.97, 0.92],
+  gold: [1, 0.8, 0.66],
   backlit: 2.6,
   shadow: { r: 57, top: [36, 41] },
   streak: 2.1,
@@ -79,12 +79,15 @@ uniform float uGrainLevel;
 uniform float uGrainPx;
 uniform vec4 uGrainLens;
 uniform float uSandDown;
+uniform vec2 uSandFoot;
 uniform vec3 uGrainKey;
 varying vec2 vGrainUv;
 varying vec4 vGrainLook;
 varying vec3 vGrainShape;
 varying float vGrainCover;
 varying float vGrainLit;
+varying float vGrainSun;
+${SAND_GLSL}
 vec3 fallRoll() {
   float G = ${LOOK.fall.gravity.toFixed(1)};
   float T = aFlight.y;
@@ -102,7 +105,8 @@ vec3 grainPath(float tau) {
   float T = aFlight.y;
   float vy = aFlight.z;
   vec3 to = position;
-  vec2 dir = normalize(to.xz - aFrom.xz + vec2(1e-4, 0.0));
+  vec2 way = to.xz - aFrom.xz;
+  vec2 dir = (dot(way, way) > 0.0 ? normalize(way) : vec2(1.0, 0.0));
   float skid = aSeed.w;
   vec2 touch = to.xz - dir * skid;
   if (tau < T) {
@@ -123,19 +127,6 @@ vec3 grainPath(float tau) {
   float hop = skid * 0.45 * abs(sin(after * 38.0)) * exp(-after * 16.0);
   return vec3(to.xz - dir * skid * exp(-after * 13.0), to.y + hop).xzy;
 }
-float grainShade(vec3 p, vec3 L) {
-  float a = dot(L.xz, L.xz);
-  if (a < 1e-6) return 1.0;
-  float b = dot(p.xz, L.xz);
-  float c = dot(p.xz, p.xz) - ${(LOOK.shadow.r * LOOK.shadow.r).toFixed(1)};
-  float disc = b * b - a * c;
-  if (c < 0.0) return smoothstep(-8.0, 8.0, b);
-  if (disc < 0.0) return 1.0;
-  float s2 = (-b + sqrt(disc)) / a;
-  if (s2 < 0.0) return 1.0;
-  float s1 = max((-b - sqrt(disc)) / a, 0.0);
-  return smoothstep(${LOOK.shadow.top[0].toFixed(1)}, ${LOOK.shadow.top[1].toFixed(1)}, p.y + s1 * L.y);
-}
 `
 
 const VERT_MAIN = `
@@ -145,6 +136,7 @@ float alive = 1.0;
 float airborne = 0.0;
 float puff = -1.0;
 float grown = 1.0;
+float fallLife = 0.0;
 if (aSeed.y < -0.5) {
   tau = max(grainT - aFlight.x, 0.0);
 } else if (aSeed.y < 0.5) {
@@ -153,7 +145,8 @@ if (aSeed.y < -0.5) {
 } else if (aSeed.y < 1.5) {
   float cycles = max(1.0, floor(uGrainLoop.y * aFlight.x + 0.5));
   float life = aFlight.y + fallSlide();
-  float spare = max(min(${LOOK.fall.puff.seconds.toFixed(3)}, uGrainLoop.y / cycles - life), 0.0);
+  fallLife = life;
+  float spare = max(min(${LOOK.fall.mist.seconds.toFixed(3)}, uGrainLoop.y / cycles - life), 0.0);
   tau = fract(uGrainLoop.x * cycles + aSeed.z) * (uGrainLoop.y / cycles);
   if (grainT < 0.0 || tau > grainT || tau >= life + spare || fract(aSeed.z * 61.3 + aSeed.x * 17.7) > uGrain.z || fract(aSeed.z * 23.9 + 0.37) > uGrainLevel) alive = 0.0;
   if (tau > life) puff = (tau - life) / max(spare, 1e-4);
@@ -168,10 +161,15 @@ if (aSeed.y < 0.5 || aSeed.y > 1.5) {
   if (grown <= 0.0) alive = 0.0;
 }
 tau = max(tau, 0.0);
-vec3 nowAt = grainPath(tau);
 float falls = aSeed.y > 0.5 && aSeed.y < 1.5 ? 1.0 : 0.0;
 float lies = aSeed.y > 1.5 ? 1.0 : 0.0;
-vec3 thenAt = grainPath(max(tau - uGrain.w * mix(1.0, ${(LOOK.fall.exposure / LOOK.exposure).toFixed(3)}, falls), 0.0));
+// A falling grain is in the picture from the place it has when the shutter opens to the place it has when it shuts, or to
+// where it lands if that is sooner.
+float shut = uGrain.w * ${(1 / LOOK.exposure).toFixed(4)};
+float until = falls > 0.5 ? min(tau + shut, max(fallLife, tau)) : tau;
+float seen = falls > 0.5 ? clamp((until - tau) / max(shut, 1e-5), 0.0, 1.0) : 1.0;
+vec3 nowAt = grainPath(until);
+vec3 thenAt = grainPath(falls > 0.5 ? tau : max(tau - uGrain.w, 0.0));
 if (lies > 0.5) {
   nowAt.y = mix(${SLAB.liftMm.toFixed(2)} + (nowAt.y - ${SLAB.liftMm.toFixed(2)}) * uSandGrow, nowAt.y, step(1.0, uSandGrow));
   // A few of the grains that lay against the foot are taken up a little way as it leaves, and fall back.
@@ -190,14 +188,14 @@ if (lies > 0.5) {
   thenAt.y -= low;
 }
 // Where a falling grain lands it knocks a little dust off the mound: for a moment after its fall the grain is that dust,
-// thrown a millimetre up and out, and fading.
+// a wide faint mote that drifts up and out slowly enough to be followed, and the many of them are a still mist.
 if (puff >= 0.0) {
-  float s = tau - (aFlight.y + fallSlide());
+  float s = tau - fallLife;
   float turn = 6.2832 * fract(aSeed.x * 71.3 + aSeed.z * 3.7);
-  vec2 out2 = (dot(position.xz, position.xz) > 0.0 ? normalize(position.xz) : vec2(1.0, 0.0)) * 0.6 + vec2(sin(turn), cos(turn));
-  float outS = mix(${LOOK.fall.puff.outMmS[0].toFixed(1)}, ${LOOK.fall.puff.outMmS[1].toFixed(1)}, fract(aSeed.x * 13.9 + 0.21));
-  float upS = mix(${LOOK.fall.puff.upMmS[0].toFixed(1)}, ${LOOK.fall.puff.upMmS[1].toFixed(1)}, fract(aSeed.z * 37.1 + aSeed.x * 5.3));
-  nowAt = position + vec3(out2.x * outS * s, max(upS * s - 0.5 * ${LOOK.fall.gravity.toFixed(1)} * s * s, 0.0), out2.y * outS * s);
+  vec2 out2 = (dot(position.xz, position.xz) > 0.0 ? normalize(position.xz) : vec2(1.0, 0.0)) + vec2(sin(turn), cos(turn)) * ${LOOK.fall.mist.turn.toFixed(2)};
+  float outS = mix(${LOOK.fall.mist.outMmS[0].toFixed(1)}, ${LOOK.fall.mist.outMmS[1].toFixed(1)}, fract(aSeed.x * 13.9 + 0.21));
+  float upS = mix(${LOOK.fall.mist.upMmS[0].toFixed(1)}, ${LOOK.fall.mist.upMmS[1].toFixed(1)}, fract(aSeed.z * 37.1 + aSeed.x * 5.3));
+  nowAt = position + vec3(out2.x * outS * s, upS * s, out2.y * outS * s);
   thenAt = nowAt;
 }
 airborne = (tau < aFlight.y && lies < 0.5) || falls > 0.5 ? 1.0 : 0.0;
@@ -211,27 +209,27 @@ vec2 across = vec2(-axis.y, axis.x);
 float blur = min(len, ${LOOK.blurRadii.toFixed(2)} * aFlight.w);
 float wide = 1.0 + 0.6 * airborne;
 float thinner = 1.0;
-// A falling grain is far finer than a pixel and crosses many of them while the shutter is open. It is drawn as the line it
-// leaves, never thinner than a pixel can show, and as much fainter as the line is longer and wider than the grain.
+// A falling grain is far finer than a pixel and crosses many of them while the shutter is open. It is drawn as the whole
+// line it leaves, never thinner than a pixel can show, and as much fainter as the line is longer and wider than the
+// grain: the light of the grain is all there, spread over the line. Half of them are drawn wider and softer still.
 if (falls > 0.5) {
   float least = ${LOOK.fall.thinPx.toFixed(2)} * max(-nowV.z, 1.0) / uGrainPx;
-  // The fall is grains, some larger, some out of focus, and none is drawn as a line longer than three of itself: what the
-  // shorter line loses in length it gains in light.
   float softly = step(${(1 - LOOK.fall.soft.share).toFixed(2)}, fract(aSeed.x * 37.3 + aSeed.z * 11.9));
   float larger = fract(aSeed.x * 7.7 + aSeed.z * 29.3);
   float grow = mix(mix(${LOOK.fall.sizes[0]!.toFixed(2)}, ${LOOK.fall.sizes[1]!.toFixed(2)}, larger * larger * larger), ${LOOK.fall.soft.wide.toFixed(2)}, softly);
-  float line = min(len, ${LOOK.fall.longMm.toFixed(1)});
   wide = 1.0;
   size = max(aFlight.w, least) * grow * alive;
-  blur = min(line, ${(2 * LOOK.fall.grains).toFixed(1)} * size);
-  float finer = aFlight.w / max(aFlight.w, least);
-  thinner = finer * finer * pow(max(2.0 * aFlight.w / max(line + 2.0 * aFlight.w, 1e-5), 0.0), ${LOOK.fall.even.toFixed(2)});
-  thinner *= min((line + 2.0 * size) / max(blur + 2.0 * size, 1e-5), ${LOOK.fall.mass.toFixed(2)}) * mix(1.0, ${LOOK.fall.soft.cover.toFixed(2)}, softly);
-  if (puff >= 0.0) size *= ${LOOK.fall.puff.wide.toFixed(2)};
+  blur = len;
+  float fine = aFlight.w / max(size, 1e-5);
+  thinner = seen * fine * fine / (1.0 + 0.637 * len / max(size, 1e-5));
+  if (puff >= 0.0) {
+    size = mix(${LOOK.fall.mist.mm[0].toFixed(2)}, ${LOOK.fall.mist.mm[1].toFixed(2)}, fract(aSeed.x * 3.3 + aSeed.z * 19.1)) * alive;
+    blur = 0.0;
+  }
 }
 if (falls < 0.5) {
   // The grains strewn to the right of the base are finer than the sprinkle to its left, which keeps its own size.
-  float least = mix(${LOOK.lens.flyPx.toFixed(2)}, mix(${LOOK.sprinkle.thinPx.toFixed(2)}, ${LOOK.loose.thinPx.toFixed(2)}, step(${LOOK.loose.fromX.toFixed(1)}, position.x)), lies) * max(-nowV.z, 1.0) / uGrainPx;
+  float least = mix(${LOOK.lens.flyPx.toFixed(2)}, mix(${LOOK.sprinkle.thinPx.toFixed(2)}, ${LOOK.loose.thinPx.toFixed(2)}, step(${LOOK.loose.x[0]!.toFixed(1)}, position.x)), lies) * max(-nowV.z, 1.0) / uGrainPx;
   if (lies > 0.5) blur = 0.0;
   size = max(aFlight.w, least) * alive;
   thinner = aFlight.w / max(aFlight.w, least);
@@ -265,23 +263,23 @@ if (falls > 0.5) {
   float glint = fract(aSeed.x * 53.7 + aSeed.z * 7.1);
   glint *= glint * glint;
   float bright = mix(${LOOK.fall.bright[0].toFixed(2)}, 1.0, glint * glint);
-  vGrainCover = min(1.0, ${LOOK.fall.cover.toFixed(2)} * ${LOOK.fall.bright[1].toFixed(2)} * bright * thinner);
-  vGrainCover *= 1.0 - smoothstep(${LOOK.fall.fadeFrom.toFixed(2)}, 1.0, tau / max(aFlight.y + fallSlide(), 1e-4));
+  vGrainCover = min(1.0, ${LOOK.fall.cover.toFixed(2)} * bright * thinner);
   vGrainCover *= smoothstep(0.0, ${LOOK.fall.rise.toFixed(3)}, tau);
-  if (puff >= 0.0) vGrainCover = ${LOOK.fall.puff.cover.toFixed(2)} * mix(0.4, 1.0, bright) * (1.0 - puff) * (1.0 - puff);
+  // The quickest grains fly farthest out and are few: they are the fainter the farther, so the fall ends in a veil and not in single grains.
+  vGrainCover *= 1.0 - ${LOOK.fall.edge[2]!.toFixed(2)} * smoothstep(${LOOK.fall.edge[0]!.toFixed(1)}, ${LOOK.fall.edge[1]!.toFixed(1)}, (length(position.xz - aFrom.xz) - aSeed.w) / max(aFlight.y, 1e-3));
+  if (puff >= 0.0) vGrainCover = ${LOOK.fall.mist.cover.toFixed(3)} * 4.0 * puff * (1.0 - puff);
 }
-if (lies > 0.5) vGrainCover = max(min(1.0, thinner) * mix(1.0, ${LOOK.loose.big.cover[2]!.toFixed(2)}, smoothstep(${LOOK.loose.big.cover[0]!.toFixed(2)}, ${LOOK.loose.big.cover[1]!.toFixed(2)}, aFlight.w) * (1.0 - step(0.05, aSeed.w) * step(aSeed.w, 0.2))), ${LOOK.loose.glint.cover.toFixed(2)} * step(1.5, aSeed.w));
+if (lies > 0.5) vGrainCover = min(1.0, thinner) * mix(1.0, ${LOOK.loose.dust.cover.toFixed(2)}, step(0.15, aSeed.w) * step(aSeed.w, 0.25));
 vGrainCover *= grown;
 vGrainLit = lies > 0.5 ? 1.0 + aSeed.w : falls > 0.5 ? mix(${LOOK.fall.core[0].toFixed(2)}, 1.0, smoothstep(${LOOK.fall.core[1].toFixed(1)}, ${LOOK.fall.core[2].toFixed(1)}, (length(position.xz - aFrom.xz) - aSeed.w) / max(aFlight.y, 1e-3))) : 1.0;
-float sunlit = mix(1.0, grainShade(grainW.xyz, uGrainKey), uSandDown);
+float sunlit = mix(1.0, sandBaseShade(grainW.xyz - vec3(uSandFoot.x, 0.0, uSandFoot.y), uGrainKey), uSandDown);
+vGrainSun = lies > 0.5 ? aFlight.x : 1.0;
 // A falling grain in the shade of the stone is as dark as the stone behind it and is all but lost against it.
 if (falls > 0.5) vGrainCover *= mix(${LOOK.fall.shaded.toFixed(2)}, 1.0, sunlit);
 vGrainLook = vec4(aSeed.x, fract(aSeed.x * 91.7 + aSeed.z * 13.1), sunlit, alive);
 `
 
 const fragment = (): string => `
-uniform float uSandDown;
-uniform vec2 uSandFoot;
 uniform vec3 uGrainKey;
 uniform vec3 uGrainKeyCol;
 uniform vec3 uGrainSky;
@@ -291,7 +289,9 @@ varying vec4 vGrainLook;
 varying vec3 vGrainShape;
 varying float vGrainCover;
 varying float vGrainLit;
+varying float vGrainSun;
 uniform vec4 uGrainLens;
+${SAND_GLSL}
 mat2 grainTurn = mat2(1.0, 0.0, 0.0, 1.0);
 vec2 grainCrumb = vec2(1.0, 0.0);
 float grainDisc(vec2 at, float L) {
@@ -310,7 +310,7 @@ void main() {
   if (vGrainShape.z > 1.5 && vGrainLit < 2.5) {
     float turn = 6.2832 * fract(vGrainLook.x * 57.3);
     grainTurn = mat2(cos(turn), sin(turn), -sin(turn), cos(turn));
-    grainCrumb = vec2(mix(${LOOK.loose.big.squash[0]!.toFixed(2)}, ${LOOK.loose.big.squash[1]!.toFixed(2)}, vGrainLook.y), ${LOOK.loose.big.bend.toFixed(2)} * (2.0 * fract(vGrainLook.x * 13.7) - 1.0));
+    grainCrumb = vec2(mix(${LOOK.loose.squash[0]!.toFixed(2)}, ${LOOK.loose.squash[1]!.toFixed(2)}, vGrainLook.y), ${LOOK.loose.bend.toFixed(2)} * (2.0 * fract(vGrainLook.x * 13.7) - 1.0));
   }
   vec2 lensQ = gl_FragCoord.xy - uGrainLens.xy;
   float lensR = dot(lensQ, lensQ) / dot(uGrainLens.xy, uGrainLens.xy);
@@ -361,7 +361,6 @@ void main() {
   albedo = mix(albedo, ${vec(SAND_COLOUR.dark)}, step(0.93, id2) * (1.0 - falls));
   albedo = mix(albedo, ${vec(SAND_COLOUR.white)}, step(id2, mix(0.12, ${LOOK.fall.pale.toFixed(2)}, falls)));
   float shade = mix(0.25, 1.0, vGrainLook.z) * vGrainLit * mix(1.0, ${LOOK.fall.lit.toFixed(2)}, falls);
-  if (vGrainShape.z < 0.5) shade *= ${sandShade('vStageWorld')};
   float ndl = dot(n, uGrainKey);
   float wrap = clamp((ndl + 0.45) / 1.45, 0.0, 1.0);
   float thru = pow(clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0), 3.0);
@@ -370,22 +369,20 @@ void main() {
   vec3 col = albedo * RECIPROCAL_PI * (uGrainKeyCol * shade * (wrap + 1.8 + (0.6 + ${LOOK.backlit.toFixed(2)} * vGrainShape.y) * thru) + dome + uRigCardCol * 0.35 * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
   float hk = max(dot(n, normalize(v + uGrainKey)), 0.0);
   col += uGrainKeyCol * shade * step(0.7, fract(id * 17.9)) * pow(abs(hk), 60.0) * 1.2;
-  // A grain that lies on the table is lit as the heap beside it is (slab.ts).
+  // A grain that lies on the heap or on the table is lit as the heap's skin is (slab.ts): by the sun the sand under it
+  // takes and the stone's shade, each a little more or less than the next; one wide enough to show it has a lit side.
   if (vGrainShape.z > 1.5) {
-    float face = smoothstep(${SAND_LIT.face[0]!.toFixed(3)}, ${SAND_LIT.face[1]!.toFixed(3)}, ndl);
-    float back = clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0);
-    float near = clamp((length(vStageWorld.xz) - 55.5) / 13.0, 0.0, 1.0);
-    float sun = vGrainLook.z * mix(${SAND_LIT.shade.toFixed(3)}, 1.0, near) * ${sandShade('vStageWorld')};
-    vec3 lit = uGrainKeyCol * (sun * (face * (${SAND_LIT.sun.toFixed(3)} + ${SAND_LIT.back.toFixed(3)} * back * back) + ${SAND_LIT.thru.toFixed(3)} * thru)) + dome * ${vec(SAND_LIT.warm)} * (${SAND_LIT.sky.toFixed(3)} * mix(0.45, 1.0, near) * ${sandOpen('vStageWorld', 'vGrainLook.z')}) + uRigCardCol * (${SAND_LIT.card.toFixed(3)} * mix(0.3, 1.0, near) * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
-    float vary = fract(id * 29.3 + id2 * 3.1);
     float kind = vGrainLit - 1.0;
-    float strewn = step(${LOOK.loose.fromX.toFixed(1)}, vStageWorld.x);
-    float gain = mix(mix(mix(${LOOK.sprinkle.vary[0]!.toFixed(2)}, ${LOOK.loose.vary[0]!.toFixed(2)}, strewn), mix(${LOOK.sprinkle.vary[1]!.toFixed(2)}, ${LOOK.loose.vary[1]!.toFixed(2)}, strewn), vary * vary), mix(${LOOK.sprinkle.core.lit.toFixed(2)}, ${LOOK.sprinkle.glints.lit.toFixed(2)}, step(0.75, kind)) * (0.75 + 0.5 * vary), step(0.25, kind) * (1.0 - step(1.5, kind)));
-    col = mix(albedo * mix(${vec(LOOK.sprinkle.warm)}, ${vec(LOOK.loose.warm)}, strewn), ${vec(LOOK.gold)} * vec3(1.0, 0.8, 0.5), step(0.75, kind) * (1.0 - step(1.5, kind))) * RECIPROCAL_PI * lit * gain + uGrainKeyCol * (sun * step(0.6, fract(id * 17.9)) * pow(abs(hk), 40.0) * ${SAND_LIT.glint.toFixed(3)});
-    float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
-    float over = max(lum - ${SAND_LIT.knee.toFixed(3)}, 0.0);
-    col *= (min(lum, ${SAND_LIT.knee.toFixed(3)}) + ${(SAND_LIT.top - SAND_LIT.knee).toFixed(3)} * (1.0 - exp(-over / ${(SAND_LIT.top - SAND_LIT.knee).toFixed(3)}))) / max(lum, 1e-4);
-    // One grain in thirty of those strewn on the table turns a face to the light and glints.
+    float vary = fract(id * 29.3 + id2 * 3.1);
+    float proud = step(0.255, kind) * step(kind, 0.345);
+    float deep = clamp((kind - ${LOOK.loose.kind.proud[0]!.toFixed(2)}) / ${LOOK.loose.kind.proud[1]!.toFixed(2)}, 0.0, 1.0);
+    float gain = mix(mix(${LOOK.loose.vary[0]!.toFixed(2)}, ${LOOK.loose.vary[1]!.toFixed(2)}, vary), mix(${LOOK.loose.proud.vary[0]!.toFixed(2)}, ${LOOK.loose.proud.vary[1]!.toFixed(2)}, vary), proud);
+    float side = mix(1.0, ${LOOK.loose.round[2]!.toFixed(2)} * smoothstep(${LOOK.loose.round[0]!.toFixed(2)}, ${LOOK.loose.round[1]!.toFixed(2)}, ndl), round);
+    float back = clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0);
+    float near = mix(0.7, 1.0, clamp((length(vStageWorld.xz) - 55.5) / 13.0, 0.0, 1.0));
+    vec3 paint = albedo * mix(${vec(LOOK.loose.warm)}, vec3(${SAND_LIT.tint.map((x) => x.toFixed(3)).join(', ')}) * sandCrest(vStageWorld.y) * mix(${vec(SAND_LIT.lone)} * ${SAND_LIT.thin[0]!.toFixed(3)}, vec3(1.0), deep), proud);
+    col = sandKnee(sandTone(paint * mix(gain, 1.0, proud), uGrainKeyCol * (vGrainSun * vGrainLook.z * side * (1.0 + ${SAND_LIT.back.toFixed(3)} * back * back)), (dome + uRigCardCol * (${SAND_LIT.card.toFixed(3)} * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0))) * near) * mix(1.0, gain, proud));
+    // One grain in forty of those strewn on the table turns a face to the light and glints.
     col *= mix(1.0, ${LOOK.loose.glint.lit.toFixed(2)}, step(1.5, kind));
   }
   vec3 cover = vGrainCover * disc;
@@ -393,7 +390,7 @@ void main() {
     col *= mix(${vec(LOOK.fall.low)}, vec3(1.0), smoothstep(${LOOK.fall.shine[0]!.toFixed(2)}, ${LOOK.fall.shine[1]!.toFixed(2)}, fract(id * 43.7 + id2 * 5.3)));
     cover *= smoothstep(${LOOK.fall.least[0]!.toFixed(2)}, ${LOOK.fall.least[1]!.toFixed(2)}, dot(col, vec3(0.2126, 0.7152, 0.0722)));
   }
-  gl_FragColor = vec4(col * cover, cover.g * mix(1.0, ${LOOK.loose.veil.toFixed(2)}, step(1.5, vGrainShape.z)));
+  gl_FragColor = vec4(col * cover, cover.g);
   if (uDiag != 0) gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);
 }
 `
@@ -503,7 +500,7 @@ export const GRAIN_FILE = { name: 'summer-grains', against: [null, null, null, 0
  * thread 1.6 s on a desktop, in one piece, so the build does it and the page reads the file (`prepare`).
  */
 export function grainRows(): Rows {
-  const total = LOOK.jump.count + LOOK.fall.count + LOOK.loose.count + LOOK.sprinkle.count
+  const total = LOOK.jump.count + LOOK.fall.count + LOOK.loose.proud.count + LOOK.loose.proud.under + LOOK.loose.dust.count + LOOK.loose.grain.count + LOOK.loose.crumb.count + LOOK.sprinkle.count
   const rows = new Float32Array(total * GRAIN_ROW)
   let n = 0
   const put = (t: readonly number[], f: readonly number[], fl: readonly number[], s: readonly number[]): void => {
@@ -532,7 +529,7 @@ export function grainRows(): Rows {
     const r = Math.hypot(x, z)
     if (r < 61.5) continue
     const h = sandHeight(x, z)
-    const want = ringed ? frontLeft(x, z) : h < 0.9 ? Math.min(1, 0.8 * sandSpread(x, z)) : 0.22
+    const want = ringed ? frontLeft(x, z) : sandLitAt(x, z) < J.shade ? 0 : h < 0.9 ? Math.min(1, J.thin * sandSpread(x, z)) : 0.22
     if (rj.next() > want) continue
     const radius = J.radiusMm[0] + (J.radiusMm[1] - J.radiusMm[0]) * rj.next() ** 2
     const y = SLAB.liftMm + h + radius * 0.7
@@ -563,25 +560,37 @@ export function grainRows(): Rows {
   const firstFall = n
   for (const g of fallPaths()) put(g.to, g.from, [g.rate, g.seconds, g.vy, g.radius], [g.id, 1, g.phase, g.slide])
 
-  // The grains that lie loose on the heaps, along their edges and on the table beyond. They lie where they are for good.
+  // The grains that lie where they are for good. Those that stand proud of the heap's skin, half sunk in it, so that
+  // its outline is grains; and those strewn round it: dust close in, grains, and a few coarse crumbs, fewer with the distance.
   const rl = stream(`${PART}/loose`)
   const O = LOOK.loose
-  for (let k = 0, laid = 0; laid < O.count && k < O.count * 600; k++) {
-    const x = rl.range(O.x[0]!, O.x[1]!)
-    const z = rl.range(O.z[0]!, O.z[1]!)
-    const keep = rl.next()
-    const pick = rl.next()
-    const fine = pick < O.small ? O.radiusMm[0]! + (O.radiusMm[1]! - O.radiusMm[0]!) * (pick / O.small) : O.radiusMm[1]! + (O.radiusMm[2]! - O.radiusMm[1]!) * ((pick - O.small) / (1 - O.small)) ** O.lean
-    const id = rl.next()
-    const phase = rl.next()
-    if (Math.hypot(x, z) < 61.5 || keep > sandLoose(x, z)) continue
-    // A few grains on the bare table and on the thin sand at the heap's foot are coarse crumbs.
-    const coarse = phase < O.big.share && sandHeight(x, z) < O.big.underMm
-    const radius = coarse ? O.big.mm[0]! + (O.big.mm[1]! - O.big.mm[0]!) * id : fine
-    const at = [x, SLAB.liftMm + sandHeight(x, z) + radius * 0.7, z]
-    put(at, at, [0, 0, 0, radius], [id, 2, phase, coarse ? 0.1 : (id * 977 + phase * 131) % 1 < 1 / O.glint.one ? 2 : 0])
-    laid++
+  const lie = (count: number, kind: number, want: (x: number, z: number) => number, size: (pick: number) => number, sunk: number, under = false, from = rl, most = count * 600): number => {
+    let k = 0
+    for (let laid = 0; laid < count && k < most; k++) {
+      const x = from.range(O.x[0]!, O.x[1]!)
+      const z = from.range(O.z[0]!, O.z[1]!)
+      const keep = from.next()
+      const pick = from.next()
+      const id = from.next()
+      const phase = from.next()
+      const r = Math.hypot(x, z)
+      if (r < 61.5 !== under || r < SLAB.footMm || keep > want(x, z)) continue
+      const radius = size(pick) * (kind < 0 ? O.proud.thin + (1 - O.proud.thin) * sandDeep(x, z) : 1)
+      const at = [x, SLAB.liftMm + sandHeight(x, z) + radius * (1 - sunk), z]
+      put(at, at, [sandLitAt(x, z), 0, 0, radius], [id, 2, phase, kind === 0 && (id * 977 + phase * 131) % 1 < 1 / O.glint.one ? 2 : kind < 0 ? O.kind.proud[0]! + O.kind.proud[1]! * sandDeep(x, z) : kind])
+      laid++
+    }
+    return k
   }
+  const proudSize = (pick: number): number => (pick < O.proud.small ? O.proud.radiusMm[0]! + (O.proud.radiusMm[1]! - O.proud.radiusMm[0]!) * (pick / O.proud.small) : O.proud.radiusMm[1]! + (O.proud.radiusMm[2]! - O.proud.radiusMm[1]!) * ((pick - O.proud.small) / (1 - O.proud.small)) ** O.proud.lean)
+  const tried = lie(O.proud.count, -1, sandProud, proudSize, O.proud.sunk)
+  lie(O.dust.count, 0.2, (x, z) => sandStrewn(x, z, O.dust.reach), (pick) => O.dust.radiusMm[0]! + (O.dust.radiusMm[1]! - O.dust.radiusMm[0]!) * pick, 0.3)
+  lie(O.grain.count, 0, (x, z) => sandStrewn(x, z, O.grain.reach), (pick) => O.grain.radiusMm[0]! + (O.grain.radiusMm[1]! - O.grain.radiusMm[0]!) * pick ** O.grain.lean, 0.3)
+  lie(O.crumb.count, 0.1, (x, z) => sandStrewn(x, z, O.crumb.reach), (pick) => O.crumb.radiusMm[0]! + (O.crumb.radiusMm[1]! - O.crumb.radiusMm[0]!) * pick ** O.crumb.lean, 0.3)
+  // The heap's sand under the belly of the stone, as thick with proud grains as the rest: out of sight while the globe
+  // stands, and the heap's outline on that side when it is lifted. None inside the foot's own circle: the sand there
+  // slides into the print as the foot leaves (slab.ts), and a grain laid at the heap's height would hang over it.
+  lie(O.proud.under, -1, sandProud, proudSize, O.proud.sunk, true, stream(`${PART}/loose-under`), tried)
   // The sprinkle beside the foot on the left (slab.ts): single grains, laid where they are for good.
   const rs = stream(`${PART}/sprinkle`)
   const ra = stream(`${PART}/sprinkle-along`)

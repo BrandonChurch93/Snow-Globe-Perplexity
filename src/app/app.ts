@@ -482,7 +482,7 @@ export function startApp(d: AppDeps): AppBridge {
       governor.rest()
     } else if (ready && dt > 0) {
       onFrame?.(dt)
-      if (!session.skipping && governor.frame(dt)) applyLevel()
+      if (!session.skipping && !d.stage.awaited?.() && governor.frame(dt)) applyLevel()
     }
     tell()
   }
