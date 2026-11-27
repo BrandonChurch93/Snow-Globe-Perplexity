@@ -747,6 +747,30 @@ describe('a wish', () => {
   it('asks for it a frame before the page gives the wish up, however long the frames are', () => {
     expect(LAST_S + LIVE.maxFrameSeconds).toBeLessThan(config.live.loadWaitSeconds)
   })
+
+  it('is LAST_S old by the clock as well where it is asked with the clock, whichever says so first, and never by a clock the press did not have', () => {
+    const w = new Wish()
+    w.drawn(rest(5))
+    w.press(to, 0)
+    w.drawn(rest(5.25))
+    expect(w.last(to, LAST_S * 1000)).toBe(false)
+    expect(w.last(to, LAST_S * 1000 + 1)).toBe(true)
+    expect(w.last(to)).toBe(false)
+    expect(w.last(other, LAST_S * 1000 + 1)).toBe(false)
+    w.drawn(rest(5 + LAST_S + 0.01))
+    expect(w.last(to, 1)).toBe(true)
+    const again = new Wish()
+    again.drawn(rest(5))
+    again.press(to, 2000)
+    expect(again.last(to, 2000 + LAST_S * 1000)).toBe(false)
+    expect(again.last(to, 2000 + LAST_S * 1000 + 1)).toBe(true)
+    again.drawn(rest(5.5, 100, to))
+    expect(again.last(to, 2000 + LAST_S * 1000 + 1)).toBe(false)
+    const plain = new Wish()
+    plain.drawn(rest(5))
+    plain.press(to)
+    expect(plain.last(to, 1e9)).toBe(false)
+  })
 })
 
 /** Everything that waits on a promise settled so far has run. */
@@ -878,13 +902,13 @@ describe('the steps of a hand', () => {
     return pace
   }
   /** A hand of `n` steps of `piece` ms each on a clock of the test's own, which gives it its turns. */
-  const hand = (n: number, piece: number, wish: Wish, pace = new FramePace(), of = season) => {
+  const hand = (n: number, piece: number, wish: Wish, pace = new FramePace(), of = season, byClock = false) => {
     const h = { clock: 0, done: 0, go: true, turns: [] as ((turn: Turn) => void)[], over: false }
     const steps = Array.from({ length: n }, () => (): void => {
       h.clock += piece
       h.done++
     })
-    void handIn(steps, of, wish, pace, REST_MS, () => h.go, () => new Promise<Turn>((give) => h.turns.push(give)), () => h.clock).then(() => (h.over = true))
+    void handIn(steps, of, wish, pace, REST_MS, () => h.go, () => new Promise<Turn>((give) => h.turns.push(give)), () => h.clock, byClock).then(() => (h.over = true))
     return h
   }
   const give = async (h: ReturnType<typeof hand>, turn: Turn): Promise<number> => {
@@ -954,6 +978,27 @@ describe('the steps of a hand', () => {
     expect(late.turns).toHaveLength(0)
     wish.drawn(rest(1 + LAST_S + 0.02))
     expect(wish.gave).toBe(true)
+  })
+
+  it('does all that is left at once when the press is LAST_S old by the clock where the browser links nothing aside, though the session has counted a quarter of a second; where it links aside the clock says nothing', async () => {
+    for (const byClock of [true, false]) {
+      const wish = new Wish()
+      wish.drawn(rest(1))
+      wish.press(season, 0)
+      const h = hand(900, 1, wish, new FramePace(), season, byClock)
+      const turn = spendOf(20, true)
+      expect(await give(h, { waited: 20, frame: null })).toBe(turn)
+      wish.drawn(rest(1.25))
+      h.clock = LAST_S * 1000 - turn
+      expect(await give(h, { waited: 20, frame: null })).toBe(turn)
+      expect(h.turns).toHaveLength(1)
+      h.clock = LAST_S * 1000 + 1
+      expect(await give(h, { waited: 20, frame: null })).toBe(byClock ? 900 - 2 * turn : turn)
+      expect(h.over).toBe(byClock)
+      expect(h.turns).toHaveLength(byClock ? 0 : 1)
+      wish.drawn(rest(1.5))
+      expect(wish.gave).toBe(true)
+    }
   })
 
   it('does nothing more once a frame has shown the season, which made the rest itself', async () => {
@@ -1088,6 +1133,15 @@ interface Early {
   wish?: Wish
   /** Whether the visit goes on after the landing until every season is in the GPU's hands. */
   through?: boolean
+  /**
+   * The ms the browser takes to draw a frame where it draws with the processor. No frame begins before the last is
+   * drawn, and the first step a hand takes in a turn waits for the frame as well, as every question to the GPU does.
+   */
+  gpu?: number
+  /** Whether the session falls behind the clock as on a page whose frame is over its time: it counts one step of the simulation a frame. */
+  behind?: boolean
+  /** Whether a hand takes the age of the press by the clock as well, as the stage has it where the browser links nothing aside. A step here holds the thread, which is that browser. */
+  byClock?: boolean
 }
 
 /**
@@ -1098,9 +1152,10 @@ interface Early {
  * (`stops`: the season, the ms, the beat of the shake). Gives the season the press landed in, those stops, the longest
  * the picture stood between the press and the landing (`stood`), the ms the hands of other seasons worked from the press
  * until the landing had settled, or with reduced motion until the season was on show, from where the picture rests under
- * its fade (`aside`), and whether every hand was over in the end.
+ * its fade (`aside`), and whether every hand was over in the end. Also the ms the hand of `to` had left at the press
+ * (`owed`), and the ms from the press until it was over (`handed`).
  */
-async function early({ every, script, work, piece, to, reduced = false, press = PRESS, hands: handsOf = (hand) => new Hands(hand), wish = new Wish(), through = false }: Early) {
+async function early({ every, script, work, piece, to, reduced = false, press = PRESS, hands: handsOf = (hand) => new Hands(hand), wish = new Wish(), through = false, gpu = 0, behind = false, byClock = true }: Early) {
   const loader = new SeasonLoader(first, async () => undefined)
   await loader.all
   const session = new LiveSession(new Counted(), first, loader.ready)
@@ -1111,16 +1166,17 @@ async function early({ every, script, work, piece, to, reduced = false, press = 
   const left = new Map(others.map((season) => [season, Math.ceil(work / piece)]))
   let waiting: { season: string; from: number; give: (turn: Turn) => void }[] = []
   let clock = 0
+  let drawnBy = 0
   const hands = handsOf((season) => {
     const steps = Array.from({ length: left.get(season)! }, () => (): void => {
-      clock += piece
+      clock = Math.max(clock, drawnBy) + piece
       left.set(season, left.get(season)! - 1)
     })
-    return handIn(steps, season, wish, pace, 4, () => !shown.has(season), () => new Promise<Turn>((give) => waiting.push({ season, from: clock, give })), () => clock)
+    return handIn(steps, season, wish, pace, 4, () => !shown.has(season), () => new Promise<Turn>((give) => waiting.push({ season, from: clock, give })), () => clock, byClock)
   })
   const stage: StageSide = {
     expect: (season) => {
-      wish.press(season)
+      wish.press(season, clock)
       return hands.pressed(season)
     },
   }
@@ -1136,6 +1192,9 @@ async function early({ every, script, work, piece, to, reduced = false, press = 
   let stood = 0
   let begun = 0
   let free = 0
+  let pressed = 0
+  let owed = 0
+  let handed: number | null = null
   for (let n = 0; n < 40000; n++) {
     const at = n === 0 ? 0 : Math.max(begun + every, Math.ceil(free / every - 1e-9) * every)
     const dt = n === 0 ? 0 : (at - begun) / 1000
@@ -1143,10 +1202,12 @@ async function early({ every, script, work, piece, to, reduced = false, press = 
     begun = at
     clock = at
     if (n === PRESS_FRAME) {
+      pressed = at
+      owed = left.get(to)! * piece
       asked = session.goTo(to)
       pressAs(press)(loader, { stage }, to)
     }
-    const moment = session.moment(session.tick(dt), 1)
+    const moment = session.moment(session.tick(dt, behind ? () => true : undefined), 1)
     wish.drawn(moment)
     clock += script
     for (const season of seasonsIn(moment)) {
@@ -1157,6 +1218,7 @@ async function early({ every, script, work, piece, to, reduced = false, press = 
       left.set(season, 0)
       shown.add(season)
     }
+    drawnBy = Math.max(drawnBy, clock) + gpu
     shaken ||= moment.beat !== null
     const storm = moment.beat !== null || (shaken && moment.sinceLanding < SETTLE_S)
     if (n > PRESS_FRAME && landed === null && !session.busy) landed = session.season
@@ -1174,11 +1236,12 @@ async function early({ every, script, work, piece, to, reduced = false, press = 
       await told()
       if (n >= PRESS_FRAME && w.season !== to && (reduced ? !shown.has(to) : landed === null || storm)) aside += clock - from
     }
-    free = clock + browser
+    if (n >= PRESS_FRAME && handed === null && left.get(to) === 0) handed = clock - pressed
+    free = Math.max(clock + browser, drawnBy)
     if (landed !== null && !storm && (!through || others.every((season) => left.get(season) === 0))) break
   }
   await told()
-  return { asked, landed, stops, stood, aside, all }
+  return { asked, landed, stops, stood, aside, all, owed, handed }
 }
 
 describe('a press for a season that is built and not yet in the GPU\'s hands', () => {
@@ -1272,6 +1335,25 @@ describe('a press for a season that is built and not yet in the GPU\'s hands', (
         expect(begun.stops[0]!.ms, where).toBeLessThan(was.stops[0]!.ms)
         expect(begun.stops[0]!.beat, where).toBeGreaterThanOrEqual(swap.fromBeat)
         expect(begun.landed, where).toBe(to)
+      }
+  }, 300000)
+
+  it('does not wait a frame for each step where the browser draws with the processor and links nothing aside: what is left when the press is LAST_S old by the clock is done in one piece, long before the session has counted as much', async () => {
+    const [script, gpu, piece] = [60, 1200, 350]
+    for (const reduced of [false, true])
+      for (const to of [soon, later]) {
+        const page = { every: 16.67, script, gpu, behind: true, work: 80 * piece, piece, to, reduced }
+        const where = `${reduced ? 'reduced motion, ' : ''}${to}`
+        const steps = await early({ ...page, byClock: false })
+        const whole = await early(page)
+        for (const v of [steps, whole]) {
+          expect(v.landed, where).toBe(to)
+          expect(v.stops, where).toEqual([])
+          expect(v.owed, where).toBeGreaterThanOrEqual(30 * piece)
+        }
+        expect(steps.handed, where).toBeGreaterThan((steps.owed / piece) * gpu)
+        expect(whole.handed, where).toBeLessThanOrEqual(LAST_S * 1000 + whole.owed + 2 * (script + gpu + piece + 16.67))
+        expect(whole.handed!, where).toBeLessThan(steps.handed! / 2)
       }
   }, 300000)
 

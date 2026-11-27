@@ -129,14 +129,16 @@ export class Wish {
   private answered = false
   private into: string | null = null
   private at = 0
+  private atMs: number | null = null
   private time = 0
   private giving = false
   private given = false
 
-  /** A press for `season`, at the moment drawn last: the session has not counted on since. */
-  press(season: string): void {
+  /** A press for `season`, at the moment drawn last: the session has not counted on since. `nowMs` is what the clock said then. */
+  press(season: string, nowMs: number | null = null): void {
     this.into = season
     this.at = this.time
+    this.atMs = nowMs
     this.answered = false
   }
 
@@ -162,9 +164,15 @@ export class Wish {
     return (this.inAir || this.into !== null) && this.into !== season
   }
 
-  /** Whether what is left of `season` is made in one piece: it is the season pressed for, and the press is `LAST_S` old. */
-  last(season: string): boolean {
-    return this.into === season && this.time - this.at > LAST_S
+  /**
+   * Whether what is left of `season` is made in one piece: it is the season pressed for, and the press is `LAST_S` old.
+   * By the session's count, which is what the page gives the wish up by. Asked with `nowMs`, by the clock as well,
+   * whichever says so first: the session counts a quarter of a second of a frame at most, and falls behind the clock on
+   * a page that draws slowly.
+   */
+  last(season: string, nowMs?: number): boolean {
+    if (this.into !== season) return false
+    return this.time - this.at > LAST_S || (nowMs !== undefined && this.atMs !== null && nowMs - this.atMs > LAST_S * 1000)
   }
 
   /** The page works on the season pressed for, in the time before the frame that comes next. */
@@ -208,16 +216,22 @@ export function workIn(steps: Step[], season: string, turn: Turn, wish: Wish, pa
  * rests a turn spends `restMs` of a frame. For the season a press waits for it spends what the making would, and the wish
  * is told that the page gave that time up itself. Once the press is `LAST_S` old all that is left is done at once and no
  * turn is waited for: a turn is a frame, and the press has few left before it gives up.
+ *
+ * `byClock` is for a browser that links no program aside: there a step waits for its program with the page's thread,
+ * and where the browser draws with the processor it waits for the frame before it as well. A hand in steps then takes
+ * a frame a program, several times what one piece takes, while the session, a quarter of a second a frame, has not
+ * counted `LAST_S`. There the press is old by the clock as well.
  */
-export async function handIn(steps: (() => void)[], season: string, wish: Wish, pace: FramePace, restMs: number, go: () => boolean, turnFor: () => Promise<Turn>, now: () => number): Promise<void> {
+export async function handIn(steps: (() => void)[], season: string, wish: Wish, pace: FramePace, restMs: number, go: () => boolean, turnFor: () => Promise<Turn>, now: () => number, byClock = false): Promise<void> {
+  const last = (): boolean => wish.last(season, byClock ? now() : undefined)
   for (let i = 0; i < steps.length && go(); ) {
-    const turn = wish.last(season) ? null : await turnFor()
+    const turn = last() ? null : await turnFor()
     const awaited = wish.awaits(season)
     if (awaited) wish.gives()
     const from = now()
     const used = turn === null || turn.frame === null ? null : from - turn.frame
     let ms = Infinity
-    if (turn !== null && !wish.last(season)) {
+    if (turn !== null && !last()) {
       if (awaited) ms = used === null ? spendOf(turn.waited, true) : spendIn(used, pace.every, turn.waited, true, pace.taken)
       else ms = used === null ? restMs : fitIn(restMs, used, pace.every, pace.taken)
     }

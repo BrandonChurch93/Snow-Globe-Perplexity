@@ -184,7 +184,7 @@ export class GlobeStage implements Stage {
 
   /** Gives what the shake waits for where `season` is built and not yet in the GPU's hands: its hand, begun now. */
   expect(season: string): Promise<void> | undefined {
-    this.wish.press(season)
+    this.wish.press(season, NOW())
     this.awaited ??= () => this.wish.gave
     return this.hands.pressed(season)
   }
@@ -278,11 +278,11 @@ export class GlobeStage implements Stage {
         Object.assign(renderer.info.render, { calls, triangles, points, lines })
       }
     }
-    const run = (steps: (() => void)[]): Promise<void> => handIn(steps, season, this.wish, this.pace, HAND_MS, go, () => this.turnFor(season), NOW)
-    const like = this.scratchOf(live.texture.type, live.samples)
-    const linked: Promise<unknown>[] = []
     // A browser that cannot link aside is not asked to: three writes a warning to the console of one that is.
     const linksAside = renderer.extensions.has('KHR_parallel_shader_compile')
+    const run = (steps: (() => void)[]): Promise<void> => handIn(steps, season, this.wish, this.pace, HAND_MS, go, () => this.turnFor(season), NOW, !linksAside)
+    const like = this.scratchOf(live.texture.type, live.samples)
+    const linked: Promise<unknown>[] = []
     await run(
       meshes.map((d) => () =>
         aside(like, () => {
