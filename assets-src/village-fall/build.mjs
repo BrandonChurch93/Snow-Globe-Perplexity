@@ -23,10 +23,10 @@ const SIZE = 1024
 const ATTIC = PROPS.ATTIC
 const PUMPKINS = PROPS.PUMPKINS
 const STONES = PROPS.STONES
-const LEAF_TONES = ['#a8501e', '#b8742c', '#8a3a1e', '#c09038', '#6a3a1c', '#96602a', '#a84a22', '#7a5424'].map(lin)
+const LEAF_TONES = ['#6a3a1c', '#5a3420', '#7a4a24', '#8a3a1e', '#4e3020', '#70401f', '#a8501e', '#b8742c', '#62422a', '#7c3220'].map(lin)
 const GRASS_TONES = ['#4f6a26', '#62782e', '#8f7a34', '#3f5620', '#86572a'].map(lin)
 
-const LITTER = { base: 0.1, patch: 0.3, fence: 0.2, tree: 0.14, wall: 0.1, leaves: 640 }
+const LITTER = { base: 0.07, patch: 0.24, fence: 0.08, tree: 0.1, wall: 0.1, leaves: 520 }
 const LEVELS = { medium: { error: 0.08, worth: 1 }, low: { error: 0.2, worth: 1 } }
 const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => [c[0] * 1.2, c[1] * 1.04, c[2] * 0.86])
 const ground = new Bag('ground')
@@ -631,26 +631,36 @@ for (const r of PROPS.ROCKS) {
     Z.addScaledVector(Y, -Z.dot(Y)).normalize()
     const X = new THREE.Vector3().crossVectors(Y, Z)
     const seed = R() * 50
-    const g = slab(b.wide, len, b.thick, { round: 0.1, sx: 5, sy: Math.max(4, Math.round(len * 0.9)), sz: 1, warp: 0.07, seed })
+    const g = slab(b.wide, len, b.thick, { round: 0.1, sx: b.post ? 8 : 5, sy: Math.max(4, Math.round(len * 0.9)), sz: 1, warp: b.post ? 0.04 : 0.07, seed })
     const P = g.getAttribute('position')
+    const half = b.wide / 2
+    const from = len / 2 - 1.7 * half
+    const crown = (x) => len / 2 - half + 0.92 * Math.sqrt(Math.max(half * half - x * x, 0))
     for (let i = 0; i < P.count; i++) {
       const x = P.getX(i)
       const y = P.getY(i)
-      const top = b.post ? smooth(len / 2 - b.wide * 0.9, len / 2, y) : 0
       const bite = 0.09 * noise(y * 1.3 + seed, x * 3, 0) * Math.sign(x)
-      P.setXYZ(i, (x + bite) * (1 - 0.55 * top * top) + (b.post ? 0.12 * top : 0), y - 0.25 * top * Math.abs(x), P.getZ(i) * (1 - 0.3 * top))
+      if (!b.post) {
+        P.setX(i, x + bite)
+        continue
+      }
+      const cx = Math.max(-half, Math.min(half, x))
+      const up = y > from ? from + ((y - from) * (crown(cx) - from)) / (len / 2 - from) : y
+      P.setXYZ(i, x + bite * (1 - smooth(from, len / 2, y)), up, P.getZ(i))
     }
     shade(g, (x, y, z) => {
       const grain = 0.35 + 1.1 * noise(x * 6.5 + seed, y * 0.7, z * 6.5)
       const split = 1 - 0.75 * smooth(0.55, 0.7, noise(x * 9 + 3, y * 0.35 + seed, 1.7))
-      const end = 0.7 + 0.7 * smooth(len / 2 - 0.7, len / 2, Math.abs(y))
+      const end = b.post ? 1 : 0.7 + 0.7 * smooth(len / 2 - 0.7, len / 2, Math.abs(y))
       const foot = b.post ? 0.5 + 0.5 * smooth(-len / 2 + 0.4, -len / 2 + 2.2, y) : 1
-      const worn = 1 + 1.7 * smooth(b.wide / 2 - 0.16, b.wide / 2 - 0.02, Math.abs(x))
+      const side = smooth(half - 0.22, half - 0.02, Math.abs(x))
+      const arch = b.post ? smooth(0.22, 0.04, crown(Math.max(-half, Math.min(half, x))) - y) : 0
+      const worn = 1 + 4.5 * Math.max(side, arch)
       return grain * split * end * foot * worn
     })
     const mid = [(b.a[0] + b.b[0]) / 2, (b.a[1] + b.b[1]) / 2, (b.a[2] + b.b[2]) / 2]
     const M = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(mid[0], mid[1], mid[2])
-    decor.add(g, { matrix: M, color: mul3(WOOD[Math.floor(R() * WOOD.length)], between(0.8, 1.15)), surf: [surf(KIND.wood, 0.84), 0], renormal: true })
+    decor.add(g, { matrix: M, color: mul3(WOOD[Math.floor(R() * WOOD.length)], between(0.5, 0.75)), surf: [surf(KIND.wood, 0.84), 0], renormal: true })
   }
 }
 
@@ -690,7 +700,7 @@ let leafCount = 0
     const curl = between(0.02, 0.13) * len
     const tilt = between(-0.35, 0.35)
     const lift = between(0.05, 0.22) + (pathGap(x, z) < 1.2 ? 0.75 : 0)
-    const tone = mul3(LEAF_TONES[Math.floor(R() * LEAF_TONES.length)], between(0.5, 1.35))
+    const tone = mul3(LEAF_TONES[Math.floor(R() * LEAF_TONES.length)], between(0.45, 1.2))
     const y = earthAt(x, z) + lift
     const M = new THREE.Matrix4().makeRotationX(tilt).premultiply(new THREE.Matrix4().makeRotationY(yaw)).setPosition(x, y, z)
     const lobes = 5
@@ -831,7 +841,7 @@ const earthBytes = writePng(
     const grit = 0.5 + 0.5 * noise(u * 20, v * 20, 9.1, 320)
     const pebble = Math.max(smooth(0.78, 0.9, 0.5 + 0.5 * noise(u * 3.5 + 11, v * 3.5 + 3, 6.6, 56)) * smooth(0.3, 0.7, grit + 0.2), smooth(0.74, 0.8, 0.5 + 0.5 * noise(u * 1.5 + 4, v * 1.5 + 9, 2.4, 24)))
     const h = clamp(0.55 * clod + 0.25 * fine + 0.2 * grit + 0.35 * pebble)
-    const soil = mix3(hexRgb('#150e09'), hexRgb('#5a4129'), clamp(0.05 + 1.05 * clod * (0.5 + 0.75 * fine)))
+    const soil = mix3(hexRgb('#170f09'), hexRgb('#5e4029'), clamp(0.05 + 1.05 * clod * (0.5 + 0.75 * fine)))
     const c = mix3(soil, hexRgb('#a39d8c'), pebble * 0.85)
     const fibre = smooth(0.62, 0.8, 0.5 + 0.5 * noise(u * 14 + 2, v * 2.2 + 8, 1.3, [224, 0])) * 0.5
     const out = mix3(c, hexRgb('#6a5230'), fibre * (1 - pebble))
@@ -843,7 +853,7 @@ const earthBytes = writePng(
 const litter = new Float32Array(SIZE * SIZE * 4)
 {
   const RL = rng(90211)
-  const tones = ['#8e4a26', '#a8703a', '#6e3420', '#b89050', '#553020', '#84522a', '#96422a', '#6c4a2a', '#b46a30', '#402820'].map(hexRgb)
+  const tones = ['#7a3c1e', '#84441e', '#6e3018', '#96481c', '#552c1a', '#74401f', '#8c3a1e', '#6c4424', '#b05a22', '#40261a', '#5c3a26', '#4a301e'].map(hexRgb)
   const n = 190
   for (let k = 0; k < n; k++) {
     const cx = RL() * SIZE
@@ -854,7 +864,7 @@ const litter = new Float32Array(SIZE * SIZE * 4)
     const ca = Math.cos(ang)
     const sa = Math.sin(ang)
     const tone = tones[Math.floor(RL() * tones.length)]
-    const dark = 0.3 + 1.0 * RL()
+    const dark = 0.25 + 0.9 * RL()
     const rank = 0.06 + 0.94 * ((k + 0.5) / n)
     const lobes = 5 + Math.floor(RL() * 3)
     const ph = RL() * 9
