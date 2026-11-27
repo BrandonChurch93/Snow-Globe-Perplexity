@@ -1,0 +1,219 @@
+From 4eb1dd7936115d7e8b0cf515136aa60796b98cbc Mon Sep 17 00:00:00 2001
+From: Brandon Church <200545962+BrandonChurch93@users.noreply.github.com>
+Date: Fri, 27 Nov 2026 21:45:52 +0000
+Subject: [PATCH] The table's dressing takes the frame's one hash to a pixel
+ from eight samples on
+
+At the front of a dressing that comes (spring's petals at 680, and the three
+changes after it) a pixel was held against a hash drawn afresh at each sample,
+so the number of samples in which it held the dressing fell by chance and the
+front stood as a fringe of grain in the film's final frames. From PASS_EVEN
+samples on the dressing now reads the frame's one hash to a pixel at its even
+levels, stepped with the sample, as the base's pass does.
+
+What this does and does not do. Where the front stands through an exposure,
+pixels at one place of it hold the dressing in the same number of samples. In
+the film the front runs on while the shutter is open, so the numbers at one
+place are near and not the same: at the film's two paces two to six samples
+apart at most, their mean square under what chance left at every count and a
+tenth to three fifths of it from 24 samples on. One share for the whole
+exposure, as a base has, would make them the same and is not written.
+
+Under PASS_EVEN samples the line is not read: a frame of the draft tier and the
+page's own frame are what they were. A base and a part inside the glass run
+the lines they ran.
+
+tests/shake-change.test.ts restates the test of the exact text (the old rule
+was one line for the dressing, a fresh hash at every count) and adds a test of
+the numbers held, for a front that stands and for one that passes.
+
+Co-authored-by: Perplexity <noreply@perplexity.ai>
+---
+ src/core/materials.ts      |  20 ++++++-
+ tests/shake-change.test.ts | 109 +++++++++++++++++++++++++++++++++++--
+ 2 files changed, 123 insertions(+), 6 deletions(-)
+
+diff --git a/src/core/materials.ts b/src/core/materials.ts
+index e88e83b7..24ed8351 100644
+--- a/src/core/materials.ts
++++ b/src/core/materials.ts
+@@ -67,6 +67,16 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
+  * comes from the far places in to the foot; the edge of that front is broken into
+  * patches (`cellMm`, `fineMm`) drawn out along the way a gust runs (`streak` times as long as wide, `rayMm` to a radian across)
+  * and feathered across the samples of a frame (`feather`), so a field of frost or of sand thins in fingers and never along a line.
++ * Across the feather a pixel is held against a hash, as a base's is, and a hash drawn afresh at each sample left the front as
++ * a fringe of grain for the base's reason: a pixel held the dressing in a number of samples that fell by chance. So from
++ * `PASS_EVEN` samples on the dressing reads the frame's one hash to a pixel at its even levels, stepped with the sample as the
++ * base's is. Where the front stands through an exposure, pixels at one place of it then hold the dressing in the same number
++ * of samples. The front does not stand: the change runs on while the shutter is open, each sample is held against the share
++ * that has passed at its own instant, and so the numbers at one place are near and not the same: at the film's two paces
++ * two to six samples apart at most, their mean square under what chance left at every count and, from 24 samples on, a
++ * tenth to three fifths of it (tests/shake-change.test.ts holds both). One share for the whole exposure, as a base has,
++ * would make them the same and is not written. Under `PASS_EVEN` samples the dressing keeps the fresh hash: of few samples
++ * the even levels are a few flat steps across the feather, and chance is the finer picture.
+  * The cover is the fall of the exposure with the light of the glass poured over the room, and all of that is set in
+  * lighting.ts (`CHANGE_BLOOM`). The one light laid here is what a base takes of that pour (`pourOnBase`).
+  * The code of a part's kind rides in `uState.z`: 0 and above is the lag of a part inside the glass, under 0 the table's gain,
+@@ -74,7 +84,10 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
+  */
+ export const OUTSIDE_FRONT = { rayMm: 110, streak: 3.4, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14 } as const
+ const BASE_CODE = 10
+-/** From this many samples a frame on, every pixel holds the new base in the same number of them; under it the still tile shares the odd sample out. */
++/**
++ * From this many samples a frame on, every pixel holds the new base in the same number of them; under it the still tile shares
++ * the odd sample out. From the same count on the table's dressing reads the frame's one hash to a pixel as the base does.
++ */
+ export const PASS_EVEN = 8
+ 
+ /**
+@@ -475,7 +488,10 @@ bool stageGone(float c) {
+       h = stageHash(vec3(gl_FragCoord.xy, uPass.x));
+       if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w;
+       h = fract(h + uPass.y);
+-    } else if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * ${OUTSIDE_FRONT.feather.toFixed(2)}, 0.001, 0.999);
++    } else {
++      if (uState.z < 0.0 && uPass.w > ${(PASS_EVEN - 0.5).toFixed(1)}) h = fract((floor(stageHash(vec3(gl_FragCoord.xy, uPass.x)) * uPass.w) + 0.5) / uPass.w + uPass.y);
++      if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * ${OUTSIDE_FRONT.feather.toFixed(2)}, 0.001, 0.999);
++    }
+     if (uState.w > 1.5 ? h < c : h >= c) return true;
+   }
+   if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;
+diff --git a/tests/shake-change.test.ts b/tests/shake-change.test.ts
+index 9978dda1..1497c062 100644
+--- a/tests/shake-change.test.ts
++++ b/tests/shake-change.test.ts
+@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
+ import { config, shots, tiers } from '../src/config'
+ import { FRAME } from '../src/app/framing'
+ import * as THREE from 'three'
+-import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, PASS_EVEN, passCount, passLevel, passShare, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS, stageUniforms, stillLevel } from '../src/core/materials'
++import { DRESSING_FRONT, GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, OUTSIDE_FRONT, PASS_EVEN, passCount, passLevel, passShare, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS, stageUniforms, stillLevel } from '../src/core/materials'
+ import { STILL_SIDE, stillBytes } from '../src/core/still'
+ import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeShown, changeSpan, coverShown, LEAVE_OUT, leaveKept, leaveOut, partChange, PILED_LEAVE, piledLeft, SEASONAL_PARTS, VEIL_LEAVE, veilCrossed } from '../src/shake/change'
+ import { shakeMotion } from '../src/shake/table'
+@@ -746,10 +746,108 @@ describe('the dressing on the glass under a change', () => {
+     for (const [x, y] of [[0, 0], [5, 77], [127, 127], [300, 41]] as const) expect((stillLevel(x, y) * 256 - 0.5) % 1).toBe(0)
+   })
+ 
+-  it('holds the pattern still where the page draws one sample a frame, so a pixel goes once and stays gone, and leaves a captured frame as it was', () => {
++  it("holds the table's dressing at one place of its front in the same number of a frame's samples at every pixel, from eight samples on", () => {
++    const gone = /\nbool stageGone\(float c\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1] ?? ''
++    // Every part that is not a base runs these two lines. The first is for the table's dressing alone (the code of its kind in
++    // `uState.z` is under 0, a part inside the glass has 0 or more) and for a frame of `PASS_EVEN` samples or more; the
++    // second lays the level across the feather of the front, as it did.
++    const lines = /\} else \{\n([\s\S]*?)\n    \}\n/.exec(gone)?.[1]?.split('\n').map((line) => line.trim())
++    expect(lines).toEqual([
++      'if (uState.z < 0.0 && uPass.w > 7.5) h = fract((floor(stageHash(vec3(gl_FragCoord.xy, uPass.x)) * uPass.w) + 0.5) / uPass.w + uPass.y);',
++      'if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * 0.14, 0.001, 0.999);',
++    ])
++    expect(PASS_EVEN - 0.5).toBe(7.5)
++    expect(OUTSIDE_FRONT.feather).toBe(0.14)
++    expect(DRESSING_FRONT.gain).toBeGreaterThan(0)
++    // The first line is the base's three in one: the same hash of the pixel and the frame, set at the middle of one of the
++    // frame's even levels and stepped with the sample (`passLevel`).
++    const base = /if \(uState\.z < -9\.0\) \{([^}]+)\}/.exec(gone)?.[1]?.replace(/\s+/g, ' ').trim()
++    expect(base).toBe('h = stageHash(vec3(gl_FragCoord.xy, uPass.x)); if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w; h = fract(h + uPass.y);')
++    // What that gives. At a place of the front (`edge`, what `stagePatch` says there) a pixel holds the dressing that comes in
++    // the samples whose level, laid across the feather, is under the share of the change that has passed (`c`), and the one
++    // that leaves in all the others. Where the front stands through the exposure (one `c` for every sample, as here), that
++    // is the same number of samples whatever the pixel's hash: the share of the feather that has passed, to the nearest
++    // sample. A fresh hash to every sample gave a number that fell by chance, pixel by pixel.
++    const held = (hash: number, n: number, edge: number, c: number): number => {
++      let m = 0
++      for (let i = 0; i < n; i++) if (Math.min(0.999, Math.max(0.001, edge + (passLevel(hash, passStep((i + 0.5) / n, n), n) - 0.5) * OUTSIDE_FRONT.feather)) < c) m++
++      return m
++    }
++    const counts = Object.values(tiers).map((t) => t.samplesPerFrame)
++    for (const n of [...new Set([PASS_EVEN, ...counts.filter((count) => count >= PASS_EVEN), 37, 41])]) {
++      for (const edge of [0.2, 0.5, 0.83]) {
++        // 53 is prime, so no share of this row stands on a level.
++        for (let k = 0; k <= 53; k++) {
++          const c = edge + (k / 53 - 0.5) * 1.2 * OUTSIDE_FRONT.feather
++          const share = Math.min(1, Math.max(0, (c - edge) / OUTSIDE_FRONT.feather + 0.5))
++          const first = held(0, n, edge, c)
++          expect(Math.abs(first - share * n), `${n} samples, the front at ${edge}, ${k} of 53`).toBeLessThanOrEqual(0.5 + 1e-6)
++          for (let j = 1; j < 997; j++) expect(held(j / 997, n, edge, c)).toBe(first)
++        }
++        // Before the front has reached the place the pixel holds none of the dressing that comes, behind it all of it.
++        for (let j = 0; j < 997; j += 83) {
++          expect(held(j / 997, n, edge, edge - 0.51 * OUTSIDE_FRONT.feather)).toBe(0)
++          expect(held(j / 997, n, edge, edge + 0.51 * OUTSIDE_FRONT.feather)).toBe(n)
++        }
++      }
++    }
++    // The front does not stand while the shutter is open: the change runs on through the exposure, so the share that has
++    // passed at a place rises from the frame's first sample to its last (`sweep`, in the front's own measure). The front's
++    // reach runs 1 + `gain` = 3 over the six frames of the leaving and over the 4.75 of the coming, and the shutter is open
++    // for half a frame: 0.25 and 0.316. There the numbers are near and not the same. `passing` counts them for every level a
++    // pixel's hash can stand at: how far apart the numbers are at most, their mean square about their mean, and the mean
++    // square a fresh hash to every sample gave (the sum of q (1 - q) over the samples, q the share of the feather passed).
++    const passing = (n: number, edge: number, from: number, sweep: number): { apart: number; spread: number; chance: number } => {
++      const numbers: number[] = []
++      let chance = 0
++      for (let i = 0; i < n; i++) {
++        const q = Math.min(1, Math.max(0, 0.5 + (from + (sweep * (i + 0.5)) / n - edge) / OUTSIDE_FRONT.feather))
++        chance += q * (1 - q)
++      }
++      for (let j = 0; j < n; j++) {
++        let m = 0
++        for (let i = 0; i < n; i++) {
++          const level = passLevel((j + 0.5) / n, passStep((i + 0.5) / n, n), n)
++          if (Math.min(0.999, Math.max(0.001, edge + (level - 0.5) * OUTSIDE_FRONT.feather)) < from + (sweep * (i + 0.5)) / n) m++
++        }
++        numbers.push(m)
++      }
++      const mean = numbers.reduce((a, b) => a + b, 0) / n
++      return { apart: Math.max(...numbers) - Math.min(...numbers), spread: numbers.reduce((a, b) => a + (b - mean) ** 2, 0) / n, chance }
++    }
++    // What it finds, by the count of samples (the review tier's 8, and 24, 26, 39, 41 and 77 of the final tier's frames):
++    // never more than six apart, the mean square always under chance's, and from 24 samples on under three fifths of it
++    // (a tenth to a third but for 41 samples at the leaving's pace, where the stride and the pace fall in step).
++    for (const n of [PASS_EVEN, 24, 26, 39, 41, 77]) {
++      for (const sweep of [0.25, 0.316]) {
++        let apart = 0
++        let spread = 0
++        let chance = 0
++        // The front at 54 places of its way across the pixel, from wholly ahead of it to wholly behind.
++        for (let k = 0; k <= 53; k++) {
++          const p = passing(n, 0.5, 0.5 - OUTSIDE_FRONT.feather / 2 - sweep + (k / 53) * (OUTSIDE_FRONT.feather + sweep), sweep)
++          apart = Math.max(apart, p.apart)
++          spread += p.spread
++          chance += p.chance
++        }
++        expect(apart, `${n} samples, sweep ${sweep}`).toBeLessThanOrEqual(6)
++        expect(spread, `${n} samples, sweep ${sweep}`).toBeLessThan(chance)
++        if (n >= 24) expect(spread, `${n} samples, sweep ${sweep}`).toBeLessThan(0.6 * chance)
++      }
++    }
++    // Under `PASS_EVEN` samples the line is not read, so a frame of the draft tier and the page's own frame are what they were.
++    expect(counts.some((n) => n > 1 && n < PASS_EVEN)).toBe(true)
++  })
++
++  it('holds the pattern still where the page draws one sample a frame, so a pixel goes once and stays gone, and keeps that path out of a captured frame', () => {
+     const body = /\nbool stageGone\(float c\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1]
+     expect(body?.split('\n')[0]).toBe('  if (uPass.w < 0.5) return stageGoneStill(c);')
+-    // What a captured frame runs is every line after that one, and it is the text it was before the page's own path left it.
++    // What a captured frame runs is every line after that one. The old rule here was that this text is what it was before the
++    // page's own path left it, with the dressing on one line (`} else if (stageEdge > -0.5) h = clamp(...)`): a fresh hash to
++    // every sample at every count. The new rule keeps every line of that and gives the table's dressing one line more, read
++    // from `PASS_EVEN` samples on alone: the frame's one hash to a pixel, as the base's three lines read it. Why: the fresh
++    // hash left the front of the petals as a fringe of grain in the film's final frames (680 and its sisters). A base, a part
++    // inside the glass and every frame of fewer than `PASS_EVEN` samples run what they ran.
+     expect(body?.split('\n').slice(1).join('\n')).toBe(
+       [
+         '  if (uState.w > 0.5) {',
+@@ -758,7 +856,10 @@ describe('the dressing on the glass under a change', () => {
+         '      h = stageHash(vec3(gl_FragCoord.xy, uPass.x));',
+         '      if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w;',
+         '      h = fract(h + uPass.y);',
+-        '    } else if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * 0.14, 0.001, 0.999);',
++        '    } else {',
++        '      if (uState.z < 0.0 && uPass.w > 7.5) h = fract((floor(stageHash(vec3(gl_FragCoord.xy, uPass.x)) * uPass.w) + 0.5) / uPass.w + uPass.y);',
++        '      if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * 0.14, 0.001, 0.999);',
++        '    }',
+         '    if (uState.w > 1.5 ? h < c : h >= c) return true;',
+         '  }',
+         '  if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;',
+-- 
+2.53.0
+
