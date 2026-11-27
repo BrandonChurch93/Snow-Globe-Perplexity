@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { config, tierEvenFromPx, tierMotion, tierSamples } from '../src/config'
 import { sampleSet } from '../src/core/sampler'
 import { SPREAD_BALL, TRAVEL_MARKS, centrePacePx, evenSet, framesamples, shutterTravelPx, spreadAt } from '../src/film/motion'
+import { SPREAD } from '../src/core/accumulator'
 import { applyPose, poseById } from '../src/scene/cameras'
 import { REST_POSE } from '../src/shake/table'
 import { countFacts, countsLine, recordMatchesRun, ruleCount, sampleRule, tierOf } from '../tools/lib/master.mjs'
@@ -150,6 +151,28 @@ describe('the spread of a sample along the ball\'s motion', () => {
     expect(ray(-0.98, 0.98).distanceToPoint(centre)).toBeGreaterThan(SPREAD_BALL.sphere[1] * 2)
     expect(SPREAD_BALL.sphere[1]).toBeGreaterThan(config.globe.sphereDiameterMm / 2)
     expect(SPREAD_BALL.base[0]).toBeGreaterThan(config.globe.baseDiameterMm / 2)
+  })
+})
+
+describe('the weights of the spread', () => {
+  const through = (period: number) => {
+    const mid = (SPREAD.weights.length - 1) / 2
+    const sum = SPREAD.weights.reduce((a, b) => a + b, 0)
+    return Math.abs(SPREAD.weights.reduce((a, w, k) => a + w * Math.cos((2 * Math.PI * (k - mid)) / period), 0)) / sum
+  }
+
+  it('are a tent about the sample itself', () => {
+    const w = SPREAD.weights
+    expect(w.length % 2).toBe(1)
+    for (let k = 0; k < w.length; k++) expect(w[k]).toBe(w[w.length - 1 - k])
+    for (let k = 1; k <= (w.length - 1) / 2; k++) expect(w[k]! - w[k - 1]!).toBe(1)
+  })
+
+  it('let nothing through of a row of copies two or four spacings apart, and little of three', () => {
+    expect(through(2)).toBeLessThan(1e-12)
+    expect(through(4)).toBeLessThan(1e-12)
+    expect(through(3)).toBeLessThan(0.07)
+    expect(through(40)).toBeGreaterThan(0.95)
   })
 })
 
