@@ -218,17 +218,46 @@
           }
         }
 
-        // A browser lays a box on whole pixels, and draws a box that is moved where it is moved to. So a picture is laid in
-        // the corner, whole pixels wide and high, and moved and sized from there: it stands between two pixels where its
-        // place is, as the live picture does that comes in over it.
+        // A browser lays a box on whole pixels and draws a box that is moved where it is moved to. A picture whose place is on
+        // whole pixels is laid there and drawn pixel for pixel. Any other is laid in the corner, in a box whole in the pixels of
+        // the page and of the screen, and moved and sized from there: it stands between two pixels where its place is, as the
+        // live picture does that comes in over it. Moved by half a pixel, a picture drawn at half its file's size would be the
+        // browser's own halved copy, smeared over two pixels. With a layer of its own and a hair more than half, the browser
+        // halves the file itself where the picture stands.
+        var NEAR = 0.1
+        var HAIR = 1e-5
         function put(img, b) {
-          var w = Math.round(b.w) || 1
-          var h = Math.round(b.h) || 1
-          img.style.left = img.style.top = '0'
+          var d = window.devicePixelRatio || 1
+          var far = function (n) {
+            var e = [b.x, b.y, b.x + b.w, b.y + b.h]
+            var most = 0
+            for (var i = 0; i < 4; i++) most = Math.max(most, Math.abs(e[i] * d * n - Math.round(e[i] * d * n)) / n)
+            return most
+          }
+          var both = function (v) {
+            var n = Math.round(v) || 1
+            for (var i = 0; i < 100; i++) if (Math.abs((n + i) * d - Math.round((n + i) * d)) < 1e-3) return n + i
+            return n
+          }
+          var whole = far(1) < NEAR
+          var W = (img.naturalWidth / 2 / d) * (1 + HAIR)
+          var H = (img.naturalHeight / 2 / d) * (1 + HAIR)
+          var halved = !whole && !img.style.maskImage && far(2) < NEAR && Math.max(Math.abs(b.w - W), Math.abs(b.h - H)) * d < NEAR
+          var to = halved ? { x: b.x + (b.w - W) / 2, y: b.y + (b.h - H) / 2, w: W, h: H } : b
+          var w = whole ? b.w : both(b.w)
+          var h = whole ? b.h : both(b.h)
+          img.style.left = (whole ? b.x : 0) + 'px'
+          img.style.top = (whole ? b.y : 0) + 'px'
           img.style.width = w + 'px'
           img.style.height = h + 'px'
           img.style.transformOrigin = '0 0'
-          img.style.transform = 'matrix(' + [b.w / w, 0, 0, b.h / h, b.x, b.y].join(',') + ')'
+          img.style.transform = whole ? '' : 'matrix(' + [to.w / w, 0, 0, to.h / h, to.x, to.y].join(',') + ')'
+          img.style.willChange = halved ? 'transform' : ''
+          var again = function () {
+            put(img, img.laid)
+          }
+          if (!img.naturalWidth && !img.laid) img.addEventListener('load', again, { once: true })
+          img.laid = b
         }
 
         // Where the still does not reach an edge of the screen, copies of it lie under it, each drawn larger about the glass than

@@ -1644,3 +1644,169 @@ describe('the canvas over the first still', () => {
     expect(p.told.gone).toBe(1)
   })
 })
+
+describe('where the page puts a picture of the first still', () => {
+  type Box = { x: number; y: number; w: number; h: number }
+  type Pic = { style: Record<string, string>; naturalWidth: number; naturalHeight: number; laid?: Box; heard: (() => void)[]; addEventListener(kind: string, heard: () => void): void }
+  const script = /<script>([\s\S]*?)<\/script>/.exec(readFileSync('index.html', 'utf8'))![1]!
+  const source = /\n( *var NEAR = [\d.e-]+\n *var HAIR = [\d.e-]+\n *function put\(img, b\) \{[\s\S]*?\n {8}\})\n/.exec(script)![1]!
+  const near = Number(/var NEAR = ([\d.e-]+)/.exec(source)![1])
+  const hair = Number(/var HAIR = ([\d.e-]+)/.exec(source)![1])
+  /** The page's own `put`, on a screen that draws so many pixels for one of the page's. */
+  const putOn = (ratio: number | undefined): ((img: Pic, b: Box) => void) => new Function('window', `${source}\nreturn put`)({ devicePixelRatio: ratio })
+  const px = (v: string | undefined): number => Number((v ?? '').replace(/px$/, ''))
+  /** Where a browser draws the picture: its box, moved and sized by its matrix if it has one. */
+  const drawn = (img: Pic): Box => {
+    const m = /^matrix\((.+)\)$/.exec(img.style.transform ?? '')
+    const [a = 1, , , d = 1, e = 0, f = 0] = m ? m[1]!.split(',').map(Number) : []
+    return { x: px(img.style.left) + e, y: px(img.style.top) + f, w: px(img.style.width) * a, h: px(img.style.height) * d }
+  }
+  /** A picture and the pixels of its file, none while the file has not arrived. Its list of listeners is read as it grows. */
+  const pic = (naturalWidth = 0, naturalHeight = 0): Pic => {
+    const heard: (() => void)[] = []
+    return { style: {}, naturalWidth, naturalHeight, heard, addEventListener: (kind, f) => void (kind === 'load' && heard.push(f)) }
+  }
+  const arrive = (img: Pic, naturalWidth: number, naturalHeight: number): void => {
+    Object.assign(img, { naturalWidth, naturalHeight })
+    for (let i = 0; i < img.heard.length; i++) {
+      expect(i, 'a listener that listens again never lets the list end').toBeLessThan(4)
+      img.heard[i]!()
+    }
+  }
+  const sameBox = (a: Box, b: Box, digits = 9): void => {
+    for (const k of ['x', 'y', 'w', 'h'] as const) expect(a[k], k).toBeCloseTo(b[k], digits)
+  }
+  const plainly = (img: Pic, b: Box): void => {
+    expect(img.style).toMatchObject({ left: `${b.x}px`, top: `${b.y}px`, width: `${b.w}px`, height: `${b.h}px`, transform: '', willChange: '' })
+  }
+  // Places the built page works out once the app has said where the globe stands, each with the pixels of its still's file.
+  const hd = { at: { x: 0.009, y: 0.0025, w: 1919.982, h: 1079.9899 }, file: [1920, 1080] } as const
+  const phone = { at: { x: 0.0029, y: 0.0017, w: 389.9942, h: 843.9875 }, file: [780, 1688] } as const
+  const hdIn1280 = { at: { x: 11.5091, y: 0.1821, w: 1256.9818, h: 707.0523 }, file: [1920, 1080] } as const
+  const midIn600 = { at: { x: -59.5046, y: -0.0003, w: 719.0093, h: 600.0078 }, file: [1438, 1200] } as const
+  const midIn601 = { at: { x: -59.0046, y: -0.0003, w: 719.0093, h: 600.0078 }, file: [1438, 1200] } as const
+  const midIn590 = { at: { x: -56.4389, y: 0.0435, w: 702.8779, h: 586.5462 }, file: [1438, 1200] } as const
+  const lowIn600 = { at: { x: -59.4955, y: 0.001, w: 718.991, h: 480.994 }, file: [1438, 962] } as const
+  const between: Box = { x: 10.3, y: 0.4, w: 701.3, h: 501.1 }
+
+  it('lays a picture whose place is on whole pixels there, with no matrix and no layer, to be drawn pixel for pixel', () => {
+    for (const [ratio, still] of [[1, hd], [3, phone], [1, midIn601], [2, midIn600]] as const) {
+      const img = pic(...still.file)
+      putOn(ratio)(img, still.at)
+      plainly(img, still.at)
+      expect(img.heard, `${ratio}`).toHaveLength(0)
+    }
+  })
+
+  it('lays any other in the corner, in a box of whole pixels, and moves and sizes it from there to its place', () => {
+    for (const [still, w, h] of [[hdIn1280, 1257, 707], [midIn590, 703, 587]] as const) {
+      const img = pic(...still.file)
+      putOn(1)(img, still.at)
+      expect(img.style).toMatchObject({ left: '0px', top: '0px', width: `${w}px`, height: `${h}px`, transformOrigin: '0 0', willChange: '' })
+      expect(img.style.transform).toMatch(/^matrix\([-\d.e]+,0,0,[-\d.e]+,[-\d.e]+,[-\d.e]+\)$/)
+      sameBox(drawn(img), still.at)
+    }
+  })
+
+  it('takes a place for whole only within the little the rounding of the table moves an edge by', () => {
+    // On a phone at three to one a still is 3 x 844 pixels high, and the table gives the glass and its row to five places.
+    expect(near).toBeGreaterThanOrEqual(0.08)
+    expect(near).toBeLessThanOrEqual(0.1)
+    for (const [edge, whole] of [[near * 0.9, true], [near * 1.1, false], [0.5, false], [1 - near * 0.9, true]] as const) {
+      for (const b of [{ x: edge, y: 0, w: 700, h: 500 }, { x: 0, y: edge, w: 700, h: 500 }, { x: 0, y: 0, w: 700 + edge, h: 500 }, { x: 0, y: 0, w: 700, h: 500 + edge }]) {
+        const img = pic(1920, 1080)
+        putOn(1)(img, b)
+        expect(img.style.transform === '', `${edge} ${JSON.stringify(b)}`).toBe(whole)
+        sameBox(drawn(img), b)
+      }
+    }
+  })
+
+  it('counts in the pixels of the screen, and makes the box whole in those as in the pixels of the page', () => {
+    // A ratio is a number of 32 bits by the time a browser gives it: 1.1 is not 1.1.
+    for (const ratio of [1.25, 1.5, 1.75, 2, 2.625, 3, Math.fround(1.1), Math.fround(1.65)]) {
+      const img = pic(1920, 1080)
+      putOn(ratio)(img, between)
+      expect(img.style.transform, `${ratio}`).not.toBe('')
+      for (const side of [px(img.style.width), px(img.style.height)]) {
+        expect(Number.isInteger(side), `${ratio}`).toBe(true)
+        expect(Math.abs(side * ratio - Math.round(side * ratio)), `${ratio}`).toBeLessThan(1e-3)
+      }
+      sameBox(drawn(img), between)
+    }
+    const odd = pic(1920, 1080)
+    putOn(1.0123)(odd, between)
+    expect(odd.style).toMatchObject({ width: '701px', height: '501px' })
+    sameBox(drawn(odd), between)
+    const whole = pic(1920, 1080)
+    putOn(1.25)(whole, { x: 0, y: 0, w: 1536, h: 864 })
+    plainly(whole, { x: 0, y: 0, w: 1536, h: 864 })
+    const unsaid = pic(1920, 1080)
+    const atOne = pic(1920, 1080)
+    putOn(undefined)(unsaid, between)
+    putOn(1)(atOne, between)
+    expect(unsaid.style).toEqual(atOne.style)
+  })
+
+  it('gives a picture drawn at half its file on half pixels a layer of its own, and a hair more than half', () => {
+    expect(hair).toBeGreaterThan(0)
+    expect((hair * 2560) / 2).toBeLessThan(0.02)
+    for (const still of [midIn600, lowIn600]) {
+      const img = pic(...still.file)
+      putOn(1)(img, still.at)
+      expect(img.style).toMatchObject({ left: '0px', top: '0px', width: `${still.file[0] / 2}px`, height: `${still.file[1] / 2}px`, willChange: 'transform' })
+      const to = drawn(img)
+      expect(to.w).toBeCloseTo((still.file[0] / 2) * (1 + hair), 9)
+      expect(to.h).toBeCloseTo((still.file[1] / 2) * (1 + hair), 9)
+      expect(to.w).toBeGreaterThan(still.file[0] / 2)
+      expect(to.h).toBeGreaterThan(still.file[1] / 2)
+      expect(to.x + to.w / 2).toBeCloseTo(still.at.x + still.at.w / 2, 9)
+      expect(to.y + to.h / 2).toBeCloseTo(still.at.y + still.at.h / 2, 9)
+      sameBox(to, still.at, 1)
+    }
+    const twice = pic(1438, 1200)
+    const half: Box = { x: midIn600.at.x / 2, y: midIn600.at.y / 2, w: midIn600.at.w / 2, h: midIn600.at.h / 2 }
+    putOn(2)(twice, half)
+    expect(twice.style).toMatchObject({ width: '360px', height: '300px', willChange: 'transform' })
+    expect(drawn(twice).w * 2).toBeCloseTo(719 * (1 + hair), 9)
+    sameBox(drawn(twice), half, 1)
+  })
+
+  it('gives no layer where the browser would not halve the file in place', () => {
+    const masked = pic(...midIn600.file)
+    masked.style.maskImage = 'linear-gradient(to top, transparent, #000 10px)'
+    const quarter = { x: -59.25, y: 0, w: 719, h: 600 }
+    const unknown = pic()
+    for (const [img, at] of [[masked, midIn600.at], [pic(...midIn600.file), quarter], [pic(...midIn590.file), midIn590.at], [pic(...hdIn1280.file), hdIn1280.at], [unknown, midIn600.at]] as const) {
+      putOn(1)(img, at)
+      expect(img.style.willChange).toBe('')
+      expect(img.style.transform).not.toBe('')
+      sameBox(drawn(img), at)
+    }
+    expect(unknown.heard).toHaveLength(1)
+  })
+
+  it('puts a picture again when its file arrives, where it was last put, and listens once', () => {
+    const img = pic()
+    const put = putOn(1)
+    put(img, between)
+    put(img, midIn600.at)
+    expect(img.heard).toHaveLength(1)
+    expect(img.style.willChange).toBe('')
+    arrive(img, 0, 0)
+    expect(img.heard).toHaveLength(1)
+    arrive(img, ...midIn600.file)
+    expect(img.heard).toHaveLength(1)
+    expect(img.style.willChange).toBe('transform')
+    sameBox(drawn(img), midIn600.at, 1)
+  })
+
+  it('leaves no matrix and no layer on a picture that is put on whole pixels after', () => {
+    const img = pic(...midIn600.file)
+    const put = putOn(1)
+    put(img, midIn600.at)
+    expect(img.style.willChange).toBe('transform')
+    put(img, midIn601.at)
+    plainly(img, midIn601.at)
+  })
+})
