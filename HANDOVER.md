@@ -42,9 +42,11 @@ FAIL M3 spring-rest: 0.4307 (threshold 0.75, detail.minSharpnessRatio) high freq
 FAIL M3 fall-rest: 0.5393 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 0.700 over 173846 pixels of the part in the ids view; miniature 0.539 over 101418 pixels of the part in the ids view
 ```
 
-### Change, landing and stand-in guards on the pushed head
+### Change, landing, stand-in and replay guards on the pushed head
 
 `npm run gate -- --phase 6 --only G11,G12,G14` passed all three. G11 holds the seven seasonal parts to their four swap windows and finds no change in the loop. G12 finds a minimum airborne gap of 0.44 mm, all four landings on bar lines and the shake openings at the hero camera. G14 finds HD draft frame 480 pixel-identical to 0. The new HD review `winter-rest` stand-ins draw on `1330a4aaef250f20` has 0 nonblack pixels and maximum RGB 0, ignoring alpha, across 2,073,600 pixels, with no page errors.
+
+`npm run determinism -- --film` passed on `1330a4aaef250f20`: five pictures and fifteen pixel-identical comparisons in four fresh page loads at preview draft, with no page errors. Landed, rest, settled, film f3240 and loop f288 each matched across four draw orders with checkpoints off, written and read back. The raw report is `4789-determinism.json`.
 
 ### All four card seams on the pushed head
 

@@ -1,0 +1,179 @@
+{
+  "pass": true,
+  "engineHash": "1330a4aaef250f20",
+  "format": "preview",
+  "tier": "draft",
+  "season": "winter",
+  "film": true,
+  "passes": [
+    {
+      "id": "a",
+      "what": "a fresh page, checkpoints off",
+      "order": [
+        "still-landed",
+        "still-rest",
+        "still-settled",
+        "film-3240",
+        "loop-288"
+      ]
+    },
+    {
+      "id": "b",
+      "what": "a fresh page, the reverse order, checkpoints off",
+      "order": [
+        "loop-288",
+        "film-3240",
+        "still-settled",
+        "still-rest",
+        "still-landed"
+      ]
+    },
+    {
+      "id": "c",
+      "what": "a fresh page, another order, checkpoints written",
+      "order": [
+        "still-rest",
+        "still-settled",
+        "film-3240",
+        "loop-288",
+        "still-landed"
+      ]
+    },
+    {
+      "id": "d",
+      "what": "a fresh page, another order, checkpoints read back",
+      "order": [
+        "still-settled",
+        "film-3240",
+        "loop-288",
+        "still-landed",
+        "still-rest"
+      ]
+    }
+  ],
+  "pictures": [
+    {
+      "picture": "still-landed",
+      "pass": "b",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "still-landed",
+      "pass": "c",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "still-landed",
+      "pass": "d",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "still-rest",
+      "pass": "b",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "still-rest",
+      "pass": "c",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "still-rest",
+      "pass": "d",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "still-settled",
+      "pass": "b",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "still-settled",
+      "pass": "c",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "still-settled",
+      "pass": "d",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "film-3240",
+      "pass": "b",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "film-3240",
+      "pass": "c",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "film-3240",
+      "pass": "d",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "loop-288",
+      "pass": "b",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "loop-288",
+      "pass": "c",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    },
+    {
+      "picture": "loop-288",
+      "pass": "d",
+      "against": "a",
+      "identical": true,
+      "differing": 0,
+      "maxDiff": 0
+    }
+  ],
+  "pageErrors": [],
+  "seconds": 349.181,
+  "time": "2026-11-27T00:03:13.231Z"
+}
