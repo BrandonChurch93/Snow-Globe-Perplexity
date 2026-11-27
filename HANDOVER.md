@@ -63,3 +63,63 @@ Drawn on one machine with lavapipe, one render at a time. "Before" for the trave
 ## A warning about this kind of machine
 
 A 3840 x 2160 final frame takes most of an 8 GB machine's memory. Two renders at once hung this machine for twelve minutes. One render at a time.
+
+## Second round, 03:16 to 06:45 UTC Nov 27
+
+This part is newer than everything above it. Where the two disagree, this part holds.
+
+### What changed in the mend
+
+- The floor of the new way, `tiers.final.motion.evenFromPx`, went from 6 px of travel to 1.5. It was found by drawing, not guessed. Film B, 3840 final, 24 samples, the old way beside the new way on the same frame, looked at six times enlarged: at 4.82 px (frame 604) and 2.75 px (606) the old way weaves on the lit edges of the base's leaf, and at 4.82 it doubles the glints; at 2.19 px (607) it is faintly rough on the lit ridges; at 1.59 px (728), 1.02 px (855) and 0.50 px (729) it is clean and I cannot tell the two ways apart. The new way is clean at every one of them. 1.5 is 1.59 rounded down to a half pixel.
+- The spread has its own lower end now, `spreadFromPx` 6, and keeps its upper end `spreadFullPx` 18. Under 6 px there is no spread, from 18 px the whole of it, a straight line between (`spreadReach`). Before this the spread came in whole at the floor and the frames just over 6 px were softer than those just under (frost 7.34 against 8.90 between frames 602 and 603).
+- The lens points of a frame drawn the new way are dealt out again (`lensOrder` in `src/film/motion.ts`). Left with their rank in time they leaned with the new places in the pixel (about 0.37, the sign turning with the direction of the travel), and what lies a little out of focus was drawn sharper or softer by direction: the base 8 percent sharper at 0.5 and 1 px, the table 2.5 percent softer. Now they lean with the place and the moment as they do in the set at rest (test bound 0.05). On frame 604 the table measures 2.698 the new way against 2.690 the old.
+- The rule line, every record, the README and the tests name `evenFromPx`, `spreadFromPx` and `spreadFullPx`.
+- With the floor at 1.5, 1,785 of film B's 3,600 frames are drawn the new way and 1,815 the old (1,449 of those under 0.5 px).
+
+### What argues for a floor at all
+
+- A frame at rest must be byte for byte what the stills' path draws.
+- The new way is not the judged sample set. Its places and moments are new, so its picture differs a little in character from the old way even where there is no weave, and the difference grows with the travel. Same frame both ways, mean absolute Laplacian, new against old: at 1.59 px five crops within 2.2 percent; at 2.19 px frost 7.5 percent up, base 3.8 up, cottage and table 1.0 down; at 4.82 px frost 8 percent down, cottage 4.5 down, base 14 down (the weave gone). So the two ways agree at the floor and part above it, slowly.
+
+### Proofs of the second round
+
+- Pushed head `9c255ac5` (= `ba82e4fc` merged with main `fe261991`): `npx tsc --noEmit` exit 0; the whole `npx vitest run` 66 files passed, 1 skipped; 921 tests passed, 8 skipped (the eight want the music tracks). Calibration on it and on plain `fe261991`, both drawn on this machine: `ad1c6495e7f09eec6324eca368580a7416a288a9228fbc681a340112f61612d4`, the same.
+- Byte proofs, film B, final tier, 1920 x 1080 (not 3840, to save time), my head against plain `fe261991`: a frame at rest, 300, `40d1d42094497fa579bd525c2b9d8b02f89d92a3d157cb7332c1c74bbebd7273` on both; a frame under the floor, 728 at 0.80 px, `009e1ddcf8cdaabfb4359cc58866ecfb771d4aa53bbb10035d5128b81cb79715` on both; a frame at full reach, 632 at 22.49 px and 30 samples, `d1f65022b21d221cacad25b21e5f48b55a8e2ba623e2ff02b434f5b3f3bbdd49` twice in two processes on my head. The last is not equal to main and cannot be since the lens mend: every frame drawn the new way changed its bytes with it.
+- No step at the floor: frame 728 (1.59 px, the first above the floor in its run) both ways at 3840, mean absolute Laplacian old and new: base right 19.41 and 19.57, base left 12.35 and 12.07, table left 3.027 and 2.978, table right 3.802 and 3.751, inside 3.336 and 3.387. All within 2.2 percent.
+- No step where the old floor sat: frames 601 to 604 (6.22, 6.03, 5.75, 4.82 px), all the new way, at 3840: frost 7.29, 7.45, 7.83, 8.69; cottage 9.98, 10.32, 10.67, 11.20; base 6.17, 6.32, 6.47, 6.63; table 2.703, 2.701, 2.704, 2.698.
+- Frame 1875 (4.66 px, summer's lying sand): the old way drew each grain as about three separate copies, the new way draws each as one soft smear along the travel. On main `d13d29c6`, where the sand draws a lying grain once as a soft disc, the new way gives one clean soft disc a grain, a little longer along the travel. Grain strip, mean absolute Laplacian: 14.77 the old way on the old sand, 12.01 the new way on the old sand, 4.68 the new way on the new sand. The old way on the new sand was not drawn.
+
+### The lens points' slow swing, found on shake 2 and mended
+
+- Frame 1337 (shake 2, 37.54 px, 51 samples) at 3840, the old way beside the new way of `9c255ac5`: the fine weave was cut to a third or a half, but a slow unevenness stayed on small bright things out of focus: soft upright teeth on the grey things in the glass, a wavy line on a small light's streak (a wave about every 9 px), beads on the strand of the base.
+- The cause, read by the root and confirmed by a test: the lens points were dealt by one even stride, and their part along the travel, read in the order of time, swung slowly. At 51 samples the period of 12.8 samples held 0.26 of the variance; 12.8 samples at 0.74 px a sample is 9.4 px. A thing out of focus is drawn in each sample at its place along the travel plus its blur disc times the lens point, so where the lens points of neighbours in time lie together the copies bunch. The set's own order has no such peak.
+- The mend, in `lensOrder` alone: a deal is judged by the lean it must keep (as before) plus the sum through the shutter of the squared mean of the lens points under the spread's own seven weights (1, 2, 3, 4, 3, 2, 1), after the straight trend with the moment is taken off. That mean is what the spread cannot close: the weights pass a swing of period 13 at 0.74 of its size, of period 6 at 0.19, of periods 3 and 5 at 0.06, of periods 2 and 4 at nothing. The search starts from the best even stride and lets pairs of samples change places while the cost falls, in five rounds, the lean held loosely first and steeply last. No random number and no clock: the same set and travel give the same order.
+- Numbers (the sum; white noise gives 0.344): the set's own order 0.09 to 0.30; the deal at 24 samples 0.017 to 0.043, at 51 0.006 to 0.009, at 96 to 128 0.005 to 0.007. The lean stays within 0.05 of the rest set's.
+- Frame 1337 again at 3840 (on `48b04e39` with the new deal, main `d13d29c6`), sha256 `d02e056562df9a3422d7ed66d7f21e5ba4da866067c53587c0062a1e92678587`. Fine and slow measure (mean absolute difference of a pixel from the mean of 3, and of the mean of 3 from the mean of 9, along the rows), the old way, the even stride, the new deal: grey thing in the glass fine 1.35, 0.39, 0.36 and slow 1.24, 1.02, 0.78; small light's streak fine 2.13, 0.99, 0.80 and slow 3.77, 3.91, 2.36; strand on the base fine 1.83, 0.62, 0.52 and slow 2.04, 1.79, 1.24; chimney fine 0.78, 0.39, 0.36 and slow 1.07, 1.14, 0.95; moss fine 1.14, 0.41, 0.36 and slow 1.13, 1.01, 0.69. The small light's streak is a straight bar with a faint ripple left at four times; the grey things show a striation only at four times. The root passed this frame by its own look.
+
+### Other things asked and what was found
+
+- The table's mirror image is not spread (the spread is on the pixels of the glass and the base only). On frame 1337 at three times it is smooth both ways. A row of nine coloured spots there (x 1285 to 1446, y about 2015, 16 to 25 px apart) is the same in the old way, the even stride and the new deal, and is the scene's own: the pool at the foot of the trickle, with its rings and glints. A spread that follows the mirror image was described to the root and not made.
+- The inside's lag as a doubled edge on the miniature: none seen on frame 1337 at 37.5 px.
+
+### Proofs of the state pushed as e53ce501
+
+All on this machine (lavapipe, 4 CPUs, 7.6 GiB), one render at a time.
+
+- `agent/p6-shutter` is `e53ce501`: `ebf15da4` (the new deal) on `48b04e39` (merge of main `d13d29c6`), then `daeb3c9e` (merge of main `b4bc96c0`), then a comment with the measured numbers in `tests/shutter.test.ts`.
+- `npx tsc --noEmit -p .` exit 0 and the whole `npx vitest run` on `daeb3c9e`: 66 files passed, 1 skipped; 925 tests passed, 8 skipped. On `e53ce501` only `tests/shutter.test.ts` was run again: 22 passed.
+- Calibration on `e53ce501` (build `3384a1c3ea8ce692`) and on plain `b4bc96c0` (build `842a8d88438fc72c`): `ad1c6495e7f09eec6324eca368580a7416a288a9228fbc681a340112f61612d4`, the same.
+- Bytes at 1920 x 1080, film B, final tier, the head against plain `b4bc96c0`: frame 300 at rest `40d1d42094497fa579bd525c2b9d8b02f89d92a3d157cb7332c1c74bbebd7273` on both; frame 728 (0.80 px at 1920, under the floor) `7fa07925299be61829a417b22976b7dd2d1afc926545f441a2c1a99ac01a91a1` on both. Frame 632 (22.49 px, 30 samples, full reach) twice in two processes on the head: `4bb28d5c1734112081a2f4288607bc8989bbb9b00e93fe67430357d645f119df` both times.
+- The chunk at 3840 x 2160 through the masters' own path, `npm run master -- --what film-b --first 712 --last 715 --chunk 4`, twice in two processes on `e53ce501` (engine `3384a1c3ea8ce692`), finished 06:01:51 and 06:14:05 UTC: travel 5.99, 9.25, 12.48, 13.23 px, 24 samples each, 712 without spread and 713 to 715 on the ramp. `frameHashes` the same in both records: `c713a02af8d998c42f8af3bebae254384286da2207bd844ee51a684b876ba75c`, `20d24395cb7a6f211cfddf2fc0d649975ceb404f40637db1b79febcaa8a86469`, `76a594f28de18edd8b0ad0e379a654520b76f88a91db7f93b4691c0d03309aaa`, `a9105762ffdb8f4f12c5e2f81a107628e13ef75bb92dfce68a70fc143074e3dc`; the two intermediates the same bytes, sha256 `73efbc8878a23e673fbfd1410e9f3cd1ff70663f412e8c4eb117bc875cd91bb2`; no value that is no number; luma PSNR least 50.87 dB. 176 s a frame on this machine. In the four frames, looked at twice enlarged from the decoded intermediate: no comb, no doubled edge, no step.
+- Frame 1398 (71.49 px, 96 samples) both ways at 3840: new way `69347159eb9741fa84606c8acab1e716384438e9443c8e1276ce08536897e40f`, old way `450d9fec63865836a4aa75414ed7df5af21c20dd64e0fcb4d3ac8725c7498807`. The miniature's small lights: a dotted weave the old way, smooth bars the new way (fine 0.83 then 0.32, slow 0.70 then 0.47). The frame lies in the change of season and the miniature is washed out, so it cannot show a lag of the inside well.
+- Frame 2064 (19.34 px, 26 samples): new deal `b80140814a13ffbb8b267dcd00e1235f979f503d6437f767e8922c1b0285496a`. The old way's weave on the base's sand and shells is gone (sand at four times: fine 1.41, 0.39, 0.39 and slow 1.31, 0.93, 0.96 for the old way, the even stride, the new deal). At 26 samples the new deal measures the same as the even stride.
+
+### What was not seen
+
+- Shake 4 (frame 2784) either way, and frame 2118.
+- The old way of frame 1875 on main `d13d29c6`.
+- Any frame of the loop in the second round.
+- Any frame on a head that holds main `a7f9032b` or later. The branch holds `b4bc96c0`.
+- The whole vitest on `e53ce501` itself; it ran on `daeb3c9e`, and `e53ce501` adds one comment in a test.
+- A frame with a clear miniature faster than 37.5 px, for the inside's lag.
+- The table's mirror image is still drawn without a spread. A spread that follows it was described to the root and waits for the root's word.

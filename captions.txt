@@ -8,3 +8,17 @@ Every picture: film B, 3840 x 2160, final tier, a crop at one to one, no scaling
 643-inside-lights.jpg: frame 643, the lights inside, crop at x 1640 y 660.
 678-inside.jpg: frame 678, the fastest frame of shake 1, the inside under the petal veil, crop at x 1900 y 700.
 678-outline.jpg: frame 678, the glass's outline at the lower left, crop at x 1440 y 1000.
+
+Second round. Every picture: film B, 3840 x 2160, final tier, 24 samples unless said. No words on the pictures.
+step-leaf-604-603-602-601.jpg, step-lights-604-603-602-601.jpg, step-outline-604-603-602-601.jpg: frames 604, 603, 602, 601 (4.82, 5.75, 6.03, 6.22 px) side by side across the old floor of 6 px, drawn with the reach growing from 6 to 18 px.
+floor-604-4.82px-leaf-old-new.jpg, floor-606-2.75px-leaf-old-new.jpg, floor-607-2.19px-leaf-old-new.jpg: the base's leaf, six times enlarged, the old way left and the new way right, at the travel in the name.
+floor-728-1.59px-base-old-new.jpg, floor-855-1.02px-base-old-new.jpg, floor-855-1.02px-lamp-old-new.jpg, floor-729-0.50px-outline-old-new.jpg: the same, at and under the floor of 1.5 px.
+sand-1875-4.66px-base-old-new.jpg, sand-1875-4.66px-grains-old-new.jpg: frame 1875, summer's lying sand on main fe261991, the old way left and the new way right.
+sand-1875-box-oldway-newway-d13newway.jpg: frame 1875, the box x 2900 to 3500, y 1790 to 2160 at one to one: the old way and the new way on fe261991, the new way on d13d29c6.
+sand-1875-grains-4x-newway-d13newway.jpg: frame 1875, grains at four times: the new way on fe261991 and on d13d29c6.
+shake2-1337-cottage-1to1-before-after.jpg, shake2-1337-window-4x-before-after.jpg: frame 1337 (shake 2, 37.54 px, 51 samples), the old way left, the new way with the lens points dealt by one even stride right.
+r3-1337-glass-2x.jpg, r3-1337-lights-4x.jpg, r3-1337-base-2x.jpg, r3-1337-chimney-4x.jpg, r3-1337-table-mirror-3x.jpg: frame 1337, three panels: the old way, the even stride, the new deal of the lens points. Glass at x 900 y 520 twice enlarged, a small light at x 1380 y 760 four times, the base's strand at x 1050 y 1380 twice, the chimney at x 1180 y 770 four times, the table's mirror image at x 1250 y 1975 three times.
+chunk-712-715-roots-2x.jpg, chunk-712-715-cottage-2x.jpg, chunk-712-715-outline-2x.jpg: frames 712, 713, 714, 715 (5.99, 9.25, 12.48, 13.23 px) left to right, twice enlarged, decoded from the test chunk's intermediate (not from PNGs): the base's roots at x 2200 y 1560, the cottage's windows at x 1440 y 980, the glass's outline at x 2380 y 1000.
+fast-1398-lights-4x-old-new.jpg, fast-1398-windows-4x-old-new.jpg: frame 1398 (the fastest of shake 2, 71.49 px, 96 samples), the old way left and the new way right, four times enlarged: the miniature's small lights at x 2560 y 620, its windows at x 2340 y 690.
+fast-1398-glass-1to1-old-new.jpg, fast-1398-miniature-1to1-old-new.jpg, fast-1398-foot-1to1-old-new.jpg: frame 1398 at one to one, the old way left and the new way right: x 1500 y 250, x 2200 y 400, x 1500 y 1000.
+shake3-2064-inside-1to1.jpg, shake3-2064-base-1to1.jpg, shake3-2064-sand-4x.jpg, shake3-2064-spark-4x.jpg, shake3-2064-shell-4x.jpg: frame 2064 (shake 3, 19.34 px, 26 samples), three panels: the old way, the even stride (both on main d13d29c6), the new deal (on main b4bc96c0). Inside at x 1500 y 700 and base at x 1300 y 1420 at one to one; the base's sand at x 1320 y 1650, a spark at x 1860 y 810 and a shell at x 1880 y 1500 four times enlarged.
