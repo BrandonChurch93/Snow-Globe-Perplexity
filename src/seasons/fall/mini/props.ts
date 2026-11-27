@@ -40,6 +40,7 @@ export interface Board {
   thick: number
   out: [number, number]
   post: boolean
+  picket: boolean
 }
 
 const RAIL = { from: [-39.2, 10.6] as [number, number], to: [-16.4, 32.6] as [number, number], bow: 1.6 }
@@ -51,6 +52,11 @@ const POSTS = [
   { t: 0.665, tall: 10.0, along: -0.08, out: 0.1, wide: 2.15 },
   { t: 0.835, tall: 12.1, along: -0.02, out: 0.18, wide: 1.95 },
   { t: 1.0, tall: 9.3, along: 0.11, out: 0.12, wide: 2.25 },
+]
+// The approved fence has two or three short thin pickets between each pair of tall boards, none of them plumb.
+const PICKETS = [
+  { at: 0.3, tall: 6.3, along: 0.07, wide: 0.85 },
+  { at: 0.66, tall: 8.1, along: -0.06, wide: 0.75 },
 ]
 const RAILS = [
   { at: 3.5, tilt: [0.3, -0.45, 0.35, -0.25, 0.45, -0.35], wide: 1.3 },
@@ -69,13 +75,21 @@ export function fenceBoards(): Board[] {
     const z = RAIL.from[1] + dz * t - out[1] * bow
     return [x, groundAt(x, z) - 0.6, z]
   }
-  const on = (i: number, h: number): Point => {
-    const p = POSTS[i]!
+  const lean = (p: { t: number; along: number; out: number }, h: number): Point => {
     const f = foot(p.t)
     const s = h + 0.6
     return [f[0] + (dir[0] * Math.sin(p.along) + out[0] * Math.sin(p.out)) * s, f[1] + Math.cos(p.along) * Math.cos(p.out) * s, f[2] + (dir[1] * Math.sin(p.along) + out[1] * Math.sin(p.out)) * s]
   }
-  const boards: Board[] = POSTS.map((p, i): Board => ({ a: foot(p.t), b: on(i, p.tall), wide: p.wide, thick: 0.6, out, post: true }))
+  const on = (i: number, h: number): Point => lean(POSTS[i]!, h)
+  const boards: Board[] = POSTS.map((p, i): Board => ({ a: foot(p.t), b: on(i, p.tall), wide: p.wide, thick: 0.6, out, post: true, picket: false }))
+  for (let i = 0; i < POSTS.length - 1; i++)
+    PICKETS.forEach((k, j) => {
+      const a = POSTS[i]!
+      const b = POSTS[i + 1]!
+      const turn = Math.sin(2.3 * i + 1.7 * j)
+      const at = { t: a.t + (b.t - a.t) * (k.at + 0.06 * turn), along: k.along + 0.05 * turn, out: (a.out + b.out) / 2 }
+      boards.push({ a: foot(at.t), b: lean(at, k.tall + 0.8 * turn), wide: k.wide, thick: 0.45, out, post: true, picket: true })
+    })
   for (const r of RAILS)
     for (let i = 0; i < POSTS.length - 1; i++) {
       const a = on(i, r.at + r.tilt[i]!)
@@ -89,6 +103,7 @@ export function fenceBoards(): Board[] {
         thick: 0.4,
         out,
         post: false,
+        picket: false,
       })
     }
   return boards
