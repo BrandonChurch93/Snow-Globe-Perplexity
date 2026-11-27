@@ -210,6 +210,8 @@ attribute vec3 aColorB;
 attribute vec4 aLook;
 attribute vec2 aLean;
 uniform float uBackMix;
+uniform float uBackHold;
+uniform float uBackEven;
 varying vec3 vColor;
 varying vec2 vDisc;
 varying vec4 vLook;
@@ -244,7 +246,12 @@ const DISC_VERT = `
   vDisc = corner;
   vLook = aLook;
   vColor = mix(aColorA, aColorB, uBackMix) * (size * size) / (radius * radius);
-  vColor *= 1.0 + dot(corner, aLean);`
+  vColor *= 1.0 + dot(corner, aLean);
+  // Under the cover of a change every lamp stands at one level, between what it gives in the season that leaves and in the
+  // season that comes (their geometric mean), so that when the two cross its colour passes and its light does not step.
+  float lampA = dot(aColorA, vec3(0.2126, 0.7152, 0.0722));
+  float lampB = dot(aColorB, vec3(0.2126, 0.7152, 0.0722));
+  vColor *= uBackHold * pow(max(sqrt(max(lampA * lampB, 0.0)) / max(mix(lampA, lampB, uBackMix), 1e-9), 1e-4), uBackEven);`
 
 const DISC = `${SLAB_SHAPE_GLSL}
 uniform vec3 uHazeTint;
@@ -406,7 +413,7 @@ export class Backdrop {
       part: 'backdrop',
       standIn: false,
       change: 'backdrop',
-      uniforms: { ...lensUniforms, uBackMix: { value: 0 }, uHazeTint: { value: new THREE.Vector3(1, 1, 1) } },
+      uniforms: { ...lensUniforms, uBackMix: { value: 0 }, uBackHold: { value: 1 }, uBackEven: { value: 0 }, uHazeTint: { value: new THREE.Vector3(1, 1, 1) } },
       vertexPars: DISC_VERT_PARS,
       vertexMain: DISC_VERT,
       fragment: DISC,
@@ -479,9 +486,17 @@ export class Backdrop {
       ca.color[2] * ca.intensity + (cb.color[2] * cb.intensity - ca.color[2] * ca.intensity) * t,
     )
     lensState.bloomTint.copy(f.bloomTint)
+    // Under the cover of a change the lamps fall with the exposure and do not go out: veiled by the glow of the glass, not gone.
+    this.material.uniforms.uBackHold!.value = f.lamps
+    // One season's lamps are brighter than another's, on the right of the room by two to four times. Crossed as they are in
+    // three frames, the lamps stepped up or down under the whole cover, where nothing else moves. So each lamp goes to a level
+    // between its two seasons' as the picture goes under the cover, crosses there, and comes up to the new season's own as
+    // the cover dies away. On that tail the season that came stands alone, and the frame names the one it came from.
+    this.material.uniforms.uBackEven!.value = f.mix.shown
     // The discs and the room's walls cross with the base, in its few frames: there the room has fallen dark under the flare, so
     // the lights of one season go down and the lights of the next come up, and no clean frame holds a room between two seasons.
-    this.set(f.from, f.to, f.mix.base)
+    if (f.left) this.set(f.left, f.to, 1)
+    else this.set(f.from, f.to, f.mix.base)
     this.group.visible = f.view !== 'flow' && f.view !== 'lightgrid'
   }
 
