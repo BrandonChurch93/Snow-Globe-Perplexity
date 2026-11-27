@@ -448,6 +448,11 @@ const STONE_AFTER = `
   float stonePitOn = baseHash(stonePitCell + 29.0);
   float stonePit = smoothstep(stonePitR, 0.45 * stonePitR, length(vBasePos - stonePitAt)) * mix(0.3, 1.0, smoothstep(0.35, 0.65, baseNoise(vBasePos * 0.21 + 3.0)));
   stoneGrain += mix(1.0, 0.85, stoneFar) * stonePit * (${STONE.crumb.toFixed(2)} * step(0.88, stonePitOn) - ${STONE.pit.toFixed(2)} * step(stonePitOn, 0.14));
+  // Read on the approved: down a column of its sand a pale speck a pixel or two high has a dark one right under it. A grain that stands
+  // proud takes the light on its top and throws its own speck of shade, most on the sand that is turned to the light.
+  vec3 stoneDashCell = floor(vBasePos * vec3(1.8, 3.6, 1.8) + 19.0);
+  float stoneDashNear = smoothstep(0.34, 0.2, min(length(dFdx(vBasePos)), length(dFdy(vBasePos))));
+  stoneGrain += 0.2 * (0.4 + 0.75 * baseGrit) * stoneDashNear * mix(0.5, 1.0, smoothstep(6.0, 18.0, vBasePos.y)) * smoothstep(-50.0, -38.0, vBasePos.x) * (1.0 + 0.3 * stoneFaceUp - 0.4 * stoneFaceDown) * (baseHash(stoneDashCell) - baseHash(stoneDashCell + vec3(0.0, 1.0, 0.0)));
   stoneGrain = max(stoneGrain, 0.3);
   reflectedLight.indirectDiffuse *= stoneGrain;
   reflectedLight.directDiffuse *= stoneGrain;
