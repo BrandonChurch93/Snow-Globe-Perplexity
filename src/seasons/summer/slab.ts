@@ -14,9 +14,9 @@ const PART = 'surface-dressing-summer'
 // is in its own shade. Round it lies an apron a grain or two deep that thins out into single grains, and a low bank
 // along the foot. Everywhere else the table is bare.
 const HEAP = {
-  cone: { x: 59.3, z: 17.2, mm: 10.2, tip: 0.1, foot: 0.2, round: [[-180, 1.05], [-18, 1.05], [14, 1.35], [150, 1.35], [180, 1.05]], reach: [[-180, 20], [-90, 21], [-50, 21], [-20, 21], [12, 31], [40, 26], [90, 27], [125, 29], [155, 26], [180, 20]] },
+  cone: { x: 59.3, z: 17.2, mm: 10.2, tip: 0.25, foot: 0.2, round: [[-180, 1.3], [-18, 1.5], [14, 1.6], [150, 1.5], [180, 1.3]], reach: [[-180, 20], [-90, 22], [-50, 27], [-20, 28], [12, 31], [40, 28], [90, 29], [125, 29], [155, 26], [180, 20]] },
   apron: { mm: 2.0, from: 0.6, lean: 2.5, extra: [[-180, 6], [-90, 6], [-30, 30], [0, 34], [25, 30], [50, 12], [90, 6], [130, 5], [180, 6]], patch: [-0.6, 0.3, 0.5] },
-  bank: { mm: [[-180, 0], [0, 0], [20, 1.6], [55, 1.6], [78, 2.5], [100, 2.5], [135, 0], [180, 0]], r: 58, w: 6 },
+  bank: { mm: [[-180, 0], [-10, 0], [15, 2.0], [40, 5.0], [62, 7.5], [85, 7.5], [105, 3.0], [135, 0], [180, 0]], r: 58, w: 14 },
   skirt: { at: [90, -40], mm: [24, 26], high: 0.7, patch: [0.05, 0.5] },
   lumps: [0.06, 0.22, 0.8],
   sprinkle: { at: [-63.8, -47.6], lit: [-0.918, -0.396], run: [-12, -2, 22, 78], rise: [0, 0.6], core: [0.95, 1.1], veil: [0.5, 6.5] },
@@ -28,7 +28,7 @@ const HEAP = {
 }
 // The light on the sand. The stage's lit material is made for the stone of the base; this takes its paint (every grain's
 // own colour and tilt) and the stage's key, sky and card, and lights the sand as dry sand is lit by a low sun from behind.
-export const SAND_LIT = { tilt: 0.25, ramp: [0.02, 0.26], gain: [0.45, 1.4], sun: 4.3, back: 1.0, sky: [3.6, 5.2, 8.0], card: 0.05, knee: 1.8, high: 3.2, pale: 0.75, tint: [1.0, 0.98, 0.93], thin: [0.5, 0.3, 4.0], lone: [1.0, 0.92, 0.84], speck: 1.8, finer: 1.6, rows: 1080, pit: [0.8, 0.33], pitTint: [1.0, 0.75, 0.5], warm: [0.22, 0.45], lean: [0.15, 0.45], tone: [0.6, 1.25], fade: 0.14, fill: [0.5, 1.0], soft: [0.8, 0.05], cast: [0.3, 0.15, 0.4, 60], shade: [1.2, 0.93, 0.74], ragged: [0.75, 0.5, 5.3], blur: [1.5, 2.5], unsharp: [0.75, 1.25], small: [0.5, 0.6], crest: { mm: [7.0, 9.5], tint: [0.88, 0.72, 0.6] } }
+export const SAND_LIT = { tilt: 0.25, ramp: [0.02, 0.26], gain: [0.45, 1.4], sun: 4.3, back: 1.0, sky: [3.6, 5.2, 8.0], card: 0.05, knee: 1.8, high: 3.2, pale: 0.75, tint: [1.0, 0.98, 0.93], thin: [0.5, 0.3, 4.0], lone: [1.0, 0.92, 0.84], speck: 1.8, finer: 1.6, rows: 1080, pit: [0.8, 0.33], pitTint: [1.0, 0.75, 0.5], warm: [0.22, 0.45], lean: [0.15, 0.45], tone: [0.6, 1.25], fade: 0.14, fill: [0.5, 1.0], soft: [0.8, 0.05], cast: [0.3, 0.1, 34], turned: { by: 0.6, low: 0.4, w: [0.6, 0.3], mm: 60, blur: 2.5 }, shade: [1.2, 0.93, 0.74], shadeTo: 0.25, ragged: [0.75, 0.5, 5.3], blur: [1.5, 2.5], unsharp: [0.75, 1.25], small: [0.5, 0.6], crest: { mm: [7.0, 9.5], tint: [0.88, 0.72, 0.6] } }
 export const SPRINKLE = { softMm: 5.0 } as const
 export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 0.5, skin: 2, bare: 0.0019, x: [-150, 142], z: [-232, 216], heap: { x: [-8, 132], z: [-78, 74] } } as const
 
@@ -242,18 +242,66 @@ function field(): Field {
   const key = keyDir()
   const plan = Math.hypot(key[0], key[2])
   const cast = new Float32Array(nx * nz).fill(1)
+  const near = new Float32Array(nx * nz).fill(1)
+  const face = new Float32Array(nx * nz)
   const lit = new Float32Array(nx * nz)
   const C = SAND_LIT.cast
+  // The heap's shade is cast twice: along the key as it stands, which leaves lit sand as lit as it was, and from
+  // further behind and lower, which lays the heap's near face in one soft shade.
+  const T = SAND_LIT.turned
+  const way = [key[0] / plan, key[2] / plan] as const
+  const behind = [way[0] * (1 - T.by), way[1] * (1 - T.by) - T.by] as const
+  const turned = [behind[0] / Math.hypot(behind[0], behind[1]), behind[1] / Math.hypot(behind[0], behind[1])] as const
+  // Most of a ray runs over ground too low to shade the place it starts from. For each cell `over` holds the highest
+  // ground a stretch of eight steps begun over it can pass, and a stretch that cannot lower the answer is not walked.
+  // The steps that are walked are the same ones, so the field is the same to the last bit, from a fraction of the samples.
+  const STRETCH = 8
+  const over = (dir: readonly [number, number]): Float32Array => {
+    const span = (k: number): [number, number] => [Math.floor(Math.min(0, k * (STRETCH - 1))) - 1, Math.ceil(Math.max(0, k * (STRETCH - 1))) + 2]
+    const [ax, bx] = span(dir[0])
+    const [az, bz] = span(dir[1])
+    const along = new Float32Array(nx * nz)
+    const top = new Float32Array(nx * nz)
+    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+      let most = -Infinity
+      for (let d = ax; d <= bx; d++) most = Math.max(most, at(i + d, j))
+      along[j * nx + i] = most
+    }
+    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+      let most = -Infinity
+      for (let d = az; d <= bz; d++) most = Math.max(most, along[Math.min(Math.max(j + d, 0), nz - 1) * nx + i]!)
+      top[j * nx + i] = most
+    }
+    return top
+  }
+  const march = (i: number, j: number, dir: readonly [number, number], top: Float32Array, rise: number, reach: number, edge: number, w0: number, w1: number): number => {
+    const here = h[j * nx + i]!
+    let least = 1
+    for (let s = step, k = 0; s < reach && least > 0; s += step, k++) {
+      if (k % STRETCH === 0) {
+        const far = s + (STRETCH - 1) * step
+        const most = top[Math.min(Math.max(Math.floor(j + (dir[1] * s) / step), 0), nz - 1) * nx + Math.min(Math.max(Math.floor(i + (dir[0] * s) / step), 0), nx - 1)]! - here
+        if (Math.min(edge - (most - rise * s) / (w0 + w1 * s), edge - (most - rise * far) / (w0 + w1 * far)) > least + 1e-6) {
+          s += (STRETCH - 1) * step
+          k += STRETCH - 1
+          continue
+        }
+      }
+      least = Math.min(least, edge - (soft(i + (dir[0] * s) / step, j + (dir[1] * s) / step) - here - rise * s) / (w0 + w1 * s))
+    }
+    return Math.max(least, 0)
+  }
+  const overWay = over(way)
+  const overTurned = over(turned)
   for (let j = 0; j < nz; j++) {
     for (let i = 0; i < nx; i++) {
       const o = j * nx + i
-      let least = 1
-      const low = C[2]! * (SAND_LIT.ragged[0]! + SAND_LIT.ragged[1]! * noise((x0 + i * step) / SAND_LIT.ragged[2]! + 1.7, (z0 + j * step) / SAND_LIT.ragged[2]! + 4.1, 23)) * (key[1] / plan)
-      for (let s = step; s < C[3]! && least > 0; s += step) least = Math.min(least, 0.5 - (soft(i + ((key[0] / plan) * s) / step, j + ((key[2] / plan) * s) / step) - h[o]! - low * s) / (C[0]! + C[1]! * s))
-      cast[o] = Math.max(least, 0)
+      cast[o] = march(i, j, way, overWay, key[1] / plan, C[2]!, 0.5, C[0]!, C[1]!)
+      const low = T.low * (SAND_LIT.ragged[0]! + SAND_LIT.ragged[1]! * noise((x0 + i * step) / SAND_LIT.ragged[2]! + 1.7, (z0 + j * step) / SAND_LIT.ragged[2]! + 4.1, 23)) * (key[1] / plan)
+      near[o] = march(i, j, turned, overTurned, low, T.mm, 1, T.w[0]!, T.w[1]!)
       const gx = (at(i + 1, j) - at(i - 1, j)) / (2 * step)
       const gz = (at(i, j + 1) - at(i, j - 1)) / (2 * step)
-      lit[o] = faceOf((key[1] - gx * key[0] - gz * key[2]) / Math.hypot(gx, 1, gz)) * cast[o]!
+      face[o] = faceOf((key[1] - gx * key[0] - gz * key[2]) / Math.hypot(gx, 1, gz))
     }
   }
   // The edge of that shade is not a line: the skin takes it over a grain or two, and a grain that stands proud takes the
@@ -276,6 +324,11 @@ function field(): Field {
       out[j * nx + i] = v / sum
     }
     return out
+  }
+  const wide = blurred(near, T.blur)
+  for (let o = 0; o < cast.length; o++) {
+    cast[o] = Math.min(cast[o]!, wide[o]!)
+    lit[o] = face[o]! * cast[o]!
   }
   made = { nx, nz, h, cast: blurred(cast, SAND_LIT.blur[0]!), lit: blurred(lit, SAND_LIT.blur[1]!) }
   return made
@@ -390,7 +443,7 @@ vec3 sandTone(vec3 paint, vec3 sun, vec3 sky) {
   return mix(c, vec3(l), ${f(SAND_LIT.pale)} * smoothstep(${f(SAND_LIT.knee * 0.5)}, ${f(SAND_LIT.high)}, l));
 }
 vec3 sandShade(float sun) {
-  return mix(vec3(${SAND_LIT.shade.map(f).join(', ')}), vec3(1.0), clamp(sun, 0.0, 1.0));
+  return mix(vec3(${SAND_LIT.shade.map(f).join(', ')}), vec3(1.0), clamp(sun * ${f(1 / SAND_LIT.shadeTo)}, 0.0, 1.0));
 }
 vec3 sandCrest(float y) {
   return mix(vec3(1.0), vec3(${SAND_LIT.crest.tint.map(f).join(', ')}), smoothstep(${f(SAND_LIT.crest.mm[0]!)}, ${f(SAND_LIT.crest.mm[1]!)}, y));
