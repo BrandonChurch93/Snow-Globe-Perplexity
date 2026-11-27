@@ -329,8 +329,9 @@ function bare(m, az, s) {
   const swirl = drawn * wave
   // The mesh holds a swirl as a round swell. What makes its crest an edge is narrower than the mesh's cells, so the carve map holds it.
   // Low on the front the hand has patted the sand: there an edge runs a finger's width and ends. On the sunlit left the swirls stay round.
+  // On the right flank the edge is gone: a piece of it alone on smooth sand draws as a hair.
   const patted = smooth(17, 12, h) * smooth(-34, -24, a180) * smooth(30, 10, a180)
-  const kink = SWIRL.kink * drawn * (mix(2 * ledge(frac(t1), SWIRL.edge, 1) - 1, 2 * ledge(frac(0.5 * t1 + 0.0955), SWIRL.edge, 1) - 1, pair) - wave) * smooth(-38, -22, a180) * mix(1, (stroke - 0.15) / 0.85, patted) * (Math.floor(t1) === SWIRL.one ? 1 : 0)
+  const kink = SWIRL.kink * drawn * (mix(2 * ledge(frac(t1), SWIRL.edge, 1) - 1, 2 * ledge(frac(0.5 * t1 + 0.0955), SWIRL.edge, 1) - 1, pair) - wave) * smooth(-38, -22, a180) * smooth(50, 36, a180) * mix(1, (stroke - 0.15) / 0.85, patted) * (Math.floor(t1) === SWIRL.one ? 1 : 0)
   // Under the one edge the shade does not end with the cut: it fades down the sand below it, over two millimetres on the approved left
   // of the middle and over half of that right of it.
   const below = (SWIRL.one - t1) / rate
