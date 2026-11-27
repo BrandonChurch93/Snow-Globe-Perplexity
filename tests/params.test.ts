@@ -53,6 +53,47 @@ describe('the address of the page', () => {
     expect(readParams('?mode=capture').format).toBe(config.formats.hd.id)
   })
 
+  // The page lays its first still before the app runs, from the address alone (index.html): it reads a capture address as
+  // the app does, so the live page a capture address fell back to has its still like the plain address.
+  it('lays the first still for a capture address that is the live page, and for no capture page', () => {
+    const script = /<script>([\s\S]*?)<\/script>/.exec(readFileSync(new URL('../index.html', import.meta.url), 'utf8'))?.[1] ?? ''
+    const named = /asked\.has\('format'\) && (\[[^\]]*\])\.indexOf\(asked\.get\('format'\)\) < 0/.exec(script)?.[1] ?? '[]'
+    expect(JSON.parse(named.replaceAll("'", '"'))).toEqual(Object.values(config.formats).map((f) => f.id))
+    const reached = new Error('the page went on to lay a picture')
+    const lays = (search: string): boolean => {
+      const win = { innerWidth: 600, innerHeight: 600, addEventListener: () => undefined }
+      const doc = {
+        getElementById: (id: string) => (id === 'first' ? { clientWidth: 600, clientHeight: 600 } : null),
+        createElement: () => {
+          throw reached
+        },
+      }
+      try {
+        new Function('window', 'document', 'location', script)(win, doc, { search })
+      } catch (e) {
+        if (e !== reached) throw e
+      }
+      return 'firstStill' in win
+    }
+    expect(lays('')).toBe(true)
+    for (const format of [...CARRIED, 'no-such-format', '']) {
+      expect(readParams(`?mode=capture&format=${format}`).mode, format).toBe('live')
+      expect(lays(`?mode=capture&format=${format}`), format).toBe(true)
+      expect(lays(`?format=${format}&mode=capture`), format).toBe(true)
+    }
+    for (const f of Object.values(config.formats)) {
+      expect(lays(`?mode=capture&format=${f.id}`), f.id).toBe(false)
+      expect(lays(`?format=${f.id}`), f.id).toBe(true)
+    }
+    expect(lays('?mode=capture')).toBe(false)
+    for (const mode of ['autopilot', 'loop']) for (const format of ['', 'no-such-format', 'hd']) expect(lays(`?mode=${mode}&format=${format}`), `${mode} ${format}`).toBe(false)
+    // An address may say a thing twice: the app and the page both take the first.
+    expect(readParams('?mode=capture&format=no-such-format&format=hd').mode).toBe('live')
+    expect(lays('?mode=capture&format=no-such-format&format=hd')).toBe(true)
+    expect(readParams('?mode=capture&format=hd&format=no-such-format').mode).toBe('capture')
+    expect(lays('?mode=capture&format=hd&format=no-such-format')).toBe(false)
+  })
+
   it('hands out the capture interface only on a page whose address still reads as a capture', () => {
     const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8').split('\n')
     expect(main).toContain("const capture = params.mode === 'capture'")
