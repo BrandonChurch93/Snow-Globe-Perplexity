@@ -1,47 +1,48 @@
 {
-  "number": 226,
-  "time": "2026-11-27 19:48 UTC",
+  "number": 227,
+  "time": "2026-11-27 20:04 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 226 · 2026-11-27 19:48 UTC · Phase 6",
+    "Status 227 · 2026-11-27 20:04 UTC · Phase 6",
     "Phases 1 to 5 complete. Phase 6 in progress. No decision is needed from Brandon now.",
-    "The ninth publish is live since 19:46 UTC (12:46 PM MT) at https://snow-globe-seasons.pplx.app, Visibility: Organization. It carries chains 36 and 37 and new opening pictures for spring and fall. Measured on a clean copy here: tsc 0, the whole test run 964 passed and 9 skipped in 68 files passed and 1 skipped, build 0, engine hash 4a1ee06ee94d33b7. The published folder holds 327 files; the uploaded copy was read back equal (the page up to its body's end, build.json, assets/index.json, first/stills.json by sha256); unsigned requests get 401.",
-    "A fresh security reviewer read the same commit and stated: nothing blocks, npm audit 0 vulnerabilities, three warnings. One: \"?mode=capture\" typed into the address gives that visitor a dead page (open item 263, low, for round two). Two: the bundle carries the whole of config/showcase.json, with the repo's address and the line \"expectPrivate: true\", while the repo is public for now. Three: \"?mode=capture&simcache=1\" arms same-origin requests that a static host refuses. It also stated that no page reached its first drawn frame on its own software renderer; the live check below did.",
-    "Live check on a helper machine under software graphics, stated by it, both pictures looked at by me: the plain address showed its live mark at 14 s and full opacity at 20 s, \"?season=spring\" at 10 s and 16 s, 0 messages and 33 buttons in each. The publish still carries the first shake's stall (decision 212, open item 262). Not verified: a real graphics card, a phone, Safari, Firefox, sound heard.",
-    "Round one, read and ruled since Status 225. Summer's tree: accepted for chain 38 (the crown as a dark body with a thin lit line where main has cream beads). Summer's air: accepted for chain 38 with a fall logged as a fall: stated by its builder, M3 summer-rest at review 0.854 to 0.8227 (the miniature's part 0.980 to 0.823), over the floor of 0.80. By my eye its seed heads are nearer the approved in form (balls of fine hairs on stalks where main has spiked stars) and no head or light comes or goes between two film frames any more; there are still too few heads, fewest among the large (2 against 6 or 7 in the approved's crop). Summer's falling sand: its threads are held for round two, by its builder's reading and mine: at rest nearer the approved's texture, after a shake strands with even cross lines like brickwork, and at feed size still an opaque orange wedge where the approved has a broad pale brown veil.",
-    "The change of season at 4K at the masters' tier, on its builder's working head (not on main): frames 668 and 669 are in and looked at at their own pixels. Winter's frost ferns and the lump of snow by the foot leave whole and softly blurred; the flat torn streaks of Still 181 are gone by my eye. Stated by the helpers: 80 and 81 samples, 848 s and 869 s a frame. Summer's heap frames 2104 to 2111 are still drawing.",
-    "Due before round one closes at 20:30 UTC (1:30 PM MT): summer's sand bars at 4K (about 20:05), fall's base with its wall as split coal (about 20:15), summer's lawn at the close camera (about 20:15), the change of season, the controls with the first shake's mend. Then the merges, chain 38 and a publish, then round two's one judged look by fresh critics.",
+    "Round one closes at 20:30 UTC (1:30 PM MT). Since Status 226 three more pushes are read whole, their pictures looked at beside the approved pictures, their branch heads checked, and accepted for chain 38.",
+    "Spring's base (e6eed734): on main the top was a flat lid and the glass stood on it; now the top is a roll and the glass goes down behind its crown, as in the approved picture. Stated by its builder: the seat's line within 2.2 px of the approved's from x 780 to 1160, M3 spring-rest at review 0.8947 to 0.9022 (base part 0.900 to 0.934), 0 one frame events on the rim over four 4K film frames, whole test run 967 passed and 8 skipped. Logged as a fall: the cover at the swap of shake 2 (M4) 0.9434 to 0.889, over the kit's line of 0.85; if the chain reads it under 0.85 on the merged tree, the base waits for round two. Still below the bar: the roll is a brighter green than the approved's dark olive, and the bank seen through the glass is a flat olive band where the approved has dark green mounds with a sunlit lip. Both are its round two.",
+    "Summer's glass (f06862df): the sun's flame low on the left of the glass is one body with soft pointed tongues where main has a flat pale slab; it is still paler and narrower than the approved's hot gold. The star at the upper right is now a hard white point with long thin rays where the approved has a warm bloom with short soft rays; that is the part I trust least, and softening it is its round two. Logged as falls, stated by its builder: M3 summer-rest 0.854 to 0.8521 (the miniature's part 0.980 to 0.963), and one frame events in the flame's box at 4K 4.148 and 4.061 against main's 3.996 and 3.893.",
+    "Summer's base (ad98e470): the lip under the glass now has lit broken pieces where the approved has them and main has a plain band with a dark crack; close up they read as flat pale scraps without relief. Stated by its builder: M3 summer-rest base part 0.854 to 0.864. What shows most on this part is its tone: the approved's base is pale warm cream, ours dark grey brown on the left and blue grey on the right. I had frozen the tone at 06:56 UTC on a measure of mine; the picture outranks that, and the freeze is lifted for one bounded step in round two.",
+    "Held for round two: summer's falling sand as threads (stated by its builder: its four bars at 4K all held; at feed size still an orange wedge, by its word and mine). Summer's tree: its builder found one red test in the push I accepted (a check on a shader's form; it expects no pixel to change) and is mending it before the close; only the mended head is merged.",
+    "The change of season at 4K at the masters' tier, on its builder's working head (not on main): frames 2106, 2107 and 2109 of summer's heap leaving are in and looked at at their own pixels. The heap is whole in each, sharp at 2106 and softly blurred after it, no bands and no beads by my eye. Frames 2104, 2105, 2108, 2110 and 2111 are still drawing.",
+    "Still due before the close: fall's base with its wall, summer's lawn at the close camera, spring's stipple mend, fall's air if its two floors hold, the change of season, the controls with the first shake's mend. Then the merges, chain 38, the tenth publish, and round two's one judged look by five fresh critics.",
     "All four seasons remain below the bar by my eye; his eye outranks mine. Sound credits 7,420 of 10,000, no call since 05:47 UTC on Thursday. No film render and no new preview since Preview 06.",
-    "phase 6: 40.99 h used of its 12.00 h box",
-    "allowance (after the review): 40.99 h used of 12.00 h allowed",
+    "phase 6: 41.25 h used of its 12.00 h box",
+    "allowance (after the review): 41.25 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-226-1.jpg",
-      "caption": "The live page of the ninth publish as it opens, winter with its controls, read on a helper machine",
-      "w": 1200,
-      "h": 675
+      "file": "out/stills/status/status-227-1.jpg",
+      "caption": "Spring's base, approved picture above and the round one push below, for chain 38, below the bar",
+      "w": 940,
+      "h": 806
     },
     {
-      "file": "out/stills/status/status-226-2.jpg",
-      "caption": "The live page of the ninth publish opened at spring with its controls, read on a helper machine",
+      "file": "out/stills/status/status-227-2.jpg",
+      "caption": "Summer's sun flame on the glass at 4K, approved picture left, main in the middle, the round one push right, for chain 38, below the bar",
       "w": 1200,
-      "h": 675
+      "h": 523
     },
     {
-      "file": "out/stills/status/status-226-3.jpg",
-      "caption": "Summer's seeds and lights, approved picture left and the air's accepted push right, for chain 38, below the bar",
+      "file": "out/stills/status/status-227-3.jpg",
+      "caption": "Summer's star on the glass at 4K, approved picture left, main in the middle, the round one push right, its rays too hard, being softened in round two",
       "w": 1200,
-      "h": 490
+      "h": 341
     },
     {
-      "file": "out/stills/status/status-226-4.jpg",
-      "caption": "The change of season at 4K at the masters' tier, film frames 668 and 669, winter's frost and lump of snow leaving whole, on its builder's head, not on main yet",
-      "w": 1200,
-      "h": 518
+      "file": "out/stills/status/status-227-4.jpg",
+      "caption": "Summer's base, approved picture above, main in the middle, the round one push below, for chain 38, below the bar",
+      "w": 850,
+      "h": 1200
     }
   ]
 }
