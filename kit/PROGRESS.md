@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 198 · 2026-11-27 05:58 UTC
+Status 199 · 2026-11-27 06:26 UTC
 
-- `out/stills/status/status-198-1.jpg`: The shutter at 4K in motion, film frame 1337, a small light at four times: the old way left, the earlier mend in the middle, the new deal right. Not on main yet.
-- `out/stills/status/status-198-2.jpg`: Fall's base: the approved picture above, main in the middle, the fourth list below. Held, below the bar.
-- `out/stills/status/status-198-3.jpg`: Spring's base: the approved picture above, main in the middle, the fourth list below. Held, below the bar.
-- `out/stills/status/status-198-4.jpg`: Summer's tree: the approved picture left, main in the middle, the eighth pass right. Held, below the bar.
+- `out/stills/status/status-199-1.jpg`: Summer at rest as on main now, the approved picture left and the build right, below the bar
+- `out/stills/status/status-199-2.jpg`: Summer's base, the approved picture above, main before in the middle, main now below, below the bar
+- `out/stills/status/status-199-3.jpg`: The shutter's new deal at 4K in motion, film frames 712 to 715, spring's roots at two times, merged here and not on origin yet
+- `out/stills/status/status-199-4.jpg`: Fall's scene after its fifth list, the approved picture left, main before in the middle, the fifth list right, not on main yet, below the bar
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 05:58 UTC
-clock: phase 6, tick of 24.9 minutes
-phase 6: 27.15 h used of its 12.00 h box
-allowance (after the review): 27.15 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 27.15 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 06:26 UTC
+clock: phase 6, tick of 27.4 minutes
+phase 6: 27.61 h used of its 12.00 h box
+allowance (after the review): 27.61 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 27.61 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
