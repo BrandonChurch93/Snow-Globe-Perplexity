@@ -87,7 +87,7 @@ export const clumps: readonly Clump[] = [
   // small body on its inner end, over the limbs at the right of the stem.
   seen(11.6, 24.6, 3.2, [1.4, 1.8, 1.6]),
   seen(2.6, 31.2, -2.6, [1.8, 1.5, 1.8]),
-  seen(14.4, 22.6, 2.8, [2.2, 2.0, 2.2], 0.1),
+  seen(15.2, 22.6, 2.8, [2.2, 2.0, 2.2], 0.1),
   seen(2.8, 25.4, 2.4, [1.4, 1.8, 1.6]),
   // The right dome and the low right dome join at their outer ends, right of the opening between them.
   seen(13.8, 28.3, 2.6, [1.6, 0.9, 2.0]),
