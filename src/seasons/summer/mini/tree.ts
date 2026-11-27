@@ -5,7 +5,7 @@ import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { haloGeometry } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
-import { crownOffset, foot, glow, glowHook, glowing, padAxes, placePoint, placing, prepareTrunk, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { crownOffset, foot, glowHook, glowing, padAxes, placePoint, placing, prepareTrunk, treeTwinkle, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import { ROW } from '../../../scene/steps'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { clumps, crownPads, leafField, newHit, wind, winding, type Xyz } from './crown'
@@ -71,6 +71,7 @@ const HALO_CORE: Rgb3 = [1, 0.7, 0.34]
 
 const offset = crownOffset()
 const sway = { value: new THREE.Vector4(0, 100, LANTERN.swayRad, LANTERN.kickRad) }
+const twinkle = treeTwinkle()
 const paper = (l: Lantern): Rgb3 => (l.tone === 'cream' ? tones.creamLight : tones.paperLight) as Rgb3
 
 export const innerLights: InnerLight[] = lanterns.map((l): InnerLight => ({ at: l.at, color: paper(l), power: PAPER.power * l.radius * l.radius, reachMm: PAPER.reachMm * l.radius, flicker: FLICKER, cycles: CYCLES, phase: l.phase }))
@@ -143,7 +144,7 @@ vec3 treeBump(vec3 sx, vec3 sy, vec2 dh, vec3 n, float face) {
 `
 
 function leafHook(shader: Shader): void {
-  glowHook(shader, `(material.diffuseContribution * ${LEAF_LIT} + ${glsl3(PAD.gold)} * (${PAD.lamp.toFixed(2)} * treeSpeck * smoothstep(${PAD.lampFrom.toFixed(2)}, ${PAD.lampTo.toFixed(2)}, vGlow.r)))`)
+  glowHook(shader, twinkle, `(material.diffuseContribution * ${LEAF_LIT} + ${glsl3(PAD.gold)} * (${PAD.lamp.toFixed(2)} * treeSpeck * smoothstep(${PAD.lampFrom.toFixed(2)}, ${PAD.lampTo.toFixed(2)}, vGlow.r)))`)
   Object.assign(shader.uniforms, { uTile: { value: 1 / tileOf('leaves') }, uBump: { value: LEAF_TONE.bump }, uSprigs: { value: texture(SPRIGS) }, uSway: sway })
   const fork = lanterns.reduce((a, b) => (b.radius > a.radius ? b : a))
   shader.vertexShader = shader.vertexShader
@@ -209,7 +210,7 @@ function leafHook(shader: Shader): void {
 }
 
 function woodHook(shader: Shader, groundY: number): void {
-  glowHook(shader, undefined, WOOD.relief)
+  glowHook(shader, twinkle, undefined, WOOD.relief)
   Object.assign(shader.uniforms, { uTile: { value: 1 }, uBump: { value: WOOD.depthMm }, uSway: sway })
   const fork = lanterns.reduce((a, b) => (b.radius > a.radius ? b : a))
   shader.vertexShader = shader.vertexShader
@@ -253,7 +254,7 @@ function woodHook(shader: Shader, groundY: number): void {
 }
 
 function lanternHook(shader: Shader): void {
-  Object.assign(shader.uniforms, { uTwinkle: glow.uTwinkle, uSway: sway })
+  Object.assign(shader.uniforms, { uTwinkle: twinkle, uSway: sway })
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', `#include <common>\nattribute vec4 aPivot;\nvarying vec2 vLamp;\n${LEVEL_GLSL}`)
     .replace(
@@ -418,7 +419,7 @@ export function* making(): Generator<void, THREE.Object3D> {
   crown.castShadow = true
   crown.receiveShadow = false
   yield
-  const trunk = yield* trunkMaking(part, [...paperOn(GLOW.wood), lampOn(LAMP_ON_WOOD), { at: fill, color: tones.sun, ...FILL_ON_WOOD, phase: 0.6 }], BARK)
+  const trunk = yield* trunkMaking(part, twinkle, [...paperOn(GLOW.wood), lampOn(LAMP_ON_WOOD), { at: fill, color: tones.sun, ...FILL_ON_WOOD, phase: 0.6 }], BARK)
   yield
   const shared = trunk.material as THREE.MeshStandardMaterial
   const wood = trunk.geometry.getAttribute('position') as THREE.BufferAttribute
@@ -499,5 +500,5 @@ export function update(moment: KitMoment): void {
     const t = Math.min(1, Math.max(0, (lit - rise.start) / rise.ramp))
     mean += (rise.dim + (1 - rise.dim) * t * t * (3 - 2 * t)) / lanterns.length
   }
-  glow.uTwinkle.value.set(CYCLES * turn, FLICKER, mean, 0)
+  twinkle.value.set(CYCLES * turn, FLICKER, mean, 0)
 }

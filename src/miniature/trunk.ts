@@ -576,7 +576,8 @@ function columnSolid(x: number, y: number, z: number): number {
 
 export const trunkSolid = (x: number, y: number, z: number): number => Math.min(columnSolid(x, y, z), tubeSolid(x, y, z))
 
-export const glow = { uTwinkle: { value: new THREE.Vector4(0, 0, 1, 0) } }
+export const treeTwinkle = () => ({ value: new THREE.Vector4(0, 0, 1, 0) })
+type Twinkle = ReturnType<typeof treeTwinkle>
 
 export function* glowing(g: THREE.BufferGeometry, lights: readonly GlowLight[], wrapLight = 0.35): Generator<void, void> {
   const pos = g.getAttribute('position')
@@ -624,8 +625,8 @@ export function bakeGlow(g: THREE.BufferGeometry, lights: readonly GlowLight[], 
   whole(glowing(g, lights, wrapLight))
 }
 
-export function glowHook(shader: THREE.WebGLProgramParametersWithUniforms, albedo = 'material.diffuseContribution', relief = 0): void {
-  shader.uniforms.uTwinkle = glow.uTwinkle
+export function glowHook(shader: THREE.WebGLProgramParametersWithUniforms, twinkle: Twinkle, albedo = 'material.diffuseContribution', relief = 0): void {
+  shader.uniforms.uTwinkle = twinkle
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', '#include <common>\nattribute vec4 aGlow;\nvarying vec4 vGlow;')
     .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGlow = aGlow;')
@@ -669,7 +670,7 @@ export function placeGeometry(source: THREE.BufferGeometry): THREE.BufferGeometr
   return whole(placing(source))
 }
 
-export function* trunkMaking(part: string, lights: readonly GlowLight[] = [], tint: Rgb = [0.8, 1.5, 2.6]): Generator<void, THREE.Mesh> {
+export function* trunkMaking(part: string, twinkle: Twinkle, lights: readonly GlowLight[] = [], tint: Rgb = [0.8, 1.5, 2.6]): Generator<void, THREE.Mesh> {
   const g = yield* placing(geometry(MODEL, 'trunk'))
   yield* glowing(g, lights)
   const normal = texture(BARK_NORMAL)
@@ -684,7 +685,7 @@ export function* trunkMaking(part: string, lights: readonly GlowLight[] = [], ti
     vertexColors: true,
     roughness: 0.86,
     extra: { normalMap: normal, normalScale: new THREE.Vector2(1.6, 1.6) },
-    hook: (shader) => glowHook(shader, undefined, BARK_RELIEF),
+    hook: (shader) => glowHook(shader, twinkle, undefined, BARK_RELIEF),
     key: 'trunk',
   })
   const mesh = new THREE.Mesh(g, m)
@@ -694,5 +695,5 @@ export function* trunkMaking(part: string, lights: readonly GlowLight[] = [], ti
 }
 
 export function buildTrunk(part: string, lights: readonly GlowLight[] = [], tint: Rgb = [0.8, 1.5, 2.6]): THREE.Mesh {
-  return whole(trunkMaking(part, lights, tint))
+  return whole(trunkMaking(part, treeTwinkle(), lights, tint))
 }
