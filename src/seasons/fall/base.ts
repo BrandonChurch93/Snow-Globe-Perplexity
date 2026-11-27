@@ -69,7 +69,7 @@ const DRUM_SHEEN = 1.75
 const DRUM_FOLD = 3.5
 const DRUM_CRINKLE = 0.8
 const DRUM_GRAIN = 1.8
-const WALL = { CELLS: 34, TALL: 6.6, WARP: 0.7, SEAM: 0.13, FACET: 0.4, DOME: 0.15, ROLL: 0.8, DARK: 0.12, GLOSS: 0.6, GLOSS_POW: 40, COPPER: 0.5, BARK_DARK: 0.2 }
+const WALL = { CELLS: 34, TALL: 6.6, WARP: 0.7, SEAM: 0.13, FACET: 0.4, DOME: 0.15, ROLL: 0.8, DARK: 0.12, GLOSS: 0.6, GLOSS_POW: 40, COPPER: 0.3, BARK_DARK: 0.2 }
 const PUMPKIN_BODY = 0.042
 const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}\n#define DRUM_FOLD ${DRUM_FOLD.toFixed(3)}\n#define DRUM_CRINKLE ${DRUM_CRINKLE.toFixed(3)}\n#define DRUM_GRAIN ${DRUM_GRAIN.toFixed(3)}\n${Object.entries(WALL).map(([k, v]) => `#define WALL_${k} ${v.toFixed(3)}`).join('\n')}`
 const flicker: { a: number; b: number; c: number }[] = []
@@ -289,10 +289,10 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
 // The leather of the drum is black where the key from the right does not reach it.
 float baseDim = mix(1.0, mix(0.32, 1.0, smoothstep(-16.0, 42.0, vBasePos.x)), baseDrum);
 // Behind the sheaf the wall is bark: upright ridges, dark between them, that the lamps light copper.
-float wallWest = baseDrum * smoothstep(-8.0, -26.0, vBasePos.x);
+float wallWest = baseDrum * smoothstep(-16.0, -34.0, vBasePos.x);
 float wallLean = wallTurn + (baseNoise(vec3(wallTurn * 12.0, vBasePos.y * 0.25, 41.0)) - 0.5) * 0.03;
 float wallBark = baseNoise(vec3(wallLean * 210.0, vBasePos.y * 0.35, 9.0)) * 0.55 + baseNoise(vec3(wallLean * 80.0, vBasePos.y * 0.16, 27.0)) * 0.45;
-diffuseColor.rgb *= baseDim * mix(1.0, lumpShade, baseDrum) * mix(1.0, mix(WALL_BARK_DARK, 0.65, smoothstep(0.35, 0.5, wallBark)), wallWest);
+diffuseColor.rgb *= baseDim * mix(1.0, lumpShade, baseDrum) * mix(1.0, mix(WALL_BARK_DARK, 0.5, smoothstep(0.35, 0.5, wallBark)), wallWest);
 float baseWrap = 0.1;
 float baseNear = 1.0 - baseDrum;
 float baseCandle = 1.0 / baseDim;
@@ -392,7 +392,7 @@ const IRON_AFTER = `
   reflectedLight.directSpecular = mix(reflectedLight.directSpecular, ironBefore + uBaseRimCol * mix(vec3(0.8, 0.46, 0.4), vec3(1.0, 0.88, 1.25), vBasePaint.x * vBasePaint.x) * (BRAMBLE_SHEAF * vBasePaint.x * vBasePaint.x * vBasePaint.x * mix(0.3, 1.0, smoothstep(7.0, 16.0, vBasePos.y))), baseFibre);
   reflectedLight.directSpecular = ironBefore + (reflectedLight.directSpecular - ironBefore) * baseDim;
   ironEdge *= baseDim;
-  reflectedLight.directSpecular += uBaseRimCol * vec3(1.0, 0.62, 0.38) * (WALL_COPPER * smoothstep(0.56, 0.7, wallBark) * wallWest * mix(0.3, 1.0, baseAo) * mix(0.4, 1.0, smoothstep(6.0, 20.0, vBasePos.y)));
+  reflectedLight.directSpecular += uBaseRimCol * vec3(1.0, 0.62, 0.38) * (WALL_COPPER * smoothstep(0.58, 0.72, wallBark) * wallWest * mix(0.3, 1.0, baseAo) * mix(0.4, 1.0, smoothstep(6.0, 20.0, vBasePos.y)));
   reflectedLight.indirectSpecular += (uRigSky * 0.35 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen * (1.0 - 0.7 * baseThorn);
 }
 `
