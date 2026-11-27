@@ -84,7 +84,7 @@ const CUT_FADE = 0.03
  */
 const LOOP_LEAD = 0.06
 const LANDING_BAR: Record<string, number> = { winter: 5, spring: 5, summer: 3, fall: 0 }
-const landingEntry = (season: string): number => (season in LANDING_BAR ? LOOP_LEAD + LANDING_BAR[season]! * barSeconds : 0)
+const landingEntry = (season: string): number => (Object.hasOwn(LANDING_BAR, season) ? LOOP_LEAD + LANDING_BAR[season]! * barSeconds : 0)
 /** The way out when the sound is turned off stays short. The way in is longer, a quarter sine: at 0.04 s it was heard as a blast. */
 const MUTE_FADE = 0.04
 const UNMUTE_FADE = 0.35
