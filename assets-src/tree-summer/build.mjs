@@ -9,13 +9,14 @@ import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } 
 
 const TAU = Math.PI * 2
 // The leaf surface is cut in cells of this size (millimetres): a little coarser than a finer crown would take, so that the fuller masses stay under the count.
-const LEAF_CELL = 0.94
+const LEAF_CELL = 1.0
 const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
 const SPRIGS = { share: 1, size: [1.2, 2.2], rise: 0.35, out: 0.34, lift: [0.82, 0.36] }
-// A sprig is a handful of small round tufts of leaves, each of one tone (a few of them bright: these catch the low sun as single points of gold).
-// None is finer than a pixel of the preview, and nothing stands loose around them.
-const SPRIG = { blobs: [8, 10], ring: [0.2, 0.33], radius: [0.092, 0.125], lobe: 0.16, edge: 2.5, rough: 0.3, flat: 0.5, tone: [0.5, 1.05], bright: [1.6, 2.0], fall: 0.5, brightShare: 0.22, mean: 0.1266 }
+// A sprig is a clover of a few soft round lobes of leaf, each of one tone and each about a millimetre across on the tree. Now and then
+// a small point on it is bright (`points`: the chance of a first and of a second; `pointRadius`: how unlike they are in size): these
+// catch the low sun as single sparks of gold. Nothing stands loose around a sprig.
+const SPRIG = { blobs: [4, 6], ring: [0.12, 0.26], radius: [0.17, 0.25], lobe: 0.12, edge: 2.5, rough: 0.3, flat: 0.5, tone: [0.6, 1.05], bright: [1.6, 2.0], fall: 0.5, points: [0.5, 0.15], pointRadius: [0.07, 0.2], pointRing: [0.2, 0.4], mean: 0.1266 }
 const TONE = { deep: [0.5, 0.8, 0.9], mid: [0.74, 1.0, 0.86], tip: [0.86, 1.12, 0.84] }
 // The top of a pad, with open air over it, takes the most light. Its sides and its underside stand in shade, never in black.
 const SHADE = { body: 0.5, clearMm: 2.4, upFrom: 0.2, upTo: 0.85, tight: 1.25, floor: 0.45, curve: 1.3 }
@@ -388,7 +389,13 @@ async function leafMaps() {
     for (let k = 0; k < count; k++) {
       const ring = k === 0 ? 0 : rng.range(SPRIG.ring[0], SPRIG.ring[1])
       const ang = (k / (count - 1)) * TAU + rng.range(-0.3, 0.3)
-      blobs.push({ x: 0.5 + Math.cos(ang) * ring, y: 0.5 + Math.sin(ang) * ring, r: rng.range(SPRIG.radius[0], SPRIG.radius[1]), lobes: 3 + rng.int(3), turn: rng.range(0, TAU), ...(rng.range(0, 1) < SPRIG.brightShare ? { tone: rng.range(SPRIG.bright[0], SPRIG.bright[1]), fall: SPRIG.fall } : { tone: rng.range(SPRIG.tone[0], SPRIG.tone[1]), fall: 0 }) })
+      blobs.push({ x: 0.5 + Math.cos(ang) * ring, y: 0.5 + Math.sin(ang) * ring, r: rng.range(SPRIG.radius[0], SPRIG.radius[1]), lobes: 3 + rng.int(3), turn: rng.range(0, TAU), tone: rng.range(SPRIG.tone[0], SPRIG.tone[1]), fall: 0 })
+    }
+    for (const chance of SPRIG.points) {
+      const ring = rng.range(SPRIG.pointRing[0], SPRIG.pointRing[1])
+      const ang = rng.range(0, TAU)
+      const point = { x: 0.5 + Math.cos(ang) * ring, y: 0.5 + Math.sin(ang) * ring, r: rng.range(SPRIG.pointRadius[0], SPRIG.pointRadius[1]), lobes: 3 + rng.int(3), turn: rng.range(0, TAU), tone: rng.range(SPRIG.bright[0], SPRIG.bright[1]), fall: SPRIG.fall }
+      if (rng.range(0, 1) < chance) blobs.push(point)
     }
     for (let y = 0; y < cell; y++) {
       for (let x = 0; x < cell; x++) {
