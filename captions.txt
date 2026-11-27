@@ -1,0 +1,4 @@
+fall-rest-trio.jpg: fall at rest, hero, hd, review tier, the glass cut out and shown at 400 px each. Left the approved picture, middle before (main c1423ee5), right after (this branch with main f4df90d1 merged).
+fall-rest-crop.jpg: fall at rest, hero, hd, review tier, the same 600 px cut at full size. Left the approved picture, right after (with main 13e1a911 merged, before the hand's inertia).
+fall-peak-before.jpg: film frames at draft tier, before. Top left 2110, top right 2116, bottom left 2122 (summer into fall, the tree and the cottage show pale through the fog), bottom right 676 (winter leaving, nothing shows).
+fall-peak-trial.jpg: film frames 2116, 2120 and 2124 at draft tier, a trial that is NOT in the branch: the fog thicker at the full flood (0.6 times the fourth power of the flood). The miniature does not show, but as fall leaves the same fog lay green over winter's frame 2840 and winter's miniature showed through, so it was taken out again.
