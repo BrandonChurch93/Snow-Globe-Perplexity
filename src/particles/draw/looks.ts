@@ -294,6 +294,8 @@ export const CARD = {
   leafRestChimney: 2.5,
   leafRestRim: [0.84, 0.91] as const,
   leafRestRightFrom: [-0.2, 0.2] as const,
+  /** Right of the middle the leaves float before the tree and the yard, so there the sizes keep the steeper skew: larger leaves there hid more of the miniature after a landing than the leaves before them did. */
+  leafRestRightSkew: 6.5,
   leafRestMm: [0.65, 3.5, 4.5] as const,
   leafRestMaple: 0.18,
   /** The lens of the ball swells a leaf that floats deep in it: at rest no leaf is drawn larger than this, in pixels of its half length, and a leaf that lies is this share of its size. The approved picture's upper left quarter holds seven leaves of 20 px and over, the largest 34 px; this half length gives leaves of some 22 px at the most as the picture reads them; no leaf at rest is brighter than `leafRestMost`. */
