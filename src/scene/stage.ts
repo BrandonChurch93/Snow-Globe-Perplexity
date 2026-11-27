@@ -689,8 +689,9 @@ export class GlobeStage implements Stage {
    * The lens fill's map, once a picture: the blur radius of the front surface at every pixel, from
    * the sample in hand (the lens point nearest the centre). The materials write it as their texel
    * view does. The backdrop and the glass are left out: their pixels keep the clear value and take
-   * the blur of what stands next to them, and so are the flakes. Then the guide: the backdrop's
-   * discs and the flakes afloat, alone.
+   * the blur of what stands next to them, and so are the flakes. A glass dressing that asks for it
+   * (`inBlurMap`) is drawn in after all. Then the guide: the backdrop's discs and the flakes afloat,
+   * alone.
    */
   private drawBlur(fill: LensFill, target: THREE.WebGLRenderTarget, pose: Pose, f: StageFrame, sets: SeasonSet[]): void {
     const { renderer } = this.gfx
@@ -712,6 +713,17 @@ export class GlobeStage implements Stage {
     this.floor.visible = true
     renderer.render(this.scene, this.camera)
     this.globe.visible = true
+    // Frost is a surface of its own: left out, it takes the blur of what stands behind it, and before
+    // an undrawn backdrop that is the reach of a neighbour, which comes and goes from frame to frame.
+    for (const o of hidden) {
+      const own = o.userData.inBlurMap as ((on: boolean) => void) | undefined
+      if (!own) continue
+      own(true)
+      o.visible = true
+      renderer.render(o, this.camera)
+      o.visible = false
+      own(false)
+    }
     // A globe that is itself in focus is the front surface of the picture: what is seen in the glass
     // is seen at the glass, so nothing inside its outline is filled and its rim stays as it is. Seen
     // from close by through the near wall (the macro) the glass is far out of focus and no surface
