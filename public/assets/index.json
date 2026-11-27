@@ -356,13 +356,13 @@
         },
         {
           "path": "summer/tree-sprigs.srgb.w512.png",
-          "bytes": 387710,
-          "sha": "67ef469010108ea1"
+          "bytes": 588121,
+          "sha": "c045aa0afc9adc34"
         },
         {
           "path": "summer/tree-summer.glb",
-          "bytes": 697368,
-          "sha": "6e84f1afcd7ca791"
+          "bytes": 556256,
+          "sha": "ffe1e21f6e7e4141"
         },
         {
           "path": "summer/village-summer.glb",
@@ -688,13 +688,13 @@
         },
         {
           "path": "summer/tree-sprigs.srgb.w512.png",
-          "bytes": 3313582,
-          "sha": "d273518963feb4c2"
+          "bytes": 3403486,
+          "sha": "2aadb48d00081b22"
         },
         {
           "path": "summer/tree-summer.glb",
-          "bytes": 2379252,
-          "sha": "d72702dda26fe4b5"
+          "bytes": 1925472,
+          "sha": "fd367870d79fd9d4"
         },
         {
           "path": "summer/village-summer.glb",
@@ -759,7 +759,7 @@
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "fb4b9f61b79d3170",
-    "summer": "bd90c9c78a8427aa",
+    "summer": "855b5dd9ab51d5c0",
     "fall": "37a3c3fc84016e4c"
   }
 }
