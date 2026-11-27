@@ -4,3 +4,8 @@ All four pictures: summer, camera hero, format hd, the globe cut out of the fram
 02-rest-approved-before-after.jpg: summer-rest (state rest). Three panels, each 400 px wide: the approved image, before (draft), after (review).
 03-shake-after.jpg: summer-shake (state landed), after, review, the globe at full size.
 04-rest-after.jpg: summer-rest (state rest), after, review, the globe at full size.
+
+05 and 06: the take over, where the shared storm of the change into summer gives way to summer's held storm. Shake 2 of the film, film frames 1404 to 1436 every fourth in one row, camera hero, format hd, tier draft. Above: before, origin/main at 6909766b with the change's cover as it stands. Below: after, agent/p6-summer-air at 0a338080, which is that main with the new course of the take over in src/seasons/summer/veil.ts (commit 02678b45). Of the 41 frames 1400 to 1440 only 1407 to 1420 differ between the two rows by sha256; the others are the same bytes.
+
+05-take-over-1404-1436-before-after.jpg: the whole frames, each 480 px wide.
+06-take-over-1404-1436-ball-before-after.jpg: the ball cut out of each frame, a square of 760 px about the ball's centre, at half size.
