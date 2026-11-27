@@ -97,7 +97,7 @@ const RIM = { power: 6.0, tone: [1.0, 0.62, 0.28] as Rgb3, rim: [0.6, 0.9] as co
 // adds nothing. The specks are gold and not pale: the flank's light has its own tone (`tone`), and about each speck the leaf
 // behind the edge is lit low and deep (`ember` of the speck's light, in `gold`, to `reach` of the spot's radius and falling from
 // its heart), read from the same wide band as the lit edge's own fade, so a speck sits in a little gold of its own.
-const FLANK = { power: 1.45, toward: [0.95, -0.3] as const, from: 0.2, to: 0.7, tone: [1.0, 0.565, 0.22] as Rgb3, ember: 0.45, gold: [1.0, 0.52, 0.16] as Rgb3, reach: 2.0 }
+const FLANK = { power: 1.45, toward: [0.95, -0.3] as const, from: 0.2, to: 0.7, turn: [0.15, -0.99] as const, turnFrom: 0.55, turnTo: 0.85, turnAt: [10.5, 12.0] as const, tone: [1.0, 0.565, 0.22] as Rgb3, ember: 0.45, gold: [1.0, 0.52, 0.16] as Rgb3, reach: 2.0 }
 // A flat pad's leaves stand farther above it than it is thick. For the choice of the pad a leaf is lit on, a pad counts as at least
 // this thick (mm), so that the leaves on a flat pad's top are lit as its top and not as the underside of a dome that hangs over it.
 const PAD_THICK = 1.5
@@ -280,7 +280,7 @@ function leafHook(shader: Shader): void {
   reflectedLight.indirectDiffuse += vGlow.rgb * uTwinkle.z * ${glsl3(PAD.warmTone)} * (${PAD.warm.toFixed(3)} * mix(1.0, ${PAD.warmLobe.toFixed(2)}, treeTop) * (1.0 - treeUp) * (1.0 - treeUp) * smoothstep(${PAD.warmFrom.toFixed(2)}, ${PAD.warmTo.toFixed(2)}, vGlow.r) * mix(${PAD.dapEven.toFixed(2)}, 1.0, smoothstep(${PAD.leafFrom.toFixed(2)}, ${PAD.leafTo.toFixed(2)}, treeLum)));
   float treeLip = treeCard ? smoothstep(${RIM.rim[0].toFixed(2)}, ${RIM.rim[1].toFixed(2)}, 1.0 - dot(normalize(treePad + ${RIM.hem.toFixed(2)} * normalize(vNormal)), treeV)) * smoothstep(${RIM.tip[0].toFixed(2)}, ${RIM.tip[1].toFixed(2)}, fract(vMapUv.y * 1.999)) * mix(${RIM.shut.toFixed(2)}, 1.0, treeOpen) : 0.0;
   float treeBand = treeLip * mix(${RIM.around.toFixed(2)}, 1.0, smoothstep(${RIM.from.toFixed(2)}, ${RIM.to.toFixed(2)}, dot(treePad.xy, vec2(${RIM.toward[0].toFixed(2)}, ${RIM.toward[1].toFixed(2)}))));
-  float treeFlank = max(treeLip * ${FLANK.power.toFixed(2)} * smoothstep(${FLANK.from.toFixed(2)}, ${FLANK.to.toFixed(2)}, dot(treePad.xy, vec2(${FLANK.toward[0].toFixed(2)}, ${FLANK.toward[1].toFixed(2)}))) - treeBand, 0.0);
+  float treeFlank = max(treeLip * ${FLANK.power.toFixed(2)} * max(smoothstep(${FLANK.from.toFixed(2)}, ${FLANK.to.toFixed(2)}, dot(treePad.xy, vec2(${FLANK.toward[0].toFixed(2)}, ${FLANK.toward[1].toFixed(2)}))), smoothstep(${FLANK.turnFrom.toFixed(2)}, ${FLANK.turnTo.toFixed(2)}, dot(treePad.xy, vec2(${FLANK.turn[0].toFixed(2)}, ${FLANK.turn[1].toFixed(2)}))) * smoothstep(${(FLANK.turnAt[0] + offset[0]).toFixed(2)}, ${(FLANK.turnAt[1] + offset[0]).toFixed(2)}, vTreeP.x)) - treeBand, 0.0);
   float treeFine = length(fwidth(vTreeP)) * ${(RIM.soft / RIM.mm).toFixed(4)};
   vec2 treeOut = treePad.xy + vec2(${(RIM.lean * RIM.toward[0]).toFixed(3)}, ${(RIM.lean * RIM.toward[1]).toFixed(3)});
   treeOut /= max(length(treeOut), 1e-3);
