@@ -472,7 +472,7 @@ const STONE_AFTER = `
   float stoneFoldD = (vBasePos.y - stoneFoldH - 0.8) / 1.4;
   float stoneFoldC = (vBasePos.y - stoneFoldH + 3.2) / 2.6;
   float stoneFoldU = (vBasePos.y - stoneFoldH - 3.6) / 1.8;
-  vec3 stoneFolded = (1.0 - vec3(0.9, 0.84, 0.76) * stoneFoldOn * exp(-stoneFoldD * stoneFoldD) * mix(0.7, 1.0, baseBlotch)) * mix(vec3(1.0), vec3(1.7, 1.5, 1.2), stoneFoldOn * exp(-stoneFoldC * stoneFoldC)) * (1.0 - vec3(0.3, 0.44, 0.6) * stoneFoldOn * exp(-stoneFoldU * stoneFoldU));
+  vec3 stoneFolded = (1.0 - vec3(0.9, 0.84, 0.76) * stoneFoldOn * exp(-stoneFoldD * stoneFoldD) * mix(0.7, 1.0, baseBlotch)) * mix(vec3(1.0), vec3(1.5, 1.6, 2.0), stoneFoldOn * exp(-stoneFoldC * stoneFoldC)) * (1.0 - vec3(0.3, 0.44, 0.6) * stoneFoldOn * exp(-stoneFoldU * stoneFoldU));
   reflectedLight.indirectDiffuse *= stoneFolded;
   reflectedLight.directDiffuse *= stoneFolded;
   // The light on the foot is cream gold: the brighter it lies, the paler it is.
@@ -482,7 +482,7 @@ const STONE_AFTER = `
   // The fold's crest under the pale piece faces the sun square on: the brightest sand of the body, cream. The strokes on the lip under it are gold and lower.
   float stoneCrestX = (vBasePos.x + 34.0) / 5.0;
   float stoneCrestY = (vBasePos.y - 17.6 + 0.35 * (vBasePos.x + 34.0)) / 2.1;
-  vec3 stoneCrest = (1.0 + vec3(2.7, 3.1, 3.5) * exp(-stoneCrestX * stoneCrestX - stoneCrestY * stoneCrestY) * mix(0.75, 1.0, baseBlotch)) * (1.0 - vec3(0.08, 0.108, 0.154) * stoneLeftSide * smoothstep(15.0, 13.9, vBasePos.y) * smoothstep(8.8, 10.4, vBasePos.y));
+  vec3 stoneCrest = (1.0 + vec3(2.7, 3.1, 3.5) * exp(-stoneCrestX * stoneCrestX - stoneCrestY * stoneCrestY) * mix(0.75, 1.0, baseBlotch)) * (1.0 - vec3(0.08, 0.1, 0.125) * stoneLeftSide * smoothstep(15.0, 13.9, vBasePos.y) * smoothstep(8.8, 10.4, vBasePos.y));
   // Under the seat the right end's crust takes less of the sun than the crust below it.
   stoneCrest *= 1.0 - vec3(0.12, 0.1, 0.03) * smoothstep(40.0, 47.0, vBasePos.x) * smoothstep(30.5, 33.5, vBasePos.y);
   reflectedLight.indirectDiffuse *= stoneCrest;
