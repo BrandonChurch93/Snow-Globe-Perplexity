@@ -352,3 +352,27 @@ Proof:
 - In the shake: 640 brighter and 2,756 darker in 258 groups, 41.0 per thousand, travel 14.8 px a frame. There are no tenth frames of the shake to set beside it, and at this travel the count cannot tell a smeared twig from a flicker; the four frames were looked at instead.
 
 Not seen: the frames played at speed; more than four frames of either run; the tenth in a shake; the landed state beyond its draft hash; the low camera; medium and low quality on screen (their triangle counts are 20,950 and 11,676).
+
+## Round two: the tree's twigs and bark, the pond's tone (9efcffbb on main ed9180da)
+
+Commits: d17fe541 (the tree), be9ce4a5 (the pond), merges of main 5b76c959 and ed9180da. Files: `assets-src/tree-fall/build.mjs`, `src/seasons/fall/mini/tree.ts`, `src/seasons/fall/mini/village.ts`, `src/seasons/fall/mini/palette.ts`. Pictures 63 to 66.
+
+What was built:
+- Twigs (`KINK`, `SPUR`, `LOOK`, `TWIG` in build.mjs). Tips and twigs turn sharply to alternating sides every 1.0 to 2.2 mm; up to 10 short spurs leave at kinks; a twig beside a long one stays short (the high places on the left are exempt), so the comb of four parallel twigs is broken. 9 limbs, 10 tips, 28 twigs on 41 fork places, 10 spurs, 26 embers. 35,060 triangles (medium 21,643, low 11,903); round one 34,740, 20,950, 11,676.
+- Bark (`WET`, `GLINT_SKY`, `GLINT_LAMP.trunk` in tree.ts), on the trunk's sleeve only: the side turned from the lamp takes 0.33,0.5,0.75 of its diffuse light, the side turned to it 1.8,1.42,1.15, with a cool glint from the sky and a second glint from the lamp.
+- Pond (constants only): `WATER.fog` 0.42 to 0.2, `WATER.wideShare` 0.03 to 0.012, `tones.fogGlint` to 0.07,0.44,0.42.
+
+Read on 64bff0bb (main 5b76c959, before the pond's change; the pond lies outside these boxes): twig ends of the wood alone 50 (bound 39 to 52), 55 with the lights in the mask (five ember bulbs beside kinked twigs; the lights' id colour is 218,153,47 now); patches of sky ringed by wood 4 (floor 5, round one 5); one frame events on the wood at rest, 3840 final, frames 2364 to 2367, 9.60 per thousand whole and 8.10 with the bat's rectangle (x 0 to 200, y 160 to 280 of the box) left out of both runs (floor 8.80, round one 8.80); in the shake 32.29 (round one 41.0); limb body with the air 24.9,17.6,13.4 (approved 24.7,17.8,14.1), lit cuts 55% (approved 61); trunk box with the air 37,31,19 (approved 43,35,23).
+
+Read on be9ce4a5 (main 5b76c959, with the pond): M3 fall-rest review 0.8587, base 0.859, miniature 1.019 (floor 0.974); without the air the miniature's whole reads 0.971 (0.979 before the pond). M4 and M5 for shakes 1 to 4: 0.9694 and 0.9932, 0.889 and 1, 0.9559 and 0.9899, 0.9598 and 0.9998. M1 pass. Pond front box: approved 36,70,60, before 65,96,69, after 43,69,53.
+
+Read on 9efcffbb (main ed9180da): the eight draft stills (fall-rest a2c9ee43864698cd, fall-landed ba6667a2dbd7d84c, the other six equal main's list, and fall's two equal be9ce4a5's), tsc, vitest, strict, the page at quality low and medium.
+
+Below the bar:
+- The trunk is as thick and upright as before and the bark still reads as a carved braid, not the approved's smooth, wet, near black trunk. The trunk and the limbs' places are the layout's (`src/miniature/trunk.ts`).
+- The crown carries 1.96 times the approved's fine energy in M3's box: over, not under.
+- The lit share of the limbs fell from 57% to 55% (approved 61).
+- The pond keeps a pale mirror of the lamp at its front (p90 of the box 162 against 96), is not set into the bank and has no low mist over it.
+- The fence (a low post and rail fence of dark wood in the approved) and the path (rough stone slabs) were not touched in this round.
+
+Not seen: frames played at speed; more than four frames of either run; the landed state beyond its draft hash; the low camera; low and medium quality beyond the first picture of the page; the film frames after the pond's change.
