@@ -148,3 +148,23 @@ Below the bar, worst first: the miniature's share of M3 (0.924 against 0.95); th
 Not seen: the film played; anything above hd; the lip and the air with the ball turned; which moment of the shake shake-3 reads.
 
 Tools of this list (in /tmp/w/s10, not committed): `leaf3.py` (the leaf counter), `grid.py`, `streak.py`, `tr.sh` (a trial), `mainstill.sh` (main's still), `sw4.sh`, `swset.sh`, `swsub.sh` (the switching), `off.sh` (the air off).
+
+## Step A after the ninth list: the glass back at main's (a746190b, main bbdd4b03 in it)
+
+The lead held the ninth list for the streaks of the upper air only: at 400 px they read as an even slanted hatch over the sky and the crown. `src/seasons/fall/glass.ts` is main's file again. `src/particles/draw/cards.ts` and `src/particles/draw/looks.ts` are as the ninth list left them (the leaves at rest, the dealt glow, the bare points).
+
+Counts at rest, review, hd (the approved | main | step A): leaves in the window x 700 to 860, y 230 to 400: 10 | 17 | 11, the longest 23.1 | 33.2 | 22.9 px. Upper left quarter: 29 | 31 | 24. Upper glass grid: 88 | 110 | 86. Small orange class: 206 | 273 | 200 (rim 33 | 24 | 23, roof 10 | 25 | 20, tree 61 | 104 | 101, air 102 | 120 | 56). Points found: 90 | 98 | 98. Point width 25/50/75: 1.3 1.7 2.3 | 1.2 1.6 2.2 | 1.2 1.7 2.4 px. Glow width: 3.2 3.9 10.9 | 2.7 3.7 5.9 | 2.9 3.7 9.4 px. The fine points' middle: [162, 110, 93] | [126, 98, 78] | [130, 96, 85]. Streaks on rows 150, 200, 250: 4 6 14 | 0 | 0. Grain: 2.1 6.6 | 0.7 1.9 | 0.7 2.0.
+
+Proofs on a746190b: the six guard stills equal main's list; fall-rest 1329342597a8f2f4, fall-landed da57001a29034654; strict pass; M4 0.9694, 0.8957, 0.9567, 0.9592; M5 0.993, 1, 0.9846, 0.9998; M3 fall-rest at review 0.8838 (base 0.884, miniature 0.935, the lead's floor for this head 0.92); triangles 1,765,827; tsc 0; the whole vitest green in one run (68 files, 948 passed, 8 skipped, 296 s; steps.test.ts did not stop at its limit, its longest test 136 s).
+
+Motion at 3840: film B, frames 2700 to 2705 (the hold of fall, 9.0 s after the landing of shake-3, the camera's travel 0.02 to 0.03 px a frame), uhd, tier final, 24 samples, about 132 s a frame here. Drawn on a746190b and on main (cards.ts and looks.ts as on bbdd4b03). The masters never draw the still's rest moment (12 s after the landing): the hold of fall ends 9.6 s after it. Boxes at 3840: upper air x 1340 to 1790, y 330 to 800; the crown x 1790 to 2400, y 400 to 860. A step: the largest channel moves by more than 12 levels between neighbours. A one frame event: in one channel the pixel is more than 12 above both neighbours in time, or more than 12 below both.
+- Upper air: steps, mean of five pairs, main 12.37 percent, mine 13.18; one frame events, mean of the four middle frames, main 2.07 percent of the box, mine 1.94.
+- Crown: steps main 9.01, mine 10.14; one frame events main 1.42, mine 1.38 (frame by frame main 1.412 1.387 1.371 1.514, mine 1.360 1.358 1.386 1.401: mine is above main's in frame 2703 by 0.015 and under it in the mean).
+- In the one crop I looked at (mine, the upper air, frame 2702) the events are short upright dashes where a fine point falls by more than its own width in a frame. By count on frame 2702 a pixel lit for one frame makes nine in ten of them in the upper air and four in five in the crown, on main as on mine. I read them as the points' travel; main's crop was counted, not looked at.
+- More pixels step in mine than in main (by 0.8 and 1.1 of a percent of the box): a point with a glow moves more pixels over 12 levels than a bare point does.
+
+Below the bar: the air's region of the small class (56 against the approved's 102; main's 120 is nearer); the 75th point width 2.4 px against main's 2.2 and the approved's 2.3; the grain is a third of the approved's; no dabs in the upper air; the fine points' middle is darker and less red than the approved's; the miniature's share 0.935 against main's 0.957; more stepping pixels than main at 3840.
+
+Not seen: the film played; any frame at 3840 other than these twelve, and those read by the two boxes and one crop of the upper air, not looked at whole; the ball turned; which moment of the shake shake-3 reads.
+
+Tools of this step (in /tmp/w/s12, not committed): `motion.py` (the two shares over a set of frames and boxes), `mainframes.sh` (main's two files, the six frames, back again), `travel.mjs` (the camera's travel over the hold of fall).
