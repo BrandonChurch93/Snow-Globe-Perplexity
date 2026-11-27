@@ -31,66 +31,63 @@ const hung = (x: number, hs: number, z: number, size: Pad['size'], lx = 0): Clum
 }
 
 export const clumps: readonly Clump[] = [
-  // The top clump, left of the middle, with a knob on its left shoulder and a smaller one at its right.
+  // The top mass. It leans to the right: a knob on its left shoulder, a smaller one at its right, and a body at each side under
+  // them, so that the outline runs down from the top in one curve and not in steps.
   seen(-0.8, 37.6, 0.3, [4.4, 4.6, 4.0], 0.03),
   seen(-2.4, 41.4, 0.7, [2.3, 2.2, 2.8], -0.05),
   seen(3.4, 38.6, 0.6, [2.0, 1.6, 2.6], 0.08),
-  // Its two shoulders: a body at each side, so that the outline runs down from the top to the masses in one curve and not in steps.
-  seen(-5.4, 36.6, 1.4, [2.6, 3.6, 3.0], -0.12),
+  seen(-4.8, 37.8, 1.4, [2.4, 2.8, 3.0], -0.08),
   seen(6.2, 35.6, 1.6, [2.8, 3.2, 3.0], 0.15),
-  // The upper left clump, and a small body behind and under it. Its underside falls toward the stem, so the notch under it is a wedge.
-  seen(-11.4, 36.3, 2.0, [2.0, 2.8, 2.6], -0.2),
-  seen(-8.2, 36.1, 1.5, [2.8, 3.6, 3.0], 0.25),
-  seen(-9.6, 29.4, -2.2, [1.6, 1.4, 1.6]),
-  // The right mass: lobes that step down to the right, and a tip. It hangs low over the mass under it.
-  seen(6.0, 30.6, 3.0, [2.9, 3.8, 3.5], 0.05),
-  seen(9.8, 33.4, 2.2, [3.0, 3.4, 3.2], 0.1),
-  seen(12.4, 29.0, 1.6, [2.6, 4.6, 3.5], 0.3),
-  seen(14.6, 26.6, 1.8, [1.4, 2.0, 2.0], 0.15),
-  // The large left mass: it reaches farthest out.
-  seen(-14.1, 28.4, 2.6, [3.4, 2.8, 3.3], -0.25),
-  seen(-8.7, 30.2, 3.1, [3.0, 2.3, 3.9], 0.08),
-  seen(-12.4, 28.6, 3.4, [2.0, 1.8, 2.2], -0.1),
-  seen(-4.4, 30.1, 3.2, [2.0, 1.9, 3.0], 0.1),
-  seen(-5.2, 32.0, 2.4, [1.6, 2.0, 2.4], 0.1),
-  // The mass low at the left, over the left limb: the lowest of the crown, a full rounded body that climbs toward the stem.
-  seen(-14.7, 20.2, 1.6, [2.6, 2.4, 2.4], 0.05),
-  seen(-11.6, 21.2, 3.6, [3.4, 2.8, 3.0], -0.2),
-  seen(-8.6, 22.4, 4.4, [2.6, 2.2, 2.0], -0.06),
-  seen(-6.2, 23.4, 3.4, [2.0, 1.6, 2.6], -0.1),
-  // About the stem: a small clump at each side before the fork, which brings the crown's underside down over it, a lobe over the right
-  // limb, and two lumps above it.
-  seen(2.4, 25.0, 3.2, [1.8, 1.6, 1.8]),
-  seen(-0.4, 26.0, 3.4, [1.5, 1.5, 2.0]),
-  seen(7.2, 25.0, 3.1, [2.2, 1.4, 3.7], 0.15),
-  seen(4.6, 27.6, 3.4, [1.0, 2.6, 1.2]),
-  seen(2.6, 30.4, 2.6, [1.4, 2.4, 1.8]),
-  // The mass low at the right.
-  seen(12.0, 22.6, 2.8, [2.8, 3.2, 3.9], 0.03),
-  seen(15.0, 19.8, 1.8, [2.2, 3.0, 2.9], 0.12),
-  // Bodies about the stem that fill the middle between the masses. Under them small windows stay open at each side of the stem, where
-  // the lit arms show.
+  // The upper left pad, and a small body behind and under it. A band of sky parts it from the large mass under it, from the outline
+  // to the top mass's left shoulder, where it closes as a wedge.
+  seen(-11.4, 37.2, 2.0, [1.8, 1.5, 2.2], -0.2),
+  seen(-8.4, 37.2, 1.5, [2.2, 1.7, 2.6], 0.1),
+  seen(-9.6, 29.8, -2.2, [1.6, 1.2, 1.6]),
+  // The right mass: lobes that step down to the right, and a tip. Its inner lobe stands high and its outer one far out, so that a
+  // hole of sky stays between them and the mass under them.
+  seen(6.2, 32.4, 3.0, [2.3, 2.6, 2.8], 0.05),
+  seen(9.8, 33.4, 2.2, [3.0, 2.4, 3.2], 0.1),
+  seen(14.2, 29.0, 1.6, [2.0, 4.6, 3.5], 0.3),
+  seen(15.2, 26.4, 1.8, [1.4, 2.0, 2.0], 0.15),
+  // The large left mass: a long flat pad of small bodies in a row, which reaches farthest out. Its left end hangs lower.
+  seen(-14.4, 29.0, 2.6, [2.6, 1.4, 2.6], -0.25),
+  seen(-11.6, 29.7, 3.2, [2.2, 1.0, 2.6], -0.1),
+  seen(-8.2, 29.9, 3.1, [2.2, 1.0, 2.8], 0.08),
+  seen(-6.0, 30.0, 3.2, [1.8, 1.4, 2.8], 0.1),
+  seen(-3.6, 32.2, 2.4, [1.4, 2.0, 2.4], 0.1),
+  // The pad low at the left, over the left limb: a thin pad that climbs toward the stem, with its underside above the limb, so that
+  // the limb is seen under it. A band of sky parts it from the large mass, and a bough crosses the band.
+  seen(-14.7, 21.2, 1.6, [2.6, 1.6, 2.4], 0.05),
+  seen(-11.6, 22.7, 3.6, [2.4, 1.0, 2.2], -0.2),
+  seen(-8.6, 22.8, 4.4, [2.4, 1.0, 2.0], -0.06),
+  seen(-6.2, 22.8, 3.4, [2.0, 0.9, 2.4], -0.1),
+  // About the stem the crown stands open: a low lobe at the right of the fork and one over the right limb, and two thin bodies that
+  // stand between the holes of sky at each side of the stem.
+  seen(2.6, 24.9, 3.2, [1.8, 0.9, 1.8]),
+  seen(0.0, 26.4, 3.4, [0.35, 2.6, 0.5]),
+  seen(7.2, 24.2, 3.1, [2.2, 1.4, 2.6], 0.15),
+  seen(5.6, 27.4, 3.4, [0.35, 2.6, 0.5]),
+  seen(2.6, 31.8, 2.6, [1.4, 2.0, 1.8]),
+  // The mass low at the right. Its underside rises toward the fork, so that the boughs under it stand clear.
+  seen(12.0, 23.0, 2.8, [2.8, 2.4, 3.9], 0.03),
+  seen(15.0, 20.8, 1.8, [2.2, 2.2, 2.9], 0.12),
+  // Bodies behind and over the stem that fill the middle of the crown, above the holes.
   seen(0.5, 33.6, -0.6, [4.8, 3.6, 3.3]),
-  seen(-1.2, 30.5, 3.4, [3.0, 3.4, 2.6]),
+  seen(-1.2, 32.0, 3.4, [2.8, 2.4, 2.6]),
   seen(5.8, 24.0, -2.2, [2.0, 1.4, 2.4], 0.1),
-  // No level band of sky stays between the masses: bodies of unlike size hang from the upper ones toward the lower, each a rounded
-  // lobe, and what is left between them is a crease that the sprigs nearly close. At the left three hang from the large mass over
-  // the low one (the middle one comes down onto it, the one by the fork stays short), and one from the upper clump over the large mass,
-  // so that the notch over it opens only at the outline.
-  hung(-12.6, 28.6, 3.0, [1.9, 1.6, 2.4]),
-  hung(-9.4, 29.4, 3.6, [1.8, 4.3, 2.2]),
-  hung(-6.2, 29.6, 3.2, [1.4, 2.2, 2.0]),
-  hung(-8.6, 36.2, 2.2, [2.0, 2.3, 2.4]),
-  // At the right two hang from the right mass over the low one, the outer one onto it.
-  hung(7.6, 30.2, 3.4, [1.9, 2.0, 2.4]),
-  hung(11.0, 28.8, 3.0, [1.8, 2.2, 2.4]),
-  // One at the right of the fork, in front of the arms, short, so that small holes stay about the stem.
-  hung(4.9, 25.6, 3.8, [1.5, 2.4, 1.8]),
+  // Bodies that hang, each a rounded lobe. They do not close the bands of sky between the masses: one droops from the far left end
+  // of the large mass onto the low pad, so that the band between them is closed at the outline.
+  hung(-14.4, 28.8, 3.0, [1.7, 3.8, 2.2]),
+  // One at the right of the fork, in front of the right limb.
+  hung(5.8, 25.2, 3.8, [1.5, 3.2, 1.8]),
   // Lobes under the low masses, where the limbs that carry them end, and one over the end of the twig that carries the last lanterns.
-  hung(11.2, 22.4, 3.4, [1.6, 3.4, 2.0]),
-  hung(-13.2, 20.4, 0.4, [1.6, 2.0, 1.8]),
-  hung(-9.4, 21.6, 3.2, [1.4, 2.2, 1.8]),
+  hung(11.2, 22.4, 3.4, [1.6, 1.8, 2.0]),
+  hung(-13.6, 21.2, -0.4, [1.6, 1.8, 1.8]),
   hung(13.8, 20.3, 3.9, [1.5, 3.6, 1.8]),
+  // The last two hold the ends of two limbs in leaf: one under the low right mass, one under the right mass's inner lobe, at the
+  // upper right corner of the hole.
+  hung(8.6, 23.0, 2.4, [1.5, 2.8, 1.8]),
+  hung(10.0, 33.0, 1.9, [1.4, 1.6, 1.6]),
 ]
 
 const frames = clumps.map((k) => ({ at: k.at, a: k.size[0], t: k.size[1], c: k.size[2], grain: Math.min(1, Math.max(0.35, Math.sqrt(k.size[0] * k.size[2]) / FULL.grain)), ...padAxes(k) }))

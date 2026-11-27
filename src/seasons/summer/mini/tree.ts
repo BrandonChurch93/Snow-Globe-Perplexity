@@ -49,7 +49,7 @@ const glsl3 = (c: Rgb3): string => `vec3(${c.map((v) => v.toFixed(4)).join(', ')
 const LEAF_VARY = { big: 0.36, mid: 1.15, scaleLow: 0.56, scale: 0.4, cool: [0.8, 0.94, 1.02] as Rgb3, warm: [1.06, 1.04, 0.9] as Rgb3 }
 // A leaf's tone runs from the dark between the leaves to the bright of a leaf's face, by the map's own light (one over each map's mean stands in `gain`).
 // The maps are read close to their own sharpness (`lod`), so that single leaves stay crisp at the hero's size.
-const LEAF_TONE = { deep: [0.0095, 0.011, 0.0068] as Rgb3, high: [0.045, 0.06, 0.033] as Rgb3, from: 0.15, to: 2.4, gain: { body: 18.6, sprig: 7.9 }, lod: { body: 0.4, sprig: 0.4 }, bump: 0.5 }
+const LEAF_TONE = { deep: [0.0095, 0.011, 0.0068] as Rgb3, high: [0.0585, 0.078, 0.043] as Rgb3, from: 0.6, to: 1.9, gain: { body: 18.6, sprig: 7.9 }, lod: { body: 0.4, sprig: 0.3 }, bump: 0.7 }
 // Each clump is a dark body, lit as one: its top and the side toward the low sun are a little brighter, what is underneath is in shade. The low sun
 // behind the tree lies on each clump's outline where that is turned to it (the clump's own rounded body decides, with little of the single lump, `hem`):
 // the tips of the tufts there are lit yellow green (`fringe`) and a few of the brightest leaves on them stand out as points (`rim`), low in the crown as high
