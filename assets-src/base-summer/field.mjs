@@ -12,6 +12,7 @@ export function buildField() {
   const rel = new Float32Array(W * H)
   const roll = new Float32Array(W * H)
   const lip = new Float32Array(W * H)
+  const rut = new Float32Array(W * H)
   const grain = new Float32Array(W * H)
   const drift = new Float32Array(W * H)
   const bed = new Float32Array(W * H)
@@ -21,6 +22,9 @@ export function buildField() {
   const under = new Float32Array(W * H)
   const hgt = new Float32Array(W * H)
   const groove = new Float32Array(W * H)
+  const laid = new Float32Array(W * H)
+  const laidAt = new Float32Array(W * H)
+  const laidTone = new Float32Array(W * H)
   for (let j = 0; j < H; j++) {
     const s = (j / (H - 1)) * mer.total
     for (let i = 0; i < W; i++) {
@@ -32,6 +36,7 @@ export function buildField() {
       rel[o] = r.rel
       roll[o] = r.roll
       lip[o] = r.lip
+      rut[o] = r.rut
       grain[o] = r.grain
       drift[o] = r.drift
       bed[o] = r.k
@@ -41,6 +46,9 @@ export function buildField() {
       under[o] = r.under
       hgt[o] = r.h
       groove[o] = r.gh
+      laid[o] = r.laid
+      laidAt[o] = r.laidAt
+      laidTone[o] = r.laidTone
     }
   }
   const wide = blur(d, W, H, 14, true, false)
@@ -51,5 +59,5 @@ export function buildField() {
     const xa = Math.min(Math.max(x, 0), W - 1)
     return sampleBilinear(data, W, H, xa, y)
   }
-  return { W, H, mer, d, fine, rel, roll, lip, grain, drift, bed, frac, seat, halo, under, hgt, groove, wide, broad, at, dAt: (az, s) => at(d, P.uOfAz(az), s / mer.total) }
+  return { W, H, mer, d, fine, rel, roll, lip, rut, grain, drift, bed, frac, seat, halo, under, hgt, groove, laid, laidAt, laidTone, wide, broad, at, dAt: (az, s) => at(d, P.uOfAz(az), s / mer.total) }
 }
