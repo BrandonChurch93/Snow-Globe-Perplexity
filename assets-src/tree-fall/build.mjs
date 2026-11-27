@@ -14,13 +14,19 @@ const GLASS_CLEAR = 3.2
 const CEIL = 25.8
 // Each of the layout's limbs and the stem's top runs on into one tip; each fork place of the layout grows one twig. A tip
 // and a twig are one long curve to a fine hooked point. They are laid one after another so that, seen from the hero
-// camera (pitch `pitch`), a curve leaves the wood it grows from once and then keeps `gap` from every other piece.
-const LOOK = { pitch: 4.5, gap: 0.8, leaveBy: 0.5 }
+// camera (pitch `pitch`), a curve leaves the wood it grows from once, moving steadily away, and then keeps `gap` from every
+// other piece. `cap` is the room a point's tube and end cap take under the ceiling.
+const LOOK = { pitch: 4.5, gap: 0.8, leaveBy: 0.5, cap: 0.3 }
 const CURVE = { step: 0.32, point: 0.07, taper: 0.95, sweep: [0.15, 0.7], wave: 0.5, tilt: 0.5, hookFrom: [0.66, 0.86], hook: [0.45, 1.35] }
+// The approved's twigs do not run smooth: every millimetre or two they turn sharply, to one side and then the other, and at
+// some of those turns a short spur runs on the way the twig came. `turn` is the angle of a kink, made over `over` steps.
+const KINK = { apart: [1.0, 2.2], turn: [0.5, 1.0], over: 1 }
+const SPUR = { most: 10, chance: 0.75, length: [1.6, 3.4], part: 0.5, radius: 0.72, lean: [0.1, 0.45], bend: [0.1, 0.5], gap: 0.6, clear: 0.4, tries: 60, step: 0.28 }
 const TIP = { length: [5, 9], lift: 0.25, spread: 0.45, tries: 300, radius: 0.97, leader: -0.3, up: [0.3, 0.9] }
 // The approved's finest twigs reach up and out on the left of the upper crown: the fork places above `high.above` on that
-// side grow the long ones.
-const TWIG = { length: [2.6, 8], high: { above: 30, length: [5.5, 9.5], up: 0.6 }, fan: [0.6, 1.25], deep: 0.35, droop: -0.25, radius: [1.5, 0.26, 0.5], apart: 1.3, reach: 1, tries: 400, beside: 4.5, same: 0.7 }
+// side grow the long ones. Any other twig beside a long one (within `beside`) stays short, so that no row of them stands
+// like a comb. A place where the full length finds no room tries the shorter parts of `fall`, down to `least`.
+const TWIG = { length: [4.2, 9.5], high: { above: 30, length: [5.5, 9.5], up: 0.6 }, fan: [0.6, 1.25], deep: 0.35, droop: -0.25, radius: [1.5, 0.3, 0.56], apart: 1.3, reach: 1, tries: 400, beside: 4.5, same: 0.7, alike: 4, short: [2.8, 4.6], fall: [1, 0.72, 0.52, 0.38], least: 2.2 }
 const THICK = { limb: 1.3, stem: 1.05 }
 const SLEEVE = { from: -3.2, to: 36.5, split: 15.2, step: [0.6, 0.6], around: [192, 48], out: 0.05, deep: [1.15, 0.4], stem: 0.12, twist: 2.4 }
 // The approved bark takes the lamp as thin lines: the two finer ridge families are narrow crests over wide dark grooves.
@@ -50,13 +56,14 @@ const tangentAt = (pts, i) => pts[Math.min(pts.length - 1, i + 1)].clone().sub(p
 const pitch = (LOOK.pitch * Math.PI) / 180
 const seen = (p) => [p.x, p.y * Math.cos(pitch) - p.z * Math.sin(pitch)]
 const laid = []
-function lay(pts, radii) {
+function lay(pts, radii, owner = 0) {
   const at = pts.map(seen)
-  for (let i = 0; i + 1 < at.length; i++) laid.push([at[i][0], at[i][1], at[i + 1][0] - at[i][0], at[i + 1][1] - at[i][1], radii[i], radii[i + 1]])
+  for (let i = 0; i + 1 < at.length; i++) laid.push([at[i][0], at[i][1], at[i + 1][0] - at[i][0], at[i + 1][1] - at[i][1], radii[i], radii[i + 1], owner])
 }
-function room(s, r) {
+function room(s, r, owner = 0, own = false) {
   let best = Infinity
   for (const g of laid) {
+    if (owner && (g[6] === owner) !== own) continue
     const px = s[0] - g[0]
     const py = s[1] - g[1]
     const l = g[2] * g[2] + g[3] * g[3]
@@ -81,16 +88,75 @@ function curve(start, dir, length, r0) {
   const last = n - from
   const pts = []
   const radii = []
+  const kinks = []
+  const kinkAxis = tilted()
+  let next = Math.round(rng.range(KINK.apart[0], KINK.apart[1]) / step)
+  let turn = rng.next() < 0.5 ? 1 : -1
+  let left = 0
+  let angle = 0
   const d = dir.clone()
   const p = start.clone()
   for (let i = 1; i <= n; i++) {
+    if (i === next) {
+      if (i < from - KINK.over) {
+        angle = (turn * rng.range(KINK.turn[0], KINK.turn[1])) / KINK.over
+        left = KINK.over
+        kinks.push({ at: i - 2, before: d.clone(), axis: kinkAxis, turn })
+        turn = -turn
+      }
+      next = i + Math.max(KINK.over + 1, Math.round(rng.range(KINK.apart[0], KINK.apart[1]) / step))
+    }
+    if (left > 0) {
+      d.applyAxisAngle(kinkAxis, angle)
+      left--
+    }
     if (i <= from) d.applyAxisAngle(side, (sweep / from) * (wave ? 1.6 * Math.cos((Math.PI * i) / from) : 1))
     else d.applyAxisAngle(axis, (hook * (0.5 + (i - from) / last)) / (last * 0.5 + (last + 1) / 2))
     p.addScaledVector(d, step)
     pts.push(p.clone())
     radii.push(CURVE.point + (r0 - CURVE.point) * Math.pow(1 - i / n, CURVE.taper))
   }
-  return { pts, radii }
+  return { pts, radii, kinks }
+}
+
+const spurs = []
+function spur(parent, owner) {
+  for (const k of parent.kinks) {
+    if (spurs.length >= SPUR.most || rng.next() > SPUR.chance) continue
+    const from = parent.pts[k.at]
+    const rest = (parent.pts.length - k.at) * from.distanceTo(parent.pts[k.at + 1])
+    const reach = Math.min(rng.range(SPUR.length[0], SPUR.length[1]), SPUR.part * rest)
+    if (reach < SPUR.length[0] * 0.8) continue
+    const r0 = Math.max(CURVE.point * 1.6, parent.radii[k.at] * SPUR.radius)
+    let found = null
+    for (let t = 0; t < SPUR.tries; t++) {
+      const n = Math.max(4, Math.round(reach / SPUR.step))
+      const d = k.before.clone().applyAxisAngle(k.axis, -k.turn * rng.range(SPUR.lean[0], SPUR.lean[1]))
+      d.applyAxisAngle(across(d, rng.range(0, TAU)), rng.range(0, 0.15))
+      const bend = (-k.turn * rng.range(SPUR.bend[0], SPUR.bend[1])) / n
+      const p = from.clone()
+      const pts = []
+      const radii = []
+      let ok = true
+      let off = -Infinity
+      for (let i = 1; i <= n && ok; i++) {
+        d.applyAxisAngle(k.axis, bend * (0.4 + (1.2 * i) / n))
+        p.addScaledVector(d, reach / n)
+        const r = CURVE.point + (r0 - CURVE.point) * Math.pow(1 - i / n, 0.9)
+        const s = seen(p)
+        const own = room(s, r, owner, true)
+        if (!inside(p, CEIL - LOOK.cap) || room(s, r, owner) < SPUR.gap || own < off - 0.02) ok = false
+        off = own
+        pts.push(p.clone())
+        radii.push(r)
+      }
+      if (!ok || off < SPUR.clear) continue
+      if (!found || off > found.off) found = { pts, radii, off }
+    }
+    if (!found) continue
+    spurs.push({ pts: [from.clone(), ...found.pts], radii: [r0, ...found.radii], kind: 'spur' })
+    lay(found.pts, found.radii, laid.length + 1000)
+  }
 }
 
 // The best of `tries` curves from one place: every point inside the glass and under the ceiling, out of the wood it starts
@@ -102,16 +168,18 @@ function best(tries, make, worth) {
     const c = make()
     let left = -1
     let out = false
+    let was = 0
     let clear = Infinity
     let ok = true
     for (let i = 0; i < c.pts.length && ok; i++) {
-      if (!inside(c.pts[i])) ok = false
+      if (!inside(c.pts[i], CEIL - LOOK.cap)) ok = false
       else {
         const d = room(seen(c.pts[i]), c.radii[i])
         if (left < 0) {
           if (d >= LOOK.gap) left = i
-          else if (i > LOOK.leaveBy * c.pts.length || (out && d < 0)) ok = false
+          else if (i > LOOK.leaveBy * c.pts.length || (out && d < was)) ok = false
           else if (d > 0) out = true
+          was = Math.max(0, d)
         } else if (d < LOOK.gap) ok = false
         else clear = Math.min(clear, d)
       }
@@ -165,7 +233,8 @@ for (const limb of [...boughs, stem]) {
   const tip = { pts: [...pts, ...got.pts], radii: [...radii, ...got.radii], kind: 'tip', sleeve: true }
   tips.push(tip)
   chains.push(tip)
-  lay(got.pts, got.radii)
+  lay(got.pts, got.radii, chains.length)
+  spur(got, chains.length)
 }
 
 const forks = []
@@ -191,28 +260,36 @@ for (const f of forks) {
   if (grown.some((g) => g.at.distanceTo(f.at) < TWIG.apart)) continue
   const r0 = Math.min(TWIG.radius[2], Math.max(TWIG.radius[1], f.r * TWIG.radius[0]))
   const high = f.out < 0 && f.at.y > TWIG.high.above
-  const reach = high ? rng.range(TWIG.high.length[0], TWIG.high.length[1]) : rng.range(TWIG.length[0], TWIG.length[1])
   const beside = grown.filter((g) => g.at.distanceTo(f.at) < TWIG.beside)
-  const got = best(
-    TWIG.tries,
-    () => {
-      const way = f.way + (rng.next() < 0.5 ? 1 : -1) * rng.range(TWIG.fan[0], TWIG.fan[1])
-      const d = new THREE.Vector3(Math.cos(way), Math.max(TWIG.droop, Math.sin(way)), rng.range(-TWIG.deep, TWIG.deep))
-      return curve(f.at, d.normalize(), reach * rng.range(0.75, 1), r0)
-    },
-    (a, b, c) => {
-      const way = Math.atan2(c[1] - a[1], c[0] - a[0])
-      const same = beside.reduce((n, g) => n + (apartAngle(way, g.way) < TWIG.same ? 2.5 : 0), 0)
-      return (high ? TWIG.high.up : 0.3) * (b[1] - a[1]) + 0.3 * f.out * (b[0] - a[0]) - same
-    },
-  )
+  const short = !high && beside.some((g) => g.long)
+  const reach = short ? rng.range(TWIG.short[0], TWIG.short[1]) : high ? rng.range(TWIG.high.length[0], TWIG.high.length[1]) : rng.range(TWIG.length[0], TWIG.length[1])
+  let got = null
+  for (const part of TWIG.fall) {
+    if (reach * part < TWIG.least) break
+    got = best(
+      TWIG.tries,
+      () => {
+        const way = f.way + (rng.next() < 0.5 ? 1 : -1) * rng.range(TWIG.fan[0], TWIG.fan[1])
+        const d = new THREE.Vector3(Math.cos(way), Math.max(TWIG.droop, Math.sin(way)), rng.range(-TWIG.deep, TWIG.deep))
+        return curve(f.at, d.normalize(), reach * part * rng.range(0.75, 1), r0)
+      },
+      (a, b, c) => {
+        const way = Math.atan2(c[1] - a[1], c[0] - a[0])
+        const same = beside.reduce((n, g) => n + (apartAngle(way, g.way) < TWIG.same ? TWIG.alike : 0), 0)
+        return (high ? TWIG.high.up : 0.3) * (b[1] - a[1]) + 0.3 * f.out * (b[0] - a[0]) - same
+      },
+    )
+    if (got) break
+  }
   if (!got) continue
   const a = seen(got.pts[0])
   const c = seen(got.pts[Math.min(got.pts.length - 1, 6)])
-  grown.push({ at: f.at, way: Math.atan2(c[1] - a[1], c[0] - a[0]) })
+  grown.push({ at: f.at, way: Math.atan2(c[1] - a[1], c[0] - a[0]), long: !short })
   chains.push({ pts: [f.at.clone(), ...got.pts], radii: [r0, ...got.radii], kind: 'twig' })
-  lay(got.pts, got.radii)
+  lay(got.pts, got.radii, chains.length)
+  spur(got, chains.length)
 }
+chains.push(...spurs)
 
 function tube(chain, n) {
   const sides = chain.radii[0] > 0.9 ? 10 : chain.radii[0] > 0.45 ? 7 : 6
@@ -421,6 +498,6 @@ const levelled = await addLevels(fs.readFileSync(file), { levels: LEVELS })
 fs.writeFileSync(file, levelled.glb)
 out.bytes = levelled.glb.length
 const lighter = Object.fromEntries(Object.keys(LEVELS).map((l) => [l, levelled.meshes.reduce((n, m) => n + (m[l] ?? m.triangles), 0)]))
-const kinds = ['limb', 'tip', 'twig'].map((k) => chains.filter((c) => c.kind === k).length)
-writeJson(rel('out', 'work', 'tree-fall', 'build.json'), { made: 'assets-src/tree-fall/build.mjs', file: 'assets-full/fall/tree-fall.glb', bytes: out.bytes, triangles: out.triangles, limbs: kinds[0], tips: kinds[1], twigs: kinds[2], forks: forks.length, embers: embers.length })
-console.log(`tree-fall: ${out.triangles} triangles (medium ${lighter.medium}, low ${lighter.low}; twigs ${tri(twigs)}, lights ${tri(lights)}), ${(out.bytes / 1e6).toFixed(2)} MB; ${kinds[0]} limbs, ${kinds[1]} tips, ${kinds[2]} twigs of ${forks.length} fork places; ${embers.length} embers`)
+const kinds = ['limb', 'tip', 'twig', 'spur'].map((k) => chains.filter((c) => c.kind === k).length)
+writeJson(rel('out', 'work', 'tree-fall', 'build.json'), { made: 'assets-src/tree-fall/build.mjs', file: 'assets-full/fall/tree-fall.glb', bytes: out.bytes, triangles: out.triangles, limbs: kinds[0], tips: kinds[1], twigs: kinds[2], spurs: kinds[3], forks: forks.length, embers: embers.length })
+console.log(`tree-fall: ${out.triangles} triangles (medium ${lighter.medium}, low ${lighter.low}; twigs ${tri(twigs)}, lights ${tri(lights)}), ${(out.bytes / 1e6).toFixed(2)} MB; ${kinds[0]} limbs, ${kinds[1]} tips, ${kinds[2]} twigs of ${forks.length} fork places, ${kinds[3]} spurs; ${embers.length} embers`)
