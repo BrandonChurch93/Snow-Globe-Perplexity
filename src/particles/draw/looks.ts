@@ -329,7 +329,7 @@ export const CARD = {
   lieKeep: [0.6, 0.35] as const,
   /** A leaf lit from behind glows in its own deepened colour, and no leaf is drawn brighter than this, so that orange stays orange and does not burn to yellow. */
   leafThrough: 0.9,
-  leafMost: 0.5,
+  leafMost: 0.56,
   leafRestMost: 0.85,
   /** The tints of the gold, the orange and the red leaves against the row's colour, and where along the leaves' own numbers the gold ones end and the red ones start: by the approved picture's count about 55, 30 and 15 in a hundred. The maples, `leafRestMaple` of the leaves at rest and the largest, run over the stretch `leafMapleHue` of it alone: the approved's are orange and red, none gold. */
   leafGold: [1.4, 1.0, 0.6] as const,
@@ -340,7 +340,7 @@ export const CARD = {
   leafMapleHue: [0.55, 1] as const,
   /** In the storm the leaves keep the hues they had: the palest, their share, the reddest and where those start and are full. */
   leafStormGold: [1.0, 1.18, 1.15] as const,
-  leafStormGoldShare: 0.6,
+  leafStormGoldShare: 0.75,
   leafStormRed: [0.92, 0.5, 0.5] as const,
   leafStormRedFrom: [0.5, 0.95] as const,
   /** The dark leaves, rust and brown, among the orange ones: their tint and the share of the leaves that has it. Afloat at rest fewer are dark (`leafRestDarkFrom`): a dark leaf in the air reads as a dim stroke, and the approved's air holds few. */
