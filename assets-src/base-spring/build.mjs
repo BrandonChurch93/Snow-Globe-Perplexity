@@ -634,7 +634,7 @@ function buildGrowth() {
   for (const [az, h, extra, size] of LEDGE_PETALS) {
     const g = surf(az, sOf([az, h, extra]), height, 0.25)
     const n = norm3(add(g.n, [rng() - 0.5, rng() * 0.3, rng() - 0.5], 0.5))
-    leaf(g.p, n, size * (0.42 + 0.2 * rng()), [0.72, 0.4 + 0.12 * rng(), 0.46 + 0.1 * rng()], rng() * 6.28, 1.2 + 0.4 * rng(), 0.3)
+    leaf(g.p, n, size * (0.52 + 0.2 * rng()), [0.8, 0.54 + 0.1 * rng(), 0.58 + 0.08 * rng()], rng() * 6.28, 1.2 + 0.4 * rng(), 0.3)
   }
   return { soup, rootTriangles }
 }
