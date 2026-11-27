@@ -285,13 +285,16 @@ export class GlobeStage implements Stage {
     }
     const like = this.scratchOf(live.texture.type, live.samples)
     const linked: Promise<unknown>[] = []
+    // A browser that cannot link aside is not asked to: three writes a warning to the console of one that is.
+    const linksAside = renderer.extensions.has('KHR_parallel_shader_compile')
     await run(
       meshes.map((d) => () =>
         aside(like, () => {
           const below = d.children
           d.children = []
           try {
-            linked.push(renderer.compileAsync(d, this.camera, this.scene))
+            if (linksAside) linked.push(renderer.compileAsync(d, this.camera, this.scene))
+            else renderer.compile(d, this.camera, this.scene)
           } finally {
             d.children = below
           }
