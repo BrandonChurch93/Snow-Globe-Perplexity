@@ -25,12 +25,13 @@ const RAD = Math.PI / 180
 //
 // A falling grain is drawn as a camera with a quick shutter sees it: as the short line it travels in that time. Each
 // hides what is behind it, the dark grains too, so the fall is single lit grains with dark between them and not a
-// veil. The line is the same in every sample of one picture: drawn from a few samples it would be a row of dashes.
+// veil. The side toward the stone is in the fall's own shade: there most grains are dark and the lit ones stand as
+// single threads. The line is the same in every sample of one picture: drawn from a few samples it would be a row of dashes.
 const LOOK = {
   gravity: 3400,
   lift: { stop: 0.25, share: 0.6, nearMm: [61.5, 69.0], late: 0.4, upMmS: [70, 170], inMm: 1.1 },
   jump: { count: 8600, shade: 0.3, reach: 0.2, onHeap: 0.1, hopMm: [0.15, 1.0], within: 0.05, radiusMm: [0.04, 0.1] },
-  fall: { count: 5500, gravity: 7000, az: 90, spread: 2.5, most: 2.0, off: [0.9, 1.7], h: [38.7, 39.8], outMmS: [72, 150], lean: 1.7, fliers: { share: 0.012, far: [1.12, 1.22], brief: 0.15, size: 1.5, solid: 0.9, lit: 1.3 }, fanDeg: 1.5, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.035, 0.085], fine: 2.5, core: [0.3, 72, 125], edge: [120, 150, 0.0], thinPx: 0.3, sizes: [1.0, 1.5], soft: { share: 0, wide: 2.2 }, shutter: 0.15, cover: 40, rise: 0.012, low: [0.085, 0.038, 0.017], shine: [0.38, 0.52], pale: 0.3, plain: 0.4, least: [0.0, 0.01], bright: [0.75, 1.0], lit: 1.3, shaded: 0.08, mist: { seconds: 0.07, outMmS: [5, 40], upMmS: [5, 45], cover: 0.012, mm: [0.25, 0.5], turn: 0.45 } },
+  fall: { count: 5500, gravity: 7000, az: 90, spread: 2.5, most: 2.0, off: [0.9, 1.7], h: [38.7, 39.8], outMmS: [72, 150], lean: 1.7, fliers: { share: 0.012, far: [1.12, 1.22], brief: 0.15, size: 1.5, solid: 0.9, lit: 1.3 }, fanDeg: 1.5, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.035, 0.085], fine: 2.5, core: [0.5, 85, 135], edge: [120, 150, 0.0], thinPx: 0.3, sizes: [1.0, 1.5], soft: { share: 0, wide: 2.2 }, shutter: 0.15, cover: 40, rise: 0.012, low: [0.085, 0.038, 0.017], shine: [0.25, 0.39], dim: [0.7, 0.84], pale: 0.3, plain: 0.4, least: [0.0, 0.01], bright: [0.75, 1.0], lit: 1.3, shaded: 0.08, mist: { seconds: 0.07, outMmS: [5, 40], upMmS: [5, 45], cover: 0.012, mm: [0.25, 0.5], turn: 0.45 } },
   loose: { x: [16, 136], z: [-70, 112], kind: { proud: [0.26, 0.08] }, thinPx: 0.3, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, under: 3500, radiusMm: [0.07, 0.17, 0.45], small: 0.6, lean: 1.6, thin: 0.45, sunk: 0.3, vary: [0.6, 1.2], apart: 0.3 }, dust: { count: 12400, radiusMm: [0.03, 0.07], reach: 0.13, cover: 0.6 }, grain: { count: 2600, radiusMm: [0.05, 0.1], lean: 1.4, reach: 0.15 }, crumb: { count: 40, radiusMm: [0.12, 0.17], lean: 1.6, reach: 0.35 }, strewn: { behind: [3, 17], thinMm: 0.6, runMm: [0.5, 1, 2, 3, 5, 7, 10, 14], thins: 5, front: 0.1, skinMm: 1.2 }, vary: [0.1, 0.42], warm: [1.0, 0.8, 0.56] },
   sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 0.5, round: [1.6, 4.0], clear: 6 },
@@ -413,7 +414,8 @@ void main() {
   }
   vec3 cover = vGrainCover * disc;
   if (falls > 0.5) {
-    col *= mix(${vec(LOOK.fall.low)}, vec3(1.0), max(flies, smoothstep(${LOOK.fall.shine[0]!.toFixed(2)}, ${LOOK.fall.shine[1]!.toFixed(2)}, fract(id * 43.7 + id2 * 5.3))));
+    float inner = 1.0 - clamp((vGrainLit - ${LOOK.fall.core[0].toFixed(2)}) / ${(1 - LOOK.fall.core[0]).toFixed(2)}, 0.0, 1.0);
+    col *= mix(${vec(LOOK.fall.low)}, vec3(1.0), max(flies, smoothstep(mix(${LOOK.fall.shine[0]!.toFixed(2)}, ${LOOK.fall.dim[0]!.toFixed(2)}, inner), mix(${LOOK.fall.shine[1]!.toFixed(2)}, ${LOOK.fall.dim[1]!.toFixed(2)}, inner), fract(id * 43.7 + id2 * 5.3))));
     cover *= smoothstep(${LOOK.fall.least[0]!.toFixed(2)}, ${LOOK.fall.least[1]!.toFixed(2)}, dot(col, vec3(0.2126, 0.7152, 0.0722)));
   }
   gl_FragColor = vec4(col * cover, cover.g);
