@@ -427,7 +427,7 @@ vec3 veilLit(vec3 p, vec4 field) {
   float pk = dot(p, uVeilKey.xyz);
   float reach = -pk + sqrt(max(pk * pk - dot(p, p) + uLens.w * uLens.w, 0.0));
   float dim = exp(-(uVeil.a + uVeilRoll.z) * ${n(L.shadow)} * reach - mix(${n(L.driftShadow)}, ${n(L.bankShadow)}, uVeilRoll.y) * field.z / max(dot(uVeilKey.xyz, uVeilUp.xyz), 0.3));
-  float low = field.y / max(field.x + field.y, 1e-6);
+  float low = clamp(field.y / max(field.x + field.y, 1e-6), 0.0, 1.0);
   float floorKey = mix(uVeilKey.w, min(uVeilKey.w, ${n(L.driftKeyFloor)}), low);
   float packed = mix(1.0, mix(${n(L.bankShade)}, 1.0, smoothstep(${n(L.bankShadeFrom)}, ${n(L.bankShadeTo)}, field.y / max(uVeilBank.z, 1e-6))), low);
   vec3 toward;
@@ -540,7 +540,8 @@ function densities(): void {
   const calm = ramp(turb, L.calmFrom, L.calmTo)
   const storm = most * L.haze * Math.pow(turb, L.hazePower) * calm
   const haze = Math.max(storm, most * L.haze * L.slowHaze * slow)
-  const density = rest + haze
+  // A season's rest may sit a hair below zero (summer's is -0.0007); the shared density never does.
+  const density = Math.max(0, rest + haze)
   const u = veilUniforms
   u.uVeil.value.w = density
   const rolling = Math.min(1, Math.max(0, roll / ROLL_MAX))
