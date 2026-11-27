@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 223 · 2026-11-27 18:41 UTC
+Status 224 · 2026-11-27 19:03 UTC
 
-- `out/stills/status/status-223-1.jpg`: The four seasons as the app opens in the eighth publish
-- `out/stills/status/status-223-2.jpg`: The live page of the eighth publish opened at fall with its controls, read on a helper machine
-- `out/stills/status/status-223-3.jpg`: Fall's tree, approved picture left and build right, a thicket where the approved has few curved boughs, below the bar
-- `out/stills/status/status-223-4.jpg`: Summer's falling sand at 4K at four times, film frames 1754 to 1757, a trial its builder draws again without its smear, below the bar
+- `out/stills/status/status-224-1.jpg`: Fall at rest on chain 37, approved picture left and build right, on origin now, below the bar
+- `out/stills/status/status-224-2.jpg`: Fall after its landing on chain 37, on origin now, below the bar
+- `out/stills/status/status-224-3.jpg`: The change of season, summer's heap leaving over film frames 2107 to 2111 at the final tier, in its builder's tree, not pushed, not judged in motion
+- `out/stills/status/status-224-4.jpg`: Summer's falling sand at 4K at four times, film frames 1754 to 1757, the rate chosen, drawn without the smear, in its builder's tree, below the bar
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 18:41 UTC
-clock: phase 6, tick of 24.2 minutes
-phase 6: 39.86 h used of its 12.00 h box
-allowance (after the review): 39.86 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 39.86 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 19:03 UTC
+clock: phase 6, tick of 22.4 minutes
+phase 6: 40.23 h used of its 12.00 h box
+allowance (after the review): 40.23 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 40.23 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
