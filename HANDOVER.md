@@ -1,6 +1,6 @@
-# Winter glints, handover, second list
+# Winter glints, handover, second and third list
 
-Branch agent/p6-winter-glints, head f47b33f1 (origin/main fe0f0202 merged in). Three items at 3840 x 2160.
+Branch agent/p6-winter-glints, head f47b33f1 (origin/main fe0f0202 merged in; it is on main since 26394c0a). Three items at 3840 x 2160. The third list changed no source.
 
 ## 1. The backdrop not drawn beside the frond (frames 30 and 31)
 
@@ -22,11 +22,29 @@ Mend, in src/seasons/winter/frost.ts: uTravel holds the glass's step between nei
 
 Read at hd final, frame 650, old against mend: the rows are gone; 14346 pixels move by more than 2 levels, all inside the ball (x 514 to 1257, y 63 to 701).
 
-Not done: four frames at 3840 final before and after for frame 650. A frame there takes several minutes on this machine and the time did not reach.
+At 3840 final on main 26394c0a (one frame, 650, before beside after): with the shutter's mend the old glints no longer stand as dots, they draw as thin bright lines along the travel. The fade takes those lines out: 51326 pixels move by more than 2 levels, all in the ball. Whether the lines are wanted back is /root's call; the limits are look.glass.glintFade in src/seasons/winter/frost.ts.
 
 ## 3. The pond's finest band
 
-Not mended. Frames 30 against 31 at 3840 final on this head, fine part at sigma 2 px, travel removed: patch 0.604 (rms 1.12), core 0.790 (1.60), top 0.766 (1.73). At sigma 4 px: 0.797, 0.921, 0.883. Removing the grain and dither alone reads 0.613, 0.798, 0.796 (patch, core, top) at 12 samples, so the grain is not the whole of it. What is new in each frame is the samples' own noise on detail finer than a pixel, plus the grain. By a model fitted to the two readings (not a proof), 0.8 in the patch needs about 48 samples and no grain on the ice, which is twice the render time of these frames and a change in the post, a shared file.
+Not mended, and by /root's word (03:53 UTC) nothing is drawn for the number: the patch reading is retired as the pond's bar. The term that keeps the patch under 0.8 is not in winter's files.
+
+Trials, 3840 final, 24 samples, frames 30 against 31, patch 1800,1760 to 2060,1960, sigma 2 px. S is the fine part both frames share, u the part each frame has alone, in levels squared; the reading is S / (S + u).
+
+| trial | patch | S | u | core | top |
+| --- | --- | --- | --- | --- | --- |
+| as it is | 0.604 | 0.735 | 0.481 | 0.790 | 0.766 |
+| flakes not drawn | 0.589 | 0.519 | 0.362 | 0.768 | 0.777 |
+| flakes not drawn, grain and dither off | 0.677 | 0.516 | 0.247 | 0.804 | 0.830 |
+| the same, lens fill off | 0.676 | 0.516 | 0.247 | 0.804 | 0.830 |
+| flakes not drawn, the ice's roughness held flat | 0.484 | 0.169 | 0.181 | 0.506 | 0.286 |
+
+What it shows. 76 percent of the patch is ice outside the lamp's core. In the 24 sample frame that ice is a smooth slope: its fine band holds under one level (shared 0.14, alone 0.30). The 0.30 is the post's grain and dither at that tone (smooth blocks elsewhere in the same frames read 0.13 at luma 0 to 20 and 0.27 at luma 170 to 200), and with both off the steps of the 8 bit picture itself (0.19). The flake discs give about 0.12 of u. The pond's own share is the lamp's core, about 0.06 of the 0.481.
+
+Where: src/post/post.ts lines 201 to 206 (grain, tint, dither), src/particles/draw/shader.ts line 381 (the flakes' cover by a hash a pixel). Both are shared files and were not changed.
+
+The pond's one term that is finer than a pixel in a single sample is the fine part of the ice's roughness in three's direct highlight (one sample, roughness held flat: the core's shared part falls from 59 to 3.2). It makes the dashes in the lamp's core. The dashes are most of what two frames share, so taking them out lowers every reading; they stay.
+
+The core by eye, frames 29 to 32 at 3840 final on main 26394c0a, travel taken out (picture 03): the dashes stand still on the ice and move with the camera. The differences between neighbours are grain sized (2.4 to 2.6 levels rms in luma, 9 percent of the pixels over 4 levels), with a slow change of the light's left edge and two or three dashes of a few pixels at that edge that change by up to 18 levels. Core reads 0.805, 0.807, 0.806 and top 0.789, 0.777, 0.749 over the three pairs. The flake discs over the pond keep their shape and light through the four frames; no flicker seen.
 
 ## Checks on f47b33f1
 
