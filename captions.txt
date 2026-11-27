@@ -63,3 +63,9 @@ Where the tone by parts is read: yellow boxes the lit tops of three clumps, mage
 
 10k-crop-upper-left-ours-at-three-times-its-pixels-approved-left.jpg
 The crop at ours' own pixels (each of ours shown three times its size, the approved brought to the same scale), the upper left dome and the left middle pad with the band of sky between them. In the approved the light on a pad's top is a thin line of yellow leaves at the very edge, on a near black pad under grey haze. Ours is a wider band of pale grey green leaves on a mid green pad: whiter and wider than the approved's, and the pad behind is not as dark. Not met; it goes into the eleventh with the openings.
+
+Eleventh pass, first pair (trial 163, the lace). Stills drawn on the tree merged with main 82d0b882; judged pictures, air on.
+11a1-whole-400px-approved-left.jpg: the whole at 400 px, approved left, eleventh right.
+11a2-tree-pair-rest-approved-left.jpg: the tree at one scale, approved left, eleventh right. Seven windows are cut and four pads stand in the tenth's large openings.
+11a3-tree-rest-approved-tenth-eleventh.jpg: approved, tenth (524cc65b), eleventh at one scale.
+11a4-patches-of-sky-counted-approved-left-eleventh-right.jpg: the patches of sky of 0.25 mm2 or more inside the closed outline, outlined and numbered by one rule on both judged pictures: approved 38, eleventh 37 (tenth 28). In the approved some patches are seed heads and haze in front of leaf, so the rule counts more than the eye.
