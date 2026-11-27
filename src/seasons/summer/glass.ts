@@ -11,8 +11,8 @@ import { holdStorm, veil } from './veil'
 // Part `glass-dressing-summer`: the glass is clear, and what the season puts on it is light.
 // 1. The flare: the reflection of the one strong warm light (the rig's key) on the outside of the glass. It sits where a sphere
 //    mirrors that light toward the eye (the half vector between the eye and the light), which from the hero camera is the upper
-//    right shoulder, at the limb. It is a small hot core squeezed along the limb, a warm halo and the star a lens draws round a
-//    point that bright. It kindles on the landing.
+//    right shoulder, at the limb. It is a white patch on the outline, drawn out along it, with the soft bloom and the
+//    warm glow a wide open lens draws round it: no rays and no streak. It kindles on the landing.
 // 2. The pool: the same light focused by the globe onto the slab, in front of the globe and to its left, inside the globe's own
 //    shadow: a soft pool of warm light, brightest at a knot by the foot, and inside it a few broad curved bands of the water's
 //    light, soft edged and never a net or a star. There is no pool before the landing; after it the pool swells, its bands
@@ -45,41 +45,32 @@ export const look = {
   leaveBeats: [1.1, 0.2] as const,
   flare: {
     halfMm: 30,
-    // the core: white hot and on the outline, drawn out along it; how strong, and its size across the outline and along it
-    // (in the quad's half width, as every length of the flare is)
+    // the core: white hot, a patch on the outline, drawn out along it and bent with it; how strong, and its size across
+    // the outline and along it (in the quad's half width, as every length of the flare is). On the approved picture the
+    // white lies 0.13 of the radius along the rim and 0.035 of it across
     core: 12,
-    coreAcross: 0.0225,
-    coreAlong: 0.045,
-    // the bloom of the lens round the core: a soft warm ball that takes the core's hard edge away
-    bloom: 1.8,
-    bloomWide: 0.07,
-    // the warm glow under the rays: brightest against the core and falling off fast (`glow`, and the length it falls to
-    // a third in), then a faint broad ball of it a quarter of a globe radius wide (`halo`) and the thin `veil` that
-    // carries it on. It is never a disc with an edge
-    glow: 1.6,
-    glowWide: 0.06,
-    halo: 0.5,
-    haloWide: 0.2,
-    veil: 0.07,
-    // the rays: many fine straight lines through the core, `spikes` of them, never evenly spaced. Each end has its own
-    // length (`reach`: the shortest, and how much longer the longest is; most are short) and its own strength, some
-    // nearly out. They are longer and brighter away from the globe. `rayWide` is a ray's width at its tip and how much
-    // wider it is at the core
-    rays: 1.8,
-    spikes: 33,
-    reach: [0.07, 0.3] as const,
-    rayWide: [0.0022, 0.003] as const,
-    // and how much wider a ray grows out to its tip, so the ends are soft
-    raySoft: 0.007,
-    arc: 1.6,
-    hot: [1, 0.92, 0.78] as const,
-    warm: [1, 0.72, 0.42] as const,
-    amber: [1, 0.47, 0.16] as const,
+    coreAcross: 0.035,
+    coreAlong: 0.18,
+    // the mirror's own place for the sun lies a hair inside the outline: the glint is pushed out along the radius by this
+    // share of it, so that its middle lies on the outline and the bloom sits on the rim
+    rimOut: 0.012,
+    // the bloom of the lens round the patch: soft, nearly white, brightest on the rim, and a little longer along the
+    // outline than across it, since the patch it blooms from is long (`bloom`, and the lengths it falls to a third in,
+    // across the outline and along it); round it the warm glow, its tail, which falls off slower and has no edge
+    // (`glow`, and its lengths). There are no rays and no streak: the lens is wide open, as the round discs of the
+    // room's lights behind the globe say it is, and a wide open lens draws a soft bloom round a patch this bright
+    bloom: 4.25,
+    bloomAcross: 0.074,
+    bloomAlong: 0.088,
+    glow: 1.83,
+    glowAcross: 0.12,
+    glowAlong: 0.164,
+    hot: [1, 0.92, 0.72] as const,
+    amber: [1, 0.51, 0.27] as const,
     // the landing: the flare is out while the globe is in the hand after the change, catches on the landing frame, overshoots and settles
     kindleSeconds: 0.22,
     flash: 0.55,
     flashSeconds: 0.3,
-    breath: 0.05,
   },
   // the far wall: the light that crosses the globe gathers on the inside of the glass opposite the sun, a warm crescent
   // along the limb
@@ -471,40 +462,13 @@ const uniforms = {
 }
 
 const F = look.flare
-// The flare's rays, laid out once: each line through the core has its own bearing, a little off its even place, and each
-// of its two ends its own reach and strength. Most ends are short and a few long, and some are nearly out
-const flareRnd = (i: number, k: number): number => {
-  const x = Math.sin(i * 127.1 + k * 311.7 + 1.3) * 43758.5453
-  return x - Math.floor(x)
-}
-const FLARE_RAYS = Array.from({ length: F.spikes }, (_, i) => ({
-  a: ((i + 0.5 + 1.5 * (flareRnd(i, 1) - 0.5)) * Math.PI) / F.spikes + 0.35,
-  ends: [2, 3].flatMap((k) => [F.reach[0] + F.reach[1] * flareRnd(i, k) ** 2, 0.2 + 0.8 * flareRnd(i, k + 3) ** 1.5]),
-}))
-// how far from the core a ray can reach at the most
-const FLARE_REACH = (F.reach[0] + F.reach[1]) * 1.25 * 1.2 * (1 + F.breath)
 const FLARE = `
 uniform vec4 uFlareSun;
-uniform vec4 uSummer;
 varying vec2 vFl;
 varying vec2 vFlOut;
 varying float vFlGain;
-// one fine ray: d its way, e the reach and the strength of its end along d and of the other end, breathe its breath, fine
-// the least width a pixel can carry. A ray is widest at the core, thins along its length and grows soft at its tip
-float flRay(vec2 p, vec2 d, vec4 e, float breathe, float fine) {
-  float along = dot(p, d);
-  float across = p.x * d.y - p.y * d.x;
-  float away = max(sign(along) * dot(d, vFlOut), 0.0);
-  vec2 end = along > 0.0 ? e.xy : e.zw;
-  float t = abs(along) / (end.x * (0.75 + 0.5 * away) * breathe);
-  float u = min(t, 1.0);
-  float thin = ${n(F.rayWide[0])} + ${n(F.rayWide[1])} * (1.0 - u) * (1.0 - u) + ${n(F.raySoft)} * u;
-  float wide = max(thin, fine);
-  return exp(-across * across / (wide * wide)) * exp(-2.6 * t) * (1.0 - smoothstep(0.6, 1.2, t)) * end.y * (0.5 + 0.5 * away) * (thin / wide);
-}
+varying float vFlBend;
 void main() {
-  // the least width a ray can have and still be carried by the pixels: read before anything is discarded
-  float fine = 0.55 * max(length(dFdx(vFl)), length(dFdy(vFl)));
   float c = stageChange();
   if (stageGone(c)) discard;
   if (uDiag != 0) discard;
@@ -514,21 +478,16 @@ void main() {
   float r = length(p);
   vec2 q = vec2(dot(p, vFlOut), dot(p, vec2(-vFlOut.y, vFlOut.x)));
   float edge = 1.0 - smoothstep(0.62, 1.0, r);
-  // the core: the light itself, mirrored small; across the limb the sphere squeezes it
-  float core = exp(-(q.x * q.x / ${n(F.coreAcross * F.coreAcross)} + q.y * q.y / ${n(F.coreAlong * F.coreAlong)}));
-  // the glass beside it takes the light along the limb
-  float arc = exp(-q.x * q.x / 0.0009) * exp(-q.y * q.y / 0.09);
-  float halo = exp(-r * r / ${n(F.haloWide * F.haloWide)}) + ${n(F.veil)} * exp(-r / 0.34);
-  float glow = exp(-r / ${n(F.glowWide)});
-  float bloom = exp(-r * r / ${n(F.bloomWide * F.bloomWide)});
-  // the rays: fine tapered lines through the core, each end with its own length and strength, breathing a little. They
-  // are written out one by one with their numbers, and only drawn where the longest of them can reach
-  float star = 0.0;
-  if (r < ${n(FLARE_REACH)}) {
-    vec3 breathe = 1.0 + ${n(F.breath)} * sin(uSummer.x * vec3(0.9, 1.5, 2.1) + vec3(0.0, 2.1, 4.2));
-${FLARE_RAYS.map((ray, i) => `    star += flRay(p, vec2(${n(Math.cos(ray.a))}, ${n(Math.sin(ray.a))}), vec4(${ray.ends.map(n).join(', ')}), breathe.${'xyz'[i % 3]}, fine);`).join('\n')}
-  }
-  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core) + ${vec(F.warm)} * (${n(F.bloom)} * bloom + ${n(F.glow)} * glow + ${n(F.rays)} * star + ${n(F.arc)} * arc) + ${vec(F.amber)} * (${n(F.halo)} * halo);
+  // how far off the outline, which bends away under a patch this long, and how far along it: both squared
+  float off = length(vec2(vFlBend + q.x, q.y)) - vFlBend;
+  off *= off;
+  float along = q.y * q.y;
+  // the core: the light itself, mirrored; the sphere squeezes it across the outline and draws it out along it
+  float core = exp(-(off / ${n(F.coreAcross * F.coreAcross)} + along / ${n(F.coreAlong * F.coreAlong)}));
+  // the lens's bloom round it, brightest on the rim, and the warm glow round that as its tail: no edge, no ray, no streak
+  float bloom = exp(-(off / ${n(F.bloomAcross * F.bloomAcross)} + along / ${n(F.bloomAlong * F.bloomAlong)}));
+  float glow = exp(-sqrt(off / ${n(F.glowAcross * F.glowAcross)} + along / ${n(F.glowAlong * F.glowAlong)}));
+  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom) + ${vec(F.amber)} * (${n(F.glow)} * glow);
   gl_FragColor = vec4(col * (lit * edge), 0.0);
 }`
 
@@ -876,8 +835,8 @@ function makeFlare(): THREE.Mesh {
     part: PART,
     standIn: false,
     change: 'glass-dressing',
-    uniforms: { uFlareSun: uniforms.uFlareSun, uSummer: uniforms.uSummer },
-    vertexPars: 'uniform vec4 uFlareSun;\nvarying vec2 vFl;\nvarying vec2 vFlOut;\nvarying float vFlGain;',
+    uniforms: { uFlareSun: uniforms.uFlareSun },
+    vertexPars: 'uniform vec4 uFlareSun;\nvarying vec2 vFl;\nvarying vec2 vFlOut;\nvarying float vFlGain;\nvarying float vFlBend;',
     vertexMain: `
 vec3 flV = normalize(cameraPosition - uLensCentre);
 vec3 flH = normalize(flV + uFlareSun.xyz);
@@ -885,6 +844,9 @@ vec3 flP = uLensCentre + flH * ${n(RS + 0.6)};
 vec4 flC = viewMatrix * vec4(uLensCentre, 1.0);
 vec4 flAt = viewMatrix * vec4(flP, 1.0);
 vec2 flOut = flAt.xy - flC.xy;
+// out onto the outline; and the outline's radius there, in the quad's half width, for the bend of the patch
+flAt.xy += flOut * ${n(F.rimOut)};
+vFlBend = length(flOut) * ${n((1 + F.rimOut) / F.halfMm)};
 vFlOut = flOut / max(length(flOut), 1e-4);
 vFl = position.xy;
 // a mirror at a grazing angle returns far more of the light than one seen face on
