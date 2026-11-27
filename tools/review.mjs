@@ -223,7 +223,7 @@ function gather() {
   const videos = []
   const video = (part, src, to, title, extra = {}) => {
     if (!src || !exists(src)) return
-    videos.push({ part, src, to: `video/${to}`, title, bytes: sizeOf(src), ...extra })
+    videos.push({ part, src, to: `video/${to}`, title, bytes: sizeOf(src), at: fs.statSync(src).mtimeMs, ...extra })
   }
   const cut = files.reviewCut ?? 'review-cut.mp4'
   // the film tool writes out/work/review-<candidate>.mp4. The older place, out/work/review-cuts/<candidate>/, is still read.
@@ -278,7 +278,9 @@ function videoTag(v) {
   const dims = v.w && v.h ? ` width="${v.w}" height="${v.h}"` : ''
   const poster = v.poster ? ` poster="${url(v.poster)}"` : ''
   const mode = v.loop ? ' autoplay loop muted' : ''
-  const facts = [length(v.seconds), size(v.bytes)].filter(Boolean).join(', ')
+  // a film on this page can be days older than the build beside it, so each one says when its file was made
+  const made = v.at ? `made ${new Date(v.at).toISOString().slice(0, 16).replace('T', ' ')} UTC` : ''
+  const facts = [length(v.seconds), size(v.bytes), made].filter(Boolean).join(', ')
   return `<figure class="film"><video controls playsinline preload="metadata"${mode}${dims}${poster} aria-label="${text(v.title)}" src="${url(v.to)}"></video><figcaption><span>${text(v.title)}</span><span class="facts">${esc(facts)}</span></figcaption></figure>`
 }
 
