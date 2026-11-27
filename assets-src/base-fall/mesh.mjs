@@ -673,7 +673,7 @@ export function buildWeb(heroTips) {
   // The big fan hangs from the crown ring where the ring is the base's right outline.
   const hub = place(drumR(33.6) + 3.4, 33.6, 80)
   const fans = [
-    { hub, a: L.onSlab(1992, 1401), b: L.onSlab(2112, 1354), sag: 7.5, n: 18 },
+    { hub, a: L.onSlab(1992, 1401), b: L.onSlab(2070, 1360), sag: 7.5, n: 18 },
     { hub: spike, a: L.onSlab(2000, 1412), b: L.onSlab(2090, 1428), sag: 1.0, n: 8 },
     { hub: at(1838, 1060, 50), a: at(1872, 1118, 53), b: at(1915, 1082, 58), sag: 1.0, n: 12 },
   ]
