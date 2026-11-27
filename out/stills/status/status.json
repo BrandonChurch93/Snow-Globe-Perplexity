@@ -1,49 +1,49 @@
 {
-  "number": 214,
-  "time": "2026-11-27 13:21 UTC",
+  "number": 217,
+  "time": "2026-11-27 15:22 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 214 · 2026-11-27 13:21 UTC · Phase 6",
-    "Decision needed from Brandon, unchanged, one thing only he can do: the automation that restarts this build ends Friday noon Mountain Time and a run may not move its own end. He can move the end to Sunday noon in the automation's settings, or write any line in the thread. Open item 252.",
-    "Nothing was merged since Status 213 and no chain is running; origin main is `4f95670b`. Three builders reported and each part is held on its builder's own numbers, with the next step ordered.",
-    "Fall's base, thirteenth step: held. Pictures 1 and 2: approved, main, the step. The vines are matt now with no long streak, the thorns are fewer, longer and bent, the web's threads bow; those are gains. But a wide grey band makes the vines read grey where the approved's read black: by its builder's count the flank's bright runs went to 6.0 and 5.6 from 5.2 and 5.3 (approved 3.7 and 4.8), and on its own three rows I read the right flank's 90th percentile at 67.7 approved, 80.6 main, 103.5 the step. The fourteenth step is ordered: the band at a third of the vine's width and lower, one push that I merge; then the pumpkin faces (hard cut edges and ribs, they read 0.33 to 0.58 of the approved's sharpness), the sheaf as curled fibre and not straight straw, the wall as larger smooth facets, the web to the foot.",
-    "Summer's miniature: the proof I ordered is in. Picture 3: the cottage's wall at 4K, main left and the held list right. The list's wall is a speckle one or two pixels wide where main's is round stones; its builder ruled so itself before the count and put the wall back to main's. The fence, the rail, the sand's foot, the water and the pebbles stay; its report comes with its push and goes into chain 32. Its count found no flicker on its wall in the film's hold, and it names the test as weak because the wall hardly moves there; nobody has seen the wall under travel. Ruled on its question: the lawn is judged at the film's interior camera and at the hero at 4K, not at the closest camera, which the film uses only in winter. The lawn's fault is visible in picture 3 on both: right of the door it stands as pale flat wedges.",
-    "Spring's base, eighth list: held. Picture 4: approved above, the list below. The crest is level now as the approved's (its trace reads sd 1.95 px against 5.2 before and 2.06 on the approved) and the base's part of M3 reads 0.922. Held on two of its builder's own numbers: at the change into summer the low crest uncovers the miniature's foot along the front (M4 0.8937 against main's 0.8957), and a new term on the right shoulder flickers more than any other place on the base by its count (6.9 and 11.3 percent), not watched in motion. A third number, M3 whole under main's by 0.0069, it proved to be the measure's doing and I accepted it. Ninth list ordered: the moss as a broad cushion over the glass's foot as on the approved, which covers the dark band and closes the strip; then the shoulder. Its builder asked for my word instead of steering the build to a number.",
-    "4K motion: the three other seasons' slow pairs are drawing on a helper machine, tables expected about 13:50 UTC; the sampler in the master tool and the hours table about 15:00 UTC.",
-    "Below the bar, plainly. Summer: the crown (too open and thin, the rim one row of dots), the base (grey weathered wood where the approved is pale packed sand), seeds as cream stars, lights as even dots, the landing's swirl, the sand stream, the lawn (flat pale wedges), the pond. Fall: the air's leaves and ground, the tree bare of lights, the cottage small and dark, the wall and the fence, the base's vines, sheaf, wall and pumpkin faces. Spring: the base's cushion, roots, stones, moss's lower edge and trickle. The change of season, the controls, and 4K motion on the lawn until the masters draw at 96.",
-    "Next: chain 32 with summer's miniature and whichever of fall's base and fall's air is in and read; the slow pairs; the change's push; Round 23 on summer when its lists are in.",
-    "Render counts since the last status. Drawn here: nothing. On helper machines by their reports: 8 frames at 3840 final for summer's wall (two heads, four frames) and one more, 4 for fall's base, 4 for spring's base, 2 at 72 samples, and the three seasons' slow pairs drawing. No frame of the masters yet.",
+    "Status 217 · 2026-11-27 15:22 UTC · Phase 6",
+    "Decision needed from Brandon, unchanged, one thing only he can do: the automation that restarts this build ends today, Friday, at noon Mountain Time and a run may not move its own end. He can move the end to Sunday noon in the automation's settings, or write any line in the thread. Open item 252.",
+    "Chain 32 is read whole and on origin since 15:18 UTC, 8:18 AM Mountain Time, as `6d459061`: the page's first pictures, summer's miniature (fence, pond, wall) and fall's base, thirteenth and fourteenth steps. Pictures 1 and 2: summer and fall at rest, approved left, chain 32's still right, both below the bar. tsc exit 0, both makes and both texture packs exit 0, engine `4fe5385b7ecf765c`. Sharpness against the approved at review: summer at rest 0.8781 (chain 31: 0.8781), fall at rest 0.8835 (chain 30: 0.8838). The change at draft, all eight pass: cover at the swap 0.9694, 0.8957, 0.9567, 0.9597; in sight after the settle 0.993, 1, 0.9703, 0.9997. The third of those fell from chain 31's 0.9811 (141,903 of 146,240 pixels against 143,324 of 146,086); no report named it and fall's base builder is asked. Eight draft stills: summer's two and fall's two changed, as they should, winter's and spring's four equal. Triangles at high: summer 1,697,227 and fall 1,759,623 of 1,800,000. The whole test run: exit 1, written as a failure of the run and not as a pass. 951 tests passed, 4 skipped, 1 failed: the test that makes the four miniatures three ways stopped at its own limit of 300 s after 337 s, with nothing asserted false. Run again alone on the same tree it passed in 180 s. The same happened on chain 30. The making itself now takes 191 s alone on this machine against 127 s two chains ago, and I made two pictures in the run's first seconds, against my own rule. Decision 195: that one test's limit goes to 900 s, what it asserts is untouched, and it is logged as a change to a guard.",
+    "A fault on the live page, found today, open item 255, picture 3: in summer after its landing the base's upper face under the glass shows two pale flat patches with hard outlines. Summer's base builder found it on its way and proved it is the air: with the air off the patches are gone. I see it on chain 32's landed still too. I looked at summer landed on chain 31 and did not name it; that is my miss. The mend went to summer's air builder at 15:21 UTC as its first job.",
+    "Chain 33 started at 15:20 UTC on three things: fall's air without the streaks, summer's base with broad rolls in place of the lines that read as wood grain, and the test's new limit. Fall's air (`agent/p6-fall-air` `a746190b`): report of 15:03 UTC read, four pictures looked at, no hatch in the sky. By its builder's counter: leaves in the window 11 against the approved's 10 (main 17), the small orange class 200 against 206 (main 273), the miniature's sharpness share 0.935 over the floor of 0.92. At 3840 over six frames: pixels lit for one frame alone 1.94 percent in the upper air against main's 2.07 and 1.38 in the crown against 1.42; pixels that step 13.18 against 12.37 and 10.14 against 9.01, more than main's, below the bar in its builder's words. Summer's base (`agent/p6-summer-stone` `18f7a0e4`): report read, ten pictures looked at. The thin dark streaks are out and the middle stands as three to four broad rolls. Sharpness at review 0.854 by its builder against main's 0.8781, over the order's floor of 0.83. Below the bar in its builder's words: the creases too wide and brown, the face grey where the approved's is blue teal, no sunlit crust, lip and left wall unchanged, shells and pebbles not worked, a ragged white fleck on the amber pebble.",
+    "Summer's tree, thirteenth pass: read at 14:50 UTC, seven pictures looked at, held for its follow-up. By its builder's counter the crown comes back toward the approved on four rows: the bay at the upper left 163.8 mm2 against the approved's 165.8 (main 142.4), the pale band's share of the upper left outline 66 against 69 (main 35), beads per 10 mm 26.6 against 25.6 (main 11.6), fill 67.4 against 65.2 (main 66.4). Below the bar in its builder's words: the right end 0.7 mm short of main's, the band reads as a cap of cream beads, the crown is one even green. The follow-up for the right end comes near 15:55 UTC: the maker dealt every tuft anew when one clump moved, so its builder first makes the deal local, then both go into one chain.",
+    "Three more reports came between 15:03 and 15:19 UTC, read, not ruled yet. Spring's base, ninth list: the cover at the second swap 0.9647 against main's 0.8957 and sharpness at review 0.9072 against 0.8666, but the cap is about twice as tall as the approved's and reads as a lid with square corners, in its builder's words; its four pictures are next. It also found the single bright pixels in spring's moss at 3840: the dew's pinpoint, about one pixel wide there, with a one line mend tested on one frame. Summer's glass: the star at the upper right has rays where main shows a soft blob and the flame at the lower left is streaks where main shows one wedge; at 3840 its builder calls the flame blunt bars without hairs, below the bar. The shutter for slow frames (`agent/p6-fine-motion` `257600b1`, built, not merged): at film B's own change of sample count, frames 1716 to 1717, the step across the change reads at most 1.08 times the step beside it in every tile, bar 1.5, held; its builder says plainly that bar could hardly fail there because the picture itself moves 1.9 px between the two frames. The harder kind of change, where the travel falls from 1.6 to 0.2 px in one frame, is drawing now. Cost by its builder's estimate, not a promise: film B 316 to 352 machine hours against 149 before, 20 to 27 hours on 12 to 16 helper machines. It also read in the code that the encoder refuses to join chunks from two engines, so nothing may change after the first master frame.",
+    "The change of season: its builder's report of 14:24 UTC read and its pictures looked at. Mended on its branch: the room no longer goes black, the light lights the base and the table, no flat disc. Picture 4: summer's sand heap leaving over film frames 2104 to 2109 at draft, torn into bands at 2108, below the bar, as winter's ferns are at 667 to 670; both are ordered as motion. The two bats on the bright heart from frame 2113 are fall's own storm bats, left as they are. Five frames at 3840 at the masters' tier come about 16:15 UTC and I look at them before the change goes to main.",
+    "Below the bar, plainly. Summer: the crown, the base (greyer and darker than the approved's pale packed sand), seeds as cream stars, lights as even dots, the landing's swirl and the patches of open item 255, the sand stream, the lawn, the pond, the glass's flame. Fall: the air's leaves and ground, the tree bare of lights, the cottage small and dark, the wall and the fence, the base's vines, sheaf, wall and pumpkin faces. Spring: the base's cushion, roots, stones, moss's lower edge, trickle and flat pale caps. The change's heap and ferns, the controls (open item 253), and 4K motion at a change of sample count until the harder kind is read.",
+    "Render counts since the last status. Drawn here: chain 32's 8 draft stills and 2 review stills, the change's measures at draft, and the four miniatures made twice more for the test run again. On helper machines by their reports, at 3840: 12 frames for fall's air on two heads, 4 for the shutter's change, at least 5 for spring's base, 4 for summer's glass, the change's five in progress; at hd, stills for the tree, the base, the glass and the air. No frame of the masters yet.",
     "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
-    "phase 6: 34.53 h used of its 12.00 h box",
-    "allowance (after the review): 34.53 h used of 12.00 h allowed",
+    "phase 6: 36.55 h used of its 12.00 h box",
+    "allowance (after the review): 36.55 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-214-1.jpg",
-      "caption": "Fall's base, approved picture above, main in the middle, the thirteenth step below, held, below the bar",
-      "w": 800,
-      "h": 938
+      "file": "out/stills/status/status-217-1.jpg",
+      "caption": "Summer at rest on chain 32, approved picture left and build right, on origin now, below the bar",
+      "w": 1200,
+      "h": 536
     },
     {
-      "file": "out/stills/status/status-214-2.jpg",
-      "caption": "Fall's vines and wall close up, approved picture left, main in the middle, the thirteenth step right, held, below the bar",
-      "w": 1199,
-      "h": 480
+      "file": "out/stills/status/status-217-2.jpg",
+      "caption": "Fall at rest on chain 32 with the base's fourteenth step, approved picture left and build right, on origin now, below the bar",
+      "w": 1200,
+      "h": 536
     },
     {
-      "file": "out/stills/status/status-214-3.jpg",
-      "caption": "Summer's cottage wall at 4K at two times, main left and the miniature's held list right, the wall goes back to main's",
-      "w": 1126,
-      "h": 640
+      "file": "out/stills/status/status-217-3.jpg",
+      "caption": "Summer after its landing on chain 32, pale flat patches on the base under the glass, a fault on the live page, being mended",
+      "w": 1200,
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-214-4.jpg",
-      "caption": "Spring's base, approved picture above and the eighth list below, held, below the bar",
-      "w": 940,
-      "h": 804
+      "file": "out/stills/status/status-217-4.jpg",
+      "caption": "The change of season, summer's sand heap leaving over film frames 2104 to 2109 at draft, torn into bands at 2108, on its builder's head, below the bar",
+      "w": 1200,
+      "h": 779
     }
   ]
 }
