@@ -7,7 +7,7 @@ import { texture } from '../../core/textures'
 import { setGlass, shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { LUMPS_LEAVE, SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
-import { LEAVE_OUT, leaveOut } from '../../shake/change'
+import { LEAVE_OUT, leaveOut, piledLeft } from '../../shake/change'
 import type { KitMoment } from '../kit'
 import { season } from './base'
 
@@ -46,6 +46,7 @@ const frostUniforms = {
   uTravel: { value: 0 },
   uGone: { value: new THREE.Vector4(0, 0, 0, 0) },
   uGoneAt: { value: new THREE.Vector4(0, 0, 1, 1) },
+  uGonePile: { value: new THREE.Vector2(1, 1) },
 }
 
 export const behindUniforms = {
@@ -287,6 +288,9 @@ float frostSlabGrow(vec2 xz) {
 // read. What is drawn at a place is the frost that lay `uGone.x` nearer the axis (`frostFrom`); the light falls on it where
 // it is now. From `thinFromMm` out it thins, all of it alike, and at `reachMm` it is gone: the pieces that go to the sides
 // are out of the film's frame by then, those that go behind the foot are not, and no piece is seen to stop.
+// The snow that is piled on it (the shapes) goes the same way at the same pace, but it does not carry the heap's own light
+// out with it: that light leaves it first, then the pile thins and is gone, before the rest begins to thin (change.ts,
+// `PILED_LEAVE`; `uGonePile`).
 // In a frame whose samples join, every piece is moved along its own way by the sample's place in its pixel (`uGoneAt`,
 // `frostSlip`), so that its copies lie at even steps on the picture, and the map of each copy is drawn out along the way
 // (`uGone.yz`, the reach behind and ahead; one reading every `tapPx` pixels, at most `taps`, each pixel and sample at its
@@ -297,10 +301,12 @@ float frostSlabGrow(vec2 xz) {
 const LEAVE = { ...LUMPS_LEAVE, bareMm: 30, tapPx: 1.5, taps: 16, glintFade: [0.1, 0.4] } as const
 // `uGone`: how far out the frost is (mm), how far its map is drawn out behind that and ahead of it (mm), and the samples of
 // the frame (0 where they do not join). `uGoneAt`: the sample's place in its pixel (x to the right, y up), the focal
-// length, all three in pixels, and the share of the frost that is left.
+// length, all three in pixels, and the share of the frost that is left. `uGonePile`: of the snow that is piled on it, the
+// share of the heap's own light that is left and the share of the snow.
 const LEAVE_WAY_GLSL = `
 uniform vec4 uGone;
 uniform vec4 uGoneAt;
+uniform vec2 uGonePile;
 // A millimetre of the way out from the axis at a place, on the picture, in pixels (x to the right, y up).
 vec2 frostWay(vec3 at) {
   vec2 out2 = at.xz / max(length(at.xz), 1e-3);
@@ -364,7 +370,10 @@ vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo, float open, float piled) {
   gain *= (1.0 - ${look.slab.leftFrontCut.toFixed(3)} * frontLeft) * (1.0 - ${look.slab.leftHeapCut.toFixed(3)} * heapLeft);
   float skyShare = (1.0 - ${look.slab.skyCut.toFixed(3)} * lean) * (1.0 - ${look.slab.leftSkyCut.toFixed(3)} * frontLeft) * (1.0 - ${look.slab.leftHeapSky.toFixed(3)} * heapLeft);
   float poolShare = mix(${look.slab.poolBack.toFixed(3)}, 1.0, lean) * (uSlabLook.y * (1.0 - ${look.slab.poolThick.toFixed(3)} * heaped)) + ${look.slab.leftWarm.toFixed(3)} * frontLeft;
-  return albedo * (0.3183 * ${look.slab.light.toFixed(3)} * gain) * (lit + (uSky * ((0.55 + 0.45 * n.y) * ${look.slab.sky.toFixed(3)} * skyShare) + warm * poolShare) * (occl * open) + mix(uPool, vec3(dot(uPool, vec3(0.3333))), 0.45) * (${look.slab.leftHeap.toFixed(3)} * heapLeft * (0.5 + 0.5 * n.y)));
+  // The heap on the left takes the pool as a light of its own. On its way out that light leaves it (LEAVE, above).
+  float own = ${look.slab.leftHeap.toFixed(3)} * heapLeft * (0.5 + 0.5 * n.y);
+  if (uGone.x > 0.0) own *= uGonePile.x;
+  return albedo * (0.3183 * ${look.slab.light.toFixed(3)} * gain) * (lit + (uSky * ((0.55 + 0.45 * n.y) * ${look.slab.sky.toFixed(3)} * skyShare) + warm * poolShare) * (occl * open) + mix(uPool, vec3(dot(uPool, vec3(0.3333))), 0.45) * own);
 }
 vec2 frostSlabUv(vec2 xz) {
   return vec2(xz.x + uField.x, uField.x - xz.y) / (2.0 * uField.x);
@@ -549,8 +558,8 @@ void main() {
   vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v, ${look.slab.room.toFixed(3)}) * uGlint.y * ${(1.3 * look.slab.heapGlint).toFixed(3)} * alpha * open * (1.0 - 0.9 * soft) * (1.0 - frostShade(xz));
   gl_FragColor = vec4(col * alpha + spark, alpha);
   if (uGone.x > 0.0) {
-    if (alpha * uGoneAt.w < 0.012) discard;
-    gl_FragColor = vec4(col * alpha + spark * (1.0 - smoothstep(${LEAVE.glintFade[0].toFixed(2)}, ${LEAVE.glintFade[1].toFixed(2)}, vFrostLay.w)), alpha) * uGoneAt.w;
+    if (alpha * uGonePile.y < 0.012) discard;
+    gl_FragColor = vec4(col * alpha + spark * (1.0 - smoothstep(${LEAVE.glintFade[0].toFixed(2)}, ${LEAVE.glintFade[1].toFixed(2)}, vFrostLay.w)), alpha) * uGonePile.y;
   }
   if (uDiag != 0) {
     if (alpha < 0.3) discard;
@@ -648,7 +657,7 @@ function makeGlass(): THREE.Mesh {
 }
 
 function makeSurface(): THREE.Group {
-  const shared = { ...roomUniforms, ...lightUniforms, uSlabMap: frostUniforms.uSlabMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uTouch: frostUniforms.uTouch, uField: frostUniforms.uField, uSlabLook: frostUniforms.uSlabLook, uGlint: frostUniforms.uGlint, uGone: frostUniforms.uGone, uGoneAt: frostUniforms.uGoneAt, ...slabLightUniforms }
+  const shared = { ...roomUniforms, ...lightUniforms, uSlabMap: frostUniforms.uSlabMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uTouch: frostUniforms.uTouch, uField: frostUniforms.uField, uSlabLook: frostUniforms.uSlabLook, uGlint: frostUniforms.uGlint, uGone: frostUniforms.uGone, uGoneAt: frostUniforms.uGoneAt, uGonePile: frostUniforms.uGonePile, ...slabLightUniforms }
   const sheet = new THREE.Mesh(
     geometry(MODEL, 'sheet'),
     stageShader({ part: SLAB_PART, standIn: false, change: 'surface-dressing', textured: true, texels: 1 / frostUniforms.uField.value.y, uniforms: shared, fragment: SHEET, params: { ...veil } }),
@@ -747,18 +756,20 @@ export function update(moment: KitMoment): void {
 
 // The leaving on the table (`LEAVE`): how far out the frost is drawn in this sample, and in a frame whose samples join, how
 // far its map is drawn out behind that and ahead of it. The sheet is drawn that much wider, to hold it, and while the frost
-// goes the table's front does not thin it.
+// goes the table's front does not thin it. The piled snow is not drawn once none of it is left.
 function leave(moment: KitMoment): void {
   const f = moment.frame
   const s = f.sample
   const go = leaveOut(f.from !== f.to && f.from.season === season, f.change, s, LEAVE.reachMm, LEAVE.thinFromMm)
   frostUniforms.uGone.value.set(go.out, go.behind, go.ahead, go.of)
   frostUniforms.uGoneAt.value.set(s?.px ?? 0, -(s?.py ?? 0), f.focalPx, go.kept)
+  const pile = piledLeft(go.out)
+  frostUniforms.uGonePile.value.set(pile.lit, pile.kept)
   if (!onSlab) return
   const wide = (frostUniforms.uField.value.x + go.out) / frostUniforms.uField.value.x
   onSlab.sheet.scale.set(wide, 1, wide)
   for (const mesh of [onSlab.sheet, onSlab.shapes]) {
-    mesh.visible = go.run < 1
+    mesh.visible = go.run < 1 && (mesh === onSlab.sheet || pile.kept > 0)
     if (go.run > 0) setPresence(mesh.material as THREE.Material, MODE.always, 1)
   }
 }
