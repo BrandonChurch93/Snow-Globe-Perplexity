@@ -1,0 +1,326 @@
+#!/usr/bin/env python3
+# The crown of summer's tree, counted from one mask, for the approved picture and for our own stills alike.
+#
+#   python3 assets-src/tree-summer/crown-count.py approved [OUT.jpg]
+#   python3 assets-src/tree-summer/crown-count.py NOAIR.png IDS.png [OUT.jpg]
+#   python3 assets-src/tree-summer/crown-count.py doubt
+#
+# NOAIR.png is the rest still of summer at hd without the air (`npm run still -- --season summer --state rest --camera hero
+# --format hd --no-air`), IDS.png the ids view of the same build (`out/work/stills/summer-rest-hd-<tier>-ids.png`, which
+# `npm run measure -- --unit summer --only M3` writes). Needs python3 with numpy, scipy and pillow.
+#
+# One scale for both: the approved's own pixels, 12.15 to the millimetre, in the crop that crown-marks.json names. Our still is
+# cut at the same place and brought to that size.
+#
+# The mask
+#   approved  leaf by colour, mended by the hand marks of crown-marks.json where seed heads, glows and the air lie over leaf.
+#             Seed heads are never lit rim.
+#   ours      the still without the air, leaf by colour and inside the miniature of the ids view, so no seed head and no glow
+#             is in it.
+#   both      go through the same steps after that (`crown_of`): gaps under 0.33 mm are closed, spurs thinner than that are
+#             dropped, the lit rim within 1 mm of the leaf is added, and holes under 0.4 mm2 are filled.
+# The counts
+#   fill   the crown's share of its own convex hull; the air inside the hull that is open to the outside, and the air shut in
+#   notch  air between hull and crown that reaches the hull's edge: how far it cuts in (mm) and its area; the bay is the one
+#          that ends at the fork
+#   band   the lit rim along the upper left outline (where the way out of the leaf points up and to the left). At every pixel
+#          of that outline a line runs 2 mm into the crown and its lit pixels are counted. Given: the share of the outline that
+#          carries any, the thickness where it does, and the lit area per length of outline (the band as if spread evenly)
+#   beads  peaks of the light among the lit pixels within 0.6 mm of that outline, per 10 mm of it
+#   pads   the crown dealt among one marked point in each pad and one in the middle mass (each pixel to the point nearest along a
+#          way inside the leaf): each pad's length, thickness and tilt, and for every pair of neighbours how far apart they are
+#          (a pair within 15 percent in length or in thickness is named)
+# `doubt` counts the approved again with the hand marks left out, grown and shrunk by 0.3 mm, with the rule for lit leaf drawn
+# tighter and looser, with the rim's reach at 0.6 and 1.4 mm and with the closing at half and at one and a half times its
+# strength, and gives the span of every number over those.
+import json
+import os
+import sys
+
+import numpy as np
+from PIL import Image, ImageDraw
+from scipy import ndimage as ndi
+from scipy.spatial import ConvexHull
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(os.path.dirname(HERE))
+MARKS = json.load(open(os.path.join(HERE, 'crown-marks.json')))
+K = MARKS['pxPerMm']
+X0 = MARKS['x0']
+Y0 = MARKS['y0']
+BOX = tuple(MARKS['box'])
+# the colour the ids view gives the miniature, read from the view
+MINIATURE = (68, 47, 218)
+LIT = dict(hat=35, fine=20, lum=140)
+
+_y, _x = np.ogrid[-8:9, -8:9]
+WIDE = (_x * _x + _y * _y) <= 64
+_y, _x = np.ogrid[-3:4, -3:4]
+FINE = (_x * _x + _y * _y) <= 10
+
+
+def grid(shape):
+    rows = np.arange(shape[0])[:, None]
+    cols = np.arange(shape[1])[None, :]
+    return (cols - X0) / K + 0 * rows, (Y0 - rows) / K + 0 * cols
+
+
+def cut(path, kind=Image.LANCZOS):
+    im = Image.open(path).convert('RGB')
+    s = im.width / 2816.0
+    box = tuple(int(round(v * s)) for v in BOX)
+    return im.crop(box).resize((BOX[2] - BOX[0], BOX[3] - BOX[1]), kind)
+
+
+def approved_picture():
+    return np.asarray(Image.open(os.path.join(REPO, MARKS['picture'])).convert('RGB').crop(BOX)).astype(float)
+
+
+def leaf_by_colour(a):
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    lum = 0.3 * r + 0.6 * g + 0.1 * b
+    green = (g >= r + 2) & (g >= b + 2)
+    yellow = (g >= r - 8) & ((g - b) >= 0.12 * lum + 6)
+    dark = (lum < 78) & ((r - g) < 0.14 * r + 4)
+    return ((green | yellow) & (lum < 200) & (lum > 8)) | (dark & (lum > 8))
+
+
+def lit_of(a, rule=LIT):
+    # lit leaf is bright, warm and fine: it stands out of what a disc of 1.3 mm leaves and of what a disc of 0.6 mm leaves,
+    # so a slit of sky between two pads, which is as bright and as warm but smooth and wider, is not lit leaf
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    hat = lum - ndi.grey_opening(lum, footprint=WIDE)
+    fine = lum - ndi.grey_opening(lum, footprint=FINE)
+    return (hat > rule['hat']) & (fine > rule['fine']) & (lum > rule['lum']) & (r >= g + 4) & ~(((g - b) > 60) & ((r - g) < 12))
+
+
+def discs(shape, ds):
+    xm, h = grid(shape)
+    m = np.zeros(shape[:2], bool)
+    for x, hh, rad in ds:
+        m |= ((xm - x) ** 2 + (h - hh) ** 2) <= rad * rad
+    return m
+
+
+def fill_small(m, px=60):
+    lab, _ = ndi.label(~m)
+    size = np.bincount(lab.ravel())
+    small = size < px
+    small[0] = False
+    return m | small[lab]
+
+
+def large_parts(m):
+    lab, n = ndi.label(m)
+    keep = np.zeros_like(m)
+    for i in range(1, n + 1):
+        yy, xx = np.where(lab == i)
+        if len(xx) < 800:
+            continue
+        cx = (xx.mean() - X0) / K
+        ch = (Y0 - yy.mean()) / K
+        if abs(cx) <= 16 and 17 <= ch <= 44:
+            keep |= lab == i
+    return keep
+
+
+def in_frame(m):
+    xm, h = grid(m.shape)
+    return m & (h > 16.0) & (xm > -20.5) & (xm < 20.5)
+
+
+def crown_of(leaf, hand, lit, close=2, reach=1.0):
+    # the same steps for both pictures
+    leaf = fill_small(ndi.binary_closing(leaf, iterations=close))
+    body = large_parts(ndi.binary_opening(in_frame(ndi.binary_closing(leaf | hand, iterations=close)), iterations=close))
+    rim = lit & (ndi.distance_transform_edt(~body) <= reach * K)
+    return fill_small(ndi.binary_closing(body | rim, iterations=close))
+
+
+def approved(marks='as marked', rule=LIT, reach=1.0, close=2):
+    a = approved_picture()
+    hand = discs(a.shape, MARKS['discs'])
+    im = Image.new('L', (a.shape[1], a.shape[0]), 0)
+    d = ImageDraw.Draw(im)
+    for p in MARKS['polygons']:
+        d.polygon([(X0 + K * x, Y0 - K * hh) for x, hh in p], fill=255)
+    hand |= np.asarray(im) > 0
+    if marks == 'left out':
+        hand[:] = False
+    if marks == 'grown':
+        hand = ndi.distance_transform_edt(~hand) <= 0.3 * K
+    if marks == 'shrunk':
+        hand = ndi.distance_transform_edt(hand) > 0.3 * K
+    lit = lit_of(a, rule) & ~discs(a.shape, MARKS['seeds'])
+    crown = crown_of(leaf_by_colour(a), hand, lit, close, reach)
+    return a, crown, lit & crown, dict(hand=hand)
+
+
+def ours(noair, ids, close=2):
+    a = np.asarray(cut(noair)).astype(float)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    leaf = ((g > b + 5) & (g >= r - 6)) | ((r > 150) & (g > 95) & (b < g - 25))
+    mini = np.abs(np.asarray(cut(ids, Image.NEAREST)).astype(int) - np.array(MINIATURE)).max(axis=2) <= 2
+    outside = 100 * (leaf & ~mini).sum() / max(1, leaf.sum())
+    lit = lit_of(a) & mini
+    crown = crown_of(leaf & mini, np.zeros_like(mini), lit, close)
+    return a, crown, lit & crown, dict(outside=outside)
+
+
+def count(a, crown, lit, name='', say=True, out=None):
+    H, W = crown.shape
+    ys, xs = np.where(crown)
+    width = (xs.max() - xs.min()) / K
+    pts = np.stack([xs, ys], 1)
+    him = Image.new('L', (W, H), 0)
+    ImageDraw.Draw(him).polygon([tuple(map(int, pts[v])) for v in ConvexHull(pts).vertices], fill=255)
+    hull = np.asarray(him) > 0
+    air = hull & ~crown
+    ring = ndi.binary_dilation(hull, iterations=2) & ~hull
+    lab, _ = ndi.label(air | ring)
+    outer = set(np.unique(lab[ring])) - {0}
+    depth = ndi.distance_transform_edt(hull)
+    notches = []
+    for i in outer:
+        l2, n2 = ndi.label((lab == i) & air & (depth > 0.8 * K))
+        for j in range(1, n2 + 1):
+            yy, xx = np.where(l2 == j)
+            if len(xx) < 0.5 * K * K:
+                continue
+            k = depth[yy, xx].argmax()
+            notches.append((depth[yy, xx].max() / K, len(xx) / K / K, (xx[k] - X0) / K, (Y0 - yy[k]) / K))
+    notches.sort(reverse=True)
+    notches = [p for p in notches if p[0] >= 2]
+    shut = air.copy()
+    for i in outer:
+        shut &= ~(lab == i)
+    bay = next((p for p in notches if abs(p[2]) < 4.5 and 24 <= p[3] <= 35), None)
+    # the band
+    soft = ndi.gaussian_filter(crown.astype(float), 3.0)
+    gy, gx = np.gradient(soft)
+    nrm = np.hypot(gx, gy) + 1e-9
+    ox = -gx / nrm
+    oy = -gy / nrm
+    edge = crown & ~ndi.binary_erosion(crown)
+    upper = edge & ((-0.6 * ox - 0.8 * oy) > 0.35)
+    ey, ex = np.nonzero(upper)
+    steps = np.arange(0, 2.0 * K + 0.5, 1.0)
+    thick = np.zeros(len(ey))
+    for i, (y, x) in enumerate(zip(ey, ex)):
+        px = np.clip(np.round(x - ox[y, x] * steps).astype(int), 0, W - 1)
+        py = np.clip(np.round(y - oy[y, x] * steps).astype(int), 0, H - 1)
+        thick[i] = lit[py, px].sum()
+    has = thick > 0
+    length = len(ey)
+    zone = (ndi.distance_transform_edt(~upper) <= 2.0 * K) & crown
+    area = (lit & zone).sum()
+    t = thick[has] if has.any() else np.zeros(1)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    l2 = ndi.gaussian_filter(0.2126 * r + 0.7152 * g + 0.0722 * b, 0.7)
+    peak = lit & (ndi.distance_transform_edt(~upper) <= 0.6 * K) & (l2 >= ndi.maximum_filter(l2, size=3))
+    colour = tuple(int(v) for v in a[lit & zone].mean(axis=0)) if (lit & zone).any() else (0, 0, 0)
+    got = {
+        'fill': 100 * crown.sum() / hull.sum(),
+        'open': 100 * (air & ~shut).sum() / hull.sum(),
+        'shut in': 100 * shut.sum() / hull.sum(),
+        'crown mm2': crown.sum() / K / K,
+        'hull mm2': hull.sum() / K / K,
+        'width mm': width,
+        'bay mm2': bay[1] if bay else 0.0,
+        'bay depth mm': bay[0] if bay else 0.0,
+        'deepest other notch mm': max([p[0] for p in notches if p is not bay], default=0.0),
+        'band lit share': 100 * has.mean(),
+        'band thickness mm': t.mean() / K,
+        'band area per length mm': area / length / K,
+        'beads per 10 mm': 10 * peak.sum() / (length / K),
+    }
+    if say:
+        print(f"{name}: crown {got['crown mm2']:.0f} mm2, {width:.1f} mm wide, hull {got['hull mm2']:.0f} mm2; FILL {got['fill']:.1f}% of the hull; air open to the outside {got['open']:.1f}%, shut in {got['shut in']:.1f}%")
+        for k, p in enumerate(notches):
+            print('   notch %2d: cuts in %4.1f mm (%4.1f%% of the width), to x %+5.1f, h %4.1f; %5.1f mm2%s' % (k + 1, p[0], p[0] / width * 100, p[2], p[3], p[1], '  <- the bay at the fork' if p is bay else ''))
+        print(f"   BAND upper left outline {length / K:.0f} mm; lit on {got['band lit share']:.0f}% of it; thickness where lit: median {np.median(t):.1f} px, mean {t.mean():.1f} px of this scale = {t.mean() / K:.2f} mm = {t.mean() / K * 8.28:.1f} px of the hd still; lit area per length {area / length:.2f} px = {area / length / K:.3f} mm = {area / length / K * 8.28:.2f} px of the hd still")
+        print(f"   BEADS {int(peak.sum())} within 0.6 mm of it, {got['beads per 10 mm']:.1f} per 10 mm; the lit pixels' mean colour {colour}")
+    if out:
+        px = np.asarray(Image.fromarray(a.astype(np.uint8)).resize((W * 2, H * 2), Image.LANCZOS)).copy()
+
+        def twice(m):
+            return np.kron(m, np.ones((2, 2), bool))
+
+        px[twice(hull & ~ndi.binary_erosion(hull))] = (255, 80, 80)
+        px[twice(edge & ~upper)] = (40, 120, 200)
+        px[twice(upper)] = (80, 230, 255)
+        px[twice(lit & zone)] = (255, 40, 200)
+        im = Image.fromarray(px)
+        d = ImageDraw.Draw(im)
+        for k, p in enumerate(notches):
+            d.text(((X0 + K * p[2]) * 2 - 5, (Y0 - K * p[3]) * 2 - 6), str(k + 1), fill=(255, 255, 0), stroke_width=2, stroke_fill=(0, 0, 0))
+        im.crop((0, 60, 1120, 960)).save(out, quality=90)
+    return got
+
+
+def pads(crown, say=True):
+    # the crown is dealt among the marked points of crown-marks.json, one inside each pad and one in the middle mass: every pixel
+    # of it goes to the point it is nearest to along a way that stays inside the leaf. Of each pad's share: its length and its
+    # thickness as four times the spread along and across its own long axis (the full axes of an even ellipse of that spread),
+    # and the tilt of that axis from level. The same points serve the approved and ours, so the cuts fall alike.
+    xm, h = grid(crown.shape)
+    names = list(MARKS['pads'])
+    part = np.zeros(crown.shape, np.int32)
+    for i, n in enumerate(names):
+        x, hh = MARKS['pads'][n]
+        spot = (((xm - x) ** 2 + (h - hh) ** 2) <= 0.25) & crown
+        if not spot.any():
+            sys.exit(f'the point of the pad "{n}" is not in the crown')
+        part[spot] = i + 1
+    cross = ndi.generate_binary_structure(2, 1)
+    while True:
+        new = (part == 0) & crown & (ndi.maximum_filter(part, footprint=cross) > 0)
+        if not new.any():
+            break
+        part[new] = ndi.maximum_filter(part, footprint=cross)[new]
+    got = {}
+    for i, n in enumerate(names):
+        yy, xx = np.where(part == i + 1)
+        pts = np.stack([(xx - X0) / K, (Y0 - yy) / K])
+        val, vec = np.linalg.eigh(np.cov(pts))
+        ax = vec[:, 1] * (1 if vec[0, 1] >= 0 else -1)
+        got[n] = dict(length=4 * np.sqrt(val[1]), thick=4 * np.sqrt(val[0]), tilt=np.degrees(np.arctan2(ax[1], ax[0])), area=len(xx) / K / K)
+    if say:
+        for n, g in got.items():
+            if n != 'middle':
+                print(f"   PAD {n:11s} {g['length']:4.1f} mm long, {g['thick']:3.1f} mm thick, tilted {g['tilt']:+5.1f} degrees (up to the right is plus), {g['area']:5.1f} mm2")
+        for a, b in MARKS['neighbours']:
+            dl = 100 * abs(got[a]['length'] - got[b]['length']) / max(got[a]['length'], got[b]['length'])
+            dt = 100 * abs(got[a]['thick'] - got[b]['thick']) / max(got[a]['thick'], got[b]['thick'])
+            print(f"   NEIGHBOURS {a} and {b}: lengths {dl:4.1f}% apart, thicknesses {dt:4.1f}% apart, tilts {abs(got[a]['tilt'] - got[b]['tilt']):4.1f} degrees apart" + ('  <- within 15%' if min(dl, dt) < 15 else ''))
+    return part, got
+
+
+def doubt():
+    base = count(*approved()[:3], say=False)
+    runs = [count(*approved(marks=m)[:3], say=False) for m in ('left out', 'grown', 'shrunk')]
+    runs += [count(*approved(rule=r)[:3], say=False) for r in (dict(hat=42, fine=24, lum=150), dict(hat=28, fine=16, lum=130))]
+    runs += [count(*approved(reach=r)[:3], say=False) for r in (0.6, 1.4)]
+    runs += [count(*approved(close=c)[:3], say=False) for c in (1, 3)]
+    print('the approved as marked, its span, and each run: marks left out, grown, shrunk; lit rule tighter, looser; rim nearer, farther; closing 1, 3')
+    for k in base:
+        v = [r[k] for r in runs]
+        print(f'   {k:26s} {base[k]:8.2f}   {min(v + [base[k]]):8.2f} to {max(v + [base[k]]):8.2f}   ' + ' '.join(f'{x:7.2f}' for x in v))
+
+
+if __name__ == '__main__':
+    args = sys.argv[1:]
+    if not args:
+        sys.exit('usage: crown-count.py approved [OUT.jpg] | NOAIR.png IDS.png [OUT.jpg] | doubt')
+    if args[0] == 'doubt':
+        doubt()
+    elif args[0] == 'approved':
+        a, crown, lit, _ = approved()
+        count(a, crown, lit, 'approved', out=args[1] if len(args) > 1 else None)
+        pads(crown)
+    else:
+        a, crown, lit, info = ours(args[0], args[1])
+        print(f"of the colour rule's leaf {info['outside']:.1f}% is not the miniature and is taken out")
+        count(a, crown, lit, os.path.basename(args[0]), out=args[2] if len(args) > 2 else None)
+        pads(crown)

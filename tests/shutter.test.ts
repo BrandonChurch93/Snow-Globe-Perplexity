@@ -290,14 +290,14 @@ describe('which tier draws with even times', () => {
 
   it('the masters name the rule in full and draw a counted frame at the final tier', () => {
     const rule = sampleRule('film-b') as { base: number; motion: { spacingPx: number; maxSamplesPerFrame: number; evenFromPx: number }; tier: string }
-    expect(rule.motion).toEqual({ spacingPx: 0.75, maxSamplesPerFrame: config.tiers.final.motion.maxSamplesPerFrame, evenFromPx: config.tiers.final.motion.evenFromPx, spreadFromPx: config.tiers.final.motion.spreadFromPx, spreadFullPx: config.tiers.final.motion.spreadFullPx })
+    expect(rule.motion).toEqual({ spacingPx: 0.75, maxSamplesPerFrame: config.tiers.final.motion.maxSamplesPerFrame, evenFromPx: config.tiers.final.motion.evenFromPx, spreadFromPx: config.tiers.final.motion.spreadFromPx, spreadFullPx: config.tiers.final.motion.spreadFullPx, slow: config.deliver.master.slow })
     expect(tierOf(60, rule)).toBe('final-60')
     expect(tierOf(60, sampleRule('film-b', 60))).toBe('samples-60')
     expect(tierOf(60, { base: 24, motion: { spacingPx: 0.75, maxSamplesPerFrame: 96 }, tier: 'final' })).toBe('samples-60')
     expect(ruleCount(rule, 678, { samples: 100, travelPx: 74.3 })).toBe(100)
     expect(() => ruleCount(rule, 678, { samples: rule.motion.maxSamplesPerFrame + 1 })).toThrow(/whole count/)
     expect(countsLine(rule, countFacts([24, 100], 24, 677))).toBe(
-      `the count of a frame follows its motion (tiers.final.motion: a sample every 0.75 px of travel, at most ${rule.motion.maxSamplesPerFrame}, even sample times from ${rule.motion.evenFromPx} px of travel, a spread from ${config.tiers.final.motion.spreadFromPx} px, the full spread from ${config.tiers.final.motion.spreadFullPx} px): 1 of these 2 frames draws more than the base of 24 samples, the most is 100 (frame 678); 124 samples in all, 2.58 times the base`,
+      `the count of a frame follows its motion (tiers.final.motion: a sample every 0.75 px of travel, at most ${rule.motion.maxSamplesPerFrame}, even sample times from ${rule.motion.evenFromPx} px of travel, a spread from ${config.tiers.final.motion.spreadFromPx} px, the full spread from ${config.tiers.final.motion.spreadFullPx} px; ${config.deliver.master.slow.samples} in runs of ${config.deliver.master.slow.runFrames} frames or more under ${config.deliver.master.slow.underPx} px of travel): 1 of these 2 frames draws more than the base of 24 samples, the most is 100 (frame 678); 124 samples in all, 2.58 times the base`,
     )
   })
 
