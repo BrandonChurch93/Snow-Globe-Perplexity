@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { config } from '../../config'
 import { GUST, STAGE_GUST_GLSL, stageShader } from '../../core/materials'
 import { stream } from '../../core/rng'
 import { texture } from '../../core/textures'
@@ -11,9 +12,10 @@ const PART = 'surface-dressing-spring'
 const ATLAS = 'spring/slab-petals.srgb.w1024.png'
 const FAR = 'spring/slab-far.srgb.w2048.png'
 const FAR_HALF_MM = 520
+const FOOT_RADIUS_MM = config.globe.baseDiameterMm / 2
 
-export const PETALS = { count: 300, nearMm: 63, farMm: 240, sizeMm: [4.4, 12.5], clumpMm: 74, wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2 }
-export const JUMP = { reachMm: 60, shockMmPerSecond: 1500, heightMm: 15, flight: [0.34, 0.8], shiftMm: 9, rise: 0.5, floor: 0.1 }
+export const PETALS = { count: 300, nearMm: 63, farMm: 240, sizeMm: [4.4, 12.5], clumpMm: 74, wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2, incomingHalfTurns: [1, 1.4] as const, inkRadiusShare: 0.44 }
+export const JUMP = { reachMm: 60, shockMmPerSecond: 1500, heightMm: 15, flight: [0.34, 0.8], shiftMm: 9, rise: 0.5, floor: 0.1, footClearMm: 2, contactEaseSeconds: 0.12 }
 export const POOL = { radiusMm: 15, outMm: 8.5, fillSeconds: 5 }
 
 const veil = {
@@ -30,7 +32,7 @@ const veil = {
 const uniforms = {
   uPetals: { value: null as THREE.Texture | null },
   uFar: { value: null as THREE.Texture | null },
-  uJump: { value: new THREE.Vector4(1e3, 0, 0, 0) },
+  uJump: { value: new THREE.Vector4(1e3, 1, 0, 0) },
   uPoolAt: { value: new THREE.Vector4(0, 0, POOL.radiusMm, 1) },
   uPoolIn: { value: new THREE.Vector4(0, 0, 0, 1) },
   uKeyCol: surfaceUniforms.uKeyCol,
@@ -69,7 +71,7 @@ vec3 petalLight(vec3 n, vec3 P, vec3 v, vec3 albedo, float wet) {
 
 const BLUR = `
 float petalBlur(vec3 P) {
-  float away = length(P - cameraPosition) - (length(vec3(uFoot.x, 0.0, uFoot.y) - cameraPosition) - ${PETALS.focusMm.toFixed(1)});
+  float away = length(P - cameraPosition) - (length(cameraPosition) - ${PETALS.focusMm.toFixed(1)});
   return max(${PETALS.farMips.toFixed(2)} * smoothstep(${PETALS.far[0].toFixed(1)}, ${PETALS.far[1].toFixed(1)}, away), ${PETALS.nearMips.toFixed(2)} * smoothstep(${PETALS.near[0].toFixed(1)}, ${PETALS.near[1].toFixed(1)}, -away));
 }
 `
@@ -78,8 +80,8 @@ const PETAL_VERT_PARS = `
 attribute vec4 aRest;
 attribute vec4 aKind;
 attribute vec4 aShape;
+attribute float aTurns;
 uniform vec4 uJump;
-uniform vec4 uFoot;
 uniform float uPetalMode;
 varying vec3 vPetalN;
 varying vec2 vPetalUv;
@@ -104,26 +106,32 @@ float petalSize = aRest.w;
 float petalHaze = petalBlur(vec3(aRest.x, 0.0, aRest.y)) + 1.2 * uPetalMode;
 float petalPad = 1.0 + ${(2 * 0.045).toFixed(3)} * petalHaze;
 vec2 petalQ2 = position.xy * petalPad * (1.0 + 0.12 * uPetalMode);
-vec2 petalOut = aRest.xy - uFoot.xy;
+// Keep the bed and its clearance at the planted foot, not under the moving globe.
+vec2 petalOut = aRest.xy;
 float petalFar = length(petalOut);
-float petalGap = max(petalFar - uFoot.z, 0.0);
+float petalGap = max(petalFar - ${FOOT_RADIUS_MM.toFixed(1)}, 0.0);
 float petalKick = max(exp(-petalGap / ${JUMP.reachMm.toFixed(1)}), ${JUMP.floor.toFixed(2)}) * (0.5 + 0.5 * aKind.z);
 float petalWait = petalGap / ${JUMP.shockMmPerSecond.toFixed(1)} + 0.03 * aKind.w;
 float petalFlight = mix(${JUMP.flight[0].toFixed(3)}, ${JUMP.flight[1].toFixed(3)}, petalKick) * (0.8 + 0.4 * aKind.w);
-float petalQ = clamp((uJump.x - petalWait) / petalFlight, 0.0, 1.0);
+float petalQ = clamp((uJump.x * uJump.y - petalWait) / petalFlight, 0.0, 1.0);
 float petalArc = sin(3.14159265 * pow(abs(petalQ), ${JUMP.rise.toFixed(2)}));
 float petalEase = 1.0 - (1.0 - petalQ) * (1.0 - petalQ);
 float petalUp = ${JUMP.heightMm.toFixed(1)} * petalKick * petalArc;
-float petalFlips = floor(aKind.z * 2.99) * step(0.25, petalKick);
+float petalFlips = aTurns;
 float petalRoll = 3.14159265 * petalFlips * (1.0 - petalEase) + 0.9 * petalKick * petalArc * (aKind.w - 0.5);
 float petalYaw = aRest.z + (aKind.w - 0.5) * 2.6 * petalKick * (1.0 - petalEase);
-vec2 petalAt = aRest.xy - (petalOut / max(petalFar, 1.0)) * (${JUMP.shiftMm.toFixed(1)} * petalKick * (0.4 + 0.6 * aKind.z) * (1.0 - petalEase));
+float petalSlide = ${JUMP.shiftMm.toFixed(1)} * petalKick * (0.4 + 0.6 * aKind.z) * (1.0 - petalEase);
+// The ink in each atlas tile fits this radius, so a petal's edge clears the planted rim too.
+float petalRim = max(${JUMP.footClearMm.toFixed(1)}, ${PETALS.inkRadiusShare.toFixed(2)} * petalSize);
+vec2 petalAt = aRest.xy + (petalOut / max(petalFar, 1.0)) * max(-petalSlide, petalRim - petalGap);
 // Inside a change the petals are carried: blown out ahead of the front of light when spring leaves, flown out behind it when spring comes.
 if (uState.w > 0.5) {
   vec3 petalGust = stageGust(aRest.xy, aKind.z, aKind.w);
   petalAt += (dot(aRest.xy, aRest.xy) > 0.0 ? normalize(aRest.xy) : vec2(1.0, 0.0)) * petalGust.x;
   petalUp += ${GUST.heightMm.toFixed(1)} * (0.4 + 0.6 * aKind.w) * petalGust.y;
-  petalRoll += 3.14159265 * (1.0 + floor(aKind.z * 2.99)) * petalGust.z;
+  // The short incoming gust cannot spend as much time turning as the outgoing one.
+  float gustTurns = uState.w < 1.5 ? mix(${PETALS.incomingHalfTurns[0].toFixed(1)}, ${PETALS.incomingHalfTurns[1].toFixed(1)}, aKind.z) : 1.0 + floor(aKind.z * 2.99);
+  petalRoll += 3.14159265 * gustTurns * petalGust.z;
   petalYaw += (aKind.w - 0.5) * 3.0 * petalGust.z;
 }
 float petalFlat = 1.0 - 0.6 * aKind.y;
@@ -334,6 +342,7 @@ function petalGeometry(): THREE.InstancedBufferGeometry {
   const rest: number[] = []
   const kind: number[] = []
   const shape: number[] = []
+  const turns: number[] = []
   const dry = [0, 1, 2, 5, 7, 10, 3, 0, 1, 2, 5, 7, 10, 4, 8]
   const wet = [6, 9, 11]
   const aspect = [1.371, 1.493, 1.597, 1.532, 1.397, 1.656, 1.477, 1.506, 1.391, 1.475, 1.409, 1.611]
@@ -350,13 +359,19 @@ function petalGeometry(): THREE.InstancedBufferGeometry {
     const list = soaked ? wet : dry
     const id = list[Math.floor(rng.next() * list.length) % list.length]!
     rest.push(x, z, rng.range(0, Math.PI * 2), PETALS.sizeMm[0] + (PETALS.sizeMm[1] - PETALS.sizeMm[0]) * Math.pow(rng.next(), 1.6))
-    kind.push(id, soaked, rng.next(), rng.next())
+    const seed = Math.fround(rng.next())
+    kind.push(id, soaked, seed, rng.next())
+    // Choose the turn from the kick at the planted foot, once for this petal and its reflection mask.
+    const gap = Math.max(0, Math.hypot(Math.fround(x), Math.fround(z)) - FOOT_RADIUS_MM)
+    const kick = Math.max(Math.exp(-gap / JUMP.reachMm), JUMP.floor) * (0.5 + 0.5 * seed)
+    turns.push(kick >= 0.25 ? Math.floor(2.99 * seed) : 0)
     shape.push(rng.range(0.12, 0.46), rng.range(0.04, 0.3), rng.range(-0.16, 0.16), aspect[id]!)
     placed++
   }
   g.setAttribute('aRest', new THREE.InstancedBufferAttribute(new Float32Array(rest), 4))
   g.setAttribute('aKind', new THREE.InstancedBufferAttribute(new Float32Array(kind), 4))
   g.setAttribute('aShape', new THREE.InstancedBufferAttribute(new Float32Array(shape), 4))
+  g.setAttribute('aTurns', new THREE.InstancedBufferAttribute(new Float32Array(turns), 1))
   g.instanceCount = placed
   return g
 }
@@ -376,7 +391,7 @@ function makeSurface(): THREE.Group {
   const flat = new THREE.PlaneGeometry(1, 1, 1, 1)
   const underShape = new THREE.InstancedBufferGeometry()
   for (const name of ['position', 'normal', 'uv']) underShape.setAttribute(name, flat.getAttribute(name))
-  for (const name of ['aRest', 'aKind', 'aShape']) underShape.setAttribute(name, petalShape.getAttribute(name))
+  for (const name of ['aRest', 'aKind', 'aShape', 'aTurns']) underShape.setAttribute(name, petalShape.getAttribute(name))
   underShape.setIndex(flat.getIndex())
   underShape.instanceCount = petalShape.instanceCount
   const under = new THREE.Mesh(underShape, petalLook(1))
@@ -419,4 +434,12 @@ export function poolFill(sinceLanding: number): number {
   return 1 - (1 - x) * (1 - x)
 }
 
-export function update(_moment: KitMoment): void {}
+function petalContactShare(sinceLanding: number): number {
+  const t = Math.min(1, Math.max(0, sinceLanding / JUMP.contactEaseSeconds))
+  return t * t * (3 - 2 * t)
+}
+
+export function update(moment: KitMoment): void {
+  // The arrival cues the puff early; blend that clock in from zero at actual contact.
+  uniforms.uJump.value.y = petalContactShare(moment.sinceLanding)
+}

@@ -44,17 +44,17 @@ export interface Board {
 
 const RAIL = { from: [-39.2, 10.6] as [number, number], to: [-16.4, 32.6] as [number, number], bow: 1.6 }
 const POSTS = [
-  { t: 0.0, tall: 10.2, along: 0.1, out: 0.08, wide: 1.78 },
-  { t: 0.17, tall: 11.2, along: -0.07, out: 0.14, wide: 1.65 },
-  { t: 0.335, tall: 10.0, along: 0.13, out: 0.05, wide: 1.86 },
-  { t: 0.5, tall: 11.0, along: -0.04, out: 0.16, wide: 1.71 },
-  { t: 0.665, tall: 10.4, along: 0.09, out: 0.1, wide: 1.78 },
-  { t: 0.835, tall: 11.4, along: -0.11, out: 0.18, wide: 1.65 },
-  { t: 1.0, tall: 9.6, along: 0.16, out: 0.12, wide: 1.92 },
+  { t: 0.0, tall: 9.6, along: 0.09, out: 0.08, wide: 2.2 },
+  { t: 0.17, tall: 11.9, along: -0.05, out: 0.14, wide: 1.95 },
+  { t: 0.335, tall: 9.2, along: 0.12, out: 0.05, wide: 2.25 },
+  { t: 0.5, tall: 11.3, along: 0.03, out: 0.16, wide: 2.0 },
+  { t: 0.665, tall: 10.0, along: -0.08, out: 0.1, wide: 2.15 },
+  { t: 0.835, tall: 12.1, along: -0.02, out: 0.18, wide: 1.95 },
+  { t: 1.0, tall: 9.3, along: 0.11, out: 0.12, wide: 2.25 },
 ]
 const RAILS = [
-  { at: 3.5, tilt: [0.2, -0.3, 0.25, -0.15, 0.3, -0.25], wide: 1.25 },
-  { at: 7.6, tilt: [-0.25, 0.3, -0.2, 0.35, -0.3, 0.2], wide: 1.17 },
+  { at: 3.5, tilt: [0.3, -0.45, 0.35, -0.25, 0.45, -0.35], wide: 1.3 },
+  { at: 7.3, tilt: [-0.4, 0.45, -0.3, 0.5, -0.45, 0.3], wide: 1.2 },
 ]
 
 export function fenceBoards(): Board[] {
@@ -75,13 +75,13 @@ export function fenceBoards(): Board[] {
     const s = h + 0.6
     return [f[0] + (dir[0] * Math.sin(p.along) + out[0] * Math.sin(p.out)) * s, f[1] + Math.cos(p.along) * Math.cos(p.out) * s, f[2] + (dir[1] * Math.sin(p.along) + out[1] * Math.sin(p.out)) * s]
   }
-  const boards: Board[] = POSTS.map((p, i): Board => ({ a: foot(p.t), b: on(i, p.tall), wide: p.wide, thick: 0.85, out, post: true }))
+  const boards: Board[] = POSTS.map((p, i): Board => ({ a: foot(p.t), b: on(i, p.tall), wide: p.wide, thick: 0.6, out, post: true }))
   for (const r of RAILS)
     for (let i = 0; i < POSTS.length - 1; i++) {
       const a = on(i, r.at + r.tilt[i]!)
       const b = on(i + 1, r.at - r.tilt[i]! * 0.6)
       const k = 0.9 / Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2])
-      const front = 0.55
+      const front = -0.5
       boards.push({
         a: [a[0] - (b[0] - a[0]) * k + out[0] * front, a[1] - (b[1] - a[1]) * k, a[2] - (b[2] - a[2]) * k + out[1] * front],
         b: [b[0] + (b[0] - a[0]) * k + out[0] * front, b[1] + (b[1] - a[1]) * k, b[2] + (b[2] - a[2]) * k + out[1] * front],
