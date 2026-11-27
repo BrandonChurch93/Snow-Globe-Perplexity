@@ -94,8 +94,10 @@ const RIM = { power: 6.0, tone: [1.0, 0.62, 0.28] as Rgb3, rim: [0.6, 0.9] as co
 // The specks down a pad's flank. Where a pad's outline faces the right as the lens sees it (`toward`, `from`, `to`) the same edge
 // of the same leaves takes `power` of the lit edge's light, in the spots alone: between spots the flank stays dark and there is
 // no wash behind it, so it reads as a string of fine specks and not as a line. Where the lit edge is already as strong the flank
-// adds nothing.
-const FLANK = { power: 1.4, toward: [0.95, -0.3] as const, from: 0.2, to: 0.7 }
+// adds nothing. The specks are gold and not pale: the flank's light has its own tone (`tone`), and about each speck the leaf
+// behind the edge is lit low and deep (`ember` of the speck's light, in `gold`, to `reach` of the spot's radius and falling from
+// its heart), read from the same wide band as the lit edge's own fade, so a speck sits in a little gold of its own.
+const FLANK = { power: 1.45, toward: [0.95, -0.3] as const, from: 0.2, to: 0.7, tone: [1.0, 0.565, 0.22] as Rgb3, ember: 0.45, gold: [1.0, 0.52, 0.16] as Rgb3, reach: 2.0 }
 // A flat pad's leaves stand farther above it than it is thick. For the choice of the pad a leaf is lit on, a pad counts as at least
 // this thick (mm), so that the leaves on a flat pad's top are lit as its top and not as the underside of a dome that hangs over it.
 const PAD_THICK = 1.5
@@ -175,16 +177,19 @@ vec4 treeLobes(vec3 p) {
   return vec4(way, sqrt(d2) - sqrt(d1));
 }
 // The spots about a point (in spots): the light of the one it lies in, none between them; soft is how wide a spot's edge is.
-float treeSpots(vec3 p, float soft) {
+// x is that light; y is the low light about the same spot, widest at its heart and gone at FLANK.reach of its radius.
+vec2 treeSpots(vec3 p, float soft) {
   vec3 base = floor(p - 0.5);
   vec3 f = p - base;
-  float lit = 0.0;
+  vec2 lit = vec2(0.0);
   for (int k = 0; k < 8; k++) {
     vec3 o = vec3(float(k & 1), float((k >> 1) & 1), float((k >> 2) & 1));
     vec3 h = treeHash(base + o);
     float pick = fract(h.x * 5.3 + h.y * 9.7 + h.z * 3.1);
     float r = mix(${RIM.size[0].toFixed(2)}, ${RIM.size[1].toFixed(2)}, pick);
-    lit = max(lit, (1.0 - smoothstep(r - soft, r + soft, length(f - (o + 0.25 + 0.5 * h)))) * mix(${RIM.dim.toFixed(2)}, 1.0, fract(pick * 7.9)));
+    float d = length(f - (o + 0.25 + 0.5 * h));
+    float about = max(1.0 - d / (${FLANK.reach.toFixed(2)} * r), 0.0);
+    lit = max(lit, mix(${RIM.dim.toFixed(2)}, 1.0, fract(pick * 7.9)) * vec2(1.0 - smoothstep(r - soft, r + soft, d), about * about));
   }
   return lit;
 }
@@ -288,8 +293,8 @@ function leafHook(shader: Shader): void {
     float treeRim = pow(max(1.0 - smoothstep(${RIM.in[0].toFixed(2)}, ${RIM.in[1].toFixed(2)}, textureLod(uSprigs, treeAt, max(log2(treeSize) - ${Math.log2(2 * RIM.across).toFixed(3)}, log2(treePx * treeSize))).a), 0.0), ${RIM.curve.toFixed(2)});
     vec2 treeBack = clamp(vMapUv + max(${(0.5 * RIM.far).toFixed(4)} / treePx, ${RIM.least.toFixed(2)}) * treeStep, treeCell + ${(0.5 / RIM.wide).toFixed(4)}, treeCell + ${(0.5 - 0.5 / RIM.wide).toFixed(4)});
     float treeWash = pow(max(1.0 - smoothstep(${RIM.over[0].toFixed(2)}, ${RIM.over[1].toFixed(2)}, textureLod(uSprigs, treeBack, max(log2(treeSize) - ${Math.log2(2 * RIM.wide).toFixed(3)}, log2(treePx * treeSize))).a), 0.0), ${RIM.bend.toFixed(2)});
-    float treeLights = treeSpots(vTreeP * ${(1 / RIM.mm).toFixed(4)}, clamp(treeFine, 0.08, 0.25));
-    reflectedLight.indirectDiffuse += ${glsl3(RIM.tone)} * (${RIM.power.toFixed(2)} * treeRim * (treeBand * mix(${RIM.dark.toFixed(2)}, 1.0, treeLights) + treeFlank * treeLights)) + treeTone * ${glsl3(RIM.glow)} * (${RIM.fade.toFixed(2)} * treeBand * treeWash);
+    vec2 treeLights = treeSpots(vTreeP * ${(1 / RIM.mm).toFixed(4)}, clamp(treeFine, 0.08, 0.25));
+    reflectedLight.indirectDiffuse += ${glsl3(RIM.tone)} * (${RIM.power.toFixed(2)} * treeRim * treeBand * mix(${RIM.dark.toFixed(2)}, 1.0, treeLights.x)) + ${glsl3(FLANK.tone)} * (${RIM.power.toFixed(2)} * treeRim * treeFlank * treeLights.x) + ${glsl3(FLANK.gold)} * (${(RIM.power * FLANK.ember).toFixed(3)} * treeWash * treeFlank * treeLights.y) + treeTone * ${glsl3(RIM.glow)} * (${RIM.fade.toFixed(2)} * treeBand * treeWash);
   }
   reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.rimTone)} * (min(${PAD.cap.toFixed(2)}, treeHem * treeTurn * smoothstep(${PAD.patchFrom.toFixed(2)}, ${PAD.patchTo.toFixed(2)}, treeMid) * mix(${PAD.rimShut.toFixed(2)}, 1.0, treeOpen) * mix(${PAD.rimBelow.toFixed(2)}, 1.0, treeHigh) * (${PAD.fringe.toFixed(2)} * treeLeaf + ${PAD.rim.toFixed(2)} * treeDot) * (treeCard ? smoothstep(${PAD.tipFrom.toFixed(2)}, ${PAD.tipTo.toFixed(2)}, fract(vMapUv.y * 1.999)) : ${PAD.tipBody.toFixed(2)})) * mix(${PAD.shade.toFixed(2)}, 1.0, stageKeyS));
 }`,

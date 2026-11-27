@@ -75,6 +75,11 @@ LIT = dict(hat=35, fine=20, lum=140)
 # a firefly of the approved: a core that is bright and yellow green, and the room about it (mm)
 FLY = dict(lum=120, green=50, room=0.5)
 SEAM_MM = 1.0
+# the tone of the flank's specks: warm is a hue between these (degrees); bright is the specks' own light (the greatest of red, green
+# and blue at or over this), gold is the warm light about them (from this up to bright)
+TONE = dict(hue=(15, 50), bright=200, gold=80)
+# the turn under the low dome: how far under the pad's marked point its bottom right begins (mm)
+TURN = 2.5
 
 _y, _x = np.ogrid[-8:9, -8:9]
 WIDE = (_x * _x + _y * _y) <= 64
@@ -303,8 +308,39 @@ def flank(a, crown, lit, name='', say=True, out=None, near=0.6):
     peak = lit & zone & (l2 >= ndi.maximum_filter(l2, size=3))
     length = line.sum() / K
     got = {'flank mm': length, 'flank specks': int(peak.sum()), 'flank specks per 10 mm': 10 * peak.sum() / max(length, 1e-9)}
+    # the turn under the low dome: the low right pad's outer outline right of the pad's own marked point and at least `TURN` mm
+    # lower than it, which is the bottom right of the dome and its underside as far as the middle; counted as the flank is
+    mark = MARKS['pads']['low right']
+    outer = edge & ndi.binary_dilation(~ndi.binary_fill_holes(crown), iterations=2)
+    turn = outer & (part == num['low right']) & (np.arange(H)[:, None] >= Y0 - K * (mark[1] - TURN)) & (cols >= X0 + K * mark[0]) & ~upper
+    tzone = ndi.distance_transform_edt(~turn) <= near * K
+    tpeak = lit & tzone & (l2 >= ndi.maximum_filter(l2, size=3))
+    tlen = turn.sum() / K
+    got.update({'turn mm': tlen, 'turn specks': int(tpeak.sum()), 'turn specks per 10 mm': 10 * tpeak.sum() / max(tlen, 1e-9)})
+    # the tone, pixel by pixel, of the crown within `near` mm of that outline: the specks' own light (bright) and the warm light
+    # about them (gold), each with its share of the strip, its mean colour and the middle hue and saturation of its pixels
+    strip = zone & crown
+    c = a[strip]
+    top = c.max(axis=1)
+    span = top - c.min(axis=1) + 1e-9
+    hue = 60 * np.where(top == c[:, 0], ((c[:, 1] - c[:, 2]) / span) % 6, np.where(top == c[:, 1], (c[:, 2] - c[:, 0]) / span + 2, (c[:, 0] - c[:, 1]) / span + 4))
+    sat = span / (top + 1e-9)
+    warm = (hue >= TONE['hue'][0]) & (hue <= TONE['hue'][1])
+    bright = warm & (top >= TONE['bright'])
+    gold = warm & (top >= TONE['gold']) & (top < TONE['bright'])
+    tone = {}
+    for k, m in (('bright', bright), ('gold', gold)):
+        if m.sum():
+            tone[k] = (100 * m.mean(), c[m].mean(axis=0), float(np.median(hue[m])), float(np.median(sat[m])))
+        else:
+            tone[k] = (0.0, np.zeros(3), 0.0, 0.0)
+    hot = a[peak]
+    got.update({'flank bright %': tone['bright'][0], 'flank bright hue': tone['bright'][2], 'flank bright saturation': tone['bright'][3], 'flank gold %': tone['gold'][0], 'flank gold hue': tone['gold'][2], 'flank gold saturation': tone['gold'][3], 'flank gold over bright': tone['gold'][0] / max(tone['bright'][0], 1e-9), 'flank hearts at the top %': 100 * float((hot.max(axis=1) >= 250).mean()) if len(hot) else 0.0})
     if say:
         print(f"   FLANK {name}: the right flank of the two right domes, {length:.1f} mm of outline; SPECKS {got['flank specks']} within {near} mm of it, {got['flank specks per 10 mm']:.1f} per 10 mm; lit pixels there {int((lit & zone).sum())}")
+        print(f"   TURN {name}: the low dome's outline right of its marked point and {TURN} mm or more under it, {tlen:.1f} mm; SPECKS {got['turn specks']} within {near} mm of it, {got['turn specks per 10 mm']:.1f} per 10 mm; lit pixels there {int((lit & tzone).sum())}")
+        b, g = tone['bright'], tone['gold']
+        print(f"   FLANK TONE {name}: of the crown within {near} mm of it ({int(strip.sum())} px): the specks' own light (warm, {TONE['bright']} up) {b[0]:.1f}%, mean colour ({b[1][0]:.0f}, {b[1][1]:.0f}, {b[1][2]:.0f}), hue {b[2]:.0f} degrees, saturation {b[3]:.2f}; the gold about them (warm, {TONE['gold']} to {TONE['bright']}) {g[0]:.1f}%, mean colour ({g[1][0]:.0f}, {g[1][1]:.0f}, {g[1][2]:.0f}), hue {g[2]:.0f} degrees, saturation {g[3]:.2f}; GOLD OVER BRIGHT {got['flank gold over bright']:.2f}; hearts of the specks at the top of the range {got['flank hearts at the top %']:.0f}%")
     if out:
         px = np.asarray(Image.fromarray(a.astype(np.uint8)).resize((W * 2, H * 2), Image.LANCZOS)).copy()
 
@@ -312,12 +348,27 @@ def flank(a, crown, lit, name='', say=True, out=None, near=0.6):
             return np.kron(m, np.ones((2, 2), bool))
 
         px[twice(edge & ~line)] = (40, 120, 200)
+        px[twice(turn)] = (255, 150, 40)
         px[twice(line)] = (80, 230, 255)
         im = Image.fromarray(px)
         d = ImageDraw.Draw(im)
+        for y, x in zip(*np.nonzero(tpeak)):
+            d.ellipse((2 * x - 6, 2 * y - 6, 2 * x + 7, 2 * y + 7), outline=(60, 255, 60))
         for y, x in zip(*np.nonzero(peak)):
             d.ellipse((2 * x - 4, 2 * y - 4, 2 * x + 5, 2 * y + 5), outline=(255, 40, 200))
-        im.crop((int((X0 + K * 2) * 2), int((Y0 - K * 40) * 2), int((X0 + K * 22) * 2), int((Y0 - K * 14) * 2))).save(out, quality=92)
+        # beside it, what the tone was read from: the strip's bright pixels pale, its gold ones orange, the rest of the strip's
+        # crown green, all else the picture itself at a third
+        read = (a * 0.33).astype(np.uint8)
+        ys, xs = np.nonzero(strip)
+        read[ys, xs] = (20, 70, 35)
+        read[ys[gold], xs[gold]] = (235, 140, 30)
+        read[ys[bright], xs[bright]] = (255, 245, 180)
+        read = Image.fromarray(read).resize((W * 2, H * 2), Image.NEAREST)
+        box = (int((X0 + K * 2) * 2), int((Y0 - K * 40) * 2), int((X0 + K * 22) * 2), int((Y0 - K * 14) * 2))
+        both = Image.new('RGB', (2 * (box[2] - box[0]) + 6, box[3] - box[1]), (200, 0, 200))
+        both.paste(im.crop(box), (0, 0))
+        both.paste(read.crop(box), (box[2] - box[0] + 6, 0))
+        both.save(out, quality=92, subsampling=0)
     return got
 
 
