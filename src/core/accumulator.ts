@@ -29,6 +29,8 @@ export interface Spread {
   after: THREE.Matrix4
   /** The ball in mm of its own space: the sphere's centre height and radius; the base's radius, foot and top. */
   ball: { sphere: [number, number]; base: [number, number, number] }
+  /** The share of the full reach, 0 to 1: the taps lie this share of a spacing apart. */
+  reach: number
 }
 
 /**
@@ -52,6 +54,7 @@ uniform mat4 uToBall;
 uniform mat4 uBefore;
 uniform mat4 uAfter;
 uniform vec2 uSize;
+uniform float uReach;
 out vec4 o;
 const float W[${SPREAD.weights.length}] = float[${SPREAD.weights.length}](${SPREAD.weights.map((w) => w.toFixed(1)).join(', ')});
 bool meets(vec3 from, vec3 dir, out vec3 at) {
@@ -92,7 +95,7 @@ void main() {
   vec4 a = uBefore * vec4(at, 1.0);
   vec4 b = uAfter * vec4(at, 1.0);
   if (!(a.w > 0.0 && b.w > 0.0)) return;
-  vec2 hop = (b.xy / b.w - a.xy / a.w) * 0.5 * uSize;
+  vec2 hop = (b.xy / b.w - a.xy / a.w) * 0.5 * uSize * uReach;
   if (!(dot(hop, hop) > 1e-8)) return;
   vec4 sum = vec4(0.0);
   float n = 0.0;
@@ -511,7 +514,7 @@ export class Accumulator {
     const to = this.mean[1 - this.flip]
     const u = this.pass.material.uniforms
     u.uMean.value = from.texture
-    u.uSample.value = spread && this.precision !== 'byte' ? this.spreadOut(spread) : this.sample.texture
+    u.uSample.value = spread && spread.reach > 0 && this.precision !== 'byte' ? this.spreadOut(spread) : this.sample.texture
     u.uWeight.value = 1 / (this.count + 1)
     this.pass.render(this.gfx.renderer, to)
     this.flip = 1 - this.flip
@@ -538,6 +541,7 @@ export class Accumulator {
         uBefore: { value: new THREE.Matrix4() },
         uAfter: { value: new THREE.Matrix4() },
         uSize: { value: new THREE.Vector2(width, height) },
+        uReach: { value: 1 },
       })
       this.spread = { target, pass }
     }
@@ -546,6 +550,7 @@ export class Accumulator {
     ;(u.uToBall!.value as THREE.Matrix4).copy(by.toBall)
     ;(u.uBefore!.value as THREE.Matrix4).copy(by.before)
     ;(u.uAfter!.value as THREE.Matrix4).copy(by.after)
+    u.uReach!.value = by.reach
     this.spread.pass.render(this.gfx.renderer, this.spread.target)
     return this.spread.target.texture
   }

@@ -29,7 +29,7 @@ const spec: Spec = {
     files: { filmA: 's', filmB: 's', previewA: 's', previewB: 's', reviewCut: 's', cardLoop: 's', cardLoopWeb: 's', cardStill: 's' },
   },
   previewFilm: { bitrateMbps: 'n' },
-  tiers: { draft: samples, review: samples, final: { samplesPerFrame: 'n', motion: { spacingPx: 'n', maxSamplesPerFrame: 'n', evenFromPx: 'n' } } },
+  tiers: { draft: samples, review: samples, final: { samplesPerFrame: 'n', motion: { spacingPx: 'n', maxSamplesPerFrame: 'n', evenFromPx: 'n', spreadFullPx: 'n' } } },
   live: {
     defaultQuality: 's',
     probeFrames: 'n',

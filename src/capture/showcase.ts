@@ -1,6 +1,6 @@
 import type { GlobePose } from '../shake/table'
-import { config, formatById, tierEvenFromPx, tierMotion, tierSamples, type FormatSpec } from '../config'
-import { centrePacePx, evenSet, framesamples, shutterTravelPx, spreadAt, type Timed } from '../film/motion'
+import { config, formatById, tierEvenFromPx, tierMotion, tierSamples, tierTravelRule, type FormatSpec } from '../config'
+import { centrePacePx, evenSet, framesamples, shutterTravelPx, spreadAt, spreadReach, type Timed } from '../film/motion'
 import { Accumulator, type SampleFacts, type Sanity } from '../core/accumulator'
 import type { Assets } from '../core/assets'
 import { finish, type Gfx } from '../core/gl'
@@ -228,10 +228,11 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     counts.particles = stage.particleCount()
   }
 
-  /** A frame in which the ball travels: where the ball is at a moment, and the pace of its centre on the picture in pixels a shutter. */
+  /** A frame in which the ball travels: where the ball is at a moment, the pace of its centre on the picture in pixels a shutter, and the share of the spread's full reach. */
   interface Travel {
     globe: (sec: number) => GlobePose
     pace: (sec: number) => [number, number]
+    reach: number
   }
 
   async function picture(at: At, timeSec: number, shutterSec: number, pose: (t: number) => Pose, samples: number, salt: number, travel?: Travel): Promise<void> {
@@ -256,7 +257,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       const t1 = now()
       timing.simMs += t1 - t0
       stage.drawSample(acc.sample, pose(t), s, moment, done === 0 || shutterSec > 0)
-      acc.add(travel && s && shutterSec > 0 ? spreadAt(t, shutterSec / set.length, travel.globe, pose, format.width, format.height) : null)
+      acc.add(travel && s && shutterSec > 0 ? spreadAt(t, shutterSec / set.length, travel.globe, pose, format.width, format.height, travel.reach) : null)
       done++
       finish(gfx)
       timing.drawMs += now() - t1
@@ -303,7 +304,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     const even = tierEvenFromPx(t)
     const travelPx = motion || even !== undefined ? shutterTravelPx(from, shutter, globe, pose, format.width, format.height) : 0
     const samples = framesamples(tierSamples(t), motion, () => travelPx)
-    return even !== undefined && travelPx >= even ? { samples, travelPx, travel: { globe, pace: (sec) => centrePacePx(sec, shutter, globe, pose, format.width, format.height) } } : { samples, travelPx }
+    return even !== undefined && travelPx >= even ? { samples, travelPx, travel: { globe, pace: (sec) => centrePacePx(sec, shutter, globe, pose, format.width, format.height), reach: spreadReach(travelPx, even, tierTravelRule(t)?.spreadFullPx ?? even) } } : { samples, travelPx }
   }
   const filmGlobe: Globe = (sec) => globePoseAt(getFilm(), sec)
   const filmShot = (t: string, i: number, pose: (sec: number) => Pose) => shot(t, frameTime(i), filmGlobe, pose)

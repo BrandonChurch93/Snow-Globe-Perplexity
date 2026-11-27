@@ -166,12 +166,23 @@ export const SPREAD_BALL: { sphere: [number, number]; base: [number, number, num
   base: [config.globe.baseDiameterMm / 2 + SPREAD.baseMarginMm, -SPREAD.baseBelowMm, config.globe.baseHeightMm + SPREAD.baseAboveMm],
 }
 
-/** What the spread of the sample drawn at `sec` needs, when the samples lie `spacingSec` apart. */
-export function spreadAt(sec: number, spacingSec: number, globeAt: (sec: number) => GlobePose, poseAt: (sec: number) => Pose, width: number, height: number): Spread {
+/**
+ * The share of its full reach the spread has in a frame of this travel: none at `fromPx`, where a frame is first drawn
+ * with even times, all of it from `fullPx`, where the count begins to follow the travel and the copies lie a full
+ * spacing apart, and in between in step with the travel. Under `fullPx` the copies lie closer than a spacing, so less
+ * reach settles them, and a frame just over `fromPx` reads as sharp as the one just under it.
+ */
+export function spreadReach(travelPx: number, fromPx: number, fullPx: number): number {
+  if (!(fullPx > fromPx)) return travelPx >= fromPx ? 1 : 0
+  return Math.max(0, Math.min(1, (travelPx - fromPx) / (fullPx - fromPx)))
+}
+
+/** What the spread of the sample drawn at `sec` needs, when the samples lie `spacingSec` apart; `reach` is its share of the full reach. */
+export function spreadAt(sec: number, spacingSec: number, globeAt: (sec: number) => GlobePose, poseAt: (sec: number) => Pose, width: number, height: number, reach = 1): Spread {
   const before = ballToClip(sec - spacingSec / 2, globeAt, poseAt, width, height)
   const after = ballToClip(sec + spacingSec / 2, globeAt, poseAt, width, height)
   aim(poseAt(sec), width, height)
   const toWorld = new THREE.Matrix4().multiplyMatrices(camera.matrixWorld, camera.projectionMatrixInverse)
   const toBall = ballMatrix(globeAt(sec), new THREE.Matrix4()).invert()
-  return { toWorld, toBall, before, after, ball: SPREAD_BALL }
+  return { toWorld, toBall, before, after, ball: SPREAD_BALL, reach }
 }

@@ -101,7 +101,7 @@
   "tiers": {
     "draft": { "samplesPerFrame": 2 },
     "review": { "samplesPerFrame": 8 },
-    "final": { "samplesPerFrame": 24, "motion": { "spacingPx": 0.75, "maxSamplesPerFrame": 128, "evenFromPx": 6 } }
+    "final": { "samplesPerFrame": 24, "motion": { "spacingPx": 0.75, "maxSamplesPerFrame": 128, "evenFromPx": 6, "spreadFullPx": 18 } }
   },
   "live": {
     "defaultQuality": "auto",
