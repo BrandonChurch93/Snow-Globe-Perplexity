@@ -11,8 +11,8 @@ import { holdStorm, veil } from './veil'
 // Part `glass-dressing-summer`: the glass is clear, and what the season puts on it is light.
 // 1. The flare: the reflection of the one strong warm light (the rig's key) on the outside of the glass. It sits where a sphere
 //    mirrors that light toward the eye (the half vector between the eye and the light), which from the hero camera is the upper
-//    right shoulder, at the limb. It is a small hot core squeezed along the limb, a warm halo and the star a lens draws round a
-//    point that bright. It kindles on the landing.
+//    right shoulder, at the limb. It is a white patch on the outline, drawn out along it, with the soft bloom and the
+//    warm glow a wide open lens draws round it: no rays and no streak. It kindles on the landing.
 // 2. The pool: the same light focused by the globe onto the slab, in front of the globe and to its left, inside the globe's own
 //    shadow: a soft pool of warm light, brightest at a knot by the foot, and inside it a few broad curved bands of the water's
 //    light, soft edged and never a net or a star. There is no pool before the landing; after it the pool swells, its bands
@@ -37,49 +37,42 @@ const RAD = Math.PI / 180
 // the room's light, so no pale band stands inside the outline. The ring at the outline is thin and hides little of the inside
 // (`ringThin`, `ringCover`, `rimClear`), its cool line over the top and the ceiling's reflection are held low (`topLine`,
 // `ceiling`), and the lamps outside the frame show as fine arcs (`arcs`). The rest of the light on the glass is the wall's
-// streaks and bands, below
-setGlass('summer', { windowTint: [0.9, 0.86, 0.78], windowGain: [0, 0, 0, 0], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], rimSide: [1.3, 0.5, 0.28], wallTint: [0.5, 0.36, 0.2], ringCover: 0.4, strip: 0, bend: 1, ringThin: 0.75, rimClear: 0.4, topLine: 0.3, ringMottle: 0.3, ceiling: 0.5, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 0.4, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
+// streaks and bands, below. The shell's bend is off (`bend`): it draws the inside from further in over the outermost
+// twelfth of the radius, which set the flame's white middle a second time against the outline as a cream band and the
+// wall's wash into the dark gap under the rim
+setGlass('summer', { windowTint: [0.9, 0.86, 0.78], windowGain: [0, 0, 0, 0], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], rimSide: [1.3, 0.5, 0.28], wallTint: [0.5, 0.36, 0.2], ringCover: 0.4, strip: 0, bend: 0, ringThin: 0.75, rimClear: 0.4, topLine: 0.3, ringMottle: 0.3, ceiling: 0.5, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 0.4, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
 
 export const look = {
   // leaving: the light goes out between these two counts of beats before the swap window opens
   leaveBeats: [1.1, 0.2] as const,
   flare: {
     halfMm: 30,
-    // the core: white hot and on the outline, drawn out along it; how strong, and its size across the outline and along it
-    // (in the quad's half width, as every length of the flare is)
+    // the core: white hot, a patch on the outline, drawn out along it and bent with it; how strong, and its size across
+    // the outline and along it (in the quad's half width, as every length of the flare is). On the approved picture the
+    // white lies 0.13 of the radius along the rim and 0.035 of it across
     core: 12,
-    coreAcross: 0.0225,
-    coreAlong: 0.045,
-    // the bloom of the lens round the core: a soft warm ball that takes the core's hard edge away
-    bloom: 1.8,
-    bloomWide: 0.07,
-    // the warm glow under the rays: brightest against the core and falling off fast (`glow`, and the length it falls to
-    // a third in), then a faint broad ball of it a quarter of a globe radius wide (`halo`) and the thin `veil` that
-    // carries it on. It is never a disc with an edge
-    glow: 1.6,
-    glowWide: 0.06,
-    halo: 0.5,
-    haloWide: 0.2,
-    veil: 0.07,
-    // the rays: many fine straight lines through the core, `spikes` of them, never evenly spaced. Each end has its own
-    // length (`reach`: the shortest, and how much longer the longest is; most are short) and its own strength, some
-    // nearly out. They are longer and brighter away from the globe. `rayWide` is a ray's width at its tip and how much
-    // wider it is at the core
-    rays: 1.8,
-    spikes: 33,
-    reach: [0.07, 0.3] as const,
-    rayWide: [0.0022, 0.003] as const,
-    // and how much wider a ray grows out to its tip, so the ends are soft
-    raySoft: 0.007,
-    arc: 1.6,
-    hot: [1, 0.92, 0.78] as const,
-    warm: [1, 0.72, 0.42] as const,
-    amber: [1, 0.47, 0.16] as const,
+    coreAcross: 0.035,
+    coreAlong: 0.18,
+    // the mirror's own place for the sun lies a hair inside the outline: the glint is pushed out along the radius by this
+    // share of it, so that its middle lies on the outline and the bloom sits on the rim
+    rimOut: 0.012,
+    // the bloom of the lens round the patch: soft, nearly white, brightest on the rim, and a little longer along the
+    // outline than across it, since the patch it blooms from is long (`bloom`, and the lengths it falls to a third in,
+    // across the outline and along it); round it the warm glow, its tail, which falls off slower and has no edge
+    // (`glow`, and its lengths). There are no rays and no streak: the lens is wide open, as the round discs of the
+    // room's lights behind the globe say it is, and a wide open lens draws a soft bloom round a patch this bright
+    bloom: 4.25,
+    bloomAcross: 0.074,
+    bloomAlong: 0.088,
+    glow: 1.83,
+    glowAcross: 0.12,
+    glowAlong: 0.164,
+    hot: [1, 0.92, 0.72] as const,
+    amber: [1, 0.51, 0.27] as const,
     // the landing: the flare is out while the globe is in the hand after the change, catches on the landing frame, overshoots and settles
     kindleSeconds: 0.22,
     flash: 0.55,
     flashSeconds: 0.3,
-    breath: 0.05,
   },
   // the far wall: the light that crosses the globe gathers on the inside of the glass opposite the sun, a warm crescent
   // along the limb
@@ -126,14 +119,14 @@ export const look = {
     flameAt: [-0.2, 0.27] as const,
     flameFoot: [-0.02, 0.12] as const,
     flameBend: [0.03, 0.05] as const,
-    flameLean: 0.29,
-    flameCore: [0.883, 0.36, 0.045, 0.2] as const,
+    flameLean: 0.42,
+    flameCore: [0.883, 0.4, 0.045, 0.45] as const,
     flameDim: 0.2,
-    flameBody: [0.035, 0.12, 0.4, 0.6] as const,
+    flameBody: [0.035, 0.07, 0.4, 0.6] as const,
     flameLanes: 1,
     flameFine: 0.7,
     flameTongues: 44,
-    flameOut: 0.95,
+    flameOut: 0.925,
     flameSoft: 0.05,
     flameSkirt: [0.25, 0.05] as const,
     flameHard: 0.004,
@@ -156,7 +149,7 @@ export const look = {
     // the limb's own warm edge on the far side: the glass wall takes the flame's light as one thin bright line just
     // inside the outline, beside the flame and no further. How strong, where up the limb (radians) and how far it runs,
     // where in the radius and how thick
-    edge: 4,
+    edge: 2,
     edgeAt: [-0.02, 0.2] as const,
     edgeIn: [0.984, 0.007] as const,
     edgeColor: [1, 0.6, 0.28] as const,
@@ -172,7 +165,7 @@ export const look = {
     // its middle lies as a share of the radius and in radians up the limb from the wall's middle, how far it reaches
     // toward the middle of the globe and toward the outline, down the limb and up it), and a thinner one that lies
     // over the left side of the ball (`airFar`, the same), which the banks break twice over
-    air: [0.45, 0.82, 0, 0.11, 0.2, 0.2, 0.17] as const,
+    air: [0.3, 0.82, 0, 0.11, 0.2, 0.2, 0.17] as const,
     airColor: [1, 0.62, 0.3] as const,
     airFar: [0.065, 0.82, 0.43, 0.25, 0.3, 0.45, 0.25] as const,
     airFarColor: [1, 0.7, 0.42] as const,
@@ -269,26 +262,26 @@ export const look = {
     // Under it the glass holds the room's warm dark as one thin brown arc (`under`: how far below the ribbon's
     // lower edge its middle lies, half its thickness, how strong; `underEnds`: it comes in between the first two
     // bearings and is gone between the last two, radians)
-    ribbon: 0.27,
+    ribbon: 0.18,
     ribbonColor: [1, 0.64, 0.43] as const,
     ribbonPeak: [0.65, 1.6, 0.28] as const,
-    ribbonElbow: [1.536, 0.9, 0.058] as const,
+    ribbonElbow: [1.536, 0.922, 0.058] as const,
     ribbonLevel: [0.73, 0.244] as const,
-    ribbonRound: 0.11,
+    ribbonRound: 0.2,
     ribbonLow: [0.925, 0.62, 1.693, 0.75, 0.04] as const,
     ribbonEnds: [0.45, 1, 1.95, 2.25] as const,
-    ribbonUpper: [0.03, 0.009] as const,
+    ribbonUpper: [0.012, 0.009] as const,
     ribbonLower: [0.03, 0.06] as const,
     ribbonUnder: 0.75,
-    ribbonDeep: 0.8,
+    ribbonDeep: 0.6,
     ribbonStreaks: [1.3, 6] as const,
     ribbonStreaked: [0.4, 0.16] as const,
     under: [0.075, 0.02, 0.056] as const,
     underEnds: [0.96, 1.2, 1.95, 2.2] as const,
     underColor: [1, 0.6, 0.38] as const,
     // the glass has thickness: just inside the outline lies a band of fine lines of light that run along the arc, and
-    // against the outline one bright line. It is drawn last, over the shell, whose own band there bends the inside and
-    // would bend these lines away with it. `rim` is the whole of its strength, `rimAt` where in the radius the band
+    // against the outline one bright line. It is drawn last, over the shell, whose own ring there covers the inside and
+    // would cover these lines with it. `rim` is the whole of its strength, `rimAt` where in the radius the band
     // begins, is whole, begins to end and has ended, `rimFoot` where it ends above the base (the height of the bearing:
     // none below the first, all above the second). The lines are hair thin and no two alike: two sets of them, `rimLines`
     // and, down the left limb alone, `rimLinesWide` to a globe radius across the band, which are hair lines that wander
@@ -304,7 +297,7 @@ export const look = {
     // further in and wider (`rimTopLine`, about the bearing in `rimTopWide` with its cosines), a soft blue white band
     // under the outline; over the top and left of it the line stays thin and at the outline, and the glass under it is
     // dark. On the left a broken cream line marks the band's inner edge (`rimInner`: where, half width, strength).
-    // At the upper left the glass mirrors the room's lit wall as the end of the ribbon, which the shell's bend would
+    // At the upper left the glass mirrors the room's lit wall as the end of the ribbon, which the shell's ring would
     // hide: it is drawn here, from `rimInside` of the radius outward and only within `rimUpLeft` (a bearing and the
     // half angle about it, degrees). `satin` is that end, one broad cream band along the arc: how strong, where in the
     // radius its middle lies, half its width and how soft its two edges are; it comes in between the first two
@@ -354,7 +347,7 @@ export const look = {
     rimInnerColor: [1, 0.8, 0.62] as const,
     rimInside: 0.84,
     rimUpLeft: [147.5, 45] as const,
-    satin: [0.3, 0.895, 0.045, 0.012] as const,
+    satin: [0.08, 0.895, 0.045, 0.012] as const,
     satinEnds: [1.885, 2.09, 2.36, 2.46] as const,
     satinOuter: 0.3,
     satinLanes: [30, 0.35] as const,
@@ -375,6 +368,26 @@ export const look = {
     ] as const,
     strokeCream: [1, 0.86, 0.7] as const,
     strokeAmber: [1, 0.62, 0.36] as const,
+    // inside the outline the glass mirrors the lit wall a second time, and over the top the sky: thin arcs that hug the
+    // rim, no two alike in length or in depth, with clear glass between them (`arcs`, each: its bearing and half its
+    // length in degrees, where in the radius, half its width, how far it leans across the arc, how strong, and 1 if it
+    // is the sky's blue white, 0 if the wall's cream). They waver along their length as the rim's own lines do, twice
+    // as far. Above the flare the sky lies against the outline as one band that fades inward (`rimSky`: the bearing in
+    // degrees about which it lies and the cosines between which it comes in, the shares of the radius between which
+    // it comes in, and how strong)
+    arcs: [
+      [132, 15, 0.948, 0.0035, -0.058, 0.4, 0],
+      [127, 24, 0.934, 0.0042, -0.02, 0.4, 0],
+      [127, 14, 0.92, 0.0036, -0.04, 0.25, 0],
+      [130, 6, 0.906, 0.005, 0, 0.2, 0],
+      [80, 13, 0.984, 0.005, 0, 0.31, 1],
+      [74, 11, 0.937, 0.013, 0, 0.05, 1],
+      [105, 5, 0.969, 0.004, 0, 0.24, 1],
+    ] as const,
+    arcCream: [1, 0.64, 0.43] as const,
+    arcCool: [0.74, 0.86, 1] as const,
+    rimSky: [54, 0.961, 0.99, 0.92, 0.98, 0.2] as const,
+    rimSkyColor: [0.9, 0.95, 1] as const,
     reflexStorm: 0.6,
     hazeBanks: 0.35,
     hazeBankSize: 0.42,
@@ -471,40 +484,13 @@ const uniforms = {
 }
 
 const F = look.flare
-// The flare's rays, laid out once: each line through the core has its own bearing, a little off its even place, and each
-// of its two ends its own reach and strength. Most ends are short and a few long, and some are nearly out
-const flareRnd = (i: number, k: number): number => {
-  const x = Math.sin(i * 127.1 + k * 311.7 + 1.3) * 43758.5453
-  return x - Math.floor(x)
-}
-const FLARE_RAYS = Array.from({ length: F.spikes }, (_, i) => ({
-  a: ((i + 0.5 + 1.5 * (flareRnd(i, 1) - 0.5)) * Math.PI) / F.spikes + 0.35,
-  ends: [2, 3].flatMap((k) => [F.reach[0] + F.reach[1] * flareRnd(i, k) ** 2, 0.2 + 0.8 * flareRnd(i, k + 3) ** 1.5]),
-}))
-// how far from the core a ray can reach at the most
-const FLARE_REACH = (F.reach[0] + F.reach[1]) * 1.25 * 1.2 * (1 + F.breath)
 const FLARE = `
 uniform vec4 uFlareSun;
-uniform vec4 uSummer;
 varying vec2 vFl;
 varying vec2 vFlOut;
 varying float vFlGain;
-// one fine ray: d its way, e the reach and the strength of its end along d and of the other end, breathe its breath, fine
-// the least width a pixel can carry. A ray is widest at the core, thins along its length and grows soft at its tip
-float flRay(vec2 p, vec2 d, vec4 e, float breathe, float fine) {
-  float along = dot(p, d);
-  float across = p.x * d.y - p.y * d.x;
-  float away = max(sign(along) * dot(d, vFlOut), 0.0);
-  vec2 end = along > 0.0 ? e.xy : e.zw;
-  float t = abs(along) / (end.x * (0.75 + 0.5 * away) * breathe);
-  float u = min(t, 1.0);
-  float thin = ${n(F.rayWide[0])} + ${n(F.rayWide[1])} * (1.0 - u) * (1.0 - u) + ${n(F.raySoft)} * u;
-  float wide = max(thin, fine);
-  return exp(-across * across / (wide * wide)) * exp(-2.6 * t) * (1.0 - smoothstep(0.6, 1.2, t)) * end.y * (0.5 + 0.5 * away) * (thin / wide);
-}
+varying float vFlBend;
 void main() {
-  // the least width a ray can have and still be carried by the pixels: read before anything is discarded
-  float fine = 0.55 * max(length(dFdx(vFl)), length(dFdy(vFl)));
   float c = stageChange();
   if (stageGone(c)) discard;
   if (uDiag != 0) discard;
@@ -514,25 +500,24 @@ void main() {
   float r = length(p);
   vec2 q = vec2(dot(p, vFlOut), dot(p, vec2(-vFlOut.y, vFlOut.x)));
   float edge = 1.0 - smoothstep(0.62, 1.0, r);
-  // the core: the light itself, mirrored small; across the limb the sphere squeezes it
-  float core = exp(-(q.x * q.x / ${n(F.coreAcross * F.coreAcross)} + q.y * q.y / ${n(F.coreAlong * F.coreAlong)}));
-  // the glass beside it takes the light along the limb
-  float arc = exp(-q.x * q.x / 0.0009) * exp(-q.y * q.y / 0.09);
-  float halo = exp(-r * r / ${n(F.haloWide * F.haloWide)}) + ${n(F.veil)} * exp(-r / 0.34);
-  float glow = exp(-r / ${n(F.glowWide)});
-  float bloom = exp(-r * r / ${n(F.bloomWide * F.bloomWide)});
-  // the rays: fine tapered lines through the core, each end with its own length and strength, breathing a little. They
-  // are written out one by one with their numbers, and only drawn where the longest of them can reach
-  float star = 0.0;
-  if (r < ${n(FLARE_REACH)}) {
-    vec3 breathe = 1.0 + ${n(F.breath)} * sin(uSummer.x * vec3(0.9, 1.5, 2.1) + vec3(0.0, 2.1, 4.2));
-${FLARE_RAYS.map((ray, i) => `    star += flRay(p, vec2(${n(Math.cos(ray.a))}, ${n(Math.sin(ray.a))}), vec4(${ray.ends.map(n).join(', ')}), breathe.${'xyz'[i % 3]}, fine);`).join('\n')}
-  }
-  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core) + ${vec(F.warm)} * (${n(F.bloom)} * bloom + ${n(F.glow)} * glow + ${n(F.rays)} * star + ${n(F.arc)} * arc) + ${vec(F.amber)} * (${n(F.halo)} * halo);
+  // how far off the outline, which bends away under a patch this long, and how far along it: both squared
+  float off = length(vec2(vFlBend + q.x, q.y)) - vFlBend;
+  off *= off;
+  float along = q.y * q.y;
+  // the core: the light itself, mirrored; the sphere squeezes it across the outline and draws it out along it
+  float core = exp(-(off / ${n(F.coreAcross * F.coreAcross)} + along / ${n(F.coreAlong * F.coreAlong)}));
+  // the lens's bloom round it, brightest on the rim, and the warm glow round that as its tail: no edge, no ray, no streak
+  float bloom = exp(-(off / ${n(F.bloomAcross * F.bloomAcross)} + along / ${n(F.bloomAlong * F.bloomAlong)}));
+  float glow = exp(-sqrt(off / ${n(F.glowAcross * F.glowAcross)} + along / ${n(F.glowAlong * F.glowAlong)}));
+  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom) + ${vec(F.amber)} * (${n(F.glow)} * glow);
   gl_FragColor = vec4(col * (lit * edge), 0.0);
 }`
 
 const W = look.wall
+// an arc that lies wholly in the upper left is drawn with the rest of the upper left, any other for the whole rim
+const arcUpLeft = (b: readonly number[]): boolean => Math.abs(b[0] - W.rimUpLeft[0]) + b[1] <= W.rimUpLeft[1]
+const arcLine = (b: readonly number[]): string =>
+  `  rimGlow += ${vec(b[6] ? W.arcCool : W.arcCream)} * (${n(b[5])} * mirrored * wlStroke(e, arcAt, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), ${(1 - Math.cos(b[1] * RAD)).toFixed(6)}, vec3(${n(b[2])}, ${n(b[3])}, ${n(b[4])})));`
 // The wall's light is drawn three times: behind the miniature all of it but the glare, in front of the miniature the
 // glare alone (`front`), so the burn low on the far side lies over the turf and the fence as light on glass does, and
 // last, over the shell, the band of fine lines inside the outline and the light and the dark of the upper left alone (`rim`). The
@@ -639,6 +624,11 @@ ${front ? `  // light on the glass: the depth of the glass's own front along thi
   float rimLight = rimBand * mix(fine, 1.0, rimBare) * rimWide + ${n(W.rimLine[2])} * exp(-rimOff * rimOff) * rimThin;
   vec3 rimGlow = rimHue * rimLight + ${vec(W.rimInnerColor)} * (${n(W.rimInner[2])} * exp(-rimIn * rimIn) * rimLeft * (0.15 + 0.85 * fine));
   rimGlow *= ${n(W.rim)} * rimFoot;
+  // the sky against the outline above the flare, one band that fades inward, and the thin arcs inside the outline
+  float mirrored = (1.0 - ${n(W.stormClears - W.reflexStorm)} * storm) * rimFoot;
+  float arcAt = 2.0 * rimWaver - r;
+  rimGlow += ${vec(W.rimSkyColor)} * (${n(W.rimSky[5])} * smoothstep(${n(W.rimSky[3])}, ${n(W.rimSky[4])}, r) * smoothstep(${n(W.rimSky[1])}, ${n(W.rimSky[2])}, dot(e, vec2(${n(Math.cos(W.rimSky[0] * RAD))}, ${n(Math.sin(W.rimSky[0] * RAD))}))) * mirrored);
+${W.arcs.filter((b) => !arcUpLeft(b)).map(arcLine).join('\n')}
   // the upper left: the end of the ribbon as one broad band in soft lanes, the dash and the strokes, and between them
   // the clear dark, which the pass takes out of what lies behind it. The still air's light gives way to the storm, and
   // the reflection less than the glints
@@ -656,6 +646,7 @@ ${W.shade.map((b) => `    rimShade += ${n(b[0])} * exp(-(turn - ${n(b[1] * RAD)}
     vec3 strokes = ${vec(W.dashColor)} * sharp;
 ${W.strokes.map((b) => `    strokes += ${vec(b[6] ? W.strokeAmber : W.strokeCream)} * (${n(b[5])} * wlStroke(e, r, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), ${(1 - Math.cos(b[1] * RAD)).toFixed(6)}, vec3(${n(b[2])}, ${n(b[3])}, ${n(b[4])})));`).join('\n')}
     rimGlow += strokes * calm;
+${W.arcs.filter(arcUpLeft).map(arcLine).join('\n')}
   }
   // the landing: against the storm's light the glass's edge is a thin dark line down the left, from the upper left to
   // the foot of the band. It takes a share of what lies behind it, and of the rim's own light there
@@ -876,8 +867,8 @@ function makeFlare(): THREE.Mesh {
     part: PART,
     standIn: false,
     change: 'glass-dressing',
-    uniforms: { uFlareSun: uniforms.uFlareSun, uSummer: uniforms.uSummer },
-    vertexPars: 'uniform vec4 uFlareSun;\nvarying vec2 vFl;\nvarying vec2 vFlOut;\nvarying float vFlGain;',
+    uniforms: { uFlareSun: uniforms.uFlareSun },
+    vertexPars: 'uniform vec4 uFlareSun;\nvarying vec2 vFl;\nvarying vec2 vFlOut;\nvarying float vFlGain;\nvarying float vFlBend;',
     vertexMain: `
 vec3 flV = normalize(cameraPosition - uLensCentre);
 vec3 flH = normalize(flV + uFlareSun.xyz);
@@ -885,6 +876,9 @@ vec3 flP = uLensCentre + flH * ${n(RS + 0.6)};
 vec4 flC = viewMatrix * vec4(uLensCentre, 1.0);
 vec4 flAt = viewMatrix * vec4(flP, 1.0);
 vec2 flOut = flAt.xy - flC.xy;
+// out onto the outline; and the outline's radius there, in the quad's half width, for the bend of the patch
+flAt.xy += flOut * ${n(F.rimOut)};
+vFlBend = length(flOut) * ${n((1 + F.rimOut) / F.halfMm)};
 vFlOut = flOut / max(length(flOut), 1e-4);
 vFl = position.xy;
 // a mirror at a grazing angle returns far more of the light than one seen face on
