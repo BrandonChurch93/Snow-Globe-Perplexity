@@ -25,9 +25,12 @@ const LAMP_ON_WOOD = { power: 44, reachMm: 15, wrap: 0 }
 const LAMP_SHIFT: Vec3 = [-4, 0, -8]
 const PUMPKIN_ON_WOOD = { power: 8, reachMm: 6, wrap: 0.1 }
 const POND_ON_WOOD = { power: 2, reachMm: 22, wrap: 0.2 }
-const FILL_ON_WOOD = { power: 32, reachMm: 16, wrap: 0.5 }
-const FILL_FROM: Vec3 = [14, 7, 16]
-const SKY: [number, number, number] = [0.03, 0.8, 1.2]
+const FILL_ON_WOOD = { power: 30, reachMm: 9, wrap: 0.5 }
+const EDGE_ON_WOOD = { power: 80, reachMm: 6, wrap: 0.45 }
+const FILL_FROM: Vec3 = [7, 6, 10]
+const EDGE_FROM: Vec3 = [9, 4, -3]
+const SKY: [number, number, number] = [0.1, 0.9, 1.05]
+const EDGE_TONE: [number, number, number] = [0.9, 1, 0.7]
 const GROUP = { power: 0.06, reachMm: 5.5, along: 0.72 }
 const HALO = { radiusMm: 0.4, strength: 1.0, hot: 3.2, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
 const POOL = { radiusMm: 1.0, strength: 0.04, hot: 0, pullMm: 0.9, flicker: FLICKER, cycles: CYCLES }
@@ -43,8 +46,10 @@ const GLINT_LAMP = { lift: 3.6, power: 1.15, reachMm: 11 }
 const GLINT_TONE: [number, number, number] = [1, 0.46, 0.14]
 const GLINT_PUMPKIN = { power: 0.9, reachMm: 8 }
 const GLINT_POND = { power: 0.05, reachMm: 24 }
-// The approved bark is black and wet: on the side turned from the lamp its edge takes a cool grey green line from the air.
-const RIM = { tone: [0.52, 0.7, 0.6] as [number, number, number], power: 4.2, sharp: 3.5, far: [0, 0.6] as [number, number], reachMm: 12 }
+// The approved bark is black and wet: on the side turned from the lamp the trunk's edge takes a soft grey green line from
+// the air. It is read off the limb's own round, not the bark's relief, so it is one even edge and not a row of bright
+// ridges, and it stays on the trunk: the boughs above keep their warm ember rims.
+const RIM = { tone: [0.6, 0.66, 0.48] as [number, number, number], power: 0.4, sharp: 3, relief: 0.2, far: [0, 0.6] as [number, number], at: [3, 7, 3] as Vec3, reachMm: 7 }
 
 const clock = { value: 0 }
 const emberGain = { value: EMBER_GAIN }
@@ -73,6 +78,7 @@ function onWood(): GlowLight[] {
     ...PUMPKINS.filter((p) => p.name === 'tree').map((p): GlowLight => ({ at: pumpkinFace(p, 0.4, 0.6), color: tones.pumpkinLight, ...PUMPKIN_ON_WOOD, phase: 0.68 })),
     { at: placePoint([4, 2, 26]), color: tones.pondLight, ...POND_ON_WOOD, phase: 0.8 },
     { at: placePoint(FILL_FROM), color: SKY, ...FILL_ON_WOOD, phase: 0.6 },
+    { at: placePoint(EDGE_FROM), color: EDGE_TONE, ...EDGE_ON_WOOD, phase: 0.6 },
   ]
 }
 
@@ -92,10 +98,10 @@ function barkHook(shader: Shader): void {
   glowHook(shader, undefined, BARK_RELIEF)
   const lit = glints()
   shader.vertexShader = shader.vertexShader
-    .replace('#include <common>', `#include <common>\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
-    .replace('#include <project_vertex>', `#include <project_vertex>\n${lit.map((l, i) => `vGlint${i} = (modelViewMatrix * vec4(${vec3(l.at)}, 1.0)).xyz;`).join('\n')}`)
+    .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
+    .replace('#include <project_vertex>', `#include <project_vertex>\nvRim = (modelViewMatrix * vec4(${vec3(placePoint(RIM.at))}, 1.0)).xyz;\n${lit.map((l, i) => `vGlint${i} = (modelViewMatrix * vec4(${vec3(l.at)}, 1.0)).xyz;`).join('\n')}`)
   shader.fragmentShader = shader.fragmentShader
-    .replace('#include <common>', `#include <common>\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
+    .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
     .replace(
       '#include <lights_fragment_end>',
       `#include <lights_fragment_end>
@@ -116,8 +122,12 @@ ${lit
   reflectedLight.directSpecular += glintSum * uTwinkle.z * smoothstep(${GLINT.ridge[0].toFixed(2)}, ${GLINT.ridge[1].toFixed(2)}, dot(vColor.rgb, vec3(0.3333)));
   vec3 rimTo = vGlint0 + vViewPosition;
   vec3 rimL = rimTo * inversesqrt(max(dot(rimTo, rimTo), 1e-6));
-  float rimEdge = pow(clamp(1.0 - dot(normal, glintV), 0.0, 1.0), ${RIM.sharp.toFixed(1)}) * smoothstep(${RIM.far[0].toFixed(2)}, ${RIM.far[1].toFixed(2)}, -dot(normal, rimL));
-  reflectedLight.directSpecular += ${vec3(RIM.tone)} * (${RIM.power.toFixed(3)} * rimEdge * uTwinkle.z / (1.0 + dot(rimTo, rimTo) / ${(RIM.reachMm * RIM.reachMm).toFixed(1)}));
+  vec3 rimN = mix(nonPerturbedNormal, normal, ${RIM.relief.toFixed(2)});
+  rimN *= inversesqrt(max(dot(rimN, rimN), 1e-6));
+  vec3 rimOff = vRim + vViewPosition;
+  float rimNear = dot(rimOff, rimOff) / ${(RIM.reachMm * RIM.reachMm).toFixed(1)};
+  float rimEdge = pow(clamp(1.0 - dot(rimN, glintV), 0.0, 1.0), ${RIM.sharp.toFixed(1)}) * smoothstep(${RIM.far[0].toFixed(2)}, ${RIM.far[1].toFixed(2)}, -dot(rimN, rimL));
+  reflectedLight.directSpecular += ${vec3(RIM.tone)} * (${RIM.power.toFixed(3)} * rimEdge * uTwinkle.z / (1.0 + rimNear * rimNear));
 }`,
     )
 }
