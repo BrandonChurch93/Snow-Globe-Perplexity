@@ -260,7 +260,7 @@ float glassShareRaw(vec3 v) {
   return sqrt(max(1.0 - along * along, 0.0)) / max(along, 1e-4) * sqrt(max(eyeDist * eyeDist - uLens.x * uLens.x, 1.0)) / uLens.x;
 }
 float glassLimb(float s) {
-  return 1.0 - smoothstep(1.0 - max(${num(glassLook.limbPx)} * fwidth(s), 1e-4), 1.0, s);
+  return 1.0 - smoothstep(1.0 - max(${num(glassLook.limbPx)} * fwidth(glassShareRaw(normalize(vStageLocal - vEye))), 1e-4), 1.0, s);
 }
 float glassFresnel(float c, float n) {
   float g2 = n * n - 1.0 + c * c;
