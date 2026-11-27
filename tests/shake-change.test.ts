@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { config, shots, tiers } from '../src/config'
 import { FRAME } from '../src/app/framing'
 import * as THREE from 'three'
-import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, passCount, passLevel, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS, stageUniforms, stillLevel } from '../src/core/materials'
+import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, PASS_EVEN, passCount, passLevel, passShare, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS, stageUniforms, stillLevel } from '../src/core/materials'
 import { STILL_SIDE, stillBytes } from '../src/core/still'
-import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
+import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeShown, changeSpan, coverShown, partChange, SEASONAL_PARTS, VEIL_LEAVE, veilCrossed } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 import { loopMoment, timelineMoment } from '../src/film/moments'
 import { loopSeconds } from '../src/film/loop'
@@ -108,25 +108,115 @@ describe('the change number', () => {
     }
   })
 
-  it('changes everything outside the glass in one span of a few frames', () => {
+  it('lets the last of a veil that leaves late go by ratio, on past the end of the window under the tail of the cover, and never in one frame', () => {
+    const V = VEIL_LEAVE
+    const frame = FRAME_BEATS / WINDOW
+    const left = (c: number): number => 1 - veilCrossed(c)
+    // Up to `ratioFrom` it is the late crossing it was, the power of the place: a sixth of the way at the middle of the window.
+    for (const c of [0.1, 0.5, 0.74, V.ratioFrom]) expect(veilCrossed(c)).toBeCloseTo(Math.pow(c, V.late), 12)
+    expect(veilCrossed(0)).toBe(0)
+    expect(veilCrossed(-1)).toBe(0)
+    expect(veilCrossed(0.5)).toBeGreaterThan(0.15)
+    expect(veilCrossed(0.5)).toBeLessThan(0.2)
+    // Under half where the base begins to change, so the storm of the season that leaves stands through the swap.
+    expect(veilCrossed(changeSpan('base').from)).toBeLessThan(0.5)
+    // It never runs back, is whole at the end of the cover's tail to the last bit and stays whole.
+    let before = 0
+    for (let c = 0; c <= CHANGE_COVER.tailTo + 2 * frame; c += frame / 8) {
+      const v = veilCrossed(c)
+      expect(v, `at ${c}`).toBeGreaterThanOrEqual(before)
+      expect(v).toBeLessThanOrEqual(1)
+      before = v
+    }
+    expect(veilCrossed(CHANGE_COVER.tailTo)).toBe(1)
+    expect(veilCrossed(CHANGE_COVER.tailTo + frame)).toBe(1)
+    expect(veilCrossed(2)).toBe(1)
+    expect(left(CHANGE_COVER.tailTo - frame / 1000)).toBeLessThan(1e-4)
+    // No break where the law changes: the same value and the same pace on both sides.
+    const e = 1e-6
+    expect(left(V.ratioFrom + e)).toBeCloseTo(left(V.ratioFrom - e), 5)
+    expect((left(V.ratioFrom) - left(V.ratioFrom + e)) / e).toBeCloseTo((left(V.ratioFrom - e) - left(V.ratioFrom)) / e, 3)
+    // The old law, carried to the end of the window: on the film's last frame inside the window 5 hundredths of the veil
+    // stood, enough of a bank to hide what is behind it, and the frame after had none.
+    const lastInside = 1 - frame * 0.75
+    expect(1 - Math.pow(lastInside, V.late)).toBeGreaterThan(0.05)
+    // Now what is left goes on by ratio: on every frame from `ratioFrom` until a hundredth of the veil is left it loses
+    // between a quarter and a third of itself, so a bank thins as a haze does and opens over half a dozen frames.
+    let most = 0
+    let least = 1
+    let framesToHundredth = 0
+    for (let c = V.ratioFrom; left(c) > 0.01; c += frame / 4) {
+      const r = left(c + frame) / left(c)
+      most = Math.max(most, r)
+      least = Math.min(least, r)
+      framesToHundredth += 0.25
+    }
+    expect(least).toBeGreaterThan(0.66)
+    expect(most).toBeLessThan(0.78)
+    expect(framesToHundredth).toBeGreaterThan(10)
+    // Some of it stands at the end of the window, under a tenth, and under a hundredth four frames before the cover's tail ends.
+    expect(left(1)).toBeGreaterThan(0.05)
+    expect(left(1)).toBeLessThan(0.1)
+    expect(left(CHANGE_COVER.tailTo - 4 * frame)).toBeLessThan(0.01)
+    // From one frame of the film to the next, anywhere, the veil never crosses by more than seven hundredths.
+    let step = 0
+    for (let c = 0; c <= CHANGE_COVER.tailTo; c += frame / 8) step = Math.max(step, veilCrossed(c + frame) - veilCrossed(c))
+    expect(step).toBeLessThan(0.07)
+    // The stage crosses the veil by this where the season that leaves has the thicker veil, and lays the shared veil from
+    // the season that left while the last of it goes (frame.ts, `withVeilLeft`).
+    const stage = readFileSync('src/scene/stage.ts', 'utf8')
+    expect(stage).toContain('f.mix.veil = (f.left ?? a.kit).veil.density >= b.kit.veil.density ? veilCrossed(place) : veil')
+    expect(stage).toContain('withVeilLeft(f, updateVeil)')
+    expect(stage.split('updateVeil(').length - 1).toBe(0)
+  })
+
+  it('changes everything that stands outside the glass in one span of a few frames', () => {
     const span = changeSpan('base')
     for (const part of OUTSIDE) expect(changeSpan(part), part).toEqual(span)
     expect(span.lag).toBe(0)
-    // The heaps of the slab sink with the old dressing and rise with the new, and the table never carries both.
-    expect(changeSpan('surface-leave')).toEqual({ from: DRESSING_CHANGE.leaveFrom, to: DRESSING_CHANGE.leaveTo, lag: 0 })
-    expect(changeSpan('surface-come')).toEqual({ from: DRESSING_CHANGE.comeFrom, to: DRESSING_CHANGE.comeTo, lag: 0 })
-    for (let c = 0; c <= 1; c += 0.001) expect(partChange('surface-leave', c) < 1 && partChange('surface-come', c) > 0, `a heap of both seasons at ${c}`).toBe(false)
-    // Nothing on the table moves before the span or after it.
-    expect(DRESSING_CHANGE.liftFrom).toBeGreaterThanOrEqual(span.from)
-    expect(DRESSING_CHANGE.leaveFrom).toBeGreaterThanOrEqual(DRESSING_CHANGE.liftFrom)
-    expect(DRESSING_CHANGE.leaveTo).toBeLessThanOrEqual(DRESSING_CHANGE.comeFrom)
-    expect(DRESSING_CHANGE.comeTo).toBeLessThanOrEqual(span.to)
     const frames = ((span.to - span.from) * WINDOW) / FRAME_BEATS
     expect(frames).toBeGreaterThanOrEqual(2)
     expect(frames).toBeLessThanOrEqual(4)
   })
 
-  it('raises a short cover with a rise and a fall the eye can follow, whole across the span', () => {
+  it('carries what lies on the table out before the base passes and in after it, as motion, and never lays two seasons there', () => {
+    const frame = FRAME_BEATS / WINDOW
+    const span = changeSpan('base')
+    const d = DRESSING_CHANGE
+    // The heaps of the slab sink with the old dressing and rise with the new, and the table never carries both.
+    expect(changeSpan('surface-leave')).toEqual({ from: d.leaveFrom, to: d.leaveTo, lag: 0 })
+    expect(changeSpan('surface-come')).toEqual({ from: d.comeFrom, to: d.comeTo, lag: 0 })
+    for (let c = 0; c <= 1; c += 0.001) expect(partChange('surface-leave', c) < 1 && partChange('surface-come', c) > 0, `a heap of both seasons at ${c}`).toBe(false)
+    // The old leaves over six frames, long enough for the eye to follow it as motion, and nothing on the table moves before.
+    expect(d.liftFrom).toBe(d.leaveFrom)
+    expect((d.leaveTo - d.leaveFrom) / frame).toBeGreaterThanOrEqual(5 - 1e-9)
+    expect((d.leaveTo - d.leaveFrom) / frame).toBeLessThanOrEqual(6 + 1e-9)
+    // It leaves ahead of the peak: while the cover rises, and the last of it is gone as the base begins to pass.
+    expect(d.leaveFrom).toBeGreaterThan(CHANGE_COVER.riseFrom)
+    expect(d.leaveTo).toBe(BASE_PASS.from)
+    expect(d.leaveTo).toBeLessThanOrEqual(CHANGE_COVER.fullFrom)
+    // The table is bare while the base passes, so through the span and through the whole cover.
+    expect(d.leaveTo).toBeLessThanOrEqual(span.from)
+    expect(d.comeFrom).toBeGreaterThanOrEqual(span.to)
+    expect(d.comeFrom).toBe(BASE_PASS.to)
+    expect(d.comeFrom).toBeGreaterThanOrEqual(CHANGE_COVER.fullTo)
+    // The new comes with the cover's tail, over four frames and more, and is whole inside the window.
+    expect((d.comeTo - d.comeFrom) / frame).toBeGreaterThanOrEqual(4)
+    expect(d.comeTo).toBe(CHANGE_COVER.goneAt)
+    expect(d.comeTo).toBeLessThan(1)
+    expect(d.comeTo).toBeLessThan(CHANGE_COVER.tailTo)
+    // While what lies on the table is on its way, everything that stands outside the glass is one season: the one that
+    // leaves while the old dressing goes, the one that has come while the new comes down. The base's own pass is included.
+    for (let c = 0; c <= 1; c += frame / 64) {
+      const leaving = partChange('surface-leave', c) > 0 && partChange('surface-leave', c) < 1
+      const coming = partChange('surface-come', c) > 0 && partChange('surface-come', c) < 1
+      if (!leaving && !coming) continue
+      for (const part of OUTSIDE) expect(partChange(part, c), `${part} at ${c}`).toBe(leaving ? 0 : 1)
+      expect(c <= BASE_PASS.from || c >= BASE_PASS.to, `the base passes at ${c}`).toBe(true)
+    }
+  })
+
+  it('raises a cover that comes up fast, is whole across the span and dies away as a tail past the end of the window', () => {
     const span = changeSpan('base')
     const cover = CHANGE_COVER
     const frame = FRAME_BEATS / WINDOW
@@ -134,10 +224,13 @@ describe('the change number', () => {
     expect(cover.fullFrom).toBeLessThan(span.from)
     expect(cover.fullTo).toBeGreaterThan(span.to)
     expect(cover.goneAt).toBeGreaterThan(cover.fullTo)
-    for (const c of [-1, 0, 1, 2, Number.NaN]) expect(changeBloom(c)).toBe(0)
+    // The tail runs on past the end of the window: there the place is read from the beat (`coverPlace`).
+    expect(cover.tailTo).toBeGreaterThan(cover.goneAt)
+    expect(cover.tailTo).toBeGreaterThan(1)
+    for (const c of [-1, 0, cover.riseFrom, cover.tailTo, 2, Number.NaN]) expect(changeBloom(c)).toBe(0)
     let before = 0
     let lit = 0
-    for (let c = 0; c <= 1; c += 0.001) {
+    for (let c = 0; c <= 1.5; c += 0.001) {
       const v = changeBloom(c)
       expect(v).toBeGreaterThanOrEqual(0)
       expect(v).toBeLessThanOrEqual(1)
@@ -146,22 +239,117 @@ describe('the change number', () => {
       else expect(v, `cover at ${c}`).toBe(1)
       before = v
       if (v > 0) lit += 0.001
-      expect(v > 0, `lit at ${c}`).toBe(c > cover.riseFrom && c < cover.goneAt)
+      expect(v > 0, `lit at ${c}`).toBe(c > cover.riseFrom && c < cover.tailTo)
       if (partChange('base', c) > 0 && partChange('base', c) < 1 && (c < span.from || c > span.to)) throw new Error('the base is changing outside its span')
     }
-    // The rise and the fall each take five frames or more, so neither is a pop; the cover is whole for a few frames and the whole of it is short.
-    expect((cover.fullFrom - cover.riseFrom) / frame, 'frames of rise').toBeGreaterThanOrEqual(5)
-    expect((cover.goneAt - cover.fullTo) / frame, 'frames of fall').toBeGreaterThanOrEqual(5)
+    // Up fast: the rise takes ten to twelve frames. What is eased is the picture, how far it has gone under the cover
+    // (`coverShown`), and not the exponent the cover is: a glass that burns near white answers the exponent less the higher
+    // it stands. The rise neither starts nor lands on a step: its first frame and its last each bring less than half of
+    // what a frame of its middle brings, and no frame brings more than a ninth of the picture, which on the glass that
+    // stands lowest before its cover (47 levels of 255 under the whole cover's) is under five and a half levels.
+    const rise = (cover.fullFrom - cover.riseFrom) / frame
+    expect(rise, 'frames of rise').toBeGreaterThanOrEqual(10)
+    expect(rise, 'frames of rise').toBeLessThanOrEqual(12)
+    const shown = (c: number): number => coverShown(changeBloom(c))
+    const up = (n: number): number => shown(cover.riseFrom + n * frame) - shown(cover.riseFrom + (n - 1) * frame)
+    const middle = up(Math.ceil(rise / 2))
+    expect(up(1)).toBeLessThan(middle / 2)
+    expect(up(Math.round(rise))).toBeLessThan(middle / 2)
+    for (let n = 1; n <= Math.round(rise); n++) {
+      expect(up(n), `frame ${n} of the rise`).toBeGreaterThan(0)
+      expect(up(n), `frame ${n} of the rise`).toBeLessThanOrEqual(1 / 9)
+    }
+    // Then a tail that dies away: twelve to eighteen frames from the whole cover. Its pace comes up over its first three
+    // frames, a shoulder and no corner. From there each frame takes less of the picture than the one before, none of them
+    // more than a twelfth of it or so, and the last takes under a fiftieth, so it never blinks off.
+    const tail = (cover.tailTo - cover.fullTo) / frame
+    expect(tail, 'frames of tail').toBeGreaterThanOrEqual(12)
+    expect(tail, 'frames of tail').toBeLessThanOrEqual(18)
+    let step = Infinity
+    for (let n = 1; n <= Math.round(tail); n++) {
+      const fall = shown(cover.fullTo + (n - 1) * frame) - shown(cover.fullTo + n * frame)
+      expect(fall, `frame ${n} of the tail`).toBeGreaterThan(0)
+      expect(fall, `frame ${n} of the tail`).toBeLessThan(0.085)
+      if (n > 4) expect(fall, `frame ${n} of the tail`).toBeLessThan(step)
+      else if (n > 1) expect(fall, `frame ${n} of the tail`).toBeGreaterThan(step)
+      step = fall
+    }
+    expect(shown(cover.fullTo) - shown(cover.fullTo + frame), 'the first frame of the tail').toBeLessThan((shown(cover.fullTo + 2 * frame) - shown(cover.fullTo + 3 * frame)) / 2)
+    expect(shown(cover.tailTo - frame)).toBeLessThan(0.02)
+    expect(changeBloom(cover.tailTo - frame)).toBeLessThan(0.01)
+    // The cover is whole for a few frames, and the part of it that hides, the rise and the whole, is under three tenths of a second.
     expect((cover.fullTo - cover.fullFrom) / frame, 'frames of the whole cover').toBeLessThanOrEqual(5)
+    expect((cover.fullTo - cover.riseFrom) * WINDOW * BEAT_S).toBeLessThan(0.3)
     expect(changeBloom(0.02)).toBe(0)
-    expect(changeBloom(0.99)).toBe(0)
-    expect(lit * WINDOW * BEAT_S).toBeLessThan(0.35)
+    // The end of the window lies in the tail, where the picture still shows over half of the cover, and the whole of the
+    // cover, tail and all, is under six tenths of a second.
+    expect(changeBloom(0.99)).toBeGreaterThan(0.2)
+    expect(changeBloom(0.99)).toBeLessThan(0.5)
+    expect(shown(0.99)).toBeGreaterThan(0.5)
+    expect(changeBloom(1)).toBeLessThan(changeBloom(0.99))
+    expect(lit * WINDOW * BEAT_S).toBeLessThan(0.6)
   })
 
-  it('holds no picture, of the film or live, with anything outside the glass between two seasons and the cover not whole', () => {
+  it('turns the cover by the storm that is in the glass: on the tail into fall the cover is the share of the picture itself', () => {
+    const cover = CHANGE_COVER
+    const frame = FRAME_BEATS / WINDOW
+    // What the cover is made to show is one law for every change: nothing before the rise and from the tail's end, all of
+    // the picture while the cover is whole.
+    for (const c of [-1, 0, cover.riseFrom, cover.tailTo, 2, Number.NaN]) expect(changeShown(c)).toBe(0)
+    for (const c of [cover.fullFrom, (cover.fullFrom + cover.fullTo) / 2, cover.fullTo]) expect(changeShown(c)).toBe(1)
+    // Seven storms answer the cover by one law (`coverShown`): for them the cover is the exponent that shows so much.
+    for (let c = 0; c <= cover.tailTo + frame; c += frame / 8) {
+      expect(coverShown(changeBloom(c)), `what the cover shows at ${c}`).toBeCloseTo(changeShown(c), 12)
+      for (const came of ['winter', 'spring', 'summer']) expect(changeBloom(c, came)).toBe(changeBloom(c))
+      // Up to the end of the whole cover the storm in the glass is the one that leaves, so the season that comes says nothing.
+      if (c <= cover.fullTo) expect(changeBloom(c, 'fall')).toBe(changeBloom(c))
+    }
+    // Fall's storm as its change has just brought it answers the cover evenly. Turned by the law of the seven, the exponent
+    // falls by 0.16 in the steepest frame of the tail and is under three tenths after seven, where the picture is meant to
+    // show over half of the cover still: on fall's glass that was 86 in 100 of the cover gone where 47 were meant, and 9.6
+    // levels of 255 in one frame.
+    let old = 0
+    for (let n = 1; n <= 18; n++) old = Math.max(old, changeBloom(cover.fullTo + (n - 1) * frame) - changeBloom(cover.fullTo + n * frame))
+    expect(old).toBeGreaterThan(0.15)
+    expect(changeBloom(cover.fullTo + 7 * frame)).toBeLessThan(0.3)
+    expect(changeShown(cover.fullTo + 7 * frame)).toBeGreaterThan(0.5)
+    // So on that tail the cover is the share itself: it leaves the whole cover with no step, takes under 0.086 of itself in
+    // any frame, each frame after the sixth less than the one before, and ends on nothing.
+    expect(changeBloom(cover.fullTo, 'fall')).toBe(1)
+    expect(changeBloom(cover.fullTo + frame / 1000, 'fall')).toBeGreaterThan(0.9999)
+    let step = Infinity
+    for (let n = 1; n <= 18; n++) {
+      const at = cover.fullTo + n * frame
+      expect(changeBloom(at, 'fall'), `the cover on the tail into fall at frame ${n}`).toBe(changeShown(at, 'fall'))
+      const fall = changeBloom(at - frame, 'fall') - changeBloom(at, 'fall')
+      expect(fall, `frame ${n} of the tail into fall`).toBeGreaterThan(0)
+      expect(fall, `frame ${n} of the tail into fall`).toBeLessThan(0.086)
+      if (n > 6) expect(fall, `frame ${n} of the tail into fall`).toBeLessThan(step)
+      step = fall
+    }
+    expect(changeBloom(cover.tailTo - frame, 'fall')).toBeLessThan(0.02)
+    for (const c of [cover.tailTo, cover.tailTo + frame, 2]) expect(changeBloom(c, 'fall')).toBe(0)
+    // Its shoulder is five frames where the others' is three: fall's glass stands at the white of the film under the whole
+    // cover and its storm loses light of its own in the tail's second and third frames, so the full pace of the fall comes
+    // past them. In its first three frames that tail takes under 0.08 of the cover where the others' takes over 0.12, it is
+    // never under the others' on the way down, and what the picture shows is told by the same season.
+    for (const came of ['winter', 'spring', 'summer']) for (let n = 0; n <= 19; n++) expect(changeShown(cover.fullTo + n * frame, came)).toBe(changeShown(cover.fullTo + n * frame))
+    expect(1 - changeShown(cover.fullTo + 3 * frame, 'fall')).toBeLessThan(0.08)
+    expect(1 - changeShown(cover.fullTo + 3 * frame)).toBeGreaterThan(0.12)
+    for (let n = 1; n < 18; n++) expect(changeShown(cover.fullTo + n * frame, 'fall'), `frame ${n}`).toBeGreaterThan(changeShown(cover.fullTo + n * frame))
+    for (let c = 0; c <= cover.fullTo; c += frame / 8) expect(changeShown(c, 'fall')).toBe(changeShown(c))
+    // The stage asks for the cover and for what the picture shows by the season that comes.
+    const stage = readFileSync('src/scene/stage.ts', 'utf8')
+    expect(stage).toContain('f.mix.shown = changeShown(place, b.kit.season)')
+    expect(stage).toContain('f.mix.bloom = changeBloom(place, b.kit.season)')
+  })
+
+  it('holds no picture, of the film or live, with anything that stands outside the glass between two seasons and the cover not whole', () => {
     const frame = FRAME_BEATS / WINDOW
     const shutter = SHUTTER_S / BEAT_S / WINDOW
-    const between = (c: number): boolean => [...OUTSIDE, ...ON_THE_TABLE].some((part) => partChange(part, c) > 0 && partChange(part, c) < 1) || (partChange('surface-leave', c) >= 1 && partChange('surface-come', c) <= 0 && c > 0 && c < 1)
+    // What lies on the table is not in this: it leaves before the base passes and comes after it, in sight, and its own test
+    // above holds that everything else outside the glass is one season while it does.
+    const between = (c: number): boolean => OUTSIDE.some((part) => partChange(part, c) > 0 && partChange(part, c) < 1)
     let mixed = 0
     for (let k = 0; k < WINDOW / FRAME_BEATS; k++) {
       const opens = k * frame
@@ -182,7 +370,10 @@ describe('the change number', () => {
     expect(DRESSING_CHANGE.comeTo).toBeLessThan(1)
     expect(DRESSING_CHANGE.liftFrom / frame, 'the first frames of the window show the table as it was').toBeGreaterThan(12 - 1e-9)
     expect(GUST_LAST_DOWN, 'every new piece on the table is down before the window closes').toBeLessThan(GUST_CLOSES)
-    expect(GUST_LAST_DOWN_AT, 'and while the cover is still whole, so none is seen in the air').toBeLessThanOrEqual(CHANGE_COVER.fullTo)
+    // The new pieces come down in sight, with the cover's tail, and the last of them while a third of the cover still stands.
+    expect(GUST_LAST_DOWN_AT).toBeGreaterThan(CHANGE_COVER.fullTo)
+    expect(GUST_LAST_DOWN_AT).toBeLessThan(1)
+    expect(changeShown(GUST_LAST_DOWN_AT)).toBeGreaterThan(0.33)
   })
 })
 
@@ -277,8 +468,16 @@ describe('the dressing on the glass under a change', () => {
     // Neither is a cut: each runs over five frames or more, and nothing of either moves outside the cover.
     expect(GLASS_LEAVE.length).toBeGreaterThanOrEqual(5 * frame)
     expect(GLASS_COME.length).toBeGreaterThanOrEqual(5 * frame)
-    for (const c of [GLASS_LEAVE.start, GLASS_COME.start + GLASS_COME.length]) expect(changeBloom(c)).toBe(0)
+    expect(changeBloom(GLASS_LEAVE.start)).toBe(0)
     for (const c of [GLASS_LEAVE.start + GLASS_LEAVE.length, GLASS_COME.start]) expect(changeBloom(c)).toBe(1)
+    // The new comes while the picture still shows over half of the cover (`coverShown`: the exponent itself is under a third
+    // by then, and the glass still burns): the cover's tail runs on after it. At every instant of its coming more of the
+    // cover stands than under a straight fall to `goneAt`.
+    expect(coverShown(changeBloom(GLASS_COME.start + GLASS_COME.length))).toBeGreaterThan(0.5)
+    for (let i = 0; i <= 64; i++) {
+      const c = GLASS_COME.start + (GLASS_COME.length * i) / 64
+      expect(changeBloom(c), `the cover at ${i} of 64 of the coming`).toBeGreaterThanOrEqual(1 - (c - CHANGE_COVER.fullTo) / (CHANGE_COVER.goneAt - CHANGE_COVER.fullTo) - 1e-12)
+    }
   })
 
   it('gives a part on the glass the ramp of the way it goes, and no other part', () => {
@@ -308,7 +507,9 @@ describe('the dressing on the glass under a change', () => {
     const ramp = changeRamp('base')
     const from = (BASE_PASS.from - ramp.start) / ramp.length
     const long = (BASE_PASS.to - BASE_PASS.from) / ramp.length
-    expect(/if \(uState\.z < -9\.0\) return ([^;]+);/.exec(STAGE_FRAG_PARS)?.[1]).toBe(`clamp(((uPass.z - uState.x) / uState.y + ${(-from).toFixed(4)}) / ${long.toFixed(4)}, 0.0, 1.0)`)
+    // The share that has passed is read in the base's branch of `stageChange`, from the frame's own place (`uPass.z`).
+    const change = /\nfloat stageChange\(\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1] ?? ''
+    expect(/if \(uState\.z < -9\.0\) \{\s*float pass = ([^;]+);/.exec(change)?.[1]).toBe(`clamp(((uPass.z - uState.x) / uState.y + ${(-from).toFixed(4)}) / ${long.toFixed(4)}, 0.0, 1.0)`)
     // The pass is longer than the whole cover. Outside the whole cover the room stands under a fiftieth of its light, and no more than an eighth of the base is the other season's.
     const passed = (c: number): number => Math.min(1, Math.max(0, (c - BASE_PASS.from) / (BASE_PASS.to - BASE_PASS.from)))
     for (let i = 0; i <= 240; i++) {
@@ -319,27 +520,64 @@ describe('the dressing on the glass under a change', () => {
     }
   })
 
-  it("holds the new base at every pixel in the same number of a frame's samples, the share that has passed to the nearest of them, and one base or the other in each", () => {
-    const body = /if \(uState\.z < -9\.0\) \{([^}]+)\}/.exec(STAGE_FRAG_PARS)?.[1]?.replace(/\s+/g, ' ').trim()
+  it("holds the new base in the share of a frame's samples that has passed: from eight samples on in the same number at every pixel, with fewer the odd sample shared out among the pixels by the still tile, and one base or the other in each", () => {
+    // What a captured frame holds a base's pixel against: the pixel's own hash, set at the middle of one of the frame's levels and stepped with the sample.
+    const gone = /\nbool stageGone\(float c\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1] ?? ''
+    const body = /if \(uState\.z < -9\.0\) \{([^}]+)\}/.exec(gone)?.[1]?.replace(/\s+/g, ' ').trim()
     expect(body).toBe('h = stageHash(vec3(gl_FragCoord.xy, uPass.x)); if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w; h = fract(h + uPass.y);')
     expect(STAGE_FRAG_PARS).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
+    // And the share it is held against: the share that has passed, and in a frame of two to seven samples the whole number of
+    // samples under that share times the count plus the pixel's own level on the still tile, as a share of the count.
+    const change = /\nfloat stageChange\(\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1] ?? ''
+    expect(PASS_EVEN).toBe(8)
+    expect(/float pass = [^;]+;\s*([^;]+;)/.exec(change)?.[1]).toBe('return uPass.w > 1.5 && uPass.w < 7.5 ? floor(pass * uPass.w + stageStill(ivec2(gl_FragCoord.xy))) / uPass.w : pass;')
+    expect(STAGE_FRAG_PARS.indexOf('float stageStill(ivec2 at);')).toBeLessThan(STAGE_FRAG_PARS.indexOf('float stageChange() {'))
+    for (const share of [0, 0.3, 0.77, 1]) {
+      for (const level of [0.002, 0.5, 0.998]) {
+        for (const n of [0, 1, PASS_EVEN, 24]) expect(passShare(share, n, level)).toBe(share)
+        for (let n = 2; n < PASS_EVEN; n++) expect(passShare(share, n, level)).toBe(Math.floor(share * n + level) / n)
+      }
+    }
     const counts = Object.values(tiers).map((t) => t.samplesPerFrame)
     expect(counts.some((n) => n >= 24)).toBe(true)
+    expect(counts.some((n) => n < PASS_EVEN)).toBe(true)
     for (const n of counts) {
       expect(n).toBeGreaterThan(1)
       // 487 is prime, so no share of this row stands on a level, where the last bit of a sum would say which side it falls.
       for (let k = 0; k <= 487; k++) {
         const c = k / 487
-        let least = n
-        let most = 0
-        for (let j = 0; j < 997; j++) {
-          let m = 0
-          for (let i = 0; i < n; i++) if (passLevel(j / 997, passStep((i + 0.5) / n, n), n) < c) m++
-          least = Math.min(least, m)
-          most = Math.max(most, m)
+        if (n >= PASS_EVEN) {
+          let least = n
+          let most = 0
+          for (let j = 0; j < 997; j++) {
+            let m = 0
+            for (let i = 0; i < n; i++) if (passLevel(j / 997, passStep((i + 0.5) / n, n), n) < passShare(c, n, 0.5)) m++
+            least = Math.min(least, m)
+            most = Math.max(most, m)
+          }
+          expect([least, most], `the samples of ${n} that hold the new base at the share ${k} of 487, the least and the most over 997 hashes`).toEqual([most, most])
+          expect(Math.abs(most / n - c), `the share held of ${n} at ${k} of 487`).toBeLessThanOrEqual(0.5 / n + 1e-9)
+          continue
         }
-        expect([least, most], `the samples of ${n} that hold the new base at the share ${k} of 487, the least and the most over 997 hashes`).toEqual([most, most])
-        expect(Math.abs(most / n - c), `the share held of ${n} at ${k} of 487`).toBeLessThanOrEqual(0.5 / n + 1e-9)
+        // Of few samples the share to the nearest of them is a few states: a frame of two would hold the old base, half of each
+        // or the new, and a pass of six frames would be two steps. So the pixels differ by one sample, by their level on the
+        // tile: whatever its hash, a pixel holds the new base in the whole number of samples under the share times the count
+        // plus its level, and over the 256 levels of the tile, each held by as many pixels as every other, that is the share itself.
+        let sum = 0
+        for (let b = 0; b < 256; b++) {
+          const level = (b + 0.5) / 256
+          const want = Math.floor(c * n + level)
+          for (let j = 0; j < 97; j++) {
+            let m = 0
+            for (let i = 0; i < n; i++) if (passLevel(j / 97, passStep((i + 0.5) / n, n), n) < passShare(c, n, level)) m++
+            if (m !== want) throw new Error(`a pixel at the level ${b} of the tile holds the new base in ${m} of ${n} samples at the share ${k} of 487, not in ${want}`)
+          }
+          if (Math.abs(want - c * n) >= 1) throw new Error(`a pixel at the level ${b} of the tile is a sample or more from the share ${k} of 487`)
+          // A pixel that has taken a sample more keeps it as the share grows.
+          if (k > 0 && want < Math.floor(((k - 1) / 487) * n + level)) throw new Error(`a pixel at the level ${b} of the tile gives a sample back at the share ${k} of 487`)
+          sum += want
+        }
+        expect(Math.abs(sum / 256 / n - c), `the share the tile holds of ${n} at ${k} of 487`).toBeLessThanOrEqual(0.5 / 256 / n + 1e-9)
       }
       // Which samples they are is the pixel's own: every sample is the first of some pixel's.
       const starts = new Set<number>()
@@ -359,9 +597,11 @@ describe('the dressing on the glass under a change', () => {
         if (visits) expect(passSpread(n, g), `the stride ${g} of ${n}`).toBeGreaterThanOrEqual(passSpread(n, passStride(n)) - 1e-9)
       }
     }
-    // A frame of one sample that is captured: the plain hash.
+    // A frame of one sample that is captured: the plain hash against the share that has passed.
     expect(passStep(0.5, 1)).toBe(0)
     for (let j = 0; j < 997; j++) expect(passLevel(j / 997, 0, 1)).toBe(j / 997)
+    // The level a pixel has on the tile is the one the page's own path reads (`stillLevel`): the middle of one of 256.
+    for (const [x, y] of [[0, 0], [5, 77], [127, 127], [300, 41]] as const) expect((stillLevel(x, y) * 256 - 0.5) % 1).toBe(0)
   })
 
   it('holds the pattern still where the page draws one sample a frame, so a pixel goes once and stays gone, and leaves a captured frame as it was', () => {
