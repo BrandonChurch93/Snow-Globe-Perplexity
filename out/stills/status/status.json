@@ -1,47 +1,48 @@
 {
-  "number": 183,
-  "time": "2026-11-27 00:05 UTC",
+  "number": 184,
+  "time": "2026-11-27 00:24 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 183 · 2026-11-27 00:05 UTC · Phase 6",
-    "Published at 00:04 UTC (5:04 PM MT) from `6733a516`: the live app now holds the hand's new motion, summer's base first push, the standstill of the particles at rest and the guards against the white glass. Built in a clean worktree of that commit: `npx tsc --noEmit` exit 0; the whole vitest 804 passed and 9 skipped (59 files passed, 1 skipped); `npm run build` exit 0, engine `4fdd312e06b0e534`; on the built site \"poster: pass · 40 stills and the table agree with the framing\"; 351 files, 191,822,509 bytes. A fresh security reviewer answered `BLOCKS: no` (audit 0, no secret, no request off the site's own address; its own rebuild matches 15 of the 17 files to the byte, and the other two, the page and its main script, match a build here without the sound files, which the public repo does not hold). Three things it would mend, none of them security: `?assets=full` typed into the address breaks the page for that visitor (open item 250, mine); the debug views open to anyone who types their names; the config still says the repo is expected private. The deploy reported the site's record as verified and the publish answered \"published\". The preview serves the same engine hash and both pages with 200; the published address answers 401 to a fetch without a sign-in, so the live pages are NOT read from here. Visibility: Organization (settings: https://www.perplexity.ai/computer/a/4c4f15d3-07df-421c-941e-77528b5e889f?open-publish=true ).",
-    "Picture 1, the four seasons as the app opens today: the first pictures the page shows before the app takes over, all 40 drawn again from today's build (one for each season and screen shape; the wide screen ones are shown). The check that they match the app's framing answered \"poster: pass · 40 stills and the table agree with the framing\". They are commit `6733a516`, pushed with main `e3012193` at 00:05 UTC.",
-    "Picture 2, fall's miniature after its builder's pass, approved left and build right: below the bar. Its measure rose from 0.534 to 0.709 against the config's 0.75, so the line it was given is not met. Its builder stopped there on purpose: a run at about 0.74 owed its number to a chimney in pale stripes that is wrong against the approved picture, and was mended. New: fall's own shingled roof with a sagging ridge, dark stone walls, nearly three times the leaves on the ground, finer rim stones, pumpkins, fence and bark. Still wrong by its own list and my look: the water is bright teal with white dashes where the picture has dark green with a soft glow, the front wall and the door hold half the detail, the chimney has no cap, the roof is brighter and more orange. It gets a second list after its merge.",
-    "Picture 3, a new measuring aid: summer as approved, as built, and as built with everything that floats in the ball taken away (`--no-air`, by the controls' finisher, decision 174). It is for reading the tones of the miniature under the air and is refused for every judged still. What it shows at once: under the air our tree is nearly black and our ground is pale, where the approved picture has a lit green crown.",
-    "Fall's air, first push on its branch: the sparks are fine points now and the warm share of the picture is 9.4, 5.9 and 1.6 in 100 against the approved 9.9, 4.9 and 1.8 (before 14.4, 6.3, 2.3). Its builder has not yet looked at the other seasons, the shake or the measures, so it is not merged yet.",
-    "The strict check of the live path found one real fault under the glass's guards (logged 23:40 UTC): with the guards off, the glass puts out an infinite colour in a ring at the edge of the ball (about 11,000 pixels in winter), held back today by one guard line only. Its finder is closing the open cases at their source. This is the family of fault behind the white glass on your iPad, so it is worth closing twice.",
-    "The hand's inertia is in from its builder (00:03 UTC, `agent/p6-inertia` `47891785`), not merged yet: loose petals and leaves now lag behind the glass and fold against its wall instead of moving with it (tracked petals move 3.3 px where the glass moves 18.5; on main they moved 10.9), and the sudden filling of the front at the first stroke is gone (1,613 petals in view in both frames where main jumped from 1,593 to 7,838). Its lines: all eight M4 and M5 pass, summer's M3 passes at 0.8007 with the miniature at 0.801 (the guard of decision 169 was 0.77), 810 tests passed. Not seen by it: full speed playback and the live page's frame rate. It is merged next, and rough draft 5 is drawn after it.",
-    "14 agents are at work: summer (tree, miniature, air, glass, sand, stone), fall (air, base), spring (base), winter (pond and frond), the change of season, the controls, the strict check, and one farm machine drawing winter into spring at 3840. Two places are free; fall's miniature gets its second list and the draft renderers start with rough draft 5.",
-    "No rough draft since draft 4 and no frame of the 4K masters drawn yet. Drawn since the last status: the 40 first pictures, nothing at 3840 here.",
-    "Sound: 7,420 of 10,000 credits, unchanged, no call planned (account counter 17,287 of 131,000 at 23:56 UTC).",
-    "phase 6: 21.27 h used of its 12.00 h box",
-    "allowance (after the review): 21.27 h used of 12.00 h allowed",
+    "Status 184 · 2026-11-27 00:24 UTC · Phase 6",
+    "Main moved to `13e1a911` at 00:22 UTC (5:22 PM MT) with four merges and their checks read on the merged tree: spring's beads and dew holding still at 3840, the strict check's tool, fall's miniature after its builder's pass, and the still without the air. Lines: `npx tsc --noEmit` exit 0; the whole vitest 829 passed and 4 skipped (61 files passed, 1 skipped); \"pass M3 summer-rest: 0.8159\" as before; \"FAIL M3 fall-rest: 0.6996\" (base 0.700, miniature 0.709, up from 0.534) and \"FAIL M3 spring-rest: 0.4308\" (base 0.431 as before, miniature 0.890). The two red lines are not passes: fall and spring stay below the bar and their builders go on. Draft stills of winter and summer at rest and landed are byte equal to before the merges.",
+    "Picture 1, the outline of the glass at 4K, eight times enlarged at three heights, before on the left and with the mend on the right: the band of green and magenta dots at the upper left of the ball in the 4K film (open item 246) has its cause. Summer's glass builder traced it to one line of the shared glass, not to summer: the width of the glass's edge was read from a value that is held flat past the outline, so one pixel in four on the 2 by 2 grid of the graphics card got a bright edge and its neighbours none. Its mend takes the width from the pixel's own ray: the gap between the four grid places falls from 36.1 levels to 1.3 at final tier, and at rest only a ring of about 5 px at the outline moves in winter, summer and fall. Every season had the fault. Decision 175: the finder commits that one line with four proofs (four neighbouring frames at 3840, all four seasons at rest and in the shake, what the two thin lines are that remain lower down, and the checks). Not merged yet.",
+    "Picture 2, spring's base, first push of its builder: above, the approved picture, main, and the push; below, spring at rest with it. Small cobbles in place of the big slabs, a tufted moss collar, thinner roots, one thin trickle in place of the broad fall of water. Below the bar still by its builder's words and mine: the approved base carries moss down its flanks and its stone is darker. Not on main: it met the dew's mend in one file, and its builder is merging that and measuring.",
+    "Picture 3, the live page as its finisher sees it on a software renderer, summer 25 s after its landing, with the controls: the other three seasons' miniatures are now made in small steps while the first season stands at rest, so the page no longer stalls while they are made. Its numbers at 320 px: a press 1 s after the controls lands 26.0 s after the key where it took 49.1 s; no step holds the page over 27 ms where single stalls were 101 to 222 ms; all four seasons are ready after 90.4 s (109.3 s). The cost: left alone at rest, the other seasons are ready 27.2 s after the controls instead of 14.5 s. Not pushed yet, and none of it is seen on a real graphics card.",
+    "The hand's inertia is merged here as `c929cf1d` and its checks run since 00:23 UTC (about 25 minutes: all four M3, M4 and M5, G11, G12, G14, eight stills, the whole vitest). It changes every hero still, so it is checked alone. It reaches the repo, with this status entry, when those lines are read; rough draft 5 is drawn after it.",
+    "The change of season, by its finisher at 00:10 UTC, nothing pushed, below the bar: the disc at the heart is gone and the base keeps its own colour under the pour (winter's flank 64, 39, 40 at frame 676 where it was 126, 70, 65); still wrong by its own words: the white ends too quickly in spring, and summer's crown stands as a dark cloud with a hard line. Shakes 1 and 2 as runs about 01:00 UTC (6 PM MT), all four with checks about 02:30 UTC (7:30 PM MT). One thing it saw went to fall's air builder: at the peak of summer into fall, fall's house shows through the fog.",
+    "Fall's miniature, looked at on main at two times beside the approved picture: its lit front, door and path are brighter and more orange than approved (front wall 122, 82, 37 against 52, 53, 34), the purple window paler, and roof, door, trunk, fence and path hold a third to two thirds of the approved fine detail. A still without the air is drawn in the running chain to tell the miniature's share from the air's before its second list goes out.",
+    "Open item 250 written (from the publish's security review, not a security fault): `?assets=full` typed into the app's address breaks the page for that visitor; mine to mend.",
+    "14 agents are at work: summer (tree, miniature, air, glass, sand, stone), fall (air, base), spring (base), winter (pond and frond), the change of season, the controls, the strict check, and one farm machine drawing winter into spring at 3840.",
+    "No rough draft since draft 4 and no frame of the 4K masters drawn yet. Drawn here since the last status: 8 draft stills and 3 review stills for the checks, nothing at 3840.",
+    "Sound: 7,420 of 10,000 credits, unchanged, no call planned (account counter 17,287 of 131,000 at 00:23 UTC).",
+    "phase 6: 21.58 h used of its 12.00 h box",
+    "allowance (after the review): 21.58 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-183-1.jpg",
-      "caption": "The four seasons as the app opens today: the first pictures of the page, drawn again from today's build",
-      "w": 1200,
-      "h": 677
+      "file": "out/stills/status/status-184-1.jpg",
+      "caption": "The outline of the glass at 4K, eight times enlarged at three heights: the dotted band before (left) and with the mend (right)",
+      "w": 798,
+      "h": 1200
     },
     {
-      "file": "out/stills/status/status-183-2.jpg",
-      "caption": "Fall's miniature after its builder's pass, approved picture left and build right, below the bar",
+      "file": "out/stills/status/status-184-2.jpg",
+      "caption": "Spring's base, first push: approved, main and the push above; spring at rest with it below; below the bar, not on main yet",
       "w": 1200,
-      "h": 335
+      "h": 866
     },
     {
-      "file": "out/stills/status/status-183-3.jpg",
-      "caption": "Summer as approved, as built, and as built without its air (a measuring aid)",
+      "file": "out/stills/status/status-184-3.jpg",
+      "caption": "The live page on a software renderer with the miniatures made in steps: summer 25 s after its landing, with the controls; not pushed yet",
       "w": 1200,
-      "h": 396
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-183-4.jpg",
-      "caption": "Still: fall rest hero, hd, draft",
+      "file": "out/stills/status/status-184-4.jpg",
+      "caption": "Still: fall landed hero, hd, draft",
       "w": 1200,
       "h": 675
     }
