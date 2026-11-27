@@ -12,7 +12,7 @@ const at = (shape: number) => `(shape > ${n(shape - 0.5)} && shape < ${n(shape +
 const REST_LIGHT = `
 vec3 cardRestLight(float u, float scene, float own) {
   float big = smoothstep(${n(CARD.glow.restBig[0])}, ${n(CARD.glow.restBig[1])}, u) * (1.0 - scene);
-  float heart = ${n(CARD.glow.restHeart[0])} + ${n(CARD.glow.restHeart[1])} * pow(u, ${n(CARD.glow.restHeart[2])});
+  float heart = ${n(CARD.glow.restHeart[0])} + ${n(CARD.glow.restHeart[1])} * pow(max(u, 0.0), ${n(CARD.glow.restHeart[2])});
   heart = mix(heart, min(heart, ${n(CARD.glow.restHeartScene)}), scene);
   float glow = mix(${n(CARD.glow.restGlow[0])} + ${n(CARD.glow.restGlow[1])} * heart, mix(${n(CARD.glow.restGlowBig[0])}, ${n(CARD.glow.restGlowBig[1])}, fract(own * 13.0)), big);
   float share = mix(${n(CARD.glow.restGlowOf[0])}, ${n(CARD.glow.restGlowOf[1])} * mix(${n(CARD.glow.restGlowVary[0])}, ${n(CARD.glow.restGlowVary[1])}, fract(own * 7.0)), big);
@@ -1069,7 +1069,9 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
     if (uK < ${n(Math.max(CARD.clock.long[1], CARD.clock.downLong[1]) + 0.35)}) {
       float stoutK = step(ownK.y, ${n(CARD.clock.warmShare)});
       float nK = min(floor(mix(mix(${n(CARD.clock.hairs[0])}, ${n(CARD.clock.hairs[1] + 1)}, ownK.x), mix(${n(CARD.clock.stoutHairs[0])}, ${n(CARD.clock.stoutHairs[1] + 1)}, ownK.x), stoutK)), mix(${n(CARD.clock.hairs[1])}, ${n(CARD.clock.stoutHairs[1])}, stoutK));
-      float thK = atan(dot(dK, xa), dot(dK, ya));
+      // the angle round the hub, which has none at the hub itself: there it is asked of nothing and stands at 0
+      vec2 aroundK = vec2(dot(dK, xa), dot(dK, ya));
+      float thK = dot(aroundK, aroundK) > 0.0 ? atan(aroundK.x, aroundK.y) : 0.0;
       float pxK = ${n(PIXEL_SIGMA2)} * uPoint.w * uPoint.w;
       float wideK = max(${n(CARD.clock.wide)} * uPoint.w, ${n(CARD.clock.wideOf)} * RK) * mix(1.0, ${n(CARD.clock.stoutWide)}, warmK);
       float vK = s2 + wideK * wideK;
@@ -1111,7 +1113,7 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   hairs = max(hairs, ${n(CARD.hair.hubSeen)} * cardLine(pp, hub, hub, 0.07 * rC, s2, along)) * mix(1.0, ${n(CARD.hair.runHead)}, run);
   vec2 foot = mix(-${n(CARD.hair.foot)} * mix(${n(CARD.hair.footSpan[0])}, ${n(CARD.hair.footSpan[1])}, vL3.w) * st - 0.25 * lean, hub - ${n(CARD.hair.stormFoot)} * rC * ya, storm ? vL2.w * easeS : 0.0);
   // a clock hangs its seed on a stalk of its own length, most of them short
-  if (clockS > 0.0) foot = mix(foot, -mix(mix(${n(CARD.clock.foot[0])}, ${n(CARD.clock.foot[1])}, pow(vL3.w, ${n(CARD.clock.footSkew)})), mix(${n(CARD.clock.footNear[0])}, ${n(CARD.clock.footNear[1])}, vL3.w), nearS) * st - 0.25 * lean, clockS);
+  if (clockS > 0.0) foot = mix(foot, -mix(mix(${n(CARD.clock.foot[0])}, ${n(CARD.clock.foot[1])}, pow(max(vL3.w, 0.0), ${n(CARD.clock.footSkew)})), mix(${n(CARD.clock.footNear[0])}, ${n(CARD.clock.footNear[1])}, vL3.w), nearS) * st - 0.25 * lean, clockS);
   // the stalk is a pale hair; the grain at its foot is the one dark thing of the seed
   float grain = cardLine(pp, foot, foot + ${n(CARD.hair.grain)} * st, ${n(CARD.hair.body)} * rC, s2, along);
   // about one head in three hangs its stalk with the seed at its end
