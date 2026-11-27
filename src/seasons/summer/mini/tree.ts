@@ -55,7 +55,17 @@ const LEAF_TONE = { deep: [0.0095, 0.011, 0.0068] as Rgb3, high: [0.0585, 0.078,
 // the tips of the tufts there are lit yellow green (`fringe`) and a few of the brightest leaves on them stand out as points (`rim`), low in the crown as high
 // (`rimBelow`). The lamp's gold points stay off (`lamp`). A round clump shows the lens its whole outline edge on, where this light is at its full,
 // so `rim` is a fifteenth of what the flat clumps had and the points stay as few and as dim as they were.
-const PAD = { soft: 7, round: 0.7, upFrom: -0.75, upTo: 0.55, under: 0.22, sky: [1.3, 1.38, 1.15] as Rgb3, ground: [0.43, 0.36, 0.23] as Rgb3, light: 1.7, wrap: 0.7, shade: 0.45, rim: 4.0, cap: 7.0, fringe: 0.4, patchFrom: 0.25, patchTo: 0.55, even: 0.1, hem: 0.5, rimTight: 6.0, rimFrom: -0.2, rimTo: 0.45, rimTone: [1.0, 0.72, 0.14] as Rgb3, rimShut: 0.45, tipFrom: 0.45, tipTo: 0.9, tipBody: 0.3, rimBelow: 1.0, leafFrom: 0.4, leafTo: 2.0, gold: [1.0, 0.62, 0.14] as Rgb3, speckFrom: 1.3, speckTo: 2.4, inFrom: 0.5, inTo: 0.9, openFrom: 0.5, openTo: 0.9, closed: 0.3, lamp: 0.0, lampFrom: 1.8, lampTo: 4.5, dapEven: 0.15, dapLowAt: 24, dapHighAt: 36, lightShut: 0.5, warm: 0.14, warmLobe: 0.35, warmTone: [0.5, 0.3, 0.1] as Rgb3, warmFrom: 0.5, warmTo: 3.0, haze: [0.016, 0.0165, 0.0095] as Rgb3 }
+const PAD = { soft: 7, round: 0.7, upFrom: -0.75, upTo: 0.55, under: 0.22, sky: [1.3, 1.38, 1.15] as Rgb3, ground: [0.95, 0.52, 0.26] as Rgb3, light: 1.7, wrap: 0.7, shade: 0.45, rim: 4.0, cap: 7.0, fringe: 0.4, patchFrom: 0.25, patchTo: 0.55, even: 0.1, hem: 0.5, rimTight: 6.0, rimFrom: -0.2, rimTo: 0.45, rimTone: [1.0, 0.72, 0.14] as Rgb3, rimShut: 0.45, tipFrom: 0.45, tipTo: 0.9, tipBody: 0.3, rimBelow: 1.0, leafFrom: 0.4, leafTo: 2.0, gold: [1.0, 0.62, 0.14] as Rgb3, speckFrom: 1.3, speckTo: 2.4, inFrom: 0.5, inTo: 0.9, openFrom: 0.5, openTo: 0.9, closed: 0.3, lamp: 0.0, lampFrom: 1.8, lampTo: 4.5, dapEven: 0.15, dapLowAt: 24, dapHighAt: 36, lightShut: 0.5, warm: 0.14, warmLobe: 0.35, warmTone: [0.5, 0.3, 0.1] as Rgb3, warmFrom: 0.5, warmTo: 3.0, haze: [0.016, 0.0165, 0.0095] as Rgb3 }
+// The sky's pale light lies on the top edge of the clumps left of the stem, where the approved's are pale yellow green: on the
+// leaves that face up (`from`, `to`, of the pad's own up) and most on their lit blades (`blade`; the rest keeps `even` of it), so
+// that the edge reads as single lit leaves against the dark of the pad behind it. Most on the highest clump (`highAt`, mm up), less
+// on the left middle pad, none on the low ones (`lowAt`), none right of the stem (`rightAt`, mm from it). The light is paler than
+// the leaf (`pale` of it is the leaf's grey). A lobe's seam keeps `seam` of it, so that the lobes still read. `under` is the warm of
+// the lanterns and the ground on the undersides, which the approved's carry.
+const CREST = { power: 30.0, pale: 0.7, from: 0.45, to: 0.9, seam: 0.3, even: 0.2, blade: [0.8, 2.0] as const, tone: [1.25, 1.0, 0.8] as Rgb3, under: [0.55, 0.2, 0.1] as Rgb3, leftAt: -9, rightAt: 1, lowAt: 22, highAt: 40 }
+// A flat pad's leaves stand farther above it than it is thick. For the choice of the pad a leaf is lit on, a pad counts as at least
+// this thick (mm), so that the leaves on a flat pad's top are lit as its top and not as the underside of a dome that hangs over it.
+const PAD_THICK = 1.5
 // The leaf is in rounded lobes, each `mm` across. A lobe is a form in the light the clump already has: its top, turned up and to the left where
 // the sky's light comes from (`light`), takes more of it (`bright`) and it falls to dark underneath and in the seams between lobes (`dark`, `seam`),
 // so that the body stays as dark as it was. On the tops of the clumps the lobes' tops are a little pale as well (`tone`, `top`).
@@ -191,6 +201,10 @@ function leafHook(shader: Shader): void {
   reflectedLight.directDiffuse *= mix(${PAD.under.toFixed(2)}, 1.0, treeUp) * treeForm;
   reflectedLight.indirectDiffuse *= mix(${PAD.under.toFixed(2)}, 1.0, treeUp) * treeForm;
   reflectedLight.indirectDiffuse += treeTone * mix(${glsl3(PAD.ground)}, ${glsl3(PAD.sky)}, treeUp) * treeForm + ${glsl3(PAD.haze)};
+  float treeCrest = smoothstep(${CREST.from.toFixed(2)}, ${CREST.to.toFixed(2)}, vPad.x) * (1.0 - smoothstep(${(CREST.leftAt + offset[0]).toFixed(2)}, ${(CREST.rightAt + offset[0]).toFixed(2)}, vTreeP.x)) * smoothstep(${(CREST.lowAt + offset[1]).toFixed(2)}, ${(CREST.highAt + offset[1]).toFixed(2)}, vTreeP.y);
+  vec3 treePale = mix(treeTone, vec3(dot(treeTone, vec3(0.2126, 0.7152, 0.0722))), ${CREST.pale.toFixed(2)});
+  reflectedLight.indirectDiffuse += treePale * ${glsl3(CREST.tone)} * (${CREST.power.toFixed(2)} * treeCrest * mix(${CREST.seam.toFixed(2)}, 1.0, treeTop) * mix(${CREST.even.toFixed(2)}, 1.0, smoothstep(${CREST.blade[0].toFixed(2)}, ${CREST.blade[1].toFixed(2)}, treeLum)));
+  reflectedLight.indirectDiffuse += treePale * ${glsl3(CREST.under)} * ((1.0 - treeUp) * (1.0 - treeUp));
   reflectedLight.directDiffuse += stageKeyC * treeTone * (RECIPROCAL_PI * ${PAD.light.toFixed(2)} * treeForm * treeSide * treeSide * treeSky * mix(${PAD.lightShut.toFixed(2)}, 1.0, vPad.y) * mix(${PAD.shade.toFixed(2)}, 1.0, stageKeyS));
   float treeTurn = smoothstep(${PAD.rimFrom.toFixed(2)}, ${PAD.rimTo.toFixed(2)}, treeToSun);
   float treeOpen = smoothstep(${PAD.openFrom.toFixed(2)}, ${PAD.openTo.toFixed(2)}, vCard.y);
@@ -386,7 +400,7 @@ function* bakePads(g: THREE.BufferGeometry): Generator<void, void> {
       const nz = (f.side[2] * s) / f.size[0] + (f.up[2] * u) / f.size[1] + (f.depth[2] * d) / f.size[2]
       const len = Math.hypot(nx, ny, nz) || 1
       dirs.set([nx / len, ny / len, nz / len], k * 3)
-      dist[k] = Math.hypot(s, u, d)
+      dist[k] = Math.hypot(s, u * Math.min(1, f.size[1] / PAD_THICK), d)
       if (dist[k]! < least) least = dist[k]!
     })
     let x = 0
