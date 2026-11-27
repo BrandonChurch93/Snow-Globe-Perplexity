@@ -2,7 +2,25 @@
 
 Branch agent/p6-fall-base, head c291a11c: the shader commit d2878876 with main 35d00e1b merged in (fall's scene fifth list and air fourth list). The fifth list changed src/seasons/fall/base.ts only. The mesh is as on the fourth list, whose asset script change still stands: `npm run make -- base-fall` must be run and its files committed by /root (80910 triangles, 1448 more than main's 79462; public glb 1348780 bytes, sha eb905811891fd477 on this VM).
 
-## The eleventh step (about 10:00 UTC), the newest head
+## The twelfth step (about 11:15 UTC), the newest head
+
+Pushed head 6f76d000: commit 847ce15f (base.ts only), then main e5671c9c merged (5dff0ce2), then main 21ebbe2d (chain 28) merged. Draft stills on 6f76d000: fall-rest 9c19a7a5744536f6, fall-landed 7813cfab7aeba6c6, the six others as the list of 21ebbe2d. Strict, determinism and the stand-ins still were taken on 5dff0ce2; tsc and the whole vitest (948 passed, 8 skipped) on both. No mesh change: 79,830 triangles in the base, fall 1,796,373 of 1,800,000 at high. Everything below this section describes older heads.
+
+What it is, against the eleventh. The wall: the fold field is the same size across and up (lumps, not long folds), its weight in the normal 6 to 9, the sheen reads 0.03 in a fold and 1.3 on a lump's back, the grain's weight 2 to 3.4, and a grey fill lifts the shaded stone (0.36 of the sky's grey, less at the far left and where the paint's shade is deep). The vines: the lines along a vine are cut by a break field into runs of unequal length (barkRun), a hold (barkHold, x -28 to -50 mm) keeps the bark paint, the warm ridge and the card's light to the left third, the ridge colour is cooler, the long cool line is broken too.
+
+Measures at hd review, the same on 5dff0ce2 and on 6f76d000: M3 base 0.884 (the eleventh 0.941; the whole reads 0.8742 on main e5671c9c and 0.8837 on 21ebbe2d, the miniature's part moved with main). Grid of the base's cells: 1.04 2.48 1.23 0.87 / 0.78 0.99 0.43 0.77 / 1.92 3.97 1.16 0.75 (the two cells were 4.20 and 5.87). Left box: median 24.9, 90th percentile 99.2, top 3 percent 242 198 153, runs 6.9 and 5.6 px (approved 26.4, 106.0, 234 191 159, 4.1 and 5.2). Flank: runs 5.2 and 5.3, 90th percentile 118.6 (approved 3.7, 4.8, 113.3). Warm bright share between the pumpkins 1.1 percent (was 3.0, approved 0.5); on the foot rows from x 580 by 40 px: 8.4 12.2 16.6 24.2 5.0 2.9 2.0 against approved's 6.1 12.0 5.8 4.3 1.9 1.6 0.3. Wall: lit share 34 and 64 percent in two boxes (approved 46 and 53), facet spacing 26 by 14 and 21 by 37 px (approved 31 by 32 and 23 by 33). Shaded stone median 16.1, darkest tenth 10.6 (approved 15.9 and 10.0; the eleventh 5.1 and 2.9).
+
+Frames 2364 to 2367 at 3840 final, drawn on 5dff0ce2: the dots, the lumps and the broken lines keep their places; lit stone correlates 0.977 to 0.980 after the 1 px shift, the left tangle 0.976 to 0.977.
+
+Still wrong, by eye beside the approved: the left is orange dashes on thick tubes (copper rope) where approved has dark matt wood and thin twisted twigs with 1 to 2 px glints; the runs 4.1 and 3.7 are not reached; the warm share is still over at x 660 to 740 on the foot rows; the wall's lumps are flatter, its folds grey and not near black, no glossy facet; the flank's vines are glossy black with a white line where approved's are matt grey; thorns: approved about 19 in the crop, 35 to 120 px long at hd, 8 to 14 px thick at the root and curved, ours about 54 seen, the strand thorns' median 38 px, thin and straight.
+
+Next, /root's rulings of 10:36: (1) the wall's folds to near black and one glossy facet on each lump; (2) the thick vines matt with a soft grey light and no long streak, the left tangle as thin twisted twigs with fine glints, or one thick tube shaded as a bundle of thin strands of unequal width, irregular and crossing; base part of M3 never under 0.85 and no dimmer light to buy cells; (3) thorns longer and curved as far as the triangles go; (4) the vines right of the third pumpkin, approved 4 thick and 2 thin against our 3 and 0, cost by a make before one is added.
+
+Counting without a render: /tmp/look/count.mjs imports a copy of the asset scripts (/tmp/look/t13/assets-src/bf, with knobs EV, LEN, RAD, BEND in the environment) and prints triangles and thorns. The strand thorns are 119 with 7,872 triangles; with half as many, 1.6 times as long, they are 50 with 3,384.
+
+Tries of the twelfth are kept in /tmp/look: base.a7.ts is the pushed shader, v12.py and w12.py make it from base.b2.ts (the eleventh).
+
+## The eleventh step (about 10:00 UTC)
 
 Pushed head fc68c28f: commit 069171a2 (base.ts only), then main ade42c8f merged (d48bdad5), then main 3170155e merged. No mesh change: 79,830 triangles, 1,796,373 of 1,800,000 at high, as on the tenth. Everything below this section describes older heads.
 
