@@ -275,7 +275,7 @@ ${SHADE}
   reflectedLight.directDiffuse *= liveBead;
   // A grain of dew and the pixel it falls in are together no narrower than a cell and a fifth, with the same light in all.
   vec3 liveAt = vBasePos * 7.5;
-  float liveWide = clamp((1.22 - max(length(dFdx(liveAt)), length(dFdy(liveAt)))) / 0.42, 1.0, 2.9);
+  float liveWide = clamp((1.22 - max(length(dFdx(liveAt)), length(dFdy(liveAt)))) / 0.25, 1.0, 2.9);
   vec3 liveLow = floor(liveAt - 0.5);
   vec3 liveGrit = vec3(0.0);
   for (int i = 0; i < 8; i++) {
