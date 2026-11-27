@@ -6,7 +6,7 @@ import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
-import { crownCap, crownField, crownOffset, glow, glowHook, glowing, pads, placeGeometry, placePoint, placing, prepareTrunk, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { crownCap, crownField, crownOffset, glowHook, glowing, pads, placeGeometry, placePoint, placing, prepareTrunk, treeTwinkle, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import { whole } from '../../../scene/steps'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { season, tones } from './palette'
@@ -62,6 +62,7 @@ const offset = crownOffset()
 const star = placePoint(STAR_LOCAL)
 const arrive = { value: 1 }
 const bulbGain = { value: BULB_GAIN }
+const twinkle = treeTwinkle()
 const clock = { value: 0 }
 
 export const innerLights: InnerLight[] = [
@@ -110,7 +111,7 @@ const TREE_SLOPES = 'vec3 treeSx = dFdx(-vViewPosition);\nvec3 treeSy = dFdy(-vV
 const TREE_BUMP = 'normal = treeBump(treeSx, treeSy, treeDh, normal, faceDirection);'
 
 function needleHook(shader: Shader): void {
-  glowHook(shader, `material.diffuseContribution * ${NEEDLE_LIT}`)
+  glowHook(shader, twinkle, `material.diffuseContribution * ${NEEDLE_LIT}`)
   Object.assign(shader.uniforms, { uTile: { value: 1 / tileOf('needles') }, uBump: { value: 0.8 }, uSprigs: { value: texture(SPRIGS) } })
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', `#include <common>\nattribute vec2 uv1;\nvarying vec2 vCard;\n${TREE_VERT_PARS}`)
@@ -150,7 +151,7 @@ function snowFragment(shader: Shader): void {
 }
 
 function snowHook(shader: Shader): void {
-  glowHook(shader)
+  glowHook(shader, twinkle)
   Object.assign(shader.uniforms, coverUniforms, { uTile: { value: 1 / tileOf('snow') }, uBump: { value: 0.16 } })
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', `#include <common>\n${COVER_GLSL}\n${TREE_VERT_PARS}\nattribute vec2 uv1;\nvarying float vTreeEdge;`)
@@ -166,7 +167,7 @@ function snowHook(shader: Shader): void {
 }
 
 function arrivalHook(shader: Shader): void {
-  glowHook(shader)
+  glowHook(shader, twinkle)
   Object.assign(shader.uniforms, { uTile: { value: 1 / tileOf('arrival') }, uBump: { value: 0.22 }, uArrive: arrive })
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', `#include <common>\nuniform float uArrive;\nattribute vec4 aBase;\n${TREE_VERT_PARS}`)
@@ -178,7 +179,7 @@ function arrivalHook(shader: Shader): void {
 }
 
 function lightHook(shader: Shader): void {
-  Object.assign(shader.uniforms, { uTwinkle: glow.uTwinkle, uBulb: bulbGain })
+  Object.assign(shader.uniforms, { uTwinkle: twinkle, uBulb: bulbGain })
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', '#include <common>\nvarying vec2 vBulb;')
     .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBulb = uv;')
@@ -273,7 +274,7 @@ export function* making(): Generator<void, THREE.Object3D> {
   const snow = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(SNOW), color: new THREE.Color(SNOW_TINT[0], SNOW_TINT[1], SNOW_TINT[2]), vertexColors: true, roughness: 0.8, hook: snowHook, key: 'tree-snow' })
   const fill: GlowLight = { at: placePoint(FILL_FROM), color: tones.sheen, ...FILL_ON_WOOD, phase: 0.6 }
   const all = new THREE.Group()
-  const trunk = yield* trunkMaking(part, [...bulbs(GLOW.wood), lampOn(LAMP_ON_WOOD), fill], BARK)
+  const trunk = yield* trunkMaking(part, twinkle, [...bulbs(GLOW.wood), lampOn(LAMP_ON_WOOD), fill], BARK)
   yield
   const crown = solidMesh(yield* placedInSteps('needles', [...bulbs(GLOW.needles), lampOn(LAMP_ON_NEEDLES), { ...fill, ...FILL_ON_NEEDLES, at: placePoint(FILL_ON_NEEDLES_FROM) }]), needles)
   yield
@@ -319,7 +320,7 @@ export function solid(x: number, y: number, z: number): number {
 }
 
 export function update(moment: KitMoment): void {
-  glow.uTwinkle.value.set((CYCLES * moment.time) / moment.period, FLICKER, 1, 0)
+  twinkle.value.set((CYCLES * moment.time) / moment.period, FLICKER, 1, 0)
   clock.value = (((moment.time / moment.period) % 1) + 1) % 1
   const t = Number.isFinite(moment.sinceLanding) ? Math.min(1, Math.max(0, moment.sinceLanding / config.states.restSeconds)) : 1
   arrive.value = t * t * (3 - 2 * t)
