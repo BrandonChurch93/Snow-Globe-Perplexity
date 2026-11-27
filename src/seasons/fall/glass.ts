@@ -130,7 +130,7 @@ export const look = {
     mistHigh: [0.04, 0.06, 0.064],
     mistLeft: 0.3,
     mistLeftMm: [-24, 4] as const,
-    mistEven: [0.18, 2.4] as const,
+    mistEven: [0.5, 2.4] as const,
     mistHighMm: [44, 78] as const,
     hazeFrontMm: -9,
     hazeBackMm: -24,
