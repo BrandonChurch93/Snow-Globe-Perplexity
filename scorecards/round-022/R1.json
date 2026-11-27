@@ -1,0 +1,84 @@
+{
+  "critic": "R1",
+  "score": 4,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-B-01-b.jpg",
+      "where": "the swirling storm in the liquid across the globe",
+      "what": "instead of a continuous, silky motion-blurred golden vortex, the shaken dandelion seeds render as stiff, hard-edged white needles and tight tangled loops on the upper left, while a flat milky pinkish-tan fog washes out the cottage, lamp post and pond in the lower half and leaves the front of the upper-right tree canopy largely unveiled by swirling trails",
+      "fix": "replace the crisp white line segments and flat lower haze with long, soft motion-blurred fibrous streaks sweeping in one coherent global vortex across both the cottage and the front of the tree crown while keeping the cottage wall, window and lamp post crisp behind the trails"
+    },
+    {
+      "severity": "severe",
+      "file": "set-B-01-b.jpg",
+      "where": "the dark air outside the right collar of the base and above the sand mound",
+      "what": "dozens of bright golden particle dots leak outside the glass sphere into the black background above the right shoulder of the base, with another noisy band of floating dots hovering above the sand pile",
+      "fix": "confine all storm particles strictly inside the glass sphere and keep loose sand grains grounded on the mound and surface so no dots float in the dark air outside the globe"
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01-b.jpg",
+      "where": "the stone base from rim to foot (also in set-B-01-b.jpg)",
+      "what": "the right two-thirds of the base is cold dark slate-grey rock and the left third is dark muddy brown instead of the warm, pale sun-bleached cream sandstone with golden-tan strata in -a",
+      "fix": "shift the base stone material and albedo back to warm pale cream sandstone with soft golden-tan strata so it matches the pale sand mound beside its foot"
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01-b.jpg",
+      "where": "the surface directly beneath the foot of the base and its mirror image (also in set-B-01-b.jpg)",
+      "what": "directly under the dark base sits a bright milky-white glowing slab much brighter than the base itself, whereas -a has deep dark contact shadow beneath the foot and a dark, subtle wet-stone reflection",
+      "fix": "darken the tabletop directly under the base into a grounded contact shadow and replace the bright white pad with a dim, physically darkened upside-down reflection of the sandstone base and shells"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the cascading sand on the right flank of the base and the sand mound below it (also in set-B-01-b.jpg)",
+      "what": "the crisp sunlit trickle of individual falling sand grains down the right profile of the base in -a is replaced by a smooth, blurry cream smear behind the base, the mound has a harsh dark shadow split across its middle, and loose grains scatter as isolated noisy dots over smooth black at the bottom edge",
+      "fix": "replace the blurry cream smear with a finely resolved stream of rim-lit falling sand grains, soften the shadow across the conical sand mound, and blend the outer sand grains naturally onto a textured wet surface"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the cottage wall, roof, doorway and clearing around the lamp post",
+      "what": "the cottage gable is white plaster with dark half-timber beams instead of -a's warm rough-coursed stone, coarse green vines and large blurry foreground dandelion smudges obscure the roof, chimney, left sunflower and arched wooden door, and the bright golden misty clearing behind the lamp post and warm lantern bounce on the tree trunk are dim and cluttered",
+      "fix": "restore the warm rustic stone cottage walls, taller slender chimney and clear view of the arched wooden door and left sunflower, move oversized foreground puffs off the cottage, and boost the warm golden backlight behind the lamp post and lantern bounce light on the cottage and trunk"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the shells and sea glass embedded around the base (also in set-B-01-b.jpg)",
+      "what": "the shells and sea glass read as flat, matte, low-contrast 2D decals—including flat cutouts overhanging the left silhouette and bridging the bottom groove—without -a's 3D thickness, recessed contact shadows, warm specular ridge glints and translucent sea-glass glow",
+      "fix": "give every shell and sea-glass piece true 3D relief seated inside sandy recesses with tight dark contact shadows, crisp warm rim highlights on shell ribs, and internal translucency and glints on the sea glass"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the liquid interior and drifting dandelion seeds",
+      "what": "the upper dome interior is filled with a flat murky olive-taupe haze instead of -a's deep dark twilight contrast and soft translucent circular bokeh discs, while several dandelion seeds are oversized blurry cotton smudges or flat radial fans lacking crisp delicate filaments",
+      "fix": "deepen the dark background contrast inside the upper globe, add soft out-of-focus circular bokeh discs in depth, and render smaller, crisp-filament dandelion pappus seeds kept clear of the cottage facade"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the glass rim, lower-left curve and upper-right highlight (also in set-B-01-b.jpg)",
+      "what": "a wide milky opaque band runs up the lower-left glass curve and thick blurry double-wall bands line both shoulders, the upper-right sun glint is a synthetic multi-spike star inset from the outer edge rather than a soft bloom on the rim, and the right-side glass reflection lacks -a's crisp blue sky and dark tree-branch silhouette",
+      "fix": "thin the glass wall refraction at the shoulders, tighten the lower-left flare into a localized warm golden caustic near the sunflower, place a softer natural bloom highlight right on the outer upper-right rim with cool cyan top-rim tint, and sharpen the curved sky-and-branches reflection inside the right glass wall"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the diorama ground bed, pond, fence, tree branches and left base collar (also in set-B-01-b.jpg)",
+      "what": "coarse spiky green grass replaces -a's sunlit pale sandy inner rim bed, the pond surface is milky without crisp shore highlights or smooth river cobbles, the fence uses chunky orange boards, the oak trunk splits low into dark smooth limbs with bare spiky twigs and yellow-beaded leaf edges, and the rounded top stone lip on the left of the base collar is bevelled flat",
+      "fix": "restore the warm pale sandy rim bed around the diorama perimeter, smooth rounded stepping stones, crisp dark mirror pond, thin rim-lit weathered fence rails, single stout furrowed warm-lit oak trunk without bare spiky twigs, and the rounded projecting top lip of the stone collar"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-01-b.jpg",
+      "where": "the out-of-focus background lights and right-hand tabletop reflection (also in set-B-01-b.jpg)",
+      "what": "the upper-right and left background bokeh consists of isolated uniform circles instead of -a's organic overlapping dappled cluster, and the dark surface right of the sand mound has a smooth vertical blur streak instead of horizontal wet-stone ripples",
+      "fix": "overlap and dapple the upper-right bokeh cluster to the frame edge, shrink and soften the left-edge bokeh circles to match -a, and add subtle horizontal golden ripple reflections on the dark surface right of the base"
+    }
+  ]
+}
