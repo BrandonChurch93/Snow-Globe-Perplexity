@@ -1,27 +1,28 @@
-Summer tree, seventh pass. In every picture the approved is on the left and ours on the right.
-Drawn on the branch head with main a55e7ee6 merged, review tier, hd, hero camera unless named.
+Summer tree, eighth pass. Head agent/p6-summer-tree 16a4287c (e3b7e889 on main b4bc96c0). All pictures drawn on the builder's machine at review, hd, hero camera unless said. The approved is always at the left.
 
 1-whole-400px-approved-left.jpg
-The whole at 400 px, with the air. One small dark green tree over the row of lanterns in both. Ours stands fuller and rounder in the crown; the approved shows more sky between its masses.
+The whole at 400 px. Approved left, eighth right. The tree reads as parted masses with sky between them and the stem seen up into the crown. It reads lighter and more tiered than the approved's full round crown.
 
-2-whole-400px-no-air-approved-left.jpg
-The same without the air on ours. A measuring aid, not a judged picture.
+3-tree-rest-approved-sixth-eighth.jpg
+Rest, with the air, one scale. Approved, the sixth (plain main b4bc96c0 drawn here), the eighth. The eighth is parted into a top mass that leans right, an upper left pad, a long left mass, a thin low left pad and a right mass that comes down to the low right with a hole and a limb across it; the fork is open and the boughs stand clear up to the pads. Tone and shading are the seventh's. Not met: the masses are flat tiers with level undersides and wide, square bands, where the approved's are round with narrow slits; the fork is more open than the approved's.
 
-3-tree-pair-rest-approved-left.jpg
-The tree at one scale, at rest, with the air. Ours: a dark crown in soft lobes with a lobed outline, no level band of sky, one notch at the upper left and one small hole by the fork; gold points in unequal groups on the outlines toward the sun; winding boughs that end in leaf; a stem in a slow S that flares into the grass, warm on its left face beside the large lantern.
-Not met: the approved keeps several small holes by the fork and shows its boughs through them; ours shows one. Ours is the fuller crown.
+3b-tree-pair-rest-approved-left.jpg
+The same pair, larger. The upper band of sky is taller than the approved's (about 3.7 mm against 1.6). A lobe hangs at the low right down to 16.5 mm, where the approved ends at 18.5: it holds the end of the twig that carries the last lanterns.
 
-4-tree-pair-rest-no-air-approved-left.jpg
-The same pair without the air on ours. The leaf reads as rounded lobes, pale green on top and dark underneath. The lit tops are dimmer than the approved's and the leaf reads more as leaves than as the approved's velvet masses.
+4-tree-rest-no-air-approved-sixth-eighth.jpg
+Rest, the air off in ours (a measuring aid, not a judged picture). Approved, the sixth (as it was pushed, on its own main), the eighth. The leaf's dark tone, the pale tops and dark undersides of the lobes, and the few gold points at the right rim show here.
+
+4b-tree-pair-rest-no-air-approved-left.jpg
+The same pair, larger, the air off in ours.
 
 5-tree-pair-landed-approved-left.jpg
-At the landing. The crown stays whole behind the storm: the same masses as at rest, no torn outline, no leaf let go.
-
-6-trunk-no-air-approved-left.jpg
-The trunk at five times, without the air on ours, with a grid in millimetres (heights marked at the left). The stem winds, widens into the grass and carries a warm rim on its left face under the lantern. The grass, which is not this part's, hides the foot below a height of about 3.5 mm, so the flare is seen about 1.5 mm higher than the approved's.
+The landing. Approved left, eighth right. The crown is whole: the same pads and the same gaps as at rest, seen through the storm, no torn outline and no leaf let go.
 
 7-macro-pair-approved-left.jpg
-The macro camera, with the air. Several winding boughs leave the fork and end in leaf; the long thin one at the right carries two lanterns and ends in the low right lobe. The approved has two heavy boughs and rounded holes of sky between them.
+Macro camera, the fork. Approved left, eighth right. The underside is open from the fork to the pads and the boughs stand clear. The approved shows three closed holes of sky between thick boughs; ours shows wider openings between thinner ones.
 
-8-frames-1990-1991-difference-sixth-above-seventh-below.jpg
-Not a pair with the approved. The measured box of film frames 1990 and 1991 (final tier, hd), and at the right their difference: the sixth pass above, drawn again on this main, the seventh below. Marked are the pixels that differ by more than 32: magenta where leaf is in one frame only, green inside the leaf, orange elsewhere. In the seventh the marks lie on two seed heads that now stand in the box in front of the crown, and on motes; the leaf and its gold points stay unmarked.
+8-open-share-masks-approved-sixth-seventh-eighth.jpg
+The open share, the leaf found by the rule laid in green and the crown's outline box in magenta. Approved 57.7 percent (first rule), sixth 40.9, seventh 32.9, eighth 42.6. Ours are read on the still without the air, by colour, with the ids view taking out what is not the miniature.
+
+9-open-share-approved-raw-first-rule-second-reading.jpg
+The approved alone: the picture, the first rule's leaf, and a second reading. The first rule (green or yellow green under luma 200, or dark and not warm) leaves out leaf that lies under haze and under seed heads, so it reads 57.7 percent. The second reading takes as leaf what lies within 1.6 mm of the first rule's leaf and is grey to green, not warm and under luma 118, and fills the specks the leaf closes all round: 53.7 percent.
