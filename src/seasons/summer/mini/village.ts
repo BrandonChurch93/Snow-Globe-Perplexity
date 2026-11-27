@@ -172,6 +172,9 @@ const STONE_TOP = { sky: 3.2, from: 0.6, to: 0.68, fromMm: 2, toMm: 4 }
 const COBBLE = { cellMm: 0.36, jointFrom: 0.05, jointTo: 0.14, dark: 0.1, darkHigh: 0.85, lit: 1.8, shade: 0.6, litHigh: 0.25, round: 0.26, toneLow: 0.65, toneTop: 1.35, toneHigh: 0.35, gritMm: 0.11, gritDeep: 6, gritNearer: 0.5, gritPx: 0.5, gritWide: 1.15, gritNear: 0.02, gritFar: 0.17, gritPale: 1.7, grit: 0.6, gritHigh: 0.6, highFlat: 1.0, highMean: 1.0, levelLow: 1.1, levelHigh: 0.6, gritFrom: 0.3, gritTo: 0.6, fadeFrom: 0.45, fadeTo: 0.9, mean: 0.8, highFromMm: 9.5, highToMm: 12, low: [0.068, 0.058, 0.072] as Rgb, high: [0.132, 0.068, 0.047] as Rgb, toneFromMm: 7.5, toneToMm: 10.5, cut: 0.5, cutTop: 0.8, stack: 0.5, stackWash: 1, flat: 1.0, smooth: 1.0, patch: 1.0, patchTop: 2.0, small: 0.6, big: 1.4, rough: 0.9, wash: 0.25, washTint: [0.3, 0.4, 0.6] as Rgb, poolCap: 0.05 }
 // The door stands in an arc of cut stones, pale against the fieldstone, and the lamp beside it lights the jambs: the stones are
 // the shared mesh's own (nine in the ring with a taller key, the jambs stacked under it), told from the wall by where they lie.
+// A cut stone has a dressed face: the broad soft light and dark of the shared stone (cells of `gritMm`, gone where a pixel is
+// wider than `gritFrom` to `gritTo` of a cell) and none of the fieldstone's fine grain, at the hero view as at the close camera.
+const DRESSED = { gritMm: 0.4, grit: 0.5, gritFrom: 0.5, gritTo: 1.0 }
 const ARCH = { toMm: 4.02, keyHalfMm: 0.8, keyToMm: 4.5, gain: 1.0, tint: [1.0, 0.9, 0.76] as Rgb, lamp: 1.3, reachMm: 7.5, gold: [1.0, 0.78, 0.42] as Rgb, wash: 0.5 }
 // The approved cottage has a short stack: what stands over the ridge is drawn in to under half its height, in this season's
 // copy of the mesh and in what the particles meet.
@@ -343,7 +346,11 @@ if (cobbleAny > 0.001) {
   // Single grains on a middle tone: pale ones where the field is high, dark ones where it is low.
   float cobbleN = cobbleFine(cobbleQ * vec2(${(1 / COBBLE.gritWide).toFixed(4)}, 1.0), max(cobbleFw.x * ${(1 / COBBLE.gritWide).toFixed(4)}, cobbleFw.y));
   float cobbleSpeck = 1.0 + mix(${COBBLE.grit.toFixed(2)}, ${COBBLE.gritHigh.toFixed(2)}, cobbleHigh) * (${COBBLE.gritPale.toFixed(2)} * smoothstep(${(0.5 + COBBLE.gritNear).toFixed(2)}, ${(0.5 + COBBLE.gritFar).toFixed(2)}, cobbleN) - 1.0 + smoothstep(${(0.5 - COBBLE.gritFar).toFixed(2)}, ${(0.5 - COBBLE.gritNear).toFixed(2)}, cobbleN)) * (1.0 - smoothstep(${COBBLE.gritFrom.toFixed(2)}, ${COBBLE.gritTo.toFixed(2)}, cobbleMm));
-  vec3 cobbleFace = mix(vec3(1.0), cobbleStone, vCobble.x / max(cobbleAny, 1e-3)) * (cobbleSpeck * mix(${COBBLE.levelLow.toFixed(2)}, ${COBBLE.levelHigh.toFixed(2)}, cobbleHigh));
+  float cobbleGrain = cobbleSpeck * mix(${COBBLE.levelLow.toFixed(2)}, ${COBBLE.levelHigh.toFixed(2)}, cobbleHigh);
+  // The cut stones of the arch, the jambs and the sills keep their dressed face in place of the grain.
+  float cobbleCut = clamp(vCobble.z / max(vCobble.x + vCobble.z, 1e-3), 0.0, 1.0);
+  if (cobbleCut > 0.0) cobbleGrain = mix(cobbleGrain, 1.0 + ${DRESSED.grit.toFixed(2)} * (2.0 * smoothstep(0.25, 0.75, cobbleGrit(cobbleQ * ${(1 / DRESSED.gritMm).toFixed(4)})) - 1.0) * (1.0 - smoothstep(${DRESSED.gritFrom.toFixed(2)}, ${DRESSED.gritTo.toFixed(2)}, cobbleMm * ${(1 / DRESSED.gritMm).toFixed(4)})), cobbleCut);
+  vec3 cobbleFace = mix(vec3(1.0), cobbleStone, vCobble.x / max(cobbleAny, 1e-3)) * cobbleGrain;
   cobbleShade = mix(1.0, clamp(dot(cobbleFace, vec3(0.3, 0.6, 0.1)) * ${COBBLE.patch.toFixed(2)}, 0.0, ${COBBLE.patchTop.toFixed(2)}), cobbleAny);
   diffuseColor.rgb *= mix(vec3(1.0), cobbleFace / max(villageTone * (0.78 + 0.44 * villageMottle), 0.04), cobbleAny);
   villageRough = mix(villageRough, ${COBBLE.rough.toFixed(2)}, cobbleAny);
