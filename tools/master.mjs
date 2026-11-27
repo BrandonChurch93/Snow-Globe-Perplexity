@@ -10,7 +10,7 @@ import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './li
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
 import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, headerRefFrames, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
-import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, firstPlace, heldLine, heldRanges, hours, intermediateVideo, joinPlan, markedHolder, notNumberFrames, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, parseTake, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, sampleRule, ruleCount, countFacts, countsLine, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
+import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, firstPlace, heldLine, heldRanges, hours, intermediateVideo, joinPlan, markedHolder, notNumberFrames, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, parseTake, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, sampleRule, pieceCounts, countFacts, countsLine, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
 import { Shipper, identityProblem, mainAuthor, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
 const args = parseArgs(process.argv.slice(2))
@@ -248,10 +248,14 @@ async function source(ctx, lock) {
       return gl ? String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER)) : 'no WebGL'
     })
     const precision = await page.evaluate(() => window.showcase.dev.caps().precision)
+    let whole = null
     const counts = async (list) => {
       if (!ctx.rule.tier) return list.map(() => ctx.rule.base)
-      const got = await page.evaluate(([k, l, t]) => l.map((i) => window.showcase.dev.frameSamples(k, i, t)), [track.kind, list, ctx.rule.tier])
-      return list.map((i, n) => ruleCount(ctx.rule, i, got[n]))
+      if (!whole) {
+        const got = await page.evaluate(([k, n, t]) => Array.from({ length: n }, (_, i) => window.showcase.dev.frameSamples(k, i, t)), [track.kind, ctx.total, ctx.rule.tier])
+        whole = pieceCounts(ctx.rule, got, track.kind === 'loop').counts
+      }
+      return list.map((i) => whole[i])
     }
     return {
       graphics,

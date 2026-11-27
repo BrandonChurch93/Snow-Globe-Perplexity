@@ -32,10 +32,12 @@ const CAP = [0.035, 0.028, 0.022]
 const WIRE = [0.05, 0.04, 0.03]
 
 const [T, R, C, LN] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts', '/src/seasons/summer/mini/crown.ts', '/src/seasons/summer/mini/lanterns.ts'])
-const rng = R.stream('tree-summer')
-// What is drawn for the sprigs' stand off and for the sprigs' picture comes from streams of their own, so that the lanterns keep
-// their draws and the picture stays the same when the crown is reshaped.
-const edgeRng = R.stream('tree-summer-edge')
+// Every point of the leaf surface draws its tuft from streams of its own, named by its place on the surface's grid (`deal`, and
+// `edge` for the tuft's stand off), and the grid lies at one fixed place. So a tuft depends on the crown about its own point alone:
+// when one clump is reshaped, the tufts by that clump change and every other tuft stays as it was. The sprigs' picture has a
+// stream of its own and does not change with the crown.
+const deal = (key) => R.stream(`tree-summer ${key}`)
+const edge = (key) => R.stream(`tree-summer-edge ${key}`)
 const mapRng = R.stream('tree-summer-sprigs')
 const lerp = (a, b, t) => a + (b - a) * t
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
@@ -53,7 +55,13 @@ const gradient = (f, x, h, z, e = 0.08) => {
 const CORNER = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]]
 const EDGE = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]
 
-function surface(field, box, cell, hidden) {
+// The surface of a field, cut in cells. The grid lies at one fixed place (`GRID_AT`, of a cell, on each axis: where the crown's
+// box put it before the grid was fixed, so that the surface stayed as it was), so that a point of the surface keeps its place and
+// its name (`key`: the grid edge it lies on, counted in whole cells) when the box grows or shrinks.
+const GRID_AT = [0.1933, 0.7751, 0.0435]
+function surface(field, bounds, cell, hidden) {
+  const base = [0, 1, 2].map((j) => Math.floor(bounds[j] / cell - GRID_AT[j]))
+  const box = [(base[0] + GRID_AT[0]) * cell, (base[1] + GRID_AT[1]) * cell, (base[2] + GRID_AT[2]) * cell, bounds[3], bounds[4], bounds[5]]
   const nx = Math.ceil((box[3] - box[0]) / cell) + 1
   const ny = Math.ceil((box[4] - box[1]) / cell) + 1
   const nz = Math.ceil((box[5] - box[2]) / cell) + 1
@@ -63,6 +71,7 @@ function surface(field, box, cell, hidden) {
   const at = (i, j, k) => i + nx * (j + ny * k)
   const made = new Map()
   const pos = []
+  const keys = []
   const tris = []
   const vert = (i, j, k, e) => {
     const ca = CORNER[EDGE[e][0]]
@@ -71,11 +80,13 @@ function surface(field, box, cell, hidden) {
     const ib = at(i + cb[0], j + cb[1], k + cb[2])
     const lo = Math.min(ia, ib)
     const span = Math.abs(ia - ib)
-    const key = lo * 4 + (span === 1 ? 0 : span === nx ? 1 : 2)
+    const axis = span === 1 ? 0 : span === nx ? 1 : 2
+    const key = lo * 4 + axis
     let v = made.get(key)
     if (v === undefined) {
       const t = val[ia] / (val[ia] - val[ib])
       v = pos.length / 3
+      keys.push(`${base[0] + (lo % nx)} ${base[1] + (Math.floor(lo / nx) % ny)} ${base[2] + Math.floor(lo / (nx * ny))} ${axis}`)
       pos.push(box[0] + (i + ca[0] + (cb[0] - ca[0]) * t) * cell, box[1] + (j + ca[1] + (cb[1] - ca[1]) * t) * cell, box[2] + (k + ca[2] + (cb[2] - ca[2]) * t) * cell)
       made.set(key, v)
     }
@@ -102,6 +113,7 @@ function surface(field, box, cell, hidden) {
   const remap = new Int32Array(count).fill(-1)
   const outPos = []
   const outNor = []
+  const outKey = []
   const index = []
   const a = new THREE.Vector3()
   const b = new THREE.Vector3()
@@ -111,6 +123,7 @@ function surface(field, box, cell, hidden) {
       remap[v] = outPos.length / 3
       outPos.push(pos[v * 3], pos[v * 3 + 1], pos[v * 3 + 2])
       outNor.push(nor[v * 3], nor[v * 3 + 1], nor[v * 3 + 2])
+      outKey.push(keys[v])
     }
     return remap[v]
   }
@@ -128,7 +141,7 @@ function surface(field, box, cell, hidden) {
     if (facing >= 0) index.push(use(i0), use(i1), use(i2))
     else index.push(use(i0), use(i2), use(i1))
   }
-  return { pos: outPos, nor: outNor, index }
+  return { pos: outPos, nor: outNor, key: outKey, index }
 }
 
 function frames(points) {
@@ -222,12 +235,13 @@ function leaves() {
   const pos = [...s.pos]
   const nor = [...s.nor]
   const index = [...s.index]
-  let tufts = 0
+  const planted = []
   const p = new THREE.Vector3()
   const n = new THREE.Vector3()
   const t = new THREE.Vector3()
   const b = new THREE.Vector3()
-  const plant = (v, drawn) => {
+  const plant = (v, rng, drawn) => {
+    const edgeRng = edge(s.key[v])
     const far = edgeRng.next() < SPRIGS.far
     const size = far ? edgeRng.range(SPRIGS.farSize[0], SPRIGS.farSize[1]) : drawn
     const out = far ? edgeRng.range(SPRIGS.farOut[0], SPRIGS.farOut[1]) : edgeRng.range(SPRIGS.out[0], SPRIGS.out[1])
@@ -261,9 +275,12 @@ function leaves() {
       }
       index.push(base, base + 1, base + 2, base, base + 2, base + 3)
     }
-    tufts++
+    planted.push(s.key[v])
   }
-  for (let v = 0; v < count; v++) if (rng.next() <= SPRIGS.share) plant(v, rng.range(SPRIGS.size[0], SPRIGS.size[1]))
+  for (let v = 0; v < count; v++) {
+    const rng = deal(s.key[v])
+    if (rng.next() <= SPRIGS.share) plant(v, rng, rng.range(SPRIGS.size[0], SPRIGS.size[1]))
+  }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
   g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3))
@@ -271,7 +288,7 @@ function leaves() {
   g.setAttribute('uv1', new THREE.Float32BufferAttribute(flag, 2))
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3))
   g.setIndex(index)
-  return { g, tufts, surface: s.index.length }
+  return { g, tufts: planted.length, planted, surface: s.index.length }
 }
 
 function dress(g, colour, pivot, phase, order, kind) {
@@ -452,7 +469,14 @@ writeGlb(rel('assets-full', 'summer', 'tree-summer.glb'), [snap(fromThree('leave
 
 // Lighter list for the lower quality levels of the live page (src/core/models.ts reads `extras.levels`, and
 // tools/lib/glblevels.mjs leaves a mesh alone that names its own). The simplifier cannot thin leaf cards, so the crown names
-// its own list: the whole leaf surface and an even share of the sprigs that stand on it.
+// its own list: the whole leaf surface and an even share of the sprigs that stand on it. Whether a sprig stays is read from its
+// own place on the grid (`spread`: neighbours on the grid take values far apart, so the share is even over the crown), so the
+// lists too change by a reshaped clump alone.
+const spread = (key) => {
+  const [x, y, z, axis] = key.split(' ').map(Number)
+  const u = (0.8191725134 * x + 0.6710436067 * y + 0.5497004779 * z + 0.3819660113 * axis) % 1
+  return u < 0 ? u + 1 : u
+}
 function addLists(file, lists) {
   const { json, bin } = readGlb(fs.readFileSync(file))
   const parts = [bin]
@@ -488,7 +512,7 @@ const leafLow = []
     leafLow.push(I[i])
   }
   for (let i = N.surface, k = 0; i < I.length; i += 12, k++) {
-    const u = (k * 0.6180339887) % 1
+    const u = spread(N.planted[k])
     if (u < LEVEL_SPRIGS.medium) for (let j = 0; j < 12; j++) leafMedium.push(I[i + j])
     if (u < LEVEL_SPRIGS.low) for (let j = 0; j < 12; j++) leafLow.push(I[i + j])
   }
