@@ -271,7 +271,10 @@ export const CARD = {
   leafRestCottage: 0.7,
   leafRestRim: [0.84, 0.91] as const,
   leafRestRightFrom: [-0.1, 0.5] as const,
-  leafRestMm: [1.35, 2.75, 4.5] as const,
+  leafRestMm: [0.9, 1.8, 6] as const,
+  /** The lens of the ball swells a leaf that floats deep in it: at rest no leaf is drawn larger than this, in pixels of its half length, and a leaf that lies is this share of its size. The approved leaves are about 12 px long, the largest under 30. */
+  leafRestPx: 11,
+  leafLieSize: 0.6,
   /** How far inside the glass's outline a bat's middle stays, in its own radius: no wing is drawn outside the globe. */
   batInside: 1.05,
   /** How much of a dab is drawn where the storm's water is slow for a moment: the storm of a change holds its leaves from the window on, not only where they race. */

@@ -1,7 +1,13 @@
+import { readFileSync } from 'node:fs'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { config } from '../src/config'
+import { config, shots } from '../src/config'
+import { copy } from '../src/copy'
 import { Assets } from '../src/core/assets'
 import { readParams } from '../src/core/params'
+import { VIEWS } from '../src/diagnostics/views'
+import { filmCut } from '../src/film/cut'
+
+const CARRIED = ['constructor', 'toString', '__proto__', 'hasOwnProperty', 'valueOf']
 
 // What a visitor types into the address must never stop the globe: a value the config does not name falls back.
 describe('the address of the page', () => {
@@ -28,8 +34,64 @@ describe('the address of the page', () => {
     for (const f of Object.values(config.formats)) expect(readParams(`?format=${f.id}`).format).toBe(f.id)
   })
 
-  it('still stops a capture that asks for a format the config does not name', () => {
-    expect(() => readParams('?mode=capture&format=no-such-format')).toThrow(/no such format/)
+  // A capture page draws for a tool, and a tool never gets a format it did not name. Where the address names none of the
+  // config's the page is the live page at hd: a visitor has the globe, and a tool finds no capture interface to draw with.
+  it('opens the live page, not a dead one, for a capture address whose format the config does not name', () => {
+    for (const format of [...CARRIED, 'no-such-format', '']) {
+      const p = readParams(`?mode=capture&format=${format}`)
+      expect(p.mode, format).toBe('live')
+      expect(p.format, format).toBe(config.formats.hd.id)
+      expect(p.assets, format).toBe('web')
+    }
+    for (const f of Object.values(config.formats)) {
+      const p = readParams(`?mode=capture&format=${f.id}`)
+      expect(p.mode).toBe('capture')
+      expect(p.format).toBe(f.id)
+      expect(p.assets).toBe('full')
+    }
+    expect(readParams('?mode=capture').mode).toBe('capture')
+    expect(readParams('?mode=capture').format).toBe(config.formats.hd.id)
+  })
+
+  it('hands out the capture interface only on a page whose address still reads as a capture', () => {
+    const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8').split('\n')
+    expect(main).toContain("const capture = params.mode === 'capture'")
+    const given = main.flatMap((l, i) => (/window\.showcase\s*=[^=]/.test(l) ? [i] : []))
+    expect(given).toHaveLength(1)
+    const from = main.indexOf('if (capture) {')
+    const to = main.indexOf('} else {', from)
+    expect(from).toBeGreaterThan(0)
+    expect(given[0]).toBeGreaterThan(from)
+    expect(given[0]).toBeLessThan(to)
+  })
+
+  it('stops for nothing a visitor can type', () => {
+    const words = [...CARRIED, 'no-such-thing', '', '%00', '-1', '1e999', 'NaN', '[object Object]', 'a,b,,c']
+    for (const key of ['mode', 'season', 'format', 'tier', 'assets', 'quality', 'frame', 'first', 'last', 'shot', 'diag', 'which', 'noext', 'simcache', 'detail', 'sim', 'camera']) {
+      for (const word of words) {
+        expect(() => readParams(`?${key}=${word}`), `${key}=${word}`).not.toThrow()
+        expect(() => readParams(`?mode=capture&${key}=${word}`), `capture, ${key}=${word}`).not.toThrow()
+      }
+    }
+  })
+
+  // An unknown shot would start the whole film with no sound, and an unknown view would flatten the picture.
+  it('takes a shot only if the film has it and a view only if the app has it', () => {
+    for (const word of [...CARRIED, 'no-such-name', 'OPEN', ' open', 'ids ']) {
+      expect(readParams(`?mode=autopilot&shot=${word}`).shot, word).toBe('')
+      expect(readParams(`?diag=${word}`).diag, word).toBe('')
+      expect(readParams(`?mode=capture&diag=${word}`).diag, word).toBe('')
+    }
+    for (const s of shots) expect(readParams(`?mode=autopilot&shot=${s.id}`).shot).toBe(s.id)
+    for (const v of VIEWS) expect(readParams(`?diag=${v}`).diag).toBe(v)
+    expect(readParams(`?diag=${copy.menu.none}`).diag).toBe('none')
+    expect(readParams('').shot).toBe('')
+    expect(readParams('').diag).toBe('')
+  })
+
+  it('knows the shots the film player can start from and the views the menu offers', () => {
+    expect(filmCut().spans.map((s) => s.shot.id)).toEqual(shots.map((s) => s.id))
+    expect(copy.menu.views).toEqual([...VIEWS])
   })
 
   it('falls back to the default season and to live for values it does not know', () => {
