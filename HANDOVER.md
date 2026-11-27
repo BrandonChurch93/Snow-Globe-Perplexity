@@ -123,3 +123,14 @@ All on this machine (lavapipe, 4 CPUs, 7.6 GiB), one render at a time.
 - The whole vitest on `e53ce501` itself; it ran on `daeb3c9e`, and `e53ce501` adds one comment in a test.
 - A frame with a clear miniature faster than 37.5 px, for the inside's lag.
 - The table's mirror image is still drawn without a spread. A spread that follows it was described to the root and waits for the root's word.
+
+## The scatter in the air as a smear (decision 220, open item 268)
+
+Written 23:41 UTC, 27 November 2026. The whole report is `streak-report.txt` beside this file; the pictures are `streak-1` to `streak-7`, named in `captions.txt`.
+
+- Code: `agent/p6-petal-streak`, head `beed6a06` (one commit `beb62adb` on main `5b76c959`, then merges of main `8f763981` and `48a2e3b7`). Engine `8dec00b8dd77ff93`. Five files: `src/core/materials.ts`, the two slabs of spring and fall, one exported word in `src/shake/change.ts`, `tests/gust-streak.test.ts`.
+- What it does: in a film frame of 8 samples or more, while a petal or a leaf is in the air, each sample's share of the shutter is cut into 8 parts, the scatter is drawn at each, and every pixel keeps one by its level in the still tile. The row of copies becomes one smear with a fine grain.
+- The live page never takes this path: it has no sample, so the second mesh is never made and the first mesh's shader is the one it was.
+- Proven: frame 1388 and fall's frame 2827 at 3840 before and after; frames 1386 to 1391 at preview; the eight guards equal to chain 39's list on the head; tsc; the whole vitest (1054 passed, 8 skipped).
+- Not seen: the arriving scatter before and after; any master chunk; the page in a browser during a change; the cost on a graphics card (23 percent on frame 1388 in software).
+

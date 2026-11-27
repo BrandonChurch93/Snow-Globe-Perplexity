@@ -1,0 +1,80 @@
+The scatter in the air drawn as a smear (decision 220, open item 268)
+Report of shutter_builder, written 23:39 UTC, 27 November 2026. All times UTC.
+All of it on one machine: lavapipe (software), 4 CPUs, 7,957 MiB, one render at a time.
+
+HEADS AND ENGINES
+- Branch agent/p6-petal-streak, head beed6a06. It is beb62adb (my one commit, on main 5b76c959), merged with origin main 8f763981 at 23:05 (218ba2ea) and with origin main 48a2e3b7, chain 39, at 23:27 (beed6a06), as you ordered at 23:24. Both merges were clean; the second auto-merged src/shake/change.ts. Against 48a2e3b7 the branch differs in my five files and nothing else.
+- Pushed at 23:39: origin agent/p6-petal-streak is beed6a06. Origin main read 0a6c6217 at that minute; the branch holds 48a2e3b7, the head you named, and not what came after.
+- The pictures and this report are on agent/p6-shutter-looks (names starting streak-), never on the code branch.
+- Engine of the head beed6a06: 8dec00b8dd77ff93 (plain main 48a2e3b7 by your mail: 22b2ad3ea80cf9c7).
+- Engine of 218ba2ea: 14067ad14d085e6c (plain main 8f763981 built here: d69d3beea93f7239).
+- Engine of beb62adb alone: 26ee1abdd611519a (plain 5b76c959: 76ab6dccca0994d3).
+- Where each proof was made. The film frames of points 4 and 5 were drawn on beb62adb's tree against 5b76c959, so that nothing but my change stands between before and after. The page's pictures of point 3 and the six frames of point 7 were made on 218ba2ea. The eight guards, tsc and the whole vitest were run twice: on 218ba2ea and again on the head beed6a06.
+- Five files: src/core/materials.ts (+95, the gust's part), src/seasons/spring/slab.ts (+12), src/seasons/fall/slab.ts (+13), src/shake/change.ts (one word: SHUTTER_CHANGE is exported), tests/gust-streak.test.ts (new, 5 tests).
+
+1. WHAT IS MADE, AND WHERE IT DIFFERS FROM MY WORDS OF 21:58
+It is not a card stretched along its path with a tent of weights. Reading the petals' shader I found that a stretched card cannot hold a petal seen edge on, nor its light and its soft outline, and that fall's leaves are one model and not cards. So the same end is reached another way, and it sits in the shared gust (STAGE_GUST_GLSL in src/core/materials.ts), so that spring's petals and fall's leaves both have it from the same lines:
+- Each sample's share of the shutter is its rank in time, even shares by rank, taken as leaveOut takes it in src/shake/change.ts (hold + rank / of * SHUTTER_CHANGE, one of-th long).
+- That share is cut into 8 equal parts. The scatter is drawn once at the middle of each part, so each part follows the piece's own path and pace (the gust's own formula with a later time, nothing made up beside it).
+- Every pixel keeps one of the 8, by its level in the still tile (src/core/still.ts), turned on by 0.618 of a whole with every sample. Neighbours keep unlike parts, and one pixel goes round all of them over the frame.
+- So a pixel sees the scatter at as many moments as the frame has samples, one inside every sample's share, where before all pixels saw the same 76 moments. The row of copies becomes one smear. What is left is a fine grain, pixel to pixel, of the size of one sample's weight.
+- The 8 parts are a second mesh over the same vertices (gustTwin), made the first time a film frame asks for it, shown in place of the first mesh for those samples alone.
+It is inside the dressing's flight only: gustStreaks() says yes only for a sample that has a hold (a film frame), 8 samples or more (GUST_STREAK.join, the same count as LEAVE_OUT.join), and a shutter that is open between the first piece lifting and the last piece gone (or the first coming in and the last down): GUST_FLIGHT. The slabs ask only while two seasons are on stage and one of them is theirs.
+
+2. WHAT DID NOT MOVE
+The eight picture guards (draft, hd, hero, sha256 first 16), twice:
+- On the head beed6a06, engine 8dec00b8dd77ff93, drawn 23:27 to 23:31, each equal to chain 39's list. None moves by the mend.
+  winter-rest 0cab5cd137ba09d9, winter-landed a7ab4af383606ed0, spring-rest e4fc69143cfbec0c, spring-landed 1f27410401d70b17,
+  summer-rest f3f5192c31aec551, summer-landed b40d0bf808e157ad, fall-rest f93bf66bec300749, fall-landed 5725aa27d35f2a10.
+- On 218ba2ea, engine 14067ad14d085e6c, drawn 23:05 to 23:09, each equal to chain 38's list.
+  winter-rest 0cab5cd137ba09d9, winter-landed a7ab4af383606ed0, spring-rest c5cd17d91bc346bc, spring-landed 066fa33e081d9d26,
+  summer-rest 17a943f21ee9c1cc, summer-landed 682537c019d386eb, fall-rest 2d560947ef218eb4, fall-landed d6cc4fb84a82a611.
+Preview strip 1386 to 1391 (960 x 540, final tier, 24 samples each), before against after, pixel by pixel:
+  1386: 0 pixels differ (the two files are the same bytes, sha256 bbac28814fa347e1).
+  1387: 33,159 differ, 1388: 48,233, 1389: 49,129, 1390: 16,293, 1391: 725 (none by more than 3 levels).
+  In all six, 0 pixels differ above y 324 (the globe, the lights, the top of the base). A map of the differences of 1388 and 1389, looked at: they lie on the petals and their mirror image only; the base, the slab and the glass are black in it.
+At 3840, frame 1388: 0 pixels differ by more than 2 levels above y 1296; the mean of the band y 1500 to 2140 is 51.316, 43.411, 40.276 before and 51.318, 43.412, 40.277 after (red, green, blue), so the petals are neither paler nor brighter in the film.
+
+3. THE LIVE PAGE
+The streak is for the film's shutter only. How the code knows: the live page draws through livePicture (src/capture/showcase.ts) with no sample, so frame.sample is null; gustStreaks(null, ...) returns false at its first line; the switch then returns before it makes anything. On the live page the second mesh is never made, at low, medium or high. The first mesh draws with the shader it had: every new line in it stands inside #ifdef STAGE_STREAK, which is defined on the second mesh's material alone, so the compiled program of the first mesh has no new uniform, varying or instruction. No vertex and no triangle is added to any model. What the live page pays is one comparison a frame in update() of the two slabs.
+MEASURED: the page's own path, still --live low, medium and high, hero, hd, spring-rest and fall-rest, on plain main 8f763981 (engine d69d3beea93f7239) and on 218ba2ea, which is that main with my commit (engine 14067ad14d085e6c). All six are the same bytes before and after:
+  spring low 028eff20d7c7db1b, medium 4cb986881d48a8e7, high cdd279bb3b6e9bc0; fall low 5b11ac7fc39d1df1, medium a49270b657a765dc, high d361f55e101358b8.
+  Seconds for the one sample, before then after: spring medium 9.9, 10.2; spring high 10.8, 11.1; fall medium 10.2, 10.6; fall high 11.5, 12.1. (Low: 24.4 and 18.9 before, 7.5 and 8.0 after. I do not know why the before ones were slower; they were the first stills at that level after a build.) These are a software renderer's seconds for one still and differ by 3 to 5 percent between two runs of the same program; they are not a measure of the page's frame time.
+NOT SEEN: the live page in a browser during a change of season, with the petals in the air. By the code it is the first mesh with the old shader, one copy a frame as before.
+
+4. FALL
+Before I chose where the change sits I drew fall's leaves leaving: film frame 2827 at 3840, final tier, 69 samples, on 5b76c959. The rib is there. It is finer and fainter than on the petals, because at 2827 the leaves have only begun to move: lines about 6 px apart, 3 to 5 levels a channel deep, clearest right of the base at x 3040 to 3170, y 1820 to 1870 (picture 5, three times). In that box the strongest wave of 4.5 to 10 px is 0.49 levels at 6.1 px before and 0.23 at 9.8 px after, and on the rows I read (y 1845, 1850) a swing of up to 14 in the sum of the three channels became 1 to 3. The mend is in the shared gust and covers both; fall needed no lines of its own beyond the same switch that spring has.
+Fall's leaves are one model of 4,392 triangles, not instanced. No triangle is added to the model and none to the live page. In the film's flight samples the same 4,392 are drawn 8 times with 7 of 8 pixels thrown away at the first line of the fragment. I say it plainly because of your word on fall's triangles: the count of the model, of the web set and of the page does not change; the film draws them more often for about eight frames a change.
+
+5. THE PROOF FRAMES
+Frame 1388 at 3840, final tier, 76 samples both times:
+  before 741.4 s (draw 732.5 s, 9.64 s a sample), sha256 66dbce43f9c0e478, engine 76ab6dccca0994d3
+  after  909.4 s (draw 904.2 s, 11.90 s a sample), sha256 46794f03bd59e8df, engine 26ee1abdd611519a. 23 percent more.
+  Pictures 1 and 2: the same two cuts as at 21:58, before left, after right, at 1:1. Picture 3: the teeth right of the base at four times.
+  Looked at: the rib is gone at both cuts; each petal is one smear. In the box x 3200 to 3456, y 1790 to 1870 the strongest wave of 5 to 24 px falls from 1.07 levels at 11.6 px to 0.33; the waves under 4 px (the grain) rise from 0.065 to 0.080; the mean step between neighbours falls from 0.97 to 0.77. Left of the base (x 400 to 656, y 1650 to 1730): 0.73 at 10.2 px, then no peak near that length (0.65 at 23.3 px, the petals' own shapes); grain 0.068 then 0.070.
+  On single rows the teeth of about 20 levels are gone and neighbours now step by 1 to 4 levels without a period (row y 1826, x 3240 to 3300, red: before 21 to 48 in waves of 8 to 9 px; after 45 falling to about 26, neighbours 0 to 4 apart and once 8).
+Frame 2827 at 3840, final tier, 69 samples both times:
+  before 700.1 s (draw 696.0 s, simulation 1.9 s), sha256 ddeb2241593f75cc, engine 76ab6dccca0994d3
+  after  722.4 s (draw 701.0 s, simulation 19.2 s: its cache was cold), sha256 b88534183709ec0f, engine 26ee1abdd611519a. The draw is 0.7 percent longer.
+  Pictures 4 (1:1) and 5 (three times). 0 pixels differ by more than 2 levels above y 1296; 3,070 differ by more than 2 in all, 10 by more than 8.
+Frames 1386 to 1391 at preview, picture 6 (before above, after below). Draw seconds before, after: 1386 83.9, 85.0; 1387 76.3, 85.8; 1388 76.9, 84.2; 1389 76.0, 82.1; 1390 78.3, 92.0 (after: the first frame of a second run); 1391 85.4 (before: the first frame of a second run), 78.0. About 8 to 12 percent more on the frames with petals in the air.
+
+6. CHECKS
+- npx tsc --noEmit: exit 0 on 218ba2ea and on the head beed6a06.
+- The whole npx vitest run on the head beed6a06: exit 0, 23:31:44 to 23:36:36, 71 files passed and 1 skipped, 1054 tests passed and 8 skipped.
+- The whole npx vitest run on 218ba2ea: exit 0, 23:11:58 to 23:16:57, 71 files passed and 1 skipped, 1041 tests passed and 8 skipped (main ed9180da by its builder: 1036 passed, 8 skipped; the 5 more are tests/gust-streak.test.ts).
+- The eight guards: equal on both, point 2.
+- The words in the repo: no code comment added but the doc blocks on the new exports, in the file's own manner.
+
+7. THE SCATTER THAT ARRIVES
+The same lines act on the scatter that comes in (the new season's petals or leaves blown in to the table), in film frames only. You named change_finisher at the arriving petals' fringe near frame 680: this change touches those frames of the film too, in the gust and not in its files.
+MEASURED on 218ba2ea: preview frames 2112 to 2117 of change 3 (summer to fall, final tier, 24 samples), against the same six frames of 5b76c959 that I drew at 21:17 to 21:40. All six are equal pixel for pixel (0 pixels differ). So summer's heap leaving and the base passing are untouched there. But fall's leaves are not yet in the air in those six, so they do not show the arriving scatter before and after.
+NOT SEEN as I write: the arriving scatter itself. Frames 2119 to 2122 at preview are being drawn on the head beed6a06 now; a line with what they show follows this report. There is no before of them on the same main, so they will be read by eye only.
+Frame 1388 at preview on the head beed6a06 (engine 8dec00b8dd77ff93, 24 samples, no page messages): the petals are the same smear as on beb62adb (picture 7). The two frames differ in 32,868 pixels, which holds chain 39's own changes to spring.
+
+8. BELOW THE BAR, AND NOT SEEN
+- The smear has a grain. At 3840 with 76 samples it is 1 to 4 levels between neighbours on the petals, without a period, and I do not see it at 1:1; at four times it reads as a fine noise. At preview (24 samples) it is coarser and can be seen at 1:1 on the brightest petals (picture 6, frames 1387 to 1389). It is the size of one sample's weight and gets finer with the sample count. To take it away each pixel would have to see more than one moment a sample, which needs the scatter gathered in a target of its own; I did not make that.
+- The cost is in the film's flight frames only: 23 percent on frame 1388 here in software (the petals' fragment reads 17 texels and the cards are drawn 8 times), under 1 percent of the draw on 2827. Not measured on a graphics card.
+- A frame of few samples (under 8) keeps the row of copies, as leaveOut does for the heaps. The film's frames in a change have 24 or more.
+- Not drawn: any other frame of the four changes at 3840 after the change; change 1 (winter to spring, the petals arriving near 680) and change 2 at any size after the change; a master chunk through npm run master; the page in a browser.
+- The first film frame of a run that needs the second mesh links two more programs for spring (petals and their mask) and one for fall. In software I could not tell it from the run's start; it is inside a film render, never on the page.
