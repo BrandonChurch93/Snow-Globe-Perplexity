@@ -5,7 +5,8 @@ the jobs of 05:12 and 06:12 stand), section 10 (job 1) and section 11 (job 2). M
 which holds `agent/p6-steps` at `7a863f7f`. Sections 1 to 8 stand as written at 06:10; where a later job changed what
 they say, sections 10 and 11 say so.
 
-- Branch `agent/p6-steps`, last commit pushed `75e5403f` (holds main `fe261991`). You took it into chain 16 as it stands.
+- Branch `agent/p6-steps`. At 06:10 its last commit pushed was `75e5403f` (holds main `fe261991`), which you took into
+  chain 16 as it stood. Now it is `7a863f7f` (holds main `d2013ce3`).
 - Walked for this handover: `eb7db90d`, which is `75e5403f` with main `d13d29c6` merged in and nothing else. It is on
   my disk only. I did not push it, so that the branch stays as you took it.
 - Pictures: this branch, `agent/p6-steps-looks`.
