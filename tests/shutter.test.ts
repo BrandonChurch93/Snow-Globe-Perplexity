@@ -95,6 +95,40 @@ describe('the samples of a frame that travels', () => {
     }
   })
 
+  it('deal the lens points so that their mean under the spread stays near nothing all through the shutter', () => {
+    const tent = [1, 2, 3, 4, 3, 2, 1].map((w) => w / 16)
+    const unit = (v: number[]) => {
+      const m = v.reduce((x, y) => x + y, 0) / v.length
+      const w = v.map((x) => x - m)
+      const norm = Math.sqrt(w.reduce((x, y) => x + y * y, 0))
+      return w.map((x) => x / norm)
+    }
+    const swing = (lens: number[], moments: number[]) => {
+      const rank = unit(lens.map((_, k) => k))
+      const own = unit(lens)
+      const trend = unit(moments).reduce((x, v, k) => x + v * own[k]!, 0)
+      const left = own.map((v, k) => v - trend * rank[k]!)
+      let sum = 0
+      for (let i = 0; i < left.length; i++) {
+        let mean = 0
+        for (let k = -3; k <= 3; k++) if (i + k >= 0 && i + k < left.length) mean += tent[k + 3]! * left[i + k]!
+        sum += mean * mean
+      }
+      return sum
+    }
+    for (const n of [24, 26, 33, 51, 96, 100, 128]) {
+      const own = ordered(n)
+      const moments = own.map((s) => s.t)
+      const rest = swing(own.map((s) => s.lu), moments) + swing(own.map((s) => s.lv), moments)
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0.6, 0.8], [0, -1], [-0.8, 0.6]] as const) {
+        const set = evenSet(own, () => [dx * n * 0.74, dy * n * 0.74]).map((s) => s.sample).sort((a, b) => a.t - b.t)
+        const now = swing(set.map((s) => s.lu), moments) + swing(set.map((s) => s.lv), moments)
+        expect(now).toBeLessThan(0.05)
+        expect(now).toBeLessThan(rest * 0.5)
+      }
+    }
+  })
+
   it('draw what moves with the ball at even steps along the travel, whatever the place in the pixel', () => {
     for (const [vx, vy] of [[45, 0], [0, -67.5], [30, 40], [-6, 2]] as const) {
       const n = Math.max(24, Math.ceil(Math.hypot(vx, vy) / 0.75))

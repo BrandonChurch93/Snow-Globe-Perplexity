@@ -114,14 +114,22 @@ const REACH = 2
 
 const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
 
+const LENS_TENT = [1, 2, 3, 4, 3, 2, 1].map((w) => w / 16)
+const LENS_LEAN_FREE = 0.03
+const LENS_LEAN_WEIGHTS = [3, 30, 300, 3000, 30000]
+
 /**
  * Which lens point the sample of each rank in time takes, in a frame whose travel points along (`dx`, `dy`). The places
- * in the pixel and the moments are new, so a lens point left with its rank would lean with them otherwise than in the
- * set as it stands, and what lies a little out of focus would be drawn sharper or softer than in a frame at rest, and
- * by the direction of the travel. The lens points are dealt out again: first in even strides through their own order,
- * the stride and start under which the lens point leans with the place in the pixel and with the moment most nearly as
- * it does in the set as it stands, then pairs change places for as long as that brings it nearer. The set of lens points
- * is the same, and so is the outcome for the same set and travel.
+ * in the pixel and the moments are new, so the lens points are dealt out again, and two things are asked of the deal.
+ * The lens point must lean with the place in the pixel and with the moment as it does in the set as it stands, or what
+ * lies a little out of focus is drawn sharper or softer than in a frame at rest, and by the direction of the travel.
+ * And the lens point must not swing slowly through the shutter: a thing out of focus is drawn in each sample at its
+ * place along the travel plus its blur disc times the lens point, so where the lens points of neighbours in time lie
+ * together the copies bunch, and a bunch longer than the spread reaches shows as beads along a streak. So the mean of
+ * the lens points under the spread's own weights is kept near nothing all through the shutter; a swing from one sample
+ * to the next is what the spread closes. The deal starts from the best even stride through the lens points' own order
+ * and then lets pairs change places for as long as that helps. The set of lens points is the same, and so is the
+ * outcome for the same set and travel.
  */
 export function lensOrder(set: readonly Sample[], dx = 1, dy = 0): number[] {
   const n = set.length
@@ -138,70 +146,94 @@ export function lensOrder(set: readonly Sample[], dx = 1, dy = 0): number[] {
     centred(set.map((_, k) => frac(0.5 + ACROSS * (k + 1)) - 0.5)),
     centred(set.map((_, k) => k)),
   ]
-  const lu = centred(set.map((s) => s.lu))
-  const lv = centred(set.map((s) => s.lv))
+  const lens = [centred(set.map((s) => s.lu)), centred(set.map((s) => s.lv))]
   const px = centred(set.map((s) => s.px))
   const py = centred(set.map((s) => s.py))
   const t = centred(set.map((s) => s.t))
-  const was = [
-    [dx * dot(px, lu) + dy * dot(py, lu), dx * dot(px, lv) + dy * dot(py, lv)],
-    [-dy * dot(px, lu) + dx * dot(py, lu), -dy * dot(px, lv) + dx * dot(py, lv)],
-    [dot(t, lu), dot(t, lv)],
-  ]
+  const was = lens.map((l) => [dx * dot(px, l) + dy * dot(py, l), -dy * dot(px, l) + dx * dot(py, l), dot(t, l)])
+  const reach = (LENS_TENT.length - 1) / 2
+  const order = set.map((_, k) => k)
+  const left = lens.map(() => new Array<number>(n).fill(0))
+  const lean = lens.map(() => [0, 0, 0])
+  let weight = LENS_LEAN_WEIGHTS[LENS_LEAN_WEIGHTS.length - 1]!
+  const leanCost = (v: number) => weight * Math.max(0, Math.abs(v) - LENS_LEAN_FREE) ** 2
+  const smooth = (c: number, i: number) => {
+    let sum = 0
+    for (let k = -reach; k <= reach; k++) if (i + k >= 0 && i + k < n) sum += LENS_TENT[k + reach]! * left[c]![i + k]!
+    return sum
+  }
+  const settle = () => {
+    for (let c = 0; c < lens.length; c++) {
+      for (let k = 0; k < n; k++) left[c]![k] = lens[c]![order[k]!]! - was[c]![2]! * mine[2]![k]!
+      for (let m = 0; m < mine.length; m++) lean[c]![m] = mine[m]!.reduce((x, v, k) => x + v * lens[c]![order[k]!]!, 0) - was[c]![m]!
+    }
+  }
+  const cost = () => {
+    let sum = 0
+    for (let c = 0; c < lens.length; c++) {
+      for (const v of lean[c]!) sum += leanCost(v)
+      for (let i = 0; i < n; i++) sum += smooth(c, i) ** 2
+    }
+    return sum
+  }
   let best = Infinity
   let stride = 1
   let start = 0
   for (let a = 1; a < n; a++) {
     if (gcd(a, n) !== 1) continue
     for (let s = 0; s < n; s++) {
-      let off = 0
-      for (let m = 0; m < mine.length; m++) {
-        let x = -was[m]![0]!
-        let y = -was[m]![1]!
-        for (let k = 0; k < n; k++) {
-          const j = (a * k + s) % n
-          x += mine[m]![k]! * lu[j]!
-          y += mine[m]![k]! * lv[j]!
-        }
-        off += x * x + y * y
-      }
-      if (off < best - 1e-15) {
-        best = off
+      for (let k = 0; k < n; k++) order[k] = (a * k + s) % n
+      settle()
+      const now = cost()
+      if (now < best - 1e-15) {
+        best = now
         stride = a
         start = s
       }
     }
   }
-  const order = set.map((_, k) => (stride * k + start) % n)
-  const sums = mine.map((m, i) => [m.reduce((x, v, k) => x + v * lu[order[k]!]!, 0) - was[i]![0]!, m.reduce((x, v, k) => x + v * lv[order[k]!]!, 0) - was[i]![1]!])
-  for (let sweep = 0; sweep < 12; sweep++) {
-    let changed = false
-    for (let i = 0; i < n - 1; i++) {
-      for (let j = i + 1; j < n; j++) {
-        const du = lu[order[j]!]! - lu[order[i]!]!
-        const dv = lv[order[j]!]! - lv[order[i]!]!
-        let now = 0
-        let then = 0
-        for (let m = 0; m < mine.length; m++) {
-          const d = mine[m]![i]! - mine[m]![j]!
-          const x = sums[m]![0]!
-          const y = sums[m]![1]!
-          now += x * x + y * y
-          then += (x + d * du) * (x + d * du) + (y + d * dv) * (y + d * dv)
-        }
-        if (!(then < now - 1e-12)) continue
-        for (let m = 0; m < mine.length; m++) {
-          const d = mine[m]![i]! - mine[m]![j]!
-          sums[m]![0]! += d * du
-          sums[m]![1]! += d * dv
-        }
-        const keep = order[i]!
-        order[i] = order[j]!
-        order[j] = keep
-        changed = true
-      }
+  for (let k = 0; k < n; k++) order[k] = (stride * k + start) % n
+  settle()
+  const near = (i: number, j: number) => {
+    const out: number[] = []
+    for (let k = Math.max(0, i - reach); k <= Math.min(n - 1, i + reach); k++) out.push(k)
+    for (let k = Math.max(0, j - reach); k <= Math.min(n - 1, j + reach); k++) if (k > i + reach) out.push(k)
+    return out
+  }
+  const part = (touched: number[]) => {
+    let sum = 0
+    for (let c = 0; c < lens.length; c++) {
+      for (const v of lean[c]!) sum += leanCost(v)
+      for (const i of touched) sum += smooth(c, i) ** 2
     }
-    if (!changed) break
+    return sum
+  }
+  const change = (i: number, j: number) => {
+    for (let c = 0; c < lens.length; c++) {
+      const d = lens[c]![order[j]!]! - lens[c]![order[i]!]!
+      left[c]![i]! += d
+      left[c]![j]! -= d
+      for (let m = 0; m < mine.length; m++) lean[c]![m]! += (mine[m]![i]! - mine[m]![j]!) * d
+    }
+    const keep = order[i]!
+    order[i] = order[j]!
+    order[j] = keep
+  }
+  for (const stage of LENS_LEAN_WEIGHTS) {
+    weight = stage
+    for (let sweep = 0; sweep < 200; sweep++) {
+      let changed = false
+      for (let i = 0; i < n - 1; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const touched = near(i, j)
+          const now = part(touched)
+          change(i, j)
+          if (part(touched) < now - 1e-12) changed = true
+          else change(i, j)
+        }
+      }
+      if (!changed) break
+    }
   }
   return order
 }
