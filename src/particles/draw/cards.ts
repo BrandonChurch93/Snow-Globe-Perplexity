@@ -1197,6 +1197,8 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
   float wide = 0.0;
   float lum = 0.0;
   float cover = 0.0;
+  // how much of a glow an ember at rest has (set below, read where the ember is tinted)
+  float glowS = 0.0;
   float sg = sqrt(vStreak.w);
   if (restL < 1.0) {
     // no two lights alike: the point of each and the glow round it are each of their own size, most points tiny and sharp
@@ -1212,7 +1214,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
       rw = max(rw, ${n(CARD.glow.widePx)} * uPoint.w);
     }
     vc = rc * rc + vStreak.w;
-    float glowS = spark ? max(max(bigS, step(fract(vL3.w * 29.0), ${n(CARD.spark.restGlowShare)})), smoothstep(${n(CARD.spark.restGlowPx[0])}, ${n(CARD.spark.restGlowPx[1])}, sqrt(vc) / uPoint.w)) : 0.0;
+    glowS = spark ? max(max(bigS, step(fract(vL3.w * 29.0), ${n(CARD.spark.restGlowShare)})), smoothstep(${n(CARD.spark.restGlowPx[0])}, ${n(CARD.spark.restGlowPx[1])}, sqrt(vc) / uPoint.w)) : 0.0;
     // an ember at rest sits in a glow of its own, so many times its point wide: the larger the point the wider its glow and the more of its light is in it
     if (spark) rh = mix(min(mix(${n(CARD.spark.restHalo[0])}, ${n(CARD.spark.restHalo[1])}, bigS) * sqrt(vc), ${n(CARD.spark.restHaloReach)} * (${n(CARD.glow.wide * 2.2)} * r + 2.6 * sqrt(vStreak.w) + 1.0)), rh, vL2.w);
     float vh = rh * rh + vStreak.w;
