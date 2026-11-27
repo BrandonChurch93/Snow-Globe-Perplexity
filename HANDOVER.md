@@ -1,6 +1,6 @@
 # Handover: `controls_finisher`, the steps, the governor line, two late mends (branch `agent/p6-steps`)
 
-Written 06:10 UTC Nov 27, when main was at `a7f9032b` (chain 17). Brought up to date 08:45 UTC with section 9 (where
+Written 06:10 UTC Nov 27, when main was at `a7f9032b` (chain 17). Brought up to date 08:37 UTC with section 9 (where
 the jobs of 05:12 and 06:12 stand), section 10 (job 1) and section 11 (job 2). Main is now at `82d0b882` (chain 24),
 which holds `agent/p6-steps` at `7a863f7f`. Sections 1 to 8 stand as written at 06:10; where a later job changed what
 they say, sections 10 and 11 say so.
