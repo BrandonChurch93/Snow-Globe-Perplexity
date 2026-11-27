@@ -580,8 +580,8 @@ void main() {
   }
   float s3 = inGlass / ${num(glassLook.third.face)};
   if (s3 < 1.0) {
-    float a3 = thetaI + 2.0 * (asin(s3) - asin(inGlass));
-    float f3 = glassFresnel(sqrt(1.0 - s3 * s3), GLASS_IOR) * (1.0 - smoothstep(${num(glassLook.third.fade[0])}, ${num(glassLook.third.fade[1])}, s3));
+    float a3 = thetaI + 2.0 * (asin(clamp(s3, -1.0, 1.0)) - asin(inGlass));
+    float f3 = glassFresnel(sqrt(max(1.0 - s3 * s3, 0.0)), GLASS_IOR) * (1.0 - smoothstep(${num(glassLook.third.fade[0])}, ${num(glassLook.third.fade[1])}, s3));
     col += glassSeen(p, cos(a3) * ni + sin(a3) * ti, ${num(glassLook.third.softDeg * RAD)}, 2, ${num(glassLook.third.own)}) * ${vec(glassLook.third.tint)} * (f3 * pass);
   }
 
