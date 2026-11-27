@@ -64,7 +64,7 @@ const baseUniforms = {
 }
 const FLOOR_SHARE = 0.1
 // The brambles' tones, measured against the approved image in boxes at the review tier.
-const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 55, CARD_WEST: 36, TOP: 0, BARK: 0.7, LIFT: 0.005, LIFT_WEST: 75, FILL: 0.08, SOFT: 0.85, SOFT_EAST: 8, KNOB: 9, FISSURE: 1.8, BODY: 5, THORN: 0.2, SHEAF: 1.6 }
+const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 55, CARD_WEST: 36, TOP: 0, BARK: 0.7, LIFT: 0.005, LIFT_WEST: 75, FILL: 0.08, SOFT: 1.18, SOFT_EAST: 8, KNOB: 9, FISSURE: 1.8, BODY: 5, THORN: 0.2, SHEAF: 1.6 }
 const DRUM_SHEEN = 1.7
 const DRUM_FOLD = 5
 const DRUM_CRINKLE = 0.8
@@ -377,7 +377,7 @@ const IRON_AFTER = `
   vec3 softN = normalize(mix(lineRound, geometryNormal, 0.45));
   vec3 softL = normalize(mix(normalize(mat3(viewMatrix) * vec3(0.2, 1.0, 0.3)), ironKey, ironEast));
   float softH = max(dot(softN, normalize(softL + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.9, 0.96, 1.1) * (BRAMBLE_SOFT * (1.0 + BRAMBLE_SOFT_EAST * ironEast) * pow(abs(softH), 18.0) * (0.6 + 0.9 * smoothstep(0.35, 0.75, baseNoise(vBasePos * 6.0 + 57.0))) * smoothstep(0.0, 0.3, dot(softN, softL)) * (0.5 + 0.9 * fibreHere * (0.6 + 0.8 * knobHere)) * smoothstep(0.15, 0.6, baseAo) * (1.0 - baseDrum) * mix(1.0, 0.3, ironWest));
+  reflectedLight.directSpecular += vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.9, 0.96, 1.1) * (BRAMBLE_SOFT * (1.0 + BRAMBLE_SOFT_EAST * ironEast) * pow(abs(softH), 60.0) * (0.3 + 1.7 * smoothstep(0.35, 0.75, baseNoise(vBasePos * 6.0 + 57.0))) * smoothstep(0.0, 0.3, dot(softN, softL)) * (0.5 + 0.9 * fibreHere * (0.6 + 0.8 * knobHere)) * smoothstep(0.15, 0.6, baseAo) * (1.0 - baseDrum) * mix(1.0, 0.3, ironWest));
   float lineFace = clamp(dot(lineRound, geometryViewDir), 0.0, 1.0);
   reflectedLight.indirectDiffuse += vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(1.15, 1.05, 0.95) * (0.36 * baseDrum * lumpShade * mix(0.35, 1.0, baseAo) * mix(0.45, 1.0, smoothstep(-10.0, 30.0, vBasePos.x)) * mix(0.35, 1.0, smoothstep(-52.0, -24.0, vBasePos.x)));
   // The wood is never quite black: the sky lifts it, and at the left the lamps behind fill it warm.
