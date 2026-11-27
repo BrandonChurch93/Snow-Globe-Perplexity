@@ -110,3 +110,25 @@ What is short of the approved picture on the tenth list:
 The dew's line: branch `agent/p6-spring-dew` carries `liveWide` 1.8 for 1.22 as one commit on main. See picture 40 and the report: on main the line changes almost nothing in the box at (2496,1560); what stands out there is the caps' rims, which the seventh list's bound of the low sun mends (on this branch since the seventh list).
 
 Proofs run on aa229f81: tsc 0; the whole vitest 68 files passed and 1 skipped (`tests/shake-looks.test.ts`, which runs only when asked), 950 tests passed, 8 skipped, 293 s, `tests/steps.test.ts` 133 s; strict pass for spring-rest and spring-shake; G15 pass (the gate prints fall's 1,759,623 of 1,800,000); the six draft stills that are not spring's equal the list of 63914740; spring-rest caa42db060e03278, spring-landed bfda838820e392ab; spring landed at review looked at.
+
+## The seat at the approved's line (head d061e85e, main 5d7029b3 merged; round one of two)
+What was built, by grant in `assets-src/base-spring/build.mjs`, `layout.mjs`, `src/seasons/spring/base.ts` and `src/seasons/spring/mini/village.ts`:
+- The roll's top falls 4.8 mm inward to the glass at the front (`TROUGH`, from `BROW_H` 42.5 mm), so the crown of the roll is the crest the camera sees and the miniature's bank shows over it. `CREST` moves the crown by azimuth; its 21 front nodes are fitted to the approved's fine lit edge with `/tmp/sk/fine.py` (greatest luma step in rows 725 to 760 of the approved against the top of the base in the ids view).
+- The seat's line, hd review, build against approved: x 960: 743.0 and 743.0; from x 780 to 1160 within 2.2 px (worst at x 1160: 730.0 against 732.2; x 1120: 735.9 against 737.6). At x 760 the build is 5.6 px high: the flank's climb begins there.
+- The rock's second colour number is the drop under the crown (a tenth to the millimetre); `liveLip` in base.ts lights the rim by it. The fringe of heads stands on the crown (`crownAt`). Twenty petals lie on the roll's shoulder (`ROLL_PETALS`, placed by `underCrown`); two stay on the body.
+- village.ts: `SKIRT_FILL` 60, `SOIL.tone` and `SOIL.fill`, the bank's moss at half its gain, and the skirt's fill split into a fuzz term lit by the room, a warm lip term and the unchanged rock fill. `BANK`, `BANK_EARTH`, `BANK_TINT`, `BANK_SUN` and the lawn are as on main.
+- Make target changed: `base-spring` only (127,661 triangles; spring by sum 1,493,434 of 1,800,000). The village asset was not remade.
+
+Numbers, all on the tree of d061e85e:
+- M3 spring-rest at review 0.9022: base 0.934 over 171,751 pixels, miniature 0.902 over 110,773 (main reads 0.8947: 0.900 and 0.895).
+- Guards (hd draft): spring-rest c5cd17d91bc346bc, spring-landed 066fa33e081d9d26; the other six equal main's list.
+- M4 of shakes 1 to 4: 0.9694, 0.889, 0.9571, 0.9608 (main 0.9694, 0.9434, 0.9571, 0.9608). Shake 2 fell by 0.054: the bank that now shows under the lawn is not hidden by the storm at the swap. It passes the kit's 0.85. M5: 0.9932, 1, 0.9878, 0.9998.
+- 3840, film frames 1250 to 1253, final: one frame events (a pixel one channel at least T over its eight neighbours, absent within 6 px in the frame before and after) at 1251 and 1252: rim whole (1240,1400, 1400 by 160) 0 and 0 at T 32 and T 64; rim middle 0; right shoulder (2240,1395, 300 by 100) 0; bank through the glass (1400,1380, 1040 by 90) 0; whole base region (1100,1280, 1660 by 800) T 32: 2 and 2, T 64: 1 and 0. Share over 12 at the fine shift, 1250/1251 and 1250/1252: middle 1900,1420: 0.4 and 1.3; right rim 2240,1395: 0.2 and 0.5; shoulder 2360,1440: 0.9 and 2.2; the box 1900,1380 (100 by 60, the pond's moving water over the bank's top): 4.9 and 9.9.
+
+Below the bar, by what shows most:
+- The bank through the glass: a band about 40 px high of flat olive brown with cream caps; the approved has low dark green mounds with a warm fuzzy sunlit lip and the lawn's mounds over them (x 800 to 1100, brightest quarter at rows 705 and 715: build (99,88,53) and (90,82,54), approved (218,180,152) and (119,96,71); median at row 725: build (24,25,16), approved (38,42,30)). The caps show flat facets at 3840 (picture 43). The bank's top line is nearly straight (`MOUND.lipMm` in the village build is the lever, not tried). Its hue is the mesh colour times `BANK_TINT`, which is not in the grant.
+- The roll is a brighter, more saturated green than the approved's dark olive (x 850 to 1070, median at rows 753, 756 and 759: build (56,66,34), (42,56,25), (31,45,19) against (45,54,33), (30,41,26), (26,36,25)).
+- The rim's lit line: a cream band without the approved's beads of heads; the right shoulder (x 1180 to 1280) is a smooth lit slab where the approved has piled heads with dark creases.
+- The petals on the roll read as dark mauve wedges at 3840 and are hard to see at hd; the approved's are pale grey pink, 6 to 10 px.
+- M4 of shake 2 at 0.889.
+Not seen: the film at speed; any camera but the hero; the low and medium tiers of the base's mesh.
