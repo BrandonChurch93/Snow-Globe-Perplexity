@@ -1,47 +1,49 @@
 {
-  "number": 179,
-  "time": "2026-11-26 22:09 UTC",
+  "number": 187,
+  "time": "2026-11-27 01:38 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 179 · 2026-11-26 22:09 UTC · Phase 6",
-    "Rough draft 4 is joined (Preview 04). Drawn anew: 600 frames, film frames 1200 to 2399 at every second frame, on `1878461b` by one farm machine (four ranges of 150, 2.23 to 3.71 s a frame, every record's errors empty, no value that is no number). Kept from draft 3: the other eight ranges (1,200 frames) and the opening (434 frames). A scan of the four new ranges finds no strongly blue pixel in the ball, no dark frame and no stall. The blue blocks of draft 3 near 0:42 are gone; the change into summer is pink, a cream flash, a cream gold whirl (picture 2). Not in this draft: the base's third list and the air's mend of the cover, which reached main after its frames were drawn.",
-    "A correction of my own reading. I named the green of the change into fall a fault (the name of Still 22, the note on Preview 03, a note to the change's owner at 21:46 UTC). It is not one. The approved picture of fall in mid shake, `references/approved/fall-shake.png`, is a green fog through the whole dome with orange leaves across it, and fall's veil is green in its own file (`src/seasons/fall/veil.ts` line 7). I had written from memory without the picture beside me. The note to the change's owner was taken back at 21:53 UTC, before anything was built on it. What does fall short of the approved picture: at the cover's peak the ball is one flat even mint with hardly a leaf on it (picture 3: approved left, frames 2130 and 2150 of the build). That is the change owner's point on the flat globe, in each season's own colour.",
-    "Main is `1e9f9289`, pushed 22:07 UTC after the whole test run (58 files passed, 1 skipped; 794 tests passed, 4 skipped). In it: summer's base after its third list (`6514c19e`, made as `a0251226`: 229351 triangles in 4 meshes), the air's mend of the change around summer (`d8b98f9a`, one file, `src/seasons/summer/veil.ts`) and the field `left` on a moment (`41deaa7e`).",
-    "Open item 245 is closed: on `15d7017d` a farm machine reads \"pass M4 shake-2: 0.905\" and \"pass M4 shake-3: 0.9602\" (it was 0.7558), the other six lines green, and frame 1648 without a blue pixel in the left third of the glass. Found in the same run, older than the mend and passed to the change's owner for its point on the blink: from frame 1403 to 1404 the glass's mean falls by 16 levels in one frame.",
-    "A slip of mine, open item 247: the gate's detail line for summer is red on main since `15d7017d`. \"FAIL M3 summer-rest: 0.6211 (threshold 0.75, detail.minSharpnessRatio)\", base 0.621 where it read 1.208, miniature 0.820. The base's third list brought its tones to the approved picture's by thirds and took the stone's grain with the grey; I looked at the picture (picture 1: a round mound with slanting swirls whose fine even lines read as turned wood), ran the whole test run and pushed without reading the measure's line. Two builders read it within ten minutes. The base's builder mends it first on its fourth list; summer's new base is not published until the line is green. From now on every merge of a summer part reads that line on the merged tree before its push.",
-    "The film in motion at 3840 x 2160, final tier, 60 frames a second, has now been looked at in four places, 30 frames each from the second with the most travel, on `1621ff09`. Fall: edges, bark and cobweb hold, nothing stands with the screen, no speckle. Spring: moss, outline, chimney and roof hold; the larger beads on the glass are patches of one pixel dots that differ in every frame (picture 4, at 8 times) and the dew on the dark moss draws as rings of dots. Winter, opening and close: leaves, outline and stone hold; the lamp's reflection on the pond ice is a field of one pixel dots drawn anew in every frame, and one frond of the frost on the glass turns from soft to crisp between frames 30 and 31. Spring's two faults have a mender (`tools/briefs/p6/spring-drops.md`); winter's two get one next. A frame at this size cost 48.8 to 82.6 s on a machine with 8 CPUs. Summer in motion is not looked at yet; it waits for summer's passes.",
-    "The inertia builder's branch reads G11, G12 and G14 green, determinism passing with film and loop, and with main merged all eight M4 and M5 lines green (shake-2 0.9046, shake-3 0.9548). Its summer miniature reads 0.791 against main's 0.820, more than decision 168 allows; it is finding out what stands in front of the miniature before anything is merged.",
-    "Sound: 7,420 of 10,000 credits spent, no call since.",
-    "phase 6: 19.33 h used of its 12.00 h box",
-    "allowance (after the review): 19.33 h used of 12.00 h allowed",
+    "Status 187 · 2026-11-27 01:38 UTC · Phase 6",
+    "Main moved to `ad011f2b` at 01:25 UTC (6:25 PM MT): spring's base, fall's air, two clamps in the ring's shader by the strict check, and my two guards, with their checks read on the merged tree (01:04:57 to 01:24:34 UTC): tsc exit 0, spring's base made and committed, build exit 0 (engine `04d60c2dcdbccaa1`), \"pass M3 spring-rest: 0.8298\", \"FAIL M3 fall-rest: 0.6996\" (unchanged: the line reads base and miniature, which this chain did not touch), eight draft stills (winter's and summer's four byte equal, spring's and fall's four changed), triangles at high under the limit in every season (fall the fullest, 1,791,325 of 1,800,000), the whole vitest 839 passed and 4 skipped. Open items 244 (the blue blocks at the left of summer's glass) and 250 (an address that names a set of files the host does not hold) are mended and closed. Passing these checks is not the bar: spring, summer and fall are below it by eye.",
+    "The app is being published again from that head: its 40 first pictures are being drawn again since 01:25:49 UTC, then the publish build in a clean tree and a fresh security review. The address does not change.",
+    "Picture 1, rough draft 5 (Preview 05 is the video): twenty four frames across the whole film. It was drawn from main as of 00:43 UTC (`f4df90d1`): it has the hand's inertia and not yet summer's tree fifth pass, winter's mend at 3840, spring's new base or fall's air's last pass. 12 chunks from three helper machines, 1,800 frames at 960x540, joined behind the prompt opening to 2,233 frames, 74.43 s, with the film's sound. Scan of all chunks: no dark frame, no stalled pair of frames, no page message; 7 strongly blue pixels in three frames (film frames 2362, 2496, 2648). Below the bar, as the stills before said: the changes of season (a pale wash over the picture, the base changing under it), summer's tree and base, fall's air and base, spring's flank.",
+    "Picture 2, fall's base: approved above, main in the middle, the builder's push below. Decision 176: the push is held and not merged. It reads \"FAIL M3 fall-rest: 0.6449\" with the base at 0.645 against main's 0.700; the vines are darker and nearer and the left tangle has thin twigs, but the pumpkins went darker (approved middle pumpkin luminance median 29, main 20) and the leather at the right reads as grey speckle. Second list sent 01:21 UTC: near black wet vines with one long narrow highlight, creased leather, lit orange rinds; a line at 02:10 UTC, limit 03:00 UTC.",
+    "Picture 3, winter into spring at 3840, film frame 631 from a render machine, a cut at full size and its lights at four times: every light is a row of beads. The cause is found by the shutter's builder and that machine, and it is not the cap of 96 samples that I named earlier: the times of the samples inside a frame are uneven (a gap every seventh sample), each sample sits at its own place in the pixel so a small light lands 0 to 3 times in a pixel, and the two marks the rule counts travel by miss the ball's twist. The mend: more marks, even times, and each sample spread over one sample's travel along the ball's own motion, only at the final tier and only in moving frames; rest frames must stay byte equal. Due 03:30 UTC. Not seen yet: any frame after the mend.",
+    "A new open item, 251, found while joining the draft: chunk 3000 to 3298 was drawn by two machines from the same commit and the two files differ after decoding (144 of 150 frames, a median of 62,187 pixels a frame over 8 levels, nearly equal at the first frame and drifting apart). It may be the coding alone; if the drawn frames differ, chunks of the masters from twelve machines would step at their joins. Both machines were asked at 01:35 UTC for the hashes of their drawn frames. No master frame is drawn before this is settled.",
+    "The miniatures made in steps (branch `agent/p6-steps`, `1b0552f3`, pushed 01:23 UTC): the page no longer stands still while a season is made. Its builder reads M3 summer 0.8818, eight draft stills equal to main's, the four miniatures built whole and in steps to the same sha256, tsc 0, vitest 860 passed and 8 skipped, determinism pass. On a real graphics card the fit to a frame is UNKNOWN. It merges in the next chain, after the publish.",
+    "Second lists are out to spring's base (01:09 UTC), fall's air (01:18) and fall's base (01:21). 15 agents are at work at 01:36 UTC: summer (tree, miniature, air, glass, sand, stone), fall (base, miniature, air), spring (base), the change of season, the controls, the shutter, and two draft machines on the question of item 251.",
+    "Render counts. Drawn here since the last status: the app's first pictures, about half of 40 so far. On helper machines: the last 4 chunks of rough draft 5 (600 frames at 960x540) and one chunk drawn twice (150 frames), and at 3840 the shutter's builder drew film frame 678 and draws 643 and 300. No frame of the masters yet.",
+    "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
+    "phase 6: 22.81 h used of its 12.00 h box",
+    "allowance (after the review): 22.81 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-179-1.jpg",
-      "caption": "Summer at rest on main 15d7017d, hd, review tier. The base after its third list is a round mound with slanting swirls; its fine even lines read as turned wood and the gate's detail line is red by it. Still below the bar.",
-      "w": 1200,
-      "h": 675
-    },
-    {
-      "file": "out/stills/status/status-179-2.jpg",
-      "caption": "Rough draft 4, 24 frames from 1280 to 2014: spring into summer, then summer. No blue is left in the change.",
+      "file": "out/stills/status/status-187-1.jpg",
+      "caption": "Rough draft 5, twenty four frames across the whole film",
       "w": 1200,
       "h": 453
     },
     {
-      "file": "out/stills/status/status-179-3.jpg",
-      "caption": "Fall's storm: the approved picture left, the build at frames 2130 and 2150. Green is the approved look. The flat even ball at the cover's peak is what falls short.",
-      "w": 1200,
-      "h": 224
+      "file": "out/stills/status/status-187-2.jpg",
+      "caption": "Fall's base, approved above, main in the middle, the held push below, below the bar",
+      "w": 1030,
+      "h": 1200
     },
     {
-      "file": "out/stills/status/status-179-4.jpg",
-      "caption": "Spring at 3840 final with the camera travelling, four neighbouring frames at 8 times: a bead on the glass as a patch of one pixel dots that differ in every frame (above), the dew on the dark moss as rings of dots (below). A mender has both.",
+      "file": "out/stills/status/status-187-3.jpg",
+      "caption": "Winter into spring at 3840, film frame 631 and its lights at four times, rows of beads, being mended",
       "w": 1200,
-      "h": 599
+      "h": 347
+    },
+    {
+      "file": "out/stills/status/status-187-4.jpg",
+      "caption": "Still: spring rest hero, hd, draft",
+      "w": 1200,
+      "h": 675
     }
   ]
 }

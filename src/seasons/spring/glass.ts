@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { config } from '../../config'
 import { stageShader, stageUniforms } from '../../core/materials'
 import { resolveBehind } from '../../core/accumulator'
+import { Pass } from '../../core/fullscreen'
 import { setGlass, shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { lensUniforms } from '../../scene/cameras'
@@ -119,6 +120,7 @@ const dewUniforms = {
 const behindUniforms = {
   uBehind: { value: null as THREE.Texture | null },
   uBehindSize: { value: new THREE.Vector2(0, 0) },
+  uSoft: { value: null as THREE.Texture | null },
 }
 
 // The lens as the stage has it this frame: its aperture and the distance it is focused at.
@@ -250,15 +252,20 @@ vDewSoft = dSoft;
 const SHADE_GLSL = `
 ${ROOM_GLSL}
 uniform sampler2D uBehind;
+uniform sampler2D uSoft;
 uniform vec2 uBehindSize;
 uniform vec3 uKeyDir;
 uniform vec3 uKeyCol;
 uniform vec3 uRimDir;
 uniform vec3 uRimCol;
-// One tap of the frame behind the drop; a value that is not a number there counts as black.
-vec3 dewTap(vec2 at) {
-  vec3 c = textureLod(uBehind, clamp(at / uBehindSize, 0.002, 0.998), 0.0).rgb;
-  return any(isnan(c)) || any(isinf(c)) ? vec3(0.0) : c;
+// The frame behind the drop: the mean of the span pixels of it that one pixel of the drop stands for.
+vec3 dewTap(vec2 at, float span) {
+  vec2 uv = clamp(at / uBehindSize, 0.002, 0.998);
+  float level = log2(max(span, 1.0));
+  vec3 soft = textureLod(uSoft, uv, max(level - 1.0, 0.0)).rgb;
+  if (level >= 1.0) return soft;
+  vec3 c = textureLod(uBehind, uv, 0.0).rgb;
+  return mix(any(isnan(c)) || any(isinf(c)) ? vec3(0.0) : c, soft, level);
 }
 // Whether this drop is still on the glass in the change, and how large: each drop shrinks away at its own moment.
 float dewKeep(float own) {
@@ -273,11 +280,16 @@ vec3 dewWater(vec3 body, vec3 n, vec3 eye, float d2, float crescent, float skin)
   float edge = smoothstep(0.3, 1.0, d2);
   vec3 col = body * mix(${f(look.body)}, ${f(look.edge)}, edge * edge * skin);
   float nv = max(dot(n, eye), 0.0);
-  col += stageRoomSeen(reflect(-eye, n), 0.12) * (0.03 + ${f(look.mirror)} * pow(abs(1.0 - nv), 3.0)) * skin;
+  // A glint is drawn no narrower than two pixels, with the same light in all, and the room in the skin is as soft.
+  float turn = max(length(dFdx(n)), length(dFdy(n)));
+  float lobe = 1.386 / max(turn * turn, 1e-6);
+  float pk = clamp(lobe, 1.0, 140.0);
+  float pr = clamp(lobe, 1.0, 90.0);
+  col += stageRoomSeen(reflect(-eye, n), sqrt(0.0144 + 1.2 * min(turn, 2.0))) * (0.03 + ${f(look.mirror)} * pow(abs(1.0 - nv), 3.0)) * skin;
   vec3 hk = normalize(uKeyDir + eye);
   vec3 hr = normalize(uRimDir + eye);
-  col += uKeyCol * (${f(look.glint)} * pow(max(dot(n, hk), 0.0), 140.0) + ${f(look.crescent)} * crescent) * skin;
-  col += uRimCol * ${f(look.glint)} * pow(max(dot(n, hr), 0.0), 90.0) * skin;
+  col += uKeyCol * (${f(look.glint)} * (pk / 140.0) * pow(max(dot(n, hk), 0.0), pk) + ${f(look.crescent)} * crescent) * skin;
+  col += uRimCol * ${f(look.glint)} * (pr / 90.0) * pow(max(dot(n, hr), 0.0), pr) * skin;
   return col;
 }
 `
@@ -317,8 +329,10 @@ void main() {
     float det = jac[0][0] * jac[1][1] - jac[1][0] * jac[0][1];
     vec2 off = abs(det) > 1e-9 ? inverse(jac) * vDewQ.xy : vec2(0.0);
     float rpx = max(length(off) / max(length(vDewQ.xy), 1e-3), 0.5);
-    float field = uBehindSize.y * ${f(look.field)} * (0.35 + 0.65 * d2);
-    body = dewTap(gl_FragCoord.xy - off * (1.0 + field / rpx));
+    float reach = uBehindSize.y * ${f(look.field)};
+    float field = reach * (0.35 + 0.65 * d2);
+    float span = min(1.0 + reach * (0.35 + 1.95 * d2) / rpx, max(reach, 1.0));
+    body = dewTap(gl_FragCoord.xy - off * (1.0 + field / rpx), span);
   } else {
     body = stageRoomSoft(reflect(eye, n), 0.4);
   }
@@ -412,7 +426,7 @@ void main() {
     vec2 grad = vec2(dFdx(vTrail.x), dFdy(vTrail.x));
     float g2 = max(dot(grad, grad), 1e-9);
     vec2 off = grad * vTrail.x / g2;
-    body = dewTap(gl_FragCoord.xy - off - grad * inversesqrt(g2) * (x / w) * uBehindSize.y * ${f(look.trailField)});
+    body = dewTap(gl_FragCoord.xy - off - grad * inversesqrt(g2) * (x / w) * uBehindSize.y * ${f(look.trailField)}, 1.0 + uBehindSize.y * ${f(look.trailField)} * sqrt(g2) / w);
   } else {
     body = stageRoomSoft(reflect(eye, n), 0.4);
   }
@@ -666,6 +680,59 @@ function filmGeometry(): THREE.BufferGeometry {
 const copies = new Map<string, THREE.FramebufferTexture>()
 let copied = -1
 
+const SOFT = `uniform sampler2D uFrom;
+uniform ivec2 uFromSize;
+out vec4 o;
+vec3 tap(ivec2 q) {
+  vec3 c = texelFetch(uFrom, min(q, uFromSize - 1), 0).rgb;
+  return any(isnan(c)) || any(isinf(c)) ? vec3(0.0) : clamp(c, 0.0, 30000.0);
+}
+void main() {
+  ivec2 p = ivec2(gl_FragCoord.xy) * 2;
+  o = vec4(0.25 * (tap(p) + tap(p + ivec2(1, 0)) + tap(p + ivec2(0, 1)) + tap(p + ivec2(1, 1))), 1.0);
+}`
+
+const softUniforms = {
+  uFrom: { value: null as THREE.Texture | null },
+  uFromSize: { value: new THREE.Vector2(1, 1) },
+}
+const softs = new Map<string, THREE.WebGLRenderTarget>()
+let softPass: Pass | null = null
+
+// The soft copy: the frame at half its size with every value that is not a number taken out, and its levels under it.
+function soften(renderer: THREE.WebGLRenderer, target: THREE.WebGLRenderTarget, from: THREE.Texture): void {
+  const w = Math.ceil(target.width / 2)
+  const h = Math.ceil(target.height / 2)
+  const type = target.texture.type === THREE.FloatType ? THREE.HalfFloatType : target.texture.type
+  const key = `${w} ${h} ${type}`
+  let soft = softs.get(key)
+  if (!soft) {
+    if (softs.size >= 4) {
+      for (const old of softs.values()) old.dispose()
+      softs.clear()
+    }
+    soft = new THREE.WebGLRenderTarget(w, h, {
+      type,
+      format: THREE.RGBAFormat,
+      minFilter: THREE.LinearMipmapLinearFilter,
+      magFilter: THREE.LinearFilter,
+      depthBuffer: false,
+      stencilBuffer: false,
+      generateMipmaps: true,
+    })
+    soft.texture.colorSpace = THREE.NoColorSpace
+    softs.set(key, soft)
+  }
+  softPass ??= new Pass(SOFT, softUniforms)
+  softUniforms.uFrom.value = from
+  softUniforms.uFromSize.value.set(target.width, target.height)
+  const drawn = { ...renderer.info.render }
+  softPass.render(renderer, soft)
+  renderer.setRenderTarget(target)
+  Object.assign(renderer.info.render, drawn)
+  behindUniforms.uSoft.value = soft.texture
+}
+
 // The frame as it stands when the glass has been drawn, for the drops to look through. One copy serves the beads and the
 // trails: it is taken before the first of them is drawn.
 function copyBehind(renderer: THREE.WebGLRenderer, material: THREE.Material, first: boolean): void {
@@ -681,6 +748,7 @@ function copyBehind(renderer: THREE.WebGLRenderer, material: THREE.Material, fir
     const resolved = resolveBehind(renderer, target, 'drops')
     if (resolved) u.uBehind.value = resolved
     u.uBehindSize.value.set(resolved ? target.width : 0, resolved ? target.height : 0)
+    if (resolved) soften(renderer, target, resolved)
     copied = renderer.info.render.frame
     return
   }
@@ -700,6 +768,7 @@ function copyBehind(renderer: THREE.WebGLRenderer, material: THREE.Material, fir
     copies.set(key, copy)
   }
   renderer.copyFramebufferToTexture(copy)
+  soften(renderer, target, copy)
   copied = renderer.info.render.frame
   u.uBehind.value = copy
   u.uBehindSize.value.set(target.width, target.height)

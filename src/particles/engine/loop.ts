@@ -1,7 +1,7 @@
 import { config } from '../../config'
 import { hash2, unit } from '../../core/rng'
 import type { SdfGrid } from '../../core/stage'
-import { barSeconds, beatSeconds, globePoseAt, stateSeconds, stillTimeline, type Timeline } from '../../film/timeline'
+import { barSeconds, beatSeconds, eventAt, globePoseAt, stateSeconds, stillTimeline, type Timeline } from '../../film/timeline'
 import { Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SLOSH, LIQUID_TURBULENCE, LIQUID_TURN, TURBULENCE_MAX } from '../../globe/liquid'
 import { makeShake } from '../../shake/table'
 import { COVER_N, COVER_SPAN_MM, DT, emberGlow, heapCover, ParticleEngine, parkPoint, STATE_HIDDEN, STATE_LIQUID, WALL, wanderAt, wanderRates, type EngineOptions } from './engine'
@@ -199,7 +199,7 @@ export class LoopPaths {
       peak = Math.max(peak, Math.hypot(px, py, pz) * window)
       reach[j] = Math.max(j > 0 ? reach[j - 1]! : 0, t >= t0 ? model.maxSpeed : 0)
       for (let c = 0; c < LIQUID_LENGTH; c++) this.trace[j * LIQUID_LENGTH + c] = s[c]! * window
-      model.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t)
+      model.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t, eventAt(tl, t)?.beat ?? null)
     }
     const tame = peak > SURGE_MAX ? SURGE_MAX / peak : 1
     for (let j = 0; j <= steps; j++) {

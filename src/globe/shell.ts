@@ -580,8 +580,8 @@ void main() {
   }
   float s3 = inGlass / ${num(glassLook.third.face)};
   if (s3 < 1.0) {
-    float a3 = thetaI + 2.0 * (asin(s3) - asin(inGlass));
-    float f3 = glassFresnel(sqrt(1.0 - s3 * s3), GLASS_IOR) * (1.0 - smoothstep(${num(glassLook.third.fade[0])}, ${num(glassLook.third.fade[1])}, s3));
+    float a3 = thetaI + 2.0 * (asin(clamp(s3, -1.0, 1.0)) - asin(inGlass));
+    float f3 = glassFresnel(sqrt(max(1.0 - s3 * s3, 0.0)), GLASS_IOR) * (1.0 - smoothstep(${num(glassLook.third.fade[0])}, ${num(glassLook.third.fade[1])}, s3));
     col += glassSeen(p, cos(a3) * ni + sin(a3) * ti, ${num(glassLook.third.softDeg * RAD)}, 2, ${num(glassLook.third.own)}) * ${vec(glassLook.third.tint)} * (f3 * pass);
   }
 
@@ -1046,7 +1046,7 @@ export class Shell {
     sh.uBase.value.setRGB(a.main[0] + (b.main[0] - a.main[0]) * t, a.main[1] + (b.main[1] - a.main[1]) * t, a.main[2] + (b.main[2] - a.main[2]) * t)
     sh.uPool.value.copy(f.pool)
     sh.uOwn.value = glassLook.ownSources ? 1 : 0
-    sh.uTurn.value.setFromMatrix4(this.turn.makeRotationFromEuler(this.euler.set(f.globe.tiltX, 0, f.globe.tiltZ)))
+    sh.uTurn.value.setFromMatrix4(this.turn.makeRotationFromEuler(this.euler.set(f.globe.tiltX, f.globe.twist ?? 0, f.globe.tiltZ, 'XZY')))
     sh.uGlobeAt.value.set(f.globe.x, f.globe.y, f.globe.z)
     sh.uBloom.value.copy(f.bloomTint).multiplyScalar(glassLook.bloom.gain)
     const ga = glassOf(a.season)

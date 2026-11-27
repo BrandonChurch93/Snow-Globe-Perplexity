@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { config, shots, tiers } from '../src/config'
 import { FRAME } from '../src/app/framing'
 import * as THREE from 'three'
-import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, passCount, passLevel, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS, stillLevel } from '../src/core/materials'
+import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, passCount, passLevel, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS, stageUniforms, stillLevel } from '../src/core/materials'
+import { STILL_SIDE, stillBytes } from '../src/core/still'
 import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 import { loopMoment, timelineMoment } from '../src/film/moments'
@@ -11,6 +12,7 @@ import { loopSeconds } from '../src/film/loop'
 import { eventSeconds, filmTimeline, stillTimeline, type ShakeEvent, type Timeline } from '../src/film/timeline'
 import { CHANGE_BLOOM } from '../src/scene/lighting'
 import { makeSlab, REFLECT_MIX, ReflectMix, reflectStep } from '../src/scene/surface'
+import { STILL_FILE, stillSource } from '../tools/lib/stilltile.mjs'
 
 const s = config.shake
 const BEAT_S = 60 / config.film.defaultBpm
@@ -390,10 +392,25 @@ describe('the dressing on the glass under a change', () => {
     const still = /\nbool stageGoneStill\(float c\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1] ?? ''
     // Nothing in it reads the frame: no seed, no share of a pass, and no hash but the pixel's own.
     expect(still).not.toMatch(/uSeed|uPass|stageHash/)
-    expect(still).toContain('float h = stageStill(gl_FragCoord.xy);')
+    expect(still).toContain('float h = stageStill(ivec2(gl_FragCoord.xy));')
     expect(still).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
-    expect(still).toContain('return uFlags.w < 1.0 && stageStill(gl_FragCoord.yx + 29.0) >= uFlags.w;')
-    expect(STAGE_FRAG_PARS).toContain('float stageStill(vec2 at) {\n  return fract(52.9829189 * fract(dot(at, vec2(0.06711056, 0.00583715))));\n}')
+    expect(still).toContain('return uFlags.w < 1.0 && stageStill(ivec2(gl_FragCoord.yx) + 29) >= uFlags.w;')
+    // The level is the middle of the byte the tile holds for the pixel, read whole and from nothing else.
+    expect(STAGE_FRAG_PARS).toContain('uniform highp sampler2D uStill;')
+    expect(STAGE_FRAG_PARS).toContain('float stageStill(ivec2 at) {\n  return (floor(texelFetch(uStill, at & 127, 0).r * 255.0 + 0.5) + 0.5) / 256.0;\n}')
+    const picture = stageUniforms.uStill.value
+    expect([picture.image.width, picture.image.height, picture.format, picture.type, picture.generateMipmaps, picture.flipY]).toEqual([STILL_SIDE, STILL_SIDE, THREE.RedFormat, THREE.UnsignedByteType, false, false])
+    expect(STILL_SIDE).toBe(128)
+    const tile = stillBytes()
+    expect(Buffer.compare(Buffer.from(picture.image.data as Uint8Array), Buffer.from(tile))).toBe(0)
+    // The tile in the source is the one its tool makes, and every level of it is held by as many pixels as every other.
+    expect(readFileSync(STILL_FILE, 'utf8')).toBe(stillSource())
+    const held = new Uint32Array(256)
+    for (const b of tile) held[b]!++
+    expect([Math.min(...held), Math.max(...held)]).toEqual([64, 64])
+    let apart = 0
+    for (let y = 0; y < STILL_SIDE; y++) for (let x = 0; x < STILL_SIDE; x++) if (stillLevel(x, y) !== (tile[y * STILL_SIDE + x]! + 0.5) / 256 || stillLevel(x + STILL_SIDE, y + 3 * STILL_SIDE) !== stillLevel(x, y)) apart++
+    expect(apart).toBe(0)
 
     // The level is the pixel's and the rule is one comparison with the share, so as the share rises a pixel of the part that
     // leaves goes once, a pixel of the part that comes arrives once, and at every share a pixel holds one of the two.
@@ -402,17 +419,19 @@ describe('the dressing on the glass under a change', () => {
     const second = new Float32Array(N * N)
     for (let y = 0; y < N; y++)
       for (let x = 0; x < N; x++) {
-        first[y * N + x] = stillLevel(x + 0.5, y + 0.5)
-        second[y * N + x] = stillLevel(y + 29.5, x + 29.5)
+        first[y * N + x] = stillLevel(x, y)
+        second[y * N + x] = stillLevel(y + 29, x + 29)
       }
     expect([first.reduce((a, b) => Math.min(a, b)) >= 0, first.reduce((a, b) => Math.max(a, b)) < 1]).toEqual([true, true])
-    // Even to the eye: every share of the pixels is the share asked for, and so is every patch of four by four, to two pixels
-    // of sixteen. The white hash it replaces left such patches empty at a half and full at an eighth.
+    // Even to the eye. Every share of the pixels is the share asked for, to the pixel. Every patch of four by four holds that
+    // share to three pixels of sixteen, and the patches taken together stand within 0.82 of a pixel of it (the root of the
+    // mean square). The white hash this replaced left such patches empty at a half and full at an eighth, 1.3 to 2 pixels
+    // from the share taken together.
     const bands: [number, number, number][] = [
-      [0.125, 0, 4],
+      [0.125, 1, 4],
       [0.25, 2, 6],
-      [0.5, 6, 10],
-      [0.75, 10, 14],
+      [0.5, 5, 11],
+      [0.75, 9, 14],
     ]
     for (const [name, level] of [
       ['the exchange', first],
@@ -421,19 +440,45 @@ describe('the dressing on the glass under a change', () => {
       for (const [c, least, most] of bands) {
         let under = 0
         for (const h of level) if (h < c) under++
-        expect(Math.abs(under / (N * N) - c), `the share of ${name} at ${c}`).toBeLessThanOrEqual(0.001)
+        expect(under / (N * N), `the share of ${name} at ${c}`).toBe(c)
         const rows = new Uint8Array(N * N)
         for (let y = 0; y < N; y++) for (let x = 0; x + 4 <= N; x++) rows[y * N + x] = (level[y * N + x]! < c ? 1 : 0) + (level[y * N + x + 1]! < c ? 1 : 0) + (level[y * N + x + 2]! < c ? 1 : 0) + (level[y * N + x + 3]! < c ? 1 : 0)
         let lo = 16
         let hi = 0
+        let square = 0
+        let patches = 0
         for (let y = 0; y + 4 <= N; y++)
           for (let x = 0; x + 4 <= N; x++) {
             const n = rows[y * N + x]! + rows[(y + 1) * N + x]! + rows[(y + 2) * N + x]! + rows[(y + 3) * N + x]!
             if (n < lo) lo = n
             if (n > hi) hi = n
+            square += (n - 16 * c) ** 2
+            patches++
           }
         expect([lo, hi], `what a patch of four by four holds of ${name} at ${c}, the least and the most`).toEqual([least, most])
+        expect(Math.sqrt(square / patches), `how far the patches of ${name} stand from the share at ${c}`).toBeLessThanOrEqual(0.82)
       }
+    // In no rows. Were the dots set on a lattice, a dot would find another at one and the same step from it nearly every time:
+    // interleaved gradient noise, which this pattern was first, does at the step of 5 across and 9 up, 89 times of 100 at a
+    // sixteenth and 99 of 100 at three quarters, and the eye reads the rows as a weave. Here no step within 12 pixels is
+    // surer of a dot than the share itself by more than 7 of 100.
+    for (const c of [1 / 16, 0.125, 0.25, 0.5, 0.75]) {
+      let surest = 0
+      for (let dy = -12; dy <= 12; dy++)
+        for (let dx = -12; dx <= 12; dx++) {
+          if (dx === 0 && dy === 0) continue
+          let dots = 0
+          let both = 0
+          for (let y = 0; y < STILL_SIDE; y++)
+            for (let x = 0; x < STILL_SIDE; x++)
+              if (stillLevel(x, y) < c) {
+                dots++
+                if (stillLevel(x + dx + STILL_SIDE, y + dy + STILL_SIDE) < c) both++
+              }
+          surest = Math.max(surest, both / dots)
+        }
+      expect(surest - c, `how much surer than the share the surest step is of a dot at ${c}`).toBeLessThanOrEqual(0.07)
+    }
     // The two levels of a pixel are not one level: a part that thins while it changes is not thinned twice by the same dots.
     let same = 0
     for (let i = 0; i < N * N; i++) if (first[i]! < 0.5 === second[i]! < 0.5) same++
@@ -482,10 +527,13 @@ describe('the dressing on the glass under a change', () => {
     expect(sets.length).toBe(2)
     expect(frost.split('gl_FragColor *= seen;').length).toBe(2)
     expect(frost.indexOf('gl_FragColor *= seen;')).toBeGreaterThan(Math.max(...sets))
-    // The views that say which part a pixel is read the cover it has left.
-    expect(frost).toContain('if (alpha * seen < 0.3) discard;')
-    // It is laid over what is behind it as one plus what its cover leaves.
+    // The views that say which part a pixel is read the cover it has left, against a cut the frost holds: 0.3 in the plain
+    // view, the picture's own floor where the lens fill's map asks, so no part of a frond takes its neighbour's reach.
+    expect(frost).toContain('if (alpha * seen < uGlassThru.w) discard;')
     const text = readFileSync(file, 'utf8')
+    expect(text).toContain('viewCut: 0.3, mapCut: 0.004')
+    expect(text).toContain('frostUniforms.uGlassThru.value.w = on ? look.glass.mapCut : look.glass.viewCut')
+    // It is laid over what is behind it as one plus what its cover leaves.
     expect(/fragment: GLASS,\s+params: \{ \.\.\.veil \},/.test(text)).toBe(true)
     expect(/const veil = \{[^}]*blendSrc: THREE\.OneFactor,\s+blendDst: THREE\.OneMinusSrcAlphaFactor,/.test(text)).toBe(true)
     thinsAsTheStippleDoesInTheMean()

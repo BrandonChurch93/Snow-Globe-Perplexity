@@ -47,13 +47,13 @@ Made by: assets-src/base-spring/build.mjs
 From: assets-src/base-spring/layout.mjs (profile, moss drips and patches, the trickle's path and width, roots), config/showcase.json
 Prompt or command: npm run make -- base-spring
 Takes: built, not generated
-Why this one: relief holds the fine normal of the unwrapped height field in red and green and the cavity in blue; cover holds moss in red, the wet band of the trickle in green and how far down the trickle each wet texel lies in blue, so the stone darkens as the water front passes
-Date: 2026-11-25
+Why this one: relief holds the fine normal of the unwrapped height field in red and green and the cavity in blue; cover holds moss in red, the wet band of the trickle in green and how far down the trickle each wet texel lies in blue, so the stone darkens as the water front passes. Phase 6: the cobbles are small and domed (cells of about 9 by 7 mm), the moss stops high on the side with a ragged edge and short tongues, its cushions carry tufts and sprigs in the height, and the moss sheet is laid at 22 mm a repeat
+Date: 2026-11-26
 
 ## assets-full/spring/base-spring.glb
 Made by: assets-src/base-spring/build.mjs
 From: assets-src/base-spring/layout.mjs, assets-src/base-spring/thin.mjs, assets-src/base-winter/lib.mjs, config/showcase.json
 Prompt or command: npm run make -- base-spring
 Takes: built, not generated
-Why this one: three meshes. `rock` is the turned profile measured from the approved image, displaced by the height field (cobbles, moss cushions, the trickle's channel) and cupped to the glass at the same collar as winter's; `growth` is the roots as tubes that taper from the collar to the foot and swell at knots, laid on that height, the mushrooms, the flowers and the petals on the ledge; `water` is the strip of the trickle with its length and its foot in the extras. For the triangle budget (G15) `thin.mjs` thins `rock` and `growth` by edge collapse to the shares in `THIN` of build.mjs (0.74 of each at an error bound of 0.06) and writes the lighter medium and low lists (error bounds 0.18 and 0.3); six long roots at the left of the front were taken out of `ROOTS` in layout.mjs because the approved image has far fewer there
-Date: 2026-11-25
+Why this one: three meshes. `rock` is the turned profile measured from the approved image, displaced by the height field (cobbles, moss cushions, the trickle's channel) and cupped to the glass at the same collar as winter's; `growth` is the roots as tubes that taper from the collar to the foot and swell at knots, laid on that height, the mushrooms, the flowers and the petals on the ledge; `water` is the strip of the trickle with its length and its foot in the extras. For the triangle budget (G15) `thin.mjs` thins `rock` and `growth` by edge collapse to the shares in `THIN` of build.mjs (0.74 of each at an error bound of 0.06) and writes the lighter medium and low lists (error bounds 0.18 and 0.3); six long roots at the left of the front were taken out of `ROOTS` in layout.mjs because the approved image has far fewer there. Phase 6: the roots are thinner and more of them, each with two more twigs, with eleven thin wanderers across the front; the mushrooms stand in twos and threes on longer stems; the trickle's ribbon is a third as wide
+Date: 2026-11-26
