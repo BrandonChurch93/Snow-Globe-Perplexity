@@ -551,6 +551,8 @@ export const CARD_VERT = `
       float mostS = max(${n(CARD.hair.inside)} * R * uPoint.y / sqrt(max(dist * dist - R * R, 1.0)) - outS, 1.0);
       if (isS > mostS) clip.xy += fromS * (mostS / isS - 1.0) * vec2(projectionMatrix[0][0], projectionMatrix[1][1]) * (clip.w / uPoint.y);
     }
+    // the low glow is light in the liquid, so it is drawn no nearer than the glass: the fragment stage finds the glass on each pixel's own ray, from the ray through the card's middle
+    if (glowB && aData.w < -1.5) vL4.xy = (clip.xy / clip.w + vec2(projectionMatrix[2][0], projectionMatrix[2][1])) / vec2(projectionMatrix[0][0], projectionMatrix[1][1]);
     #ifdef POINT_SPRITES
     float sideC = 2.0 * max(extC.x, extC.y);
     gl_PointSize = sideC;
@@ -575,6 +577,7 @@ export const CARD_FRAG_PARS = `
 /** The down of the seeds' heads: every form at every lean, drawn once at start (down.ts). */
 uniform sampler2D uDown;
 uniform vec4 uPoint;
+uniform mat4 projectionMatrix;
 float cardPetalHalf(float u) {
   return 0.64 * sqrt(max(sin(3.14159265 * pow(abs(u), 0.8)), 0.0)) * mix(0.5, 1.0, smoothstep(0.0, 0.5, u));
 }
@@ -1014,9 +1017,12 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
   float vh = rh * rh + vStreak.w;
   float vw = rw * rw + vStreak.w;
   // over its path a light is spread thin by the shutter; a light of the storm keeps the larger share of it, so its streak is bright and never a pale bar
-  float core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * exp(-0.5 * d2 / vc) * fade;
   float sg = sqrt(vStreak.w);
   float disc = smoothstep(${n(CARD.glow.discFrom[0])}, ${n(CARD.glow.discFrom[1])}, sg / max(rc, 0.6)) * (spark ? 1.0 : 1.0 - uStorm.x);
+  // the brighter a bare ember's point stands at rest, the more light it is given and the tighter it is drawn: the approved picture's fine points are bright to clipping at the middle and still under two and a half pixels wide, and its faint ones are the fainter
+  float bareGain = spark ? mix(1.0, clamp(pow(max(vCore.w * rc * rc / vc / ${n(CARD.spark.restBareLift[0])}, 1e-4), ${n(CARD.spark.restBareLift[1])}), ${n(CARD.spark.restBareLift[2])}, ${n(CARD.spark.restBareLift[3])}), (1.0 - glowS) * (1.0 - disc) * (1.0 - vL2.w)) : 1.0;
+  float bareTight = 1.0 + ${n(CARD.spark.restBareTight)} * max(log2(bareGain), 0.0);
+  float core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * exp(-0.5 * d2 * bareTight / vc) * fade * bareGain;
   float lid = 0.0;
   if (disc > 0.0) {
     float rd = ${n(CARD.glow.discWide)} * sg;
@@ -1234,6 +1240,17 @@ void cardStormGlow(vec2 p) {
   float edge = 1.0 - smoothstep(0.7, 1.0, length(p) / max(vL4.z, 1.0));
   // the pool and the low glow are each one wide glow of the cream alone
   bool pool = vL3.y < 0.0;
+  if (vL3.y < -1.5) {
+    // the low glow's card stands before the ground, which is nearer than the glass where the ball goes down into the base: it lay on the base there as a pale sheet with the base's outline. Its depth is the glass's own on this pixel's ray, so whatever stands before the glass hides it, and past the ball's outline there is none of it
+    vec3 rayG = normalize(vec3(vL4.xy + p / uPoint.y, -1.0));
+    vec3 midG = (viewMatrix * vec4(uLensCentre, 1.0)).xyz;
+    float nearG = dot(rayG, midG);
+    float wallG = 0.5 * (uLens.x + uLens.w);
+    float underG = nearG * nearG - dot(midG, midG) + wallG * wallG;
+    if (underG <= 0.0) discard;
+    float deepG = max(-rayG.z * (nearG - sqrt(underG)), 1e-3);
+    gl_FragDepth = 0.5 + 0.5 * (projectionMatrix[3][2] - projectionMatrix[2][2] * deepG) / deepG;
+  }
   float heart = exp(-0.5 * r2 / s2);
   // a warm light's blue goes with the square of its green
   vec3 own = vec3(1.0, vL3.y, 0.77 * vL3.y * vL3.y);

@@ -4,7 +4,7 @@ import sharp from 'sharp'
 import { parseArgs, rel } from './lib/paths.mjs'
 import { Session, cfg, formatById } from './lib/page.mjs'
 import { Run } from './lib/frames.mjs'
-import { countFacts, ruleCount, sampleRule, tierOf } from './lib/master.mjs'
+import { countFacts, pieceCounts, sampleRule, tierOf } from './lib/master.mjs'
 
 const USAGE = `node tools/sanity-scan.mjs --what film-b|opening|loop --first A --last B [--step S] [--samples N] [--format uhd] [--watch] [--at X,Y] [--keep]
   without --samples it draws each frame with the count the masters draw that frame with (deliver.master.samples, raised by tiers.final.motion where the globe moves), so the scan sees what the masters will draw
@@ -82,8 +82,8 @@ try {
     const top = Math.max(0, Math.min(format.height - CROP, place.y - CROP / 2))
     await sharp(png).extract({ left, top, width: Math.min(CROP, format.width), height: Math.min(CROP, format.height) }).png().toFile(file)
   }
-  const asked = rule.tier ? await page.evaluate(([k, l, t]) => l.map((i) => window.showcase.dev.frameSamples(k, i, t)), [track.kind, list, rule.tier]) : []
-  const counts = new Map(list.map((i, n) => [i, rule.tier ? ruleCount(rule, i, asked[n]) : rule.base]))
+  const whole = rule.tier ? pieceCounts(rule, await page.evaluate(([k, n, t]) => Array.from({ length: n }, (_, i) => window.showcase.dev.frameSamples(k, i, t)), [track.kind, has, rule.tier]), track.kind === 'loop').counts : null
+  const counts = new Map(list.map((i) => [i, whole ? whole[i] : rule.base]))
   const facts = countFacts([...counts.values()], rule.base)
   const how = !rule.tier
     ? `${rule.base} ${rule.base === 1 ? 'sample' : 'samples'} a frame as given with --samples, whatever the motion (the masters draw a moving frame with more)`
