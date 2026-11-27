@@ -366,7 +366,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       size()
     },
     async setAssets(id) {
-      if (!(id in config.assetSets)) throw new Error(`no such asset set: ${id}`)
+      if (!Object.hasOwn(config.assetSets, id)) throw new Error(`no such asset set: ${id}`)
       await assets.init(id)
     },
     setDiagnostic(view) {
