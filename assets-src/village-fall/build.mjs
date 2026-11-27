@@ -490,7 +490,7 @@ for (const s of STONES) {
 const BLOCKS = { rowH: 0.9, rowJ: 0.14, wide: 1.4, wideJ: 0.4, share: [0.7, 1.3], gap: 0.06, bevel: 0.09, out: 0.3, vary: 0.05, tilt: 0.05, cut: [0.1, 0.24], cutShare: 0.5, jitter: 0.03, base: -1.8, plainBelow: -0.6, mortar: -0.5, sideDim: 0.5, gain: 0.8, tone: 0.8, rim: 0.45, chip: [0.45, 1.5], dent: 0.07, inner: 0.55, mark: 0.99, tones: ['#8c867d', '#7c766f', '#979289', '#726d66', '#837e75', '#9e988e', '#79736a', '#908a7f', '#6b6660', '#87837d'].map(lin), dirt: lin('#4b4538') }
 // The approved wall is field stone: stones about twice as wide as tall (4 to 20 px wide, 12 to 13 in the middle, 5 to 8
 // tall at hd), each with a rounded face lit from its upper left and a dark gap round it, in courses that step.
-const FIELD = { cell: [0.33, 0.35], gap: 0.025, span: [[12, 0.25], [16, 0.3], [20, 0.25], [26, 0.2]], spanLeast: 6, tall: [[2, 0.72], [3, 0.28]], twice: 0.08, twiceWide: 6, wide: [[3, 0.05], [4, 0.08], [5, 0.12], [6, 0.18], [7, 0.2], [8, 0.17], [9, 0.12], [10, 0.08]], cut: [0.1, 0.3], jitter: 0.03, wobble: 0.05, wobbleFrom: 1.2, dome: 0.03, lip: 0.055, round: 0.015, deep: 0.06, rim: 0.95, shoulder: 0.97, inner: 0.45, light: 0.07, mottle: 0.12, tone: 0.2, vary: 0.5 }
+const FIELD = { cell: [0.33, 0.35], gap: 0.07, span: [[12, 0.25], [16, 0.3], [20, 0.25], [26, 0.2]], spanLeast: 6, tall: [[2, 0.72], [3, 0.28]], twice: 0.08, twiceWide: 6, wide: [[3, 0.05], [4, 0.08], [5, 0.12], [6, 0.18], [7, 0.2], [8, 0.17], [9, 0.12], [10, 0.08]], cut: [0.1, 0.3], jitter: 0.03, wobble: 0.05, wobbleFrom: 1.2, dome: 0.03, lip: 0.065, round: 0.015, deep: 0.12, rim: 0.8, shoulder: 0.97, inner: 0.45, light: 0.07, mottle: 0.12, tone: 0.2, vary: 0.5 }
 let blockCount = 0
 let blockTriangles = 0
 {

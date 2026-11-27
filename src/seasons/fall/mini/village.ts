@@ -401,6 +401,10 @@ const opening = (x: number, up: number, w: { across?: number; along?: number; wi
   return inBox(x, up, cx, w.width / 2 + 0.42, w.sill - 0.95, w.sill + w.height + 1.25) || inBox(x, up, cx, w.width / 2 + 0.98, w.sill + w.height + 0.3, w.sill + w.height + 1.42) || inBox(x, up, cx, w.width / 2 + 0.88, w.sill - 0.95, w.sill - 0.25)
 }
 
+// The shared gable stones are cut at the rake. Their cut tops face up and were toned as roof, which left pale flecks
+// under the bargeboard, so what lies in the wall's depth below the rake is wall.
+const rakeAt = (across: number): number => cottage.wall + cottage.rise * (1 - Math.abs(across) / cottage.halfWidth)
+
 function arched(up: number, dx: number): Rgb {
   const over = (up - cottage.door.height + cottage.door.width / 2) / WALLS.doorMm
   const side = smooth(0, 1.5, dx)
@@ -505,7 +509,7 @@ function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeom
         r = v * CHIMNEY.tone[0]
         gr = v * CHIMNEY.tone[1]
         b = v * CHIMNEY.tone[2]
-      } else if (near && up > cottage.wall - 1.2 && Math.abs(c.across) > 0.01 && N.getY(i) > 0.25 && (c.along < cottage.halfLength - STONE.faceMm || up > cottage.wall + cottage.rise * (1 - Math.abs(c.across) / cottage.halfWidth) - STONE.eaveMm)) {
+      } else if (near && up > cottage.wall - 1.2 && Math.abs(c.across) > 0.01 && N.getY(i) > 0.25 && (c.along < cottage.halfLength - STONE.faceMm || (up > rakeAt(c.across) - STONE.eaveMm && !(c.along < cottage.halfLength + WALLS.proudMm && up < rakeAt(c.across))))) {
         const lum = 0.3 * r + 0.6 * gr + 0.1 * b
         r = (lum * ROOF.grey + r * (1 - ROOF.grey)) * ROOF.tone[0]
         gr = (lum * ROOF.grey + gr * (1 - ROOF.grey)) * ROOF.tone[1]
