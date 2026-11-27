@@ -1,52 +1,48 @@
 {
-  "number": 232,
-  "time": "2026-11-27 22:34 UTC",
+  "number": 233,
+  "time": "2026-11-27 23:09 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 232 · 2026-11-27 22:34 UTC · Phase 6",
+    "Status 233 · 2026-11-27 23:09 UTC · Phase 6",
     "Phases 1 to 5 complete. Phase 6 in progress. No decision is needed from Brandon now.",
-    "The fault that made me take the tenth publish back is mended on main. At 22:18 UTC (3:18 PM MT) main took the controls builder's one commit: three lines in summer's village read every blade of the lawn from the full list whatever quality the page draws, and a new test makes summer's village at high, medium and low and fails on the old lines. Stated by the builder on that tree: the whole test run 1036 passed and 8 skipped, the eight picture guards equal to the list, and the built page shows summer at low, medium and high in 13 to 15 seconds with no console message. Measured by me: the merged tree is the same tree the builder proved. Two of its pictures are looked at; one is attached. Its second report (stated): a shake from spring into summer at low and at medium now makes summer and lands, and winter, spring and fall come at low and medium with no console message. One thing it found on the way and is looking into: at low and medium one drawing program is still being prepared inside the shake into summer, which holds the page for a moment (2.8 and 5.0 seconds at most on its software drawing; on a real graphics card not known). It is open item 271; whether the page's own default quality does the same is not read yet.",
-    "The live page is still the ninth publish's build. A helper read it on its own machine at nine addresses: the plain address and each of the four seasons at low and at medium. All nine go live with no console message and all 33 buttons, in 8 to 12 seconds at low and medium and 23 at the plain address (stated by the helper; its sheet of nine is looked at by me and attached). So what is live now draws all four seasons at every quality on a helper's software drawing. The same helper bore out the fault on the tenth's tree with its own eyes: summer at low and medium never went live there. A real graphics card, a phone, Safari and Firefox stay not verified.",
-    "The eleventh publish is being made from the mended main. It brings round one's work to the live address. A fresh security reviewer, the thirteenth, answered: blocks no, no warning (stated). My own whole test run of that commit ended at 22:33 UTC with exit 0, 1035 passed and 9 skipped (measured here; the one more skipped than on the builder's machine is a test that reads the built page, which this tree did not have yet), and the build ended with exit 0 at 22:33 UTC. A helper built the same commit and read its page at ten addresses: the plain address, summer at high, and all four seasons at low and at medium. Its first answer is PASS: all ten live in 8 to 16 seconds with no console message and all 33 buttons, summer at low and medium among them (stated; its pictures follow with its report). Two shakes from spring into summer at low and medium, the path that failed, are being read by it now. The page goes live only when those are in, the built files equal the reviewer's by sha256, and the first pictures check passes.",
-    "Round two, as it comes in before its close at 22:50 UTC (3:50 PM MT):",
-    "Summer's air is pushed. In it: no leaves fly at the landing, which is a settled line, and the yellow green lights are fewer and finer. Its builder says plainly that the heart of its first item is not in it: at the landing the swirl is still a closed cream ball and the cottage, the tree and the lamp post are hidden, where the approved picture shows them through the swirl. Its trial of a thin swirl is much nearer the approved picture (attached, right) but broke the proved course of the change into summer, steps of 6.16 levels where the limit is 5. I ruled its clean way (decision 222): the storm stays dense while the new season takes over, as proved, and eases to the thin look over the last 19 frames before the landing. No test is loosened. It rides in this round's measuring run only if it is whole and proven in time, else in the next. Its other two items, the density of seeds and lights at rest and stems and a warm rim on the seeds, are not gained in round two.",
-    "Spring's base is proven and pushed: the roll under the glass darker and less yellow green, the mushrooms pale and the roots readable on the front. Its number against the approved picture rises from 0.9022 to 0.9247 (stated). Below the bar by its builder's own word: the roll lost too much colour, the front's stones have no warm wrap, one item not done. Attached.",
-    "Summer's sand: its checks are whole (stated) and it pushes about 22:45 UTC (3:45 PM MT). The fall of sand is no longer an orange ribbon and not yet the approved picture's veil; the lit drift on the table at the lower left is a faint band of gold dots. Its number is 0.0003 under main's, which I allowed for this push (decision 221) after looking at the pair.",
-    "Fall's air: one line of its 4K motion proof is above the floor I set. Things that live for one frame cover 1.757 percent of the air's box where main has 1.556, since each moving ember now carries a small glow. I did not lift the floor on a reading and did not take the glow out unproven (decision 223): it pushes at the close, and it is not merged until six frames more show whose the rise is and I have seen two frames side by side at full size.",
-    "The change of season pushes one item only, as said in the last status.",
-    "Open: summer's see through at the landing (ordered), the petals' rib at film frames 1388 and 1389 (mend ordered, item 268), fall's air box (above), winter's four items (no builder in round two), and a faint saw tooth in the grass left of summer's pond that a builder found in the film's calm and could hardly see at five times (item 270, cause unknown).",
-    "After the close: the merges, one measuring run of everything together (chain 39), a publish of its head, Preview 07, then the status that gives the live address with stills, says where each season stands and asks whether to move on to the film and the 4K masters. No round three without his word.",
-    "Sound credits 7,420 of 10,000 (measured from the ledger at 22:25 UTC, 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render and no new preview since Preview 06.",
-    "phase 6: 43.74 h used of its 12.00 h box",
-    "allowance (after the review): 43.74 h used of 12.00 h allowed",
+    "Brandon's word on the final render is taken (decision 224 holds his words). The release films are drawn at 3840 x 2160 at 60 frames a second on his own Windows computer, on its graphics card. No final render is started in the cloud. One file is being built in the repo that a coding agent on his machine follows alone, start to finish: what to install, a check that reads and prints the real processor and video card and refuses software drawing, a short test at 4K 60 that compares its frames with reference frames drawn here and then stops with a report, the full render that carries on by the same line after any stop, the check of the finished files, and their copy to the Desktop under the four names. A builder started on it at 23:06 UTC (4:06 PM MT) by decision 234. It is proven on GitHub's Windows and macOS test machines before he runs it. Measured by me today: such a test run works for this repo, and the Windows test machine has no graphics card, so Windows is proven there with software drawing and once through Microsoft's software Direct3D, which walks the shader path his NVIDIA card uses. The real card stays unknown until his own short test. The full render cannot start by accident: the tool refuses it until a mark in the repo says the film may be rendered, and I set that mark only on his word.",
+    "Round two closed at 22:50 UTC (3:50 PM MT). Eleven parts are merged for one measuring run of everything together, chain 39, running on a helper since 22:50 UTC: spring's base, summer's air, sand, stone, glass, tree and miniature, fall's scene and base, the change of season's one item, and the controls. Each report was read and its pictures looked at by me before its merge. The numbers are the builders' own until this run measures them together. The run must hold the floors I set, winter unchanged and no season's number against its approved picture under its floor, or the part that breaks one comes out again. Three of its pictures are attached; all three are below the bar.",
+    "Three pieces are not in that run and go into a second run if they are whole and proven. The mend of the petals' rib at film frames 1388 and 1389: drawn at 4K by its builder, the rib is gone (stated), report about 23:30 UTC (4:30 PM MT). Summer's see through swirl at the landing: its builder has the first shape, whole about 00:05 UTC (5:05 PM MT). Fall's air, held by decision 223: its first answer came at 22:59 UTC. Of the rise of 0.201 in things that live for one frame, 0.089 was there before round two's work and 0.112 is round two's (stated); which of its two changes carries the 0.112 comes with the second answer. It is not merged until I have seen its frames side by side at full size.",
+    "The controls' round two is in the run (decision 233). Open item 263 is mended: a capture address works as the plain page on any host but the local ones, and a making that fails keeps its failure readable. Not mended: a stall of 1 to 2 seconds at low quality while a season's particles are written. Its builder has a patch that waits for the run.",
+    "The eleventh publish is not live yet; the live page is still the ninth publish's build. The page's 40 first pictures had to be made again on the mended commit. A helper did that and answered PASS (stated): the check of the pictures against the page's framing passes, and the built page goes live in 9 to 11 seconds at the plain address and at summer at low and at medium quality with no console message. Its sheet is looked at by me and attached. The publish build runs here since 22:58 UTC and a fresh security reviewer, the fourteenth, reads the commit. It goes live when both are through.",
+    "After chain 39: its stills looked at beside the approved pictures, the merge to main, the second run for the three pieces, a publish of round two's head, Preview 07, then the status that gives the live address with stills, says where each season stands and asks whether to move on to the film. No round three without his word.",
+    "Open: summer's see through at the landing (being built), the petals' rib (mend drawn, not merged), fall's air (above), the stall at low quality (patch waits), winter's four items (no builder in round two), a faint saw tooth in the grass left of summer's pond (item 270), the petals' fringe at film frame 680 (not begun), a nudge at film frames 2113 to 2117.",
+    "Sound credits 7,420 of 10,000 (measured from the ledger at 23:08 UTC, 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render and no new preview since Preview 06.",
+    "phase 6: 44.32 h used of its 12.00 h box",
+    "allowance (after the review): 44.32 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-232-1.jpg",
-      "caption": "The live page now, the ninth publish's build, read on a helper machine at the plain address and at each season at low and medium quality",
+      "file": "out/stills/status/status-233-1.jpg",
+      "caption": "The build for the eleventh publish read on a helper machine, the first picture, the live page, summer at low and at medium quality, not live yet",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-232-2.jpg",
-      "caption": "Summer at low quality with its controls on the mended build, before the eleventh publish",
-      "w": 960,
-      "h": 540
+      "file": "out/stills/status/status-233-2.jpg",
+      "caption": "Fall's base, approved picture above, the twelfth step in the middle, round two below, in chain 39, below the bar",
+      "w": 800,
+      "h": 938
     },
     {
-      "file": "out/stills/status/status-232-3.jpg",
-      "caption": "Summer at the landing: approved picture left, round two's pushed air in the middle, the thin swirl now ordered right, below the bar",
+      "file": "out/stills/status/status-233-3.jpg",
+      "caption": "Summer's miniature, approved picture above, round two at rest in the middle and just after the landing below, in chain 39, below the bar",
+      "w": 755,
+      "h": 1200
+    },
+    {
+      "file": "out/stills/status/status-233-4.jpg",
+      "caption": "Summer's base after the landing with round two's stone, the low camera above and both cameras below, in chain 39, below the bar",
       "w": 1200,
-      "h": 371
-    },
-    {
-      "file": "out/stills/status/status-232-4.jpg",
-      "caption": "Spring's base: approved picture above, round one in the middle, round two below, pushed, below the bar",
-      "w": 880,
-      "h": 1182
+      "h": 1016
     }
   ]
 }
