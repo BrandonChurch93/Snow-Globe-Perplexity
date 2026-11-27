@@ -1,0 +1,91 @@
+{
+  "critic": "R3",
+  "score": 5,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "major",
+      "file": "set-D-01.jpg, set-E-01.jpg, set-F-01.jpg",
+      "where": "the sea glass in the band of inlays round the base: set-D-02.jpg crops 5 and 6, set-D-03.jpg crop 7, set-E-02.jpg crop 2, set-F-03.jpg crops 9 and 10",
+      "what": "every piece of sea glass is one flat fill of colour sprinkled with white specks, with no thickness, no light coming through its thin edges, no sheen on its rounded top and no contact shadow; beside the properly shaded scallops the blue, teal and green pieces read as paint dabs or felt stickers",
+      "fix": "model each piece as a thick rounded pebble of frosted glass, glowing through its thin edges and darker where it is thick, with a broad soft sheen toward the key light, pressed into the sand with a thin contact shadow and a few grains drifted against it"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-01.jpg, set-E-01.jpg, set-F-01.jpg",
+      "where": "the inlays at the left and right edges of the base: set-D-02.jpg crop 5, set-D-03.jpg crop 8, set-E-02.jpg crops 2 and 3, set-F-03.jpg crops 11 and 12",
+      "what": "shells and sea glass at the edges are still seen face-on and stick out past the outline of the base into the dark, where the surface they sit on has already turned away; at the right edge the spiral shells and pale green glass are half transparent, with the falling sand and the sand grain showing through them, so they read as decals laid over the picture",
+      "fix": "wrap the inlays onto the curved surface so pieces near the outline foreshorten and are cut off by it, render every piece fully opaque, and let the sand stream pass in front of the pieces it covers"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "the dandelion seeds over and around the tree's crown: set-F-02.jpg crops 2, 4 and 6, set-F-03.jpg crop 7",
+      "what": "several seeds trail ruler-straight hairline stalks two to four times as long as the tuft is wide, of even brightness end to end; two run down across the crown and finish inside it, so they read as scratches or drawn lines passing through the branches",
+      "fix": "shorten each stalk to about the width of its tuft, give it a slight bend and a small dark seed at the tip, and keep it clear of the foliage; a seed that lands on the tree should sit on top of a leaf clump, tuft up"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "the pond in front of the cottage: set-F-02.jpg crop 5, set-F-03.jpg crop 9",
+      "what": "the pond is a pale grey mirror plate with straight cut edges and vertical streaks; it has no dark depth, no ripple and no wet bank, and it shows the lamp post but almost none of the lanterns and crown hanging over it, so it reads as polished metal, not water",
+      "fix": "make it dark water that deepens toward the middle, reflect the lanterns and crown as soft warm shapes broken by faint ripples, and break the edge with wet stones, moss and grass hanging over it"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-01.jpg, set-E-01.jpg, set-F-01.jpg",
+      "where": "the mirror image under the left of the base: set-D-03.jpg crop 9, set-E-02.jpg crop 6, set-F-03.jpg crops 10 and 11",
+      "what": "under the left of the base the reflection is a pale grey-cream disc with its own lit edge, far lighter and greyer than the golden-brown sand directly above it and missing on the right, so the base looks as if it stands on a separate saucer",
+      "fix": "make the reflection carry the base's own colours, the golden lip, the dark crease and the band of shells, darkened by the table, crisp at the contact line and softening with distance"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-01.jpg",
+      "where": "where the glass meets the base: set-D-02.jpg crops 1 to 3",
+      "what": "the sphere ends on a dead-straight black hairline across most of the frame, with the cream floor inside running flush down to it: no lip, no collar, no glass thickness at the cut and no contact shadow, so the globe looks sliced off and set on the base",
+      "fix": "seat the sphere in a raised collar on the base with a curved lip, add a thin dark occlusion line under the glass and a bright refracted edge where the glass turns down into the collar"
+    },
+    {
+      "severity": "minor",
+      "file": "set-F-01.jpg",
+      "where": "the glint on the glass at its upper right shoulder: set-F-02.jpg crop 2, set-F-03.jpg crop 7",
+      "what": "the glint is a spiked star with a long streak, which needs a stopped-down lens, while every disc of light behind is a large, perfectly round, wide-open disc; the two cannot come from the same lens, so the star reads as an added flare",
+      "fix": "drop the spikes and the streak and keep a small soft glint that matches the wide-open bokeh"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-01.jpg",
+      "where": "the grass inside the globe along the top of the frame: set-D-02.jpg crops 2 and 3",
+      "what": "the grass is rows of near-identical dark triangular spikes, some hanging down over the front of the floor like a fringe, which reads as low-detail cards",
+      "fix": "use finer blades of varied length, width and tint, bending under their own weight and standing on the floor rather than hanging over its edge"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-01.jpg",
+      "where": "the large scallop's hinge: set-D-03.jpg crop 7",
+      "what": "the two ears at the hinge are flat grey-brown trapezoids with no ribs or rounding, and the shell casts no contact shadow on the sand",
+      "fix": "rib and round the ears, and seat the shell in the sand with a thin shadow under its rim"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-01.jpg, set-E-01.jpg",
+      "where": "the right side of the base near its outline: set-D-02.jpg crop 4, set-D-03.jpg crop 8, set-E-02.jpg crop 3",
+      "what": "the sand texture smears into parallel streaks as the surface turns away from the camera, a texture-projection stretch",
+      "fix": "re-project the sand, for example tri-planar, so the grain keeps its size and direction at grazing angles"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-01.jpg",
+      "where": "the stream of sand at the right of the base: set-D-02.jpg crops 1 and 3",
+      "what": "the stream appears from behind the side of the base partway down as one smooth translucent veil, with no spill visible at the rim and no grains or clumps in it",
+      "fix": "show where it spills over the rim and break it into grains and small clumps as it falls toward the pile"
+    },
+    {
+      "severity": "minor",
+      "file": "set-F-01.jpg",
+      "where": "the cottage roof, the fence and the bank of the pond: set-F-02.jpg crops 3 and 5",
+      "what": "nothing has settled anywhere: apart from the seeds caught on the crown, every seed and mote hangs in the water and none rests on the roof, the fence rail or the grass",
+      "fix": "rest a few seeds and motes on the roof ridge, the fence rail and the bank"
+    }
+  ]
+}

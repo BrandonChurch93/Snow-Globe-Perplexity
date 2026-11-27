@@ -71,8 +71,11 @@ export function formatById(id: string): FormatSpec {
   return f
 }
 
+/** A table's own entry. A name every object carries (`constructor`, `toString`) is in none of the tables. */
+const own = <T>(table: Record<string, T>, id: string): T | undefined => (Object.hasOwn(table, id) ? table[id] : undefined)
+
 export function cameraById(id: string): CameraSpec {
-  const c = cameras[id]
+  const c = own(cameras, id)
   if (!c) throw new Error(`no such camera: ${id}`)
   return c
 }
@@ -80,7 +83,7 @@ export function cameraById(id: string): CameraSpec {
 const COUNTED_TIER = /^(samples|final)-([1-9]\d{0,2})$/
 
 export function tierSamples(id: string): number {
-  const t = tiers[id]
+  const t = own(tiers, id)
   if (t) return t.samplesPerFrame
   const counted = COUNTED_TIER.exec(id)
   if (!counted) throw new Error(`no such tier: ${id}`)
@@ -88,20 +91,20 @@ export function tierSamples(id: string): number {
 }
 
 /** The tier's own motion rule, or none for a tier of a fixed count and for a counted tier, whose count is asked for. */
-export const tierMotion = (id: string): TierMotion | undefined => tiers[id]?.motion
+export const tierMotion = (id: string): TierMotion | undefined => own(tiers, id)?.motion
 
 /**
  * The travel from which a frame of this tier is drawn with even sample times, or none. The final tier has it, and so has
  * `final-N`: the final tier's picture with a count that was asked for, which is how the masters draw a frame whose count
  * they have read from the page beforehand. `samples-N` is N samples and nothing else.
  */
-export const tierEvenFromPx = (id: string): number | undefined => (/^final-/.test(id) && COUNTED_TIER.test(id) ? tiers.final?.motion?.evenFromPx : tiers[id]?.motion?.evenFromPx)
+export const tierEvenFromPx = (id: string): number | undefined => (/^final-/.test(id) && COUNTED_TIER.test(id) ? tiers.final?.motion?.evenFromPx : own(tiers, id)?.motion?.evenFromPx)
 
 /** The motion rule a tier draws a travelling frame by: the final tier's for `final` and `final-N`, a tier's own otherwise, or none. */
-export const tierTravelRule = (id: string): TierMotion | undefined => (/^final-/.test(id) && COUNTED_TIER.test(id) ? tiers.final?.motion : tiers[id]?.motion)
+export const tierTravelRule = (id: string): TierMotion | undefined => (/^final-/.test(id) && COUNTED_TIER.test(id) ? tiers.final?.motion : own(tiers, id)?.motion)
 
 export function particleKinds(season: string): ParticleKind[] {
-  const list = (raw.particles as unknown as Record<string, ParticleKind[]>)[season]
+  const list = own(raw.particles as unknown as Record<string, ParticleKind[]>, season)
   if (!Array.isArray(list)) throw new Error(`no particles for season: ${season}`)
   return list
 }
