@@ -78,8 +78,8 @@ const FACE = { lit: 0.9, warm: [1.15, 1.0, 0.8] as Rgb, litAt: [0.3, 0.6] as [nu
 const WALLS = { deepMm: 0.56, proudMm: 0.45, backMm: 0.62, lowMm: -1.95, doorMm: 3.97, keyMm: 0.85, mortar: 0.87, dark: 0.3, made: 0.9 }
 // The shared ring round the door is nine round lumps. The approved one is a ring of flat wedge stones, paler and warmer
 // than the wall, on jambs of the same stone. Fall draws its own in the make; the shared ring and jambs above `fromMm`
-// go behind the mortar with the wall's stones, and the made ring is warmed by `tone`, the jambs by `jamb`.
-const RING = { tone: [2.3, 2.3, 1.5] as Rgb, jamb: [1.3, 0.95, 0.6] as Rgb, reachMm: 0.45, outMm: 1.5, fromMm: 0.35, insideMm: 0.1 }
+// go behind the mortar with the wall's stones, and the made ring is toned by `crown` at its top, where the key light falls, by `flank` at its sides and the jambs by `jamb`.
+const RING = { crown: [0.85, 0.82, 0.92] as Rgb, flank: [5, 3.6, 3.2] as Rgb, crownFrom: [0.55, 0.9] as [number, number], jamb: [1.3, 0.95, 0.6] as Rgb, reachMm: 0.45, outMm: 1.5, fromMm: 0.35, insideMm: 0.1 }
 // The made shingles are smooth. The approved ones are split wood: the grain map read through its levels along each one.
 const SHAKE = { scale: 0.5, low: 0.35, span: 1.3, reachMm: 3.5 }
 // The shared door is one smooth leaf. The approved one is planks: each a tone of its own, a dark groove between them,
@@ -341,7 +341,7 @@ function* thinned(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeo
       const c = cottageLocal(P.getX(i), P.getZ(i))
       const up = P.getY(i) - frame.floor
       const t = stoned(c, up, [C.getX(i), C.getY(i), C.getZ(i)], wave(P.getX(i), P.getY(i), P.getZ(i)), true)
-      const warm = !ringed(c, up) ? WHITE : up > cottage.door.height - cottage.door.width / 2 ? RING.tone : RING.jamb
+      const warm = !ringed(c, up) ? WHITE : arched(up)
       C.setXYZ(i, t[0] * warm[0], t[1] * warm[1], t[2] * warm[2])
       continue
     }
@@ -382,6 +382,13 @@ const inBox = (x: number, y: number, cx: number, half: number, y0: number, y1: n
 const opening = (x: number, up: number, w: { across?: number; along?: number; width: number; height: number; sill: number }): boolean => {
   const cx = w.across ?? w.along ?? 0
   return inBox(x, up, cx, w.width / 2 + 0.42, w.sill - 0.95, w.sill + w.height + 1.25) || inBox(x, up, cx, w.width / 2 + 0.98, w.sill + w.height + 0.3, w.sill + w.height + 1.42) || inBox(x, up, cx, w.width / 2 + 0.88, w.sill - 0.95, w.sill - 0.25)
+}
+
+function arched(up: number): Rgb {
+  const over = (up - cottage.door.height + cottage.door.width / 2) / WALLS.doorMm
+  if (over < 0) return RING.jamb
+  const w = smooth(RING.crownFrom[0], RING.crownFrom[1], over)
+  return [RING.flank[0] + (RING.crown[0] - RING.flank[0]) * w, RING.flank[1] + (RING.crown[1] - RING.flank[1]) * w, RING.flank[2] + (RING.crown[2] - RING.flank[2]) * w]
 }
 
 function ringed(c: { across: number; along: number }, up: number): boolean {
