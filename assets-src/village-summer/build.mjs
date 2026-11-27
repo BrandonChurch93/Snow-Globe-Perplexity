@@ -29,7 +29,17 @@ const WATER_CLEAR_MM = 2.2
 const BANK = { turfTo: 0.115, turfVary: 0.1, sandTo: 0.3, rowsPow: 1.8, hang: 1500, hangTuft: [0.7, 1.7], hangWide: 1.5, hangDown: 0.25, lawn: 900, rootMm: 0.62, tipMm: 0.42 }
 const turfTo = (th) => clamp(BANK.turfTo + BANK.turfVary * fbm(Math.cos(th) * 9 + 2.3, Math.sin(th) * 9 + 9.1, 4.7, 3) + 0.02 * fbm(Math.cos(th) * 41 + 5.1, Math.sin(th) * 41 + 1.3, 7.9, 2), 0.07, 0.2)
 const STEP = { seed: 9091, rise: 0.4, pale: 2.4, fenceFrontMm: 6, fenceLow: 0.4, at: [[150, 0.93, 2.6], [171, 0.9, 3.1], [192, 0.92, 2.7], [212, 0.9, 3.0]] }
-const STONE = { lift: 1.7, buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, wet: 0.6, moss: 0.8, rim: 18, rimTufts: 420, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692', '#9a8c74', '#6f6a62'] }
+const STONE = { lift: 1.7, buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, wet: 0.6, moss: 0.8, mossFrom: 0.5, mossTo: 0.85, foot: 0.4, top: 1.2, rim: 18, rimTufts: 420, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692', '#9a8c74', '#6f6a62'] }
+// The bank as the approved image has it: the path's slabs and a row of loaves along the pond's far rim, brown, worn smooth and
+// mossy on top, pebbles at the water's edge and reeds in the shallows. The rubble that lay at the pond's left end is left out;
+// its stones keep their numbers in the run, so that the lawn and the flowers stand where they stood.
+const LOAF = { seed: 5081, dome: 0.85, shear: 0.25, sink: 0.3, wet: 0.45, tones: ['#a8957f', '#b3a08c', '#9c8872', '#bba995'], lumps: 0.12, chips: 0.03, moss: 0.45, mossFrom: 0.6, mossTo: 0.95, mossTone: '#6f7a3c', lift: 1.0, foot: 0.8, top: 0.3, crease: 0.3, creaseMm: 0.45, heel: 0.45, heelMm: 0.8, row: [[-4.0, -0.5, 2.0, 1.35, 0.7], [-1.5, -0.75, 1.9, 1.3, 0.72], [1.0, -0.45, 2.1, 1.4, 0.68], [3.6, -0.7, 1.9, 1.3, 0.72], [6.0, -0.5, 1.7, 1.2, 0.7], [8.0, -0.4, 1.3, 1.0, 0.62]], hide: [262, 246, 230, 214, 199, 255, 239, 222, 207, 188, 173, 161], fill: 2.2 }
+// The path's slabs keep their flat tops and take the loaves' pale grey brown.
+const SLAB = { tones: ['#a8957f', '#b3a08c', '#9c8872', '#bba995'], lumps: 0.16, chips: 0.04, moss: 0.6, mossFrom: 0.5, mossTo: 0.85, mossTone: '#6f7a3c', lift: 1.0, foot: 0.7, top: 0.4, heel: 0.5, heelMm: 0.6 }
+// Pebbles lie in handfuls at the loaves' feet and along the rims, not in an even string.
+const PEBBLE = { clusters: 22, each: [4, 9], spread: 1.5, size: [0.25, 0.65], fine: 0.45, from: 150, to: 400, feet: 6, clearMm: 0.2, tones: ['#b5a58c', '#cfc2a8', '#9a8a74', '#ddd0b8'], lumps: 0.2, chips: 0.05, moss: 0.25, mossFrom: 0.5, mossTo: 0.85, lift: 0.8, foot: 0.75, top: 0.35, wet: 0.5, crease: 0.35, creaseMm: 0.3, heel: 0.5, heelMm: 0.3 }
+const REED = { blades: 6, tall: [2.5, 4.5], wide: [0.2, 0.32], lean: [0.04, 0.28], standDeg: 5, stands: [[165, 5], [178, 7], [192, 6], [215, 3], [305, 3], [325, 5], [342, 7], [357, 6], [375, 5]], dry: { x: -17.5, z: 24.6, r: 1.5, n: 9, tall: 0.75 } }
+const GARLAND = { seed: 5087, r: 5.4, from: 0.1, to: 0.86, over: 18, down: 9, w: [0.5, 1.0], leaves: 9, leaf: 1.1, tone: [0.4, 1.0], shade: 0.4, rose: [0.42, 0.62], shrubRose: 1.35 }
 const TONES = {
   grass: ['#1c3413', '#274616', '#30531a', '#213c15'].map(lin),
   tip: ['#566f27', '#6b8230', '#465f20'].map(lin),
@@ -63,7 +73,7 @@ const sandAt = (x, z) => (1 - smooth(0.5, TURF.sandReach * (0.45 + 1.3 * clamp(0
 const blob = (x, z, cx, cz, rx, rz) => Math.exp(-(((x - cx) / rx) ** 2 + ((z - cz) / rz) ** 2))
 // Where the low sun reaches the floor between the crown, the trunk and the cottage (read off the approved image): right of
 // the trunk out to the sunflowers, behind the lamp, a little by the fence and on the near right bank.
-const sunAt = (x, z) => clamp((1.5 * blob(x, z, 24, 4, 13, 9) + 0.7 * blob(x, z, 6, -4, 9, 6) + 0.4 * blob(x, z, -24, 21, 6, 5) + 0.5 * blob(x, z, 24, 22, 9, 6)) * (0.5 + 1.0 * clamp(0.5 + 1.4 * fbm(x * 0.3 + 9, z * 0.3 + 4, 6.1, 2))))
+const sunAt = (x, z) => clamp((1.5 * blob(x, z, 24, 4, 13, 9) + 0.7 * blob(x, z, 6, -4, 9, 6) + 0.4 * blob(x, z, -24, 21, 6, 5) + 1.0 * blob(x, z, 24, 22, 9, 6) + 1.2 * blob(x, z, -17.5, 24.6, 2.4, 2.0)) * (0.5 + 1.0 * clamp(0.5 + 1.4 * fbm(x * 0.3 + 9, z * 0.3 + 4, 6.1, 2))))
 const turfAt = (x, z) => TURF.lumpMm * fbm(x * 0.22 + 3.1, z * 0.22 + 1.7, 2.2, 3) + TURF.fineMm * fbm(x * 0.9, z * 0.9, 5.5, 2)
 const topAt = (x, z) => L.groundAt(x, z) + TF.riseAt(x, z) + turfAt(x, z) * smooth(0.98, 1.1, L.pondField(x, z)) + TURF.sandMm * sandAt(x, z) * (0.3 + 0.7 * fbm(x * 0.26, z * 0.26, 9, 3) + 0.9 * clamp(0.5 + 1.2 * fbm(x * 0.075 + 4.4, z * 0.075 + 9.1, 2.9, 2)))
 const keepHard = (role) => role === 'cottage' || role === 'chimney' || role === 'path' || role === 'post' || role === 'fence'
@@ -286,27 +296,37 @@ function soup(bag, pos, nor, col, surfOf) {
 }
 
 // One stone, worn flat on top, half sunk, mossy where it faces up. It draws its numbers from the run it is given and returns its turn.
-function stone(x, z, rx, rz, rise, rnd, detail, pale = 1) {
+function stone(x, z, rx, rz, rise, rnd, detail, pale = 1, look = null, turn = null, others = null) {
+  const lk = look && look !== 'hide' ? look : STONE
   const rg = (a, b) => a + (b - a) * rnd()
-  const yaw = rg(0, TAU)
+  const drawn = rg(0, TAU)
+  const yaw = turn === null ? drawn : turn
   const h = rx * rise
   const g = new THREE.IcosahedronGeometry(1, detail)
   const P = g.getAttribute('position')
   const seed = rnd() * 50
   const cap = rg(0.45, 0.8)
   const tilt = [rg(-0.3, 0.3), rg(-0.3, 0.3)]
+  const sink = lk.sink ?? STONE.sink
   for (let i = 0; i < P.count; i++) {
     const nx = P.getX(i)
     const ny = P.getY(i)
     const nz = P.getZ(i)
-    const k = 1 + STONE.lumps * (noise(nx * 1.25 + seed, ny * 1.25, nz * 1.25) - 0.5) * 2 + STONE.chips * (noise(nx * 4.3 + seed, ny * 4.3 + 5, nz * 4.3) - 0.5) * 2
+    const k = 1 + lk.lumps * (noise(nx * 1.25 + seed, ny * 1.25, nz * 1.25) - 0.5) * 2 + lk.chips * (noise(nx * 4.3 + seed, ny * 4.3 + 5, nz * 4.3) - 0.5) * 2
+    if (lk.dome) {
+      // A loaf is round over its whole top and full at its shoulders: seen from the side it shows its lit back, not a dark flank under a thin cap.
+      const r = Math.hypot(nx, nz)
+      const f = r > 1e-6 ? r ** lk.dome / r : 1
+      P.setXYZ(i, nx * f * rx * k, (ny + lk.shear * (tilt[0] * nx + tilt[1] * nz) * Math.max(ny, 0)) * h * k, nz * f * rz * k)
+      continue
+    }
     // A stone that water has worn is flat on top and broken at its edge, not a ball.
     const top = cap + tilt[0] * nx + tilt[1] * nz
     const sy = ny > top ? top + (ny - top) * 0.22 : ny
     P.setXYZ(i, nx * rx * k, (sy / cap) * h * k, nz * rz * k)
   }
   g.rotateY(yaw)
-  const y = L.groundAt(x, z) + TF.riseAt(x, z) + h * (1 - 2 * STONE.sink) + 0.1
+  const y = L.groundAt(x, z) + TF.riseAt(x, z) + h * (1 - 2 * sink) + 0.1
   g.translate(x, y, z)
   {
     // The sunk half of a stone is never seen: its triangles are left out.
@@ -321,18 +341,59 @@ function stone(x, z, rx, rz, rise, rnd, detail, pale = 1) {
     g.deleteAttribute('normal')
     g.deleteAttribute('uv')
   }
-  const tone = mul3(lin(STONE.tones[Math.floor(rnd() * STONE.tones.length) % STONE.tones.length]), rg(0.8, 1.3) * pale)
+  const tone = mul3(lin(lk.tones[Math.floor(rnd() * lk.tones.length) % lk.tones.length]), rg(0.8, 1.3) * pale)
+  if (look === 'hide') return yaw
   // A stone that would stand in the glass at the front is left out, its place kept bare: through the bank it showed as a dark mark.
-  if (Math.hypot(x, y, z) + Math.max(rx, rz) * (1 + STONE.lumps + STONE.chips) > L.innerRadiusMm - WATER_CLEAR_MM) return yaw
+  if (Math.hypot(x, y, z) + Math.max(rx, rz) * (1 + lk.lumps + lk.chips) > L.innerRadiusMm - WATER_CLEAR_MM) return yaw
   // Wet and dark where the stone stands in the pond, dry and pale above.
   const wetAt = (p) => (1 - smooth(1.0, 1.1, L.pondField(p[0], p[2]))) * (1 - smooth(0.1, 0.9, p[1] - (L.moundAt(p[2]) - L.pond.level)))
-  const mossAt = (p) => STONE.moss * smooth(0.5, 0.85, (p[1] - (y - h)) / (2 * h)) * smooth(0.3, 0.6, noise(p[0] * 1.6 + seed, p[1] * 1.6, p[2] * 1.6))
-  decor.add(g, { color: (p) => mix3(mul3(tone, STONE.lift * (0.4 + 1.2 * clamp((p[1] - (y - h)) / (2 * h)) ** 2 + 0.5 * (noise(p[0] * 2.1 + seed, p[1] * 2.1, p[2] * 2.1) - 0.5) + 0.25 * (noise(p[0] * 7 + seed, p[1] * 7, p[2] * 7) - 0.5)) * (1 - STONE.wet * wetAt(p))), TONES.moss, mossAt(p)), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
+  const mossAt = (p) => lk.moss * smooth(lk.mossFrom, lk.mossTo, (p[1] - (y - h)) / (2 * h)) * smooth(0.3, 0.6, noise(p[0] * 1.6 + seed, p[1] * 1.6, p[2] * 1.6))
+  const mossTone = lk.mossTone ? lin(lk.mossTone) : TONES.moss
+  // Stones that lie against each other are dark in the crease between them, and dark at the heel where they meet the ground or the water.
+  const creaseAt = (p) => {
+    if (!others || !lk.crease) return 1
+    let d = Infinity
+    for (const o of others) {
+      if (o.x === x && o.z === z) continue
+      const c = Math.cos(o.yaw)
+      const sn = Math.sin(o.yaw)
+      const lx = (p[0] - o.x) * c - (p[2] - o.z) * sn
+      const lz = (p[0] - o.x) * sn + (p[2] - o.z) * c
+      d = Math.min(d, (Math.hypot(lx / o.rx, (p[1] - o.y) / o.h, lz / o.rz) - 1) * Math.min(o.rx, o.h, o.rz))
+    }
+    return lk.crease + (1 - lk.crease) * smooth(0, lk.creaseMm, d)
+  }
+  const heelAt = (p) => {
+    if (!lk.heel) return 1
+    const floor = L.pondField(p[0], p[2]) < 1 ? Math.max(topAt(p[0], p[2]), L.moundAt(p[2]) - L.pond.level) : topAt(p[0], p[2])
+    return lk.heel + (1 - lk.heel) * smooth(0, lk.heelMm, p[1] - floor)
+  }
+  const wet = lk.wet ?? STONE.wet
+  decor.add(g, { color: (p) => mul3(mix3(mul3(tone, lk.lift * (lk.foot + lk.top * clamp((p[1] - (y - h)) / (2 * h)) ** 2 + 0.5 * (noise(p[0] * 2.1 + seed, p[1] * 2.1, p[2] * 2.1) - 0.5) + 0.25 * (noise(p[0] * 7 + seed, p[1] * 7, p[2] * 7) - 0.5)) * (1 - wet * wetAt(p))), mossTone, mossAt(p)), creaseAt(p) * heelAt(p)), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
   return yaw
 }
 
 // Rounded stepping stones from the door down to the pond's left shore and along it, over the shared path's small slabs.
 const stoneList = []
+const loafList = []
+const loafSet = []
+function gapTo(list, x, z) {
+  let d = Infinity
+  for (const [sx, sz, rx, rz, yaw] of list) {
+    const c = Math.cos(yaw)
+    const s = Math.sin(yaw)
+    const lx = (x - sx) * c - (z - sz) * s
+    const lz = (x - sx) * s + (z - sz) * c
+    d = Math.min(d, (Math.hypot(lx / rx, lz / rz) - 1) * Math.min(rx, rz))
+  }
+  return d
+}
+function shoreAt(deg, field) {
+  const a = (deg / 180) * Math.PI
+  let t = 0
+  while (t < 60 && L.pondField(L.pond.x + Math.cos(a) * t, L.pond.z + Math.sin(a) * t) < field) t += 0.05
+  return [L.pond.x + Math.cos(a) * t, L.pond.z + Math.sin(a) * t]
+}
 {
   const edgeAt = (deg, field) => {
     const a = (deg / 180) * Math.PI
@@ -343,8 +404,8 @@ const stoneList = []
   const shore = [[262, 1.1, 1.7], [246, 1.09, 2.1], [230, 1.085, 2.9], [214, 1.08, 2.2], [199, 1.08, 3.1], [150, 1.07, 2.4], [133, 1.065, 1.9], [38, 1.07, 2.0], [4, 1.075, 2.6]]
   // Between the large stones lie small ones at no even step, some half in the water: the bank is no ring of one size.
   const small = [[255, 1.05, 1.0], [239, 1.04, 0.8], [222, 1.05, 1.25], [207, 1.035, 0.9], [188, 1.05, 1.4], [173, 1.06, 1.0], [161, 1.04, 0.75], [142, 1.045, 1.1], [121, 1.06, 1.3], [98, 1.06, 0.85], [61, 1.055, 1.0], [23, 1.05, 1.2], [287, 1.065, 1.3]]
-  const along = [...L.stones.map(([x, z], i) => [x, z, 2.3 + 0.22 * i, 1.7 + 0.12 * i, 0.3, 3]), ...[...shore, ...small].map(([deg, f, w]) => [...edgeAt(deg + range(-3, 3), f), w * range(0.85, 1.2), w * range(0.55, 0.85), range(0.34, 0.56), w < 1.5 ? 2 : 3])]
-  for (const [x, z, rx, rz, rise, detail] of along) stoneList.push([x, z, rx, rz, stone(x, z, rx, rz, rise, R, detail)])
+  const along = [...L.stones.map(([x, z], i) => [x, z, 2.3 + 0.22 * i, 1.7 + 0.12 * i, 0.3, 3, SLAB]), ...[...shore, ...small].map(([deg, f, w]) => [...edgeAt(deg + range(-3, 3), f), w * range(0.85, 1.2), w * range(0.55, 0.85), range(0.34, 0.56), w < 1.5 ? 2 : 3, LOAF.hide.includes(deg) ? 'hide' : null])]
+  for (const [x, z, rx, rz, rise, detail, look] of along) stoneList.push([x, z, rx, rz, stone(x, z, rx, rz, rise, R, detail, 1, look), look === 'hide'])
   // Flat pale stones stand in the shallow water at the pond's left end, mossy on top: stepping stones, from a run of their own
   // so that the lawn and the flowers keep their places.
   const S = rng(STEP.seed)
@@ -354,21 +415,27 @@ const stoneList = []
     const rz = w * (0.68 + 0.14 * S())
     stoneList.push([x, z, rx, rz, stone(x, z, rx, rz, STEP.rise, S, 2, STEP.pale)])
   }
-}
-const stoneGap = (x, z) => {
-  let d = Infinity
-  for (const [sx, sz, rx, rz, yaw] of stoneList) {
-    const c = Math.cos(yaw)
-    const s = Math.sin(yaw)
-    const lx = (x - sx) * c - (z - sz) * s
-    const lz = (x - sx) * s + (z - sz) * c
-    d = Math.min(d, (Math.hypot(lx / rx, lz / rz) - 1) * Math.min(rx, rz))
+  // The loaves lie packed along the far rim, each turned along it, so that one stands against the next.
+  const B = rng(LOAF.seed)
+  const rimZ = (x) => {
+    let z = L.pond.z
+    while (L.pondField(x, z) < 1 && z > -30) z -= 0.02
+    return z
   }
-  return d
+  for (const [i, [x, off, rx, rz, rise]] of LOAF.row.entries()) {
+    const z = rimZ(x) + off
+    const h = rx * rise
+    loafSet.push({ x, z, rx, rz, rise, h, yaw: -Math.atan2(rimZ(x + 0.5) - rimZ(x - 0.5), 1) + 0.25 * Math.sin(i * 2.4 + 1), y: L.groundAt(x, z) + TF.riseAt(x, z) + h * (1 - 2 * LOAF.sink) + 0.1 })
+  }
+  for (const o of loafSet) loafList.push([o.x, o.z, o.rx, o.rz, stone(o.x, o.z, o.rx, o.rz, o.rise, B, 4, 1, LOAF, o.yaw, loafSet)])
 }
+const stoneGap = (x, z) => gapTo(stoneList, x, z)
+const loafGap = (x, z) => gapTo(loafList, x, z)
 
 let tufts = 0
 let planted = 0
+let filled = 0
+let pebbles = 0
 {
   const pos = []
   const nor = []
@@ -421,7 +488,7 @@ let planted = 0
     const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
     const seen = seenAt(x, y0 + 1.1 * tall, z)
     if (!seen) unseen++
-    if (K() < (seen ? GRASS.keep * (1 - (1 - HIDE.farKeep) * smooth(HIDE.farFrom, HIDE.farTo, -z)) : 0)) {
+    if (K() < (seen ? GRASS.keep * (1 - (1 - HIDE.farKeep) * smooth(HIDE.farFrom, HIDE.farTo, -z)) : 0) && loafGap(x, z) >= 0.15) {
       list.push(cell)
       planted++
     }
@@ -614,7 +681,7 @@ let planted = 0
       const rz = w * wr(0.55, 0.85)
       const rise = wr(0.4, 0.62)
       if (stoneGap(x, z) < 0.4 || wallGap(x, z) < 3 || hardGap(x, z) < 0.5) continue
-      stoneList.push([x, z, rx, rz, stone(x, z, rx, rz, rise, W, 1)])
+      stoneList.push([x, z, rx, rz, stone(x, z, rx, rz, rise, W, 1, 1, loafGap(x, z) < 0.3 ? 'hide' : null), loafGap(x, z) < 0.3])
     }
     let rim = 0
     for (let i = 0; i < STONE.rimTufts * 30 && rim < STONE.rimTufts; i++) {
@@ -645,9 +712,109 @@ let planted = 0
           cell.sun.push(lit)
         }
       }
+      if (loafGap(x, z) >= 0.15) {
+        list.push(cell)
+        planted++
+      }
+      rim++
+    }
+  }
+  const shown = stoneList.filter((s) => !s[5])
+  // Reeds stand in the shallows and along the rim, wider than the lawn's blades: from a run of numbers of their own.
+  {
+    const Q = rng(LOAF.seed + 2)
+    const qr = (a, b) => a + (b - a) * Q()
+    const qp = (set) => set[Math.floor(Q() * set.length) % set.length]
+    let reeds = 0
+    // They grow in stands at the pond's two ends and between the loaves, and one dry stand catches the sun at the fence's last post.
+    const places = []
+    for (const [deg, n] of REED.stands) for (let k = 0; k < n; k++) places.push(() => shoreAt(deg + qr(-REED.standDeg, REED.standDeg), qr(0.975, 1.03)))
+    for (let k = 0; k < REED.dry.n; k++) places.push(() => { const a = qr(0, TAU); const d = REED.dry.r * Math.sqrt(Q()); return [REED.dry.x + Math.cos(a) * d, REED.dry.z + Math.sin(a) * d * 0.7] })
+    for (const [i, place] of places.entries()) {
+      const dry = i >= places.length - REED.dry.n
+      const [x, z] = place()
+      const tall = qr(REED.tall[0], REED.tall[1]) * (dry ? REED.dry.tall : 1)
+      const deep = 0.8 + 0.5 * Q()
+      const lit = dry ? clamp(0.8 + 0.3 * Q()) : clamp(0.45 + 0.45 * Q())
+      if (gapTo(shown, x, z) < 0.1 || loafGap(x, z) < 0.1 || hardGap(x, z) < 0.5) continue
+      const y0 = Math.max(topAt(x, z), L.moundAt(z) - L.pond.level) - 0.05
+      const base = mul3(qp(TONES.grass), deep * 1.6)
+      const top = mul3(mix3(qp(TONES.tip), qp(TONES.straw), dry ? 0.6 : 0.4), deep * 1.15)
+      const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
+      const up = norm3([(Q() - 0.5) * 0.4, 1, (Q() - 0.5) * 0.4])
+      for (let b = 0; b < REED.blades; b++) {
+        const yaw = Q() * TAU
+        const lean = qr(REED.lean[0], REED.lean[1])
+        const dir = [Math.cos(yaw), 0, Math.sin(yaw)]
+        const side = [-dir[2], 0, dir[0]]
+        const w = qr(REED.wide[0], REED.wide[1])
+        const h = tall * qr(0.55, 1.1)
+        const ox = x + qr(-0.3, 0.3)
+        const oz = z + qr(-0.3, 0.3)
+        let T = [ox + dir[0] * h * lean, y0 + h, oz + dir[2] * h * lean]
+        const far = Math.hypot(T[0], T[1], T[2])
+        if (far > L.innerRadiusMm - BANK.tipMm) T = sc(T, (L.innerRadiusMm - BANK.tipMm) / far)
+        for (const [q, c, t] of [[[ox - side[0] * w, y0, oz - side[2] * w], base, 0], [[ox + side[0] * w, y0, oz + side[2] * w], base, 0], [T, top, 1]]) {
+          cell.pos.push(...q)
+          cell.nor.push(...up)
+          cell.col.push(c[0] * (0.32 + 0.95 * t), c[1] * (0.32 + 0.95 * t), c[2] * (0.32 + 0.95 * t))
+          cell.tip.push(t)
+          cell.sun.push(lit)
+        }
+      }
       list.push(cell)
       planted++
-      rim++
+      reeds++
+    }
+  }
+  // Where the rubble lay the lawn has closed: tufts from a run of numbers of their own, toned as the lawn about them.
+  {
+    const F = rng(LOAF.seed + 3)
+    const fr = (a, b) => a + (b - a) * F()
+    const fp = (set) => set[Math.floor(F() * set.length) % set.length]
+    for (const [sx, sz, rx, rz, yaw, hidden] of stoneList) {
+      if (!hidden) continue
+      const c = Math.cos(yaw)
+      const s = Math.sin(yaw)
+      const n = Math.round(LOAF.fill * Math.PI * (rx + 0.3) * (rz + 0.3))
+      for (let i = 0; i < n; i++) {
+        const a = F() * TAU
+        const q = Math.sqrt(F())
+        const lx = Math.cos(a) * q * (rx + 0.3)
+        const lz = Math.sin(a) * q * (rz + 0.3)
+        const x = sx + lx * c + lz * s
+        const z = sz - lx * s + lz * c
+        const tall = fr(GRASS.tall[0], GRASS.tall[1]) * (1 + GRASS.clump * smooth(0.56, 0.8, clamp(0.5 + 1.5 * fbm(x * 0.5 + 31, z * 0.5 + 17, 4.4, 2)))) * (0.6 + 0.6 * clamp(0.55 + 0.9 * fbm(x * 0.16 + 7, z * 0.16 + 2, 1.1, 3)))
+        const deep = F() < 0.3 ? 0.5 : 0.85 + 0.7 * F()
+        const lit = sunAt(x, z) * (F() < 0.28 ? 0.2 : 0.75 + 0.6 * F())
+        const patch = 0.45 + 0.75 * clamp(0.5 + 1.4 * fbm(x * 0.09 + 3, z * 0.09 + 11, 2.3, 2))
+        const base = mul3(fp(TONES.grass), patch * deep)
+        const top = mul3(mix3(fp(TONES.tip), fp(TONES.straw), 0.08 * F()), patch * deep)
+        const up = norm3([(F() - 0.5) * 0.5, 1, (F() - 0.5) * 0.5])
+        const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
+        for (let b = 0; b < GRASS.blades; b++) {
+          const turn = F() * TAU
+          const lean = fr(0.15, 0.75)
+          const dir = [Math.cos(turn), 0, Math.sin(turn)]
+          const side = [-dir[2], 0, dir[0]]
+          const w = fr(GRASS.wide[0], GRASS.wide[1])
+          const h = tall * fr(0.6, 1.1)
+          const ox = x + fr(-0.25, 0.25)
+          const oz = z + fr(-0.25, 0.25)
+          const y0 = topAt(x, z) - 0.05
+          for (const [p, tone, t] of [[[ox - side[0] * w, y0, oz - side[2] * w], base, 0], [[ox + side[0] * w, y0, oz + side[2] * w], base, 0], [[ox + dir[0] * h * lean, y0 + h, oz + dir[2] * h * lean], top, 1]]) {
+            cell.pos.push(...p)
+            cell.nor.push(...up)
+            cell.col.push(tone[0] * (0.32 + 0.95 * t) * GRASS.dye[0], tone[1] * (0.32 + 0.95 * t) * GRASS.dye[1], tone[2] * (0.32 + 0.95 * t) * GRASS.dye[2])
+            cell.tip.push(t)
+            cell.sun.push(lit)
+          }
+        }
+        if (L.pondField(x, z) < 1.035 || hardGap(x, z) < 0.3 || wallGap(x, z) < 0.7 || gapTo(shown, x, z) < 0.15 || loafGap(x, z) < 0.15) continue
+        list.push(cell)
+        planted++
+        filled++
+      }
     }
   }
   list.sort((p, q) => p.key - q.key)
@@ -666,14 +833,57 @@ let planted = 0
   })
 }
 
+// Pebbles lie at the water's edge, some half in it, in handfuls: from a run of numbers of their own, after every other stone is set.
+{
+  const P = rng(LOAF.seed + 1)
+  const pr = (a, b) => a + (b - a) * P()
+  const shown = stoneList.filter((s) => !s[5])
+  const centres = []
+  for (let i = 0; i < PEBBLE.feet; i++) {
+    const o = loafSet[i % loafSet.length]
+    centres.push([o.x + pr(-1.3, 1.3), o.z + o.rz * pr(0.95, 1.5)])
+  }
+  for (let i = 0; i < PEBBLE.clusters; i++) centres.push(shoreAt(pr(PEBBLE.from, PEBBLE.to), pr(0.99, 1.06)))
+  const set = []
+  for (const [cx, cz] of centres) {
+    const n = Math.round(pr(PEBBLE.each[0], PEBBLE.each[1]))
+    for (let k = 0; k < n; k++) {
+      const a = pr(0, TAU)
+      const d = PEBBLE.spread * Math.sqrt(P())
+      const x = cx + Math.cos(a) * d
+      const z = cz + Math.sin(a) * d * 0.7
+      const w = pr(PEBBLE.size[0], PEBBLE.size[1]) * (k === 0 ? 1.25 : 1)
+      const rx = w * pr(0.9, 1.3)
+      const rz = w * pr(0.7, 1.0)
+      const rise = pr(0.5, 0.8)
+      const yaw = pr(0, TAU)
+      if (gapTo(shown, x, z) < 0.1 || loafGap(x, z) < -0.2 || hardGap(x, z) < 0.3) continue
+      if (set.some((o) => Math.hypot(o.x - x, o.z - z) < 0.5 * (o.rx + rx))) continue
+      const h = rx * rise
+      const y = L.groundAt(x, z) + TF.riseAt(x, z) + h * (1 - 2 * STONE.sink) + 0.1
+      // One that the water would cover is left out.
+      if (L.pondField(x, z) < 1 && y + h < L.moundAt(z) - L.pond.level + PEBBLE.clearMm) continue
+      set.push({ x, z, rx, rz, rise, h, yaw, y })
+    }
+  }
+  const near = [...loafSet, ...set]
+  for (const o of set) {
+    stone(o.x, o.z, o.rx, o.rz, o.rise, P, o.rx > PEBBLE.fine ? 1 : 0, 1, PEBBLE, o.yaw, near)
+    pebbles++
+  }
+}
+
 const leafSurf = [surf(KIND.leaf, 0.8), 0]
 const leafBits = { pos: [], nor: [], col: [] }
+// What is muted keeps its numbers in the run and is left out of the mesh.
+let mute = false
 // A leaf is cupped along its midrib, lobed at its edge and paler along the rib. What shapes it comes from its own place, not
 // from the run of numbers, so that everything set after it keeps its place. A prominent one (`fine`) has three lobes.
 function leaf(p, out, size, tone, rnd = R, fine = false, shade = 0) {
   const tipDir = norm3([out[0] + (rnd() - 0.5) * 1.1, out[1] * 0.5 + 0.3 + (rnd() - 0.5) * 0.8, out[2] + (rnd() - 0.5) * 1.1])
   const sideV = norm3([tipDir[1] * out[2] - tipDir[2] * out[1] + (rnd() - 0.5) * 0.4, tipDir[2] * out[0] - tipDir[0] * out[2], tipDir[0] * out[1] - tipDir[1] * out[0] + (rnd() - 0.5) * 0.4])
   const len = size * (0.8 + 0.5 * rnd())
+  if (mute) return
   const w = len * 0.32
   const nn = norm3(add3(sc(out, 0.75), [0, 0.35, 0]))
   const own = (k) => {
@@ -715,6 +925,7 @@ function blossom(p, out, r, tone, petals = 6, rnd = R) {
   const g = new THREE.IcosahedronGeometry(1, 1)
   const P = g.getAttribute('position')
   const seed = rnd() * 40
+  if (mute) return
   for (let i = 0; i < P.count; i++) {
     const k = 0.82 + 0.3 * noise(P.getX(i) * 2.2 + seed, P.getY(i) * 2.2, P.getZ(i) * 2.2)
     P.setXYZ(i, P.getX(i) * r * k, P.getY(i) * r * k * 0.75, P.getZ(i) * r * k)
@@ -737,7 +948,7 @@ for (const sh of RF.shrubs()) {
     const rr = Math.sqrt(Math.max(0, 1 - yy * yy))
     const d = [Math.cos(a) * rr, yy, Math.sin(a) * rr]
     const p = [sh.centre[0] + d[0] * sh.r[0] * 1.02, sh.centre[1] + d[1] * sh.r[1] * 1.02, sh.centre[2] + d[2] * sh.r[2] * 1.02]
-    blossom(p, d, range(0.32, 0.52), pick(TONES.rose))
+    blossom(p, d, range(0.32, 0.52) * GARLAND.shrubRose, pick(TONES.rose))
     counts.roses++
     for (let k = 0; k < 4; k++) leaf(add3(p, [range(-0.6, 0.6), range(-0.6, 0.6), range(-0.6, 0.6)]), d, 0.8, mul3(pick(TONES.leaf), range(0.7, 1.5)))
   }
@@ -767,8 +978,9 @@ for (const sh of RF.shrubs()) {
   }
   const outV = sc(L.cottagePoint(0, 0, 1).map((v, i) => v - L.cottagePoint(0, 0, 0)[i]), 1)
   const out = norm3([outV[0], 0.15, outV[2]])
+  // The climbs around the door, up the corners and under the eaves hid the arch's ring: they keep their numbers and are left out.
+  mute = true
   for (const c of climb) {
-    // Fewer, larger leaves and roses: from the hero lens each one is a shape of its own, not a speckle.
     for (let k = 0; k < 4; k++) {
       const p = L.cottagePoint(c.at[0] + range(-c.w, c.w), c.at[1] + range(-c.w, c.w), wallZ + range(0, 0.5))
       leaf(p, out, 1.25, mul3(pick(TONES.leaf), range(0.35, 1.1)), R, true, 0.5)
@@ -776,7 +988,33 @@ for (const sh of RF.shrubs()) {
     if (R() < 0.3) {
       const p = L.cottagePoint(c.at[0] + range(-c.w, c.w), c.at[1] + range(-c.w, c.w), wallZ + 0.55)
       blossom(p, out, range(0.42, 0.68), pick(TONES.rose))
-      counts.roses++
+    }
+  }
+  mute = false
+  // The garland as the approved image has it: pale roses and small leaves in an arc close over the arch, its ring left open,
+  // and a trail down the right of the door that widens to its foot. A run of numbers of its own.
+  {
+    const G = rng(GARLAND.seed)
+    const gr = (a, b) => a + (b - a) * G()
+    const gp = (set) => set[Math.floor(G() * set.length) % set.length]
+    const spring = door.height - door.width / 2
+    const footA = door.across + Math.cos(Math.PI * GARLAND.from) * GARLAND.r
+    const footU = spring + Math.sin(Math.PI * GARLAND.from) * GARLAND.r
+    const line = []
+    for (let i = GARLAND.over; i >= 0; i--) {
+      const a = Math.PI * (GARLAND.from + (GARLAND.to - GARLAND.from) * (i / GARLAND.over))
+      line.push([door.across + Math.cos(a) * GARLAND.r, spring + Math.sin(a) * GARLAND.r, GARLAND.w[0]])
+    }
+    for (let i = 1; i <= GARLAND.down; i++) {
+      const t = i / GARLAND.down
+      line.push([footA + 0.4 * Math.sin(t * 7), footU - t * (footU - 0.8), GARLAND.w[0] + (GARLAND.w[1] - GARLAND.w[0]) * t])
+    }
+    for (const [i, [across, up, w]] of line.entries()) {
+      for (let k = 0; k < GARLAND.leaves; k++) leaf(L.cottagePoint(across + gr(-w, w), up + gr(-w, w), wallZ + gr(0, 0.5)), out, GARLAND.leaf, mul3(gp(TONES.leaf), gr(GARLAND.tone[0], GARLAND.tone[1])), G, k === 0, GARLAND.shade)
+      if (i % 2 === 0) {
+        blossom(L.cottagePoint(across + gr(-0.35, 0.35), up + gr(-0.35, 0.35), wallZ + 0.6), out, gr(GARLAND.rose[0], GARLAND.rose[1]), gp(TONES.rose), 6, G)
+        counts.roses++
+      }
     }
   }
   // The side wall is half grown over: ivy from the footing up to an uneven line under the eaves, open around the window.
@@ -1032,4 +1270,4 @@ const grassLow = []
 }
 addLists(rel('assets-full', 'summer', 'village-summer.glb'), { grass: { medium: grassMedium, low: grassLow } })
 console.log(`village-summer: ${unseen} of ${tufts} places for a tuft stand where neither lens sees them and stay bare`)
-console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${planted} tufts, ${grassMedium.length / 3} at medium, ${grassLow.length / 3} at low), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms)`)
+console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${planted} tufts, ${grassMedium.length / 3} at medium, ${grassLow.length / 3} at low), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms, ${loafList.length} loaves, ${pebbles} pebbles, ${filled} tufts where the rubble lay)`)
