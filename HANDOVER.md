@@ -180,3 +180,32 @@ Still short of the approved picture:
 - A band of stones over the door still reads teal against the approved's warm lit arch.
 - The corner post is seen from its thin side, which is all worn edge and reads pale. The posts are pointed by a slant; at 7 times the approved's tops look rounded with a pale rim to me, so the point may be more than the picture asks.
 - Fall's two draft stills on main before this change were not drawn again here; the guard list's two are taken from the root's note.
+
+## After the eighth list (7c2507f4 on main e5671c9c)
+
+Pictures 32 to 37 (32 and 33 are the first pair, before the push). The eighth list is 0aa8dc8f (pushed first as 67a1de1f on main 3170155e); 0ad9b076, 895f2549 and 7c2507f4 answer the root's look at pictures 32 and 33 and its notes of 10:17 UTC.
+
+- Chimney: a box gate in the shader (`fallStack`) takes it out of `fallHouse`, and `autumn()` skips the flat normal step for its vertices (`CHIMNEY`). Its part went from 0.68 to 0.89.
+- Roof: fall's own cover in the make (`SHINGLE`): 7 rows where 8 were, slabs 3.4 to 5.4 mm wide and 0.4 to 0.6 thick, lower edges rounded and ragged, broader streaks.
+- Wall: fall's own stones in the make (`BLOCKS`, `block()`, `courses()`): flat shaded blocks with a bevelled rim, cut corners and a faceted face, dealt in courses on the front and left walls round the shared openings and the attic pane. The shared round stones of those walls are put behind the mortar and darkened at load (`WALLS`, `buried()`), so the layout's meshes and counts stay. 331 blocks cost 9,280 make triangles.
+- Door: 13 wedge blocks round the door's top and jamb blocks from 0.4 mm up. At load `arched()` tones the ring from `RING.flank` at its sides to `RING.crown` at its top, the jambs by `RING.jamb`.
+- Litter: `GROUND` leaf 0.68, grey 0.85, mould 0.83, 0.8, 0.72.
+- Fence: every picket is hidden (marked black in the make, folded under the ground at load), the seven posts stand nearly plumb (`POSTS` in `mini/props.ts`), keep 0.78 of their made width (`POST.keep`) and have round tops (`POST.point` 0); the side wear is thinned (`POST_WEAR`).
+- Tufts: none within 16 mm of the fence line, 420 where 560 were.
+- Made triangles at high: 283,466 before the list, 278,370 with the eighth list alone, 273,284 as pushed.
+
+A wall that was tried and taken back (0ad9b076): mixed widths (share 0.5 to 1.6), more cut corners and a domed face. It read worse on every measure (floor luma 26, spread in a stone 41 to 45), so the blocks are the eighth list's again.
+
+A measure that was wrong: `ring8.py` in the scratch folder read wall stones beside the arch, not the ring, so "ring top 59,63,53" and "84,98,77" in my notes of this list mean nothing. The boxes of `ring9.py` were drawn on the two crops and looked at.
+
+Still short of the approved picture:
+- Wall: level courses and flat faces; the approved has courses that break and stones spanning two. Upper gable without the air at hd: joints 4.0 px at half depth against 3.0, depth 20 against 15, floor luma 29 against 44 to 48, spread in a stone 39 against 26 to 28.
+- Door ring with the air: top 88,92,70 against 79,88,69; left arc 89,81,55 against 101,93,66; right arc 98,84,58 against 148,124,80. The approved's right arc is lit by the lamp; ours is toned up five times in red and still short.
+- Roof: the approved has 8 rows right of the chimney by my count on a crop with a grid (pitch about 11 px, slabs 25 to 35 px wide); ours has 7. Tone by luma bands over two regions (lit is the 70 to 90 per cent band, shaded the 20 to 40): left of the gable lit 80,57,48 against 110,66,38, shaded 22,19,17 against 30,16,12; right of the chimney lit 108,78,72 against 76,40,24, shaded 29,20,18 against 26,14,11. Ours is too orange low on the slope, too dark and too red near the ridge, and short of blue everywhere.
+- Fence: the approved shows five clear posts and one or two more fading behind the glass's edge, with a thin picket between each clear pair, the posts about 70 px tall; ours has seven posts about 50 px tall.
+- Chimney: level bricks where the approved has stacked rough stones under a cap of two courses. Not touched.
+- Path: small stones where the approved has about seven broad flat slabs. Not touched.
+- Two tufts still show at the wall's foot left of the pumpkin.
+- Not seen: any still at 3840, anything in motion.
+
+Proof on 7c2507f4 merged on main e5671c9c: draft stills fall-rest 2a905f5535cd7ac9, fall-landed 1b7e071702d044a7, the other six equal chain 27s list; M3 at review 0.882 (base 0.913, miniature 0.882); parts crown 1.37, trunk 1.06, roof 0.95, wall 0.79, fence 0.87, litter 0.76, chimney 0.97, the rest 0.67; G15 high 1,765,827 of 1,800,000, medium 999,606, low 451,375; strict pass; miniatures pass 28195801d1942ae2.
