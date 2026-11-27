@@ -161,7 +161,9 @@ export const CARD_VERT = `
       float edgeC = 0.1;
       if (uStorm.x < 0.99) {
         float depthQ = depth + ${n(CARD.clock.depthVary)} * (fract(h.w * 113.0) * 2.0 - 1.0);
-        denseC = mix(denseC, 1.0 - min(${n(CARD.clock.even)} * mix(${n(CARD.clock.farMore)}, ${n(CARD.clock.nearLess)}, smoothstep(${n(CARD.clock.keepAt[0])}, ${n(CARD.clock.keepAt[1])}, depthQ)), 1.0) * (1.0 - ${n(CARD.clock.lowOut)} * (1.0 - smoothstep(${n(CARD.clock.lowY[0])}, ${n(CARD.clock.lowY[1])}, atC.y))) * (1.0 - ${n(CARD.clock.bandOut)} * exp(-0.5 * (atC.y - ${n(CARD.clock.bandY[0])}) * (atC.y - ${n(CARD.clock.bandY[0])}) / ${n(CARD.clock.bandY[1] * CARD.clock.bandY[1])})), offC);
+        // where the still liquid gathers the heads (looks.ts, CARD.clock.clumpAt, a place in the ball in millimetres) fewer are drawn, in a bell about that place, so they stand apart there as they do everywhere else
+        vec3 clumpK = (nowL - vec3(${CARD.clock.clumpAt.map(n).join(', ')})) / ${n(CARD.clock.clumpMm)};
+        denseC = mix(denseC, 1.0 - min(${n(CARD.clock.even)} * mix(${n(CARD.clock.farMore)}, ${n(CARD.clock.nearLess)}, smoothstep(${n(CARD.clock.keepAt[0])}, ${n(CARD.clock.keepAt[1])}, depthQ)), 1.0) * (1.0 - ${n(CARD.clock.lowOut)} * (1.0 - smoothstep(${n(CARD.clock.lowY[0])}, ${n(CARD.clock.lowY[1])}, atC.y))) * (1.0 - ${n(CARD.clock.bandOut)} * exp(-0.5 * (atC.y - ${n(CARD.clock.bandY[0])}) * (atC.y - ${n(CARD.clock.bandY[0])}) / ${n(CARD.clock.bandY[1] * CARD.clock.bandY[1])})) * (1.0 - ${n(CARD.clock.clumpOut)} * exp(-0.5 * dot(clumpK, clumpK))), offC);
         edgeC = mix(0.1, ${n(CARD.clock.edge)}, offC);
       }
       // how much of this head the count lets stand. A clock that the count takes out or lets in as it drifts does not stand there as a ghost of itself: it is small while it comes and grows to its size, as a head does that floats up out of the deep of the ball (rC below), and is whole to see well before it is full grown
@@ -220,6 +222,8 @@ export const CARD_VERT = `
           rC = mix(rC, look.y * uPoint.y * mag / zImg * shrink * mix(mix(${n(CARD.clock.mm[0])}, ${n(CARD.clock.mm[1])}, midK), ${n(CARD.clock.mm[2])} * mix(1.0, ${n(CARD.clock.stoutMm)}, step(cardHairHash((pid & 4095u) * 64u + 63u).y, ${n(CARD.clock.warmShare)})), nearK) * mix(${n(CARD.clock.vary[0])}, ${n(CARD.clock.vary[1])}, fract(vary * 7.0)) * mix(${n(CARD.clock.goSize)}, 1.0, wholeC), clockC);
           seedSoft = mix(seedSoft, closeC * mix(mix(${n(CARD.clock.softPx[0])}, ${n(CARD.clock.softPx[1])}, midK), ${n(CARD.clock.softPx[2])}, nearK), clockC);
           keepC *= mix(1.0, mix(mix(${n(CARD.clock.classSeen[0])}, ${n(CARD.clock.classSeen[1])}, midK), ${n(CARD.clock.classSeen[2])}, nearK), clockC);
+          // a clock takes back the lens look's dimming of what floats far behind the miniature (looks.ts, LENS_LOOK.farDim; the line that sets alpha below): a far puff is whole to see, a soft grey ball, and it is the count that says how many there are, not a crowd of ghosts
+          keepC *= mix(1.0, 1.0 / mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), clockC * ${n(CARD.clock.farLit)});
           seedNear = mix(seedNear, nearK, clockC);
           seedFar = (1.0 - midK) * clockC;
           // a stalk would lay a line across the cottage's face or end one among the branches: before the two a clock shows none
@@ -254,7 +258,7 @@ export const CARD_VERT = `
       float flyG = smoothstep(${n(CARD.glow.swarmFly[0])}, ${n(CARD.glow.swarmFly[1])}, pace);
       keepC *= mix(1.0, smoothstep(outG - ${n(CARD.glow.swarmEdge)}, outG, fract(own * 211.0)), afloat * (1.0 - gustC) * (1.0 - flyG));
       // at rest a share of the lights is not lit: the ones that are stand in a row by their own number, from fine points to a few large soft glows (restSC below). They come on as the storm rises, which needs them all
-      keepC *= mix(1.0, step(${n(CARD.glow.restOut)}, fract(h2.x * 113.0)), afloat * (1.0 - max(gustC, uStorm.x)));
+      keepC *= mix(1.0, step(${n(CARD.glow.restOut - CARD.glow.restSpeck[0])}, fract(h2.x * 113.0)), afloat * (1.0 - max(gustC, uStorm.x)));
       // in the storm few of them are seen and fewer still before the cottage, each smaller: small warm sparks, not a rain of dashes
       keepC *= 1.0 - gustC * (1.0 - smoothstep(-0.08, 0.0, ${n(CARD.glow.stormShare)} * (1.0 - ${n(CARD.glow.stormCottage)} * cotG) - fract(own * 389.0)));
       rC *= mix(1.0, ${n(CARD.glow.stormSize)}, gustC);
@@ -1261,7 +1265,9 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     float fineR = smoothstep(0.0, ${n(CARD.glow.restDim[1])}, uR);
     paleR = mix(${n(CARD.glow.restPale[0])}, mix(${n(CARD.glow.restPale[2])}, ${n(CARD.glow.restPale[1])}, fineR), heartR / max(heartR + glowR, 1e-6));
     solid = mix(core, heartR, restL);
-    lum = mix(lum, vCore.w * (heartR + glowR) * ${n(CARD.glow.restTop)} * mix(${n(CARD.glow.restDim[0])}, 1.0, fineR), restL);
+    // under the finest of the lit stand the specks (looks.ts, CARD.glow.restSpeck): lights too faint to be more than a point, each one fainter than the one before down their own row. The row of the lit goes over to them with no step, so no light stands at a line between the two
+    float speckR = clamp((${n(CARD.glow.restOut)} - fract(vL3.x * 113.0)) / ${n(CARD.glow.restSpeck[0])}, 0.0, 1.0);
+    lum = mix(lum, vCore.w * (heartR + glowR) * ${n(CARD.glow.restTop)} * mix(${n(CARD.glow.restDim[0])}, 1.0, fineR) * mix(1.0, exp(mix(${n(Math.log(CARD.glow.restSpeck[2]))}, ${n(Math.log(CARD.glow.restSpeck[1]))}, speckR)), smoothstep(0.0, 0.02, speckR)), restL);
   }
   if (uDiag == ${viewCode('cover')}) {
     gl_FragColor = vec4(cover, 0.0, cover, cover);

@@ -335,6 +335,15 @@ describe('how the storm is drawn', () => {
     // at rest a light is a bright heart in a soft glow by its place in the row of the lit: a share of the lights is not lit, the first of the others are fine points with a faint tight glow, and the later ones have a wide soft glow that holds a small share of the heart's light, so that it is seen round the largest hearts alone; none is large before the miniature and none stands near the lens as a disc
     expect(glow.restOut).toBeGreaterThan(0.3)
     expect(glow.restOut).toBeLessThan(0.75)
+    // under the row of the lit stand the specks: the next share of the lights is lit all the same, each as the heart of the finest with less of its light, the first less than the finest and each one fainter than the one before, so a speck is a point of a pixel or two; and a share of the lights stays dark
+    expect(glow.restSpeck[0]).toBeGreaterThan(0.2)
+    expect(glow.restOut - glow.restSpeck[0]).toBeGreaterThan(0.3)
+    expect(glow.restSpeck[2]).toBeLessThan(0.6)
+    expect(glow.restSpeck[1]).toBeLessThan(glow.restSpeck[2])
+    expect(glow.restSpeck[1]).toBeGreaterThan(0.1)
+    expect(CARD_VERT).toContain(`step(${glow.restOut - glow.restSpeck[0]}, fract(h2.x * 113.0)), afloat * (1.0 - max(gustC, uStorm.x))`)
+    expect(CARD_FRAG_PARS).toContain('float speckR = clamp((')
+    expect(CARD_FRAG_PARS).toContain(', speckR)), smoothstep(0.0, 0.02, speckR)), restL);')
     expect(glow.restHeart[0]).toBeLessThan(0.5)
     expect(glow.restHeart[0] + glow.restHeart[1]).toBeLessThan(2.5)
     expect(glow.restHeart[2]).toBeGreaterThan(1)
@@ -403,6 +412,10 @@ describe('how the storm is drawn', () => {
     expect(clock.softPx[0]).toBeGreaterThan(clock.softPx[2])
     expect(clock.softPx[2]).toBe(0)
     expect(clock.farWhite).toBeLessThan(clock.white)
+    // a far puff takes back the lens look's dimming of what floats far behind the miniature: it is whole to see, a soft grey ball, and it is the count that says how many there are
+    expect(clock.farLit).toBeGreaterThan(0)
+    expect(clock.farLit).toBeLessThanOrEqual(1)
+    expect(CARD_VERT).toContain('keepC *= mix(1.0, 1.0 / mix(')
     expect(CARD_VERT).toContain('- seedFar')
     // few stand before the cottage and the lanterns, fewer in the lower air where they hang thickest, and a stalk hangs under its head, the near one's the longest
     expect(clock.sceneOut[0]).toBeGreaterThanOrEqual(0.9)
@@ -469,6 +482,14 @@ describe('how the storm is drawn', () => {
     // by the depth, where the picture does not swell the way
     const byDepth = (clock.even * Math.abs(clock.farMore - clock.nearLess) * 1.5) / (clock.keepAt[1] - clock.keepAt[0])
     expect(((clock.edge / byDepth) * lensRadiusMm * share) / fastMm).toBeGreaterThanOrEqual(12)
+    // about the place where the still liquid gathers the heads fewer are drawn, in a bell in the ball's own millimetres: at its flank, where it is steepest, a head at the seed's fastest takes twelve frames and more
+    expect(clock.clumpOut).toBeGreaterThan(0)
+    expect(clock.clumpOut).toBeLessThan(1)
+    const bell = (clock.clumpOut * Math.exp(-0.5)) / clock.clumpMm
+    expect(((clock.edge / bell) * share) / fastMm).toBeGreaterThanOrEqual(12)
+    expect(Math.hypot(...clock.clumpAt)).toBeLessThan(lensRadiusMm)
+    expect(CARD_VERT).toContain('vec3 clumpK = (nowL - vec3(')
+    expect(CARD_VERT).toContain(' * exp(-0.5 * dot(clumpK, clumpK))), offC);')
     // before the cottage and the lanterns a head fades over the whole edge, at the narrower of the two outlines' half heights
     expect(clock.sceneEdge[0]).toBeLessThan(clock.sceneEdge[1])
     const ringMm = (clock.sceneEdge[1] - clock.sceneEdge[0]) * Math.min(CARD.hair.cottageWide[0], CARD.hair.cottageWide[1], CARD.glow.bandWide[0], CARD.glow.bandWide[1]) * lensRadiusMm
