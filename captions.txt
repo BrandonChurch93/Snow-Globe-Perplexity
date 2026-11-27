@@ -39,3 +39,25 @@ job1/unknown-names-before-after.jpg
   after, it is the live page with its controls. Bottom: `?diag=bogus&quality=low`. Before, the picture was drawn flat,
   with no backdrop and no depth of field; after, it is the plain page (0.67 apart at most, mean of a channel, 0 to 255).
   Tier: none.
+
+job3/first-still-600-before-after-x4.jpg
+  Shows: job 3, the first still and the live picture that comes in over it, the same 98 x 98 pixels of the 600 x 600
+  page (from 196, 136), each pixel shown four times as large. From the left: the still as the page laid it, the live
+  picture once it had come, and how far the two are apart pixel by pixel, four times as bright.
+  State: top row BEFORE, the build of main `6922e017`: the still stands half a pixel to the right of the live picture,
+  so every edge of the house shows in the third picture (11.26 apart in this cut, mean of a channel, 0 to 255). Bottom
+  row AFTER, the build of `16d9a86a`: the still stands where the live picture stands (8.31 apart; what is left is the
+  snow, which moves, and the lower tier the page draws at this size). `tools/visit.mjs`, step 16, winter at rest.
+  Tier: the still is the page's own first picture (`public/first`); the live picture is what the page draws, no tier.
+
+job5/still-leaves-frames-before-after.jpg
+  Shows: job 5, the page as the live picture comes in over the first still, 320 x 320, `?quality=low`, the frames in
+  a script's hand, each 17 ms after the last by the page's clock and 1 to 1.7 s by the wall. From the left: frames 1,
+  3, 6, 10, 16 and 30 after the page said its live picture had come.
+  State: top row BEFORE, the build of main `6922e017`: from the second picture on the still is gone and the page is
+  close to black, then comes up with the fade (by the page's own reading 28 of the 36 frames had no still under a
+  canvas short of full sight, the canvas at 0.02 of its sight when the still left). Bottom row AFTER, the build of
+  `16d9a86a`: the still leaves from under a canvas in full sight (0 of 36 frames). The first picture of each row
+  still shows the still, though the page's own reading says it is gone at that frame: I take a picture to be one
+  frame behind the reading. The controls come in by their own fade in both rows.
+  Tier: none, the page's own drawing on low; the first frame is the page's first still.
