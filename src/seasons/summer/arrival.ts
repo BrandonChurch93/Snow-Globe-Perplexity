@@ -24,8 +24,10 @@ const RAD = Math.PI / 180
 // with a quick shutter sees it: as the short line it travels in that time, soft at its ends. Sand falls a few
 // millimetres from one frame to the next, and grains drawn where each of them is would be other grains in other places
 // in every frame, which boils. So a thread is drawn as a camera sees grains that follow one another evenly: each line
-// where the line before it was, a little further on. The lines creep down the thread, each along its own path from the
-// lip to the heap once in the ambient period, and none comes or goes in the open. The sheet is a few grains deep. Its
+// where the line before it was, a little further on. The lines travel down the thread, each along its own path from the
+// lip to the heap three, four or five times in the ambient period, and none comes or goes in the open: the whole fall
+// travels and nothing of it stands. Neighbours go at different rates, so the sheet shears as it runs. The sheet is a
+// few grains deep. Its
 // back is the sand in the shade of the sand before it: threads over its breadth but for the outer fringe, their lines
 // long, wide, soft and dim, which close the sheet against the room. Its face is the sand in the light: many fine
 // threads side by side, each with a few short bright lines, so that the lines of neighbours lie staggered and the back
@@ -37,7 +39,7 @@ const LOOK = {
   gravity: 3400,
   lift: { share: 0.6, nearMm: [61.5, 69.0], late: 0.4, upMmS: [70, 170], inMm: 1.1 },
   jump: { count: 8600, shade: 0.3, reach: 0.2, onHeap: 0.1, hopMm: [0.15, 1.0], within: 0.05, radiusMm: [0.04, 0.1] },
-  fall: { count: 1970, gravity: 7000, bands: 26, strands: 4, surge: 1, fill: 0.8, stray: 0.45, sway: 0.1, grains: [13, 13], fold: 1, dashS: 0.0027, long: [0.6, 1.6], ends: 0.35, looks: [0, 7, 1, 8, 15, 3, 9, 4, 5, 10, 12, 4, 13, 6, 11, 14], picks: { stand: [0.02, 0.78], surge: [0.82, 0.95] }, part: [0.02, 0.9], azDeg: [92, 86], off: [1.05, 1.25], h: [38.9, 39.1], outMmS: [72, 150], downMmS: [10, 40], radiusMm: [0.035, 0.05], wide: [0.0004, 0.0006], finePx: 0.7, bow: 16, kink: 0.004, core: [80, 148], tone: [0.1, 0.25, 3.2, 0.8], redder: [1, 1.08, 1.35], warm: [1, 0.82, 0.81], faint: 0.75, shutter: 1, cover: 0.95, keep: 100, rise: 0.012, pale: 0.3, plain: 0.4, lit: 1.3, shaded: 0.08, deep: { threads: 30, grains: 8, every: 6, span: 0.88, stray: 0.4, dashS: 0.02, radiusMm: [0.2, 0.28], wide: [0.0024, 0.0033], cover: 0.95, faint: 1, tone: [0.04, 0.07, 0.14, 1] }, loose: { count: 40, outMmS: [152, 175], lean: 2, sinkMmS: [45, 90], offMm: [0.05, 0.3], azDeg: [85, 87], radiusMm: 0.085, most: 4, stepS: 0.002, floorMm: 3.2, solid: 0.9, lit: 1.3 } },
+  fall: { count: 1970, gravity: 7000, bands: 26, strands: 4, surge: 1, fill: 0.8, stray: 0.45, sway: 0.1, grains: [13, 13], fold: 1, turns: [3, 4, 5], dashS: 0.0027, long: [0.6, 1.6], ends: 0.35, looks: [0, 7, 1, 8, 15, 3, 9, 4, 5, 10, 12, 4, 13, 6, 11, 14], picks: { stand: [0.02, 0.78], surge: [0.82, 0.95] }, part: [0.02, 0.9], azDeg: [92, 86], off: [1.05, 1.25], h: [38.9, 39.1], outMmS: [72, 150], downMmS: [10, 40], radiusMm: [0.035, 0.05], wide: [0.0004, 0.0006], finePx: 0.7, bow: 16, kink: 0.004, core: [80, 148], tone: [0.1, 0.25, 3.2, 0.8], redder: [1, 1.08, 1.35], warm: [1, 0.82, 0.81], faint: 0.75, shutter: 1, cover: 0.95, keep: 100, rise: 0.012, pale: 0.3, plain: 0.4, lit: 1.3, shaded: 0.08, deep: { threads: 30, grains: 8, every: 6, turns: 3, span: 0.88, stray: 0.4, dashS: 0.02, radiusMm: [0.2, 0.28], wide: [0.0024, 0.0033], cover: 0.95, faint: 1, tone: [0.04, 0.07, 0.14, 1] }, loose: { count: 40, outMmS: [152, 175], lean: 2, sinkMmS: [45, 90], offMm: [0.05, 0.3], azDeg: [85, 87], radiusMm: 0.085, most: 4, stepS: 0.002, floorMm: 3.2, solid: 0.9, lit: 1.3 } },
   loose: { x: [16, 136], z: [-70, 112], kind: { proud: [0.26, 0.08] }, thinPx: 0.3, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, under: 3500, radiusMm: [0.07, 0.17, 0.45], small: 0.6, lean: 1.6, thin: 0.45, sunk: 0.3, vary: [0.6, 1.2], apart: 0.3 }, dust: { count: 12400, radiusMm: [0.03, 0.07], reach: 0.13, cover: 0.6 }, grain: { count: 2600, radiusMm: [0.05, 0.1], lean: 1.4, reach: 0.15 }, crumb: { count: 40, radiusMm: [0.12, 0.17], lean: 1.6, reach: 0.35 }, strewn: { behind: [3, 17], thinMm: 0.6, runMm: [0.5, 1, 2, 3, 5, 7, 10, 14], thins: 5, front: 0.1, skinMm: 1.2 }, vary: [0.1, 0.42], warm: [1.0, 0.8, 0.56] },
   sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 0.5, round: [1.6, 4.0], clear: 6 },
@@ -192,9 +194,9 @@ if (aSeed.y < -0.5) {
   } else {
     // A grain of a thread is where the grain before it was, a little further on, and its line is the way a grain goes
     // while a quick shutter is open. Grains whose places are a whole share of the path apart are one grain to the eye.
-    // A row with no rate of its own is a grain at the back of the sheet, which goes with the lines before it.
+    // A row whose rate is below zero is a grain at the back of the sheet.
     back = aFlight.x > 0.0 ? 0.0 : 1.0;
-    float turns = max(1.0, floor(uGrainLoop.y * aFlight.x * ${LOOK.fall.fold.toFixed(1)} + 0.5));
+    float turns = max(1.0, floor(uGrainLoop.y * abs(aFlight.x) * ${LOOK.fall.fold.toFixed(1)} + 0.5));
     chance = fract(aSeed.z * ${LOOK.fall.fold.toFixed(1)});
     open = mix(${LOOK.fall.dashS.toFixed(5)}, ${LOOK.fall.deep.dashS.toFixed(5)}, back) * mix(${LOOK.fall.long[0].toFixed(2)}, ${LOOK.fall.long[1].toFixed(2)}, fract(chance * 631.7));
     middle = fract(uGrainLoop.x * turns / ${LOOK.fall.fold.toFixed(1)} + aSeed.z) * fallLife;
@@ -500,6 +502,7 @@ export interface FallPath {
   slide: number
   vy: number
   rate: number
+  back: boolean
   radius: number
   id: number
   phase: number
@@ -513,7 +516,7 @@ export const sandGrow = grainUniforms.uSandGrow
 export const sandLift = grainUniforms.uSandLift
 export const sandFoot = grainUniforms.uSandFoot
 
-export const FALL = { gravity: LOOK.fall.gravity, count: LOOK.fall.count, stand: LOOK.flow.stand, gone: LOOK.gone[1]!, pick: LOOK.flow.pick, fade: 1 / LOOK.fall.keep, lead: LOOK.fall.downMmS[0], fold: LOOK.fall.fold, shutter: (LOOK.fall.shutter * config.film.shutterDegrees) / 360 / FPS }
+export const FALL = { gravity: LOOK.fall.gravity, count: LOOK.fall.count, stand: LOOK.flow.stand, gone: LOOK.gone[1]!, pick: LOOK.flow.pick, fade: 1 / LOOK.fall.keep, lead: LOOK.fall.downMmS[0], fold: LOOK.fall.fold, turns: LOOK.fall.turns, deepTurns: LOOK.fall.deep.turns, shutter: (LOOK.fall.shutter * config.film.shutterDegrees) / 360 / FPS }
 
 // The stone's flank below the lip, radius at height (assets-src/base-summer/profile.mjs, BODY).
 const stoneAt = (h: number): number => {
@@ -551,12 +554,13 @@ const proud = (x: number, z: number): number => sandProud(x, z) * (sandHeight(x,
 // The slow ones meet the belly, and run down it onto the crest of the mound. A thread is a row for each of its grains:
 // the rows of one thread differ in nothing but how far down the thread the grain is (`phase`), and the grains are dealt
 // evenly down it, each a chance way off its place. The sheet is a few grains deep. The threads at its back come first,
-// spread over its breadth but for the fringe (`span`), the one next to the stone first; their grains have no rate of
-// their own (`rate` 0) and go with those before them. Then the threads of its face, in bands, the band next to the
-// stone first: the threads of a band lie side by side over `fill` of its breadth, each a chance way off its even
-// place, and after them the thread that only a landing's surge runs, in what is left of the band. The loose grains
-// are the last rows: each sinks at its own even speed along the path of a thread a little quicker than the outermost
-// (`slide` under 0 says so).
+// spread over its breadth but for the fringe (`span`), the one next to the stone first (`back`). Then the threads of
+// its face, in bands, the band next to the stone first: the threads of a band lie side by side over `fill` of its
+// breadth, each a chance way off its even place, and after them the thread that only a landing's surge runs, in what
+// is left of the band. A thread's lines go down it a whole number of times in the ambient period (`rate`): those at
+// the back all as often, those of the face one of three numbers each, dealt so that no two neighbours have the same
+// and each number has a third of the threads. The loose grains are the last rows: each sinks at its own even speed
+// along the path of a thread a little quicker than the outermost (`slide` under 0 says so).
 export function fallPaths(): FallPath[] {
   const rf = stream(`${PART}/fall`)
   const F = LOOK.fall
@@ -576,7 +580,7 @@ export function fallPaths(): FallPath[] {
     }
     return (look + part) / LOOKS
   }
-  const thread = (q: number, look: number, span: readonly number[], dealt: number, back = false): void => {
+  const thread = (q: number, look: number, span: readonly number[], dealt: number, turns: number, back = false): void => {
     const speed = F.outMmS[0] + (F.outMmS[1] - F.outMmS[0]) * q
     const az = (F.azDeg[0] + (F.azDeg[1] - F.azDeg[0]) * q) * RAD
     const h0 = F.h[0] + (F.h[1] - F.h[0]) * q
@@ -584,7 +588,7 @@ export function fallPaths(): FallPath[] {
     const vy = -(F.downMmS[1] + (F.downMmS[0] - F.downMmS[1]) * q)
     const crest = S.crestMm[0]! + (S.crestMm[1]! - S.crestMm[0]!) * q
     const radius = back ? rf.range(F.deep.radiusMm[0], F.deep.radiusMm[1]) : rf.range(F.radiusMm[0], F.radiusMm[1])
-    const rate = back ? 0 : 1 / (F.fold * period)
+    const rate = turns / (F.fold * period)
     const id = seedOf(look, span)
     const from: [number, number, number] = [r0 * Math.sin(az), h0, r0 * Math.cos(az)]
     const at = (s: number): [number, number, number] => [from[0] + speed * s * Math.sin(az), h0 + vy * s - 0.5 * F.gravity * s * s, from[2] + speed * s * Math.cos(az)]
@@ -604,12 +608,12 @@ export function fallPaths(): FallPath[] {
           continue
         }
         const first = S.keeps * (F.gravity * seconds - vy)
-        done = { from, to, seconds, life: seconds + (Math.sqrt(first * first + 2 * S.roll * F.gravity * (th - to[1])) - first) / (S.roll * F.gravity), slide, vy, rate, radius, id }
+        done = { from, to, seconds, life: seconds + (Math.sqrt(first * first + 2 * S.roll * F.gravity * (th - to[1])) - first) / (S.roll * F.gravity), slide, vy, rate, back, radius, id }
       } else if (h <= ground(x, z, radius)) {
         const [tx, , tz] = at(s - step)
         const ty = ground(tx, tz, radius)
         const exact = (vy + Math.sqrt(vy * vy + 2 * F.gravity * Math.max(h0 - ty, 0.5))) / F.gravity
-        done = { from, to: [from[0] + speed * exact * Math.sin(az), ty, from[2] + speed * exact * Math.cos(az)], seconds: exact, life: exact, slide: 0, vy, rate, radius, id }
+        done = { from, to: [from[0] + speed * exact * Math.sin(az), ty, from[2] + speed * exact * Math.cos(az)], seconds: exact, life: exact, slide: 0, vy, rate, back, radius, id }
       }
     }
     if (!done) return
@@ -619,12 +623,27 @@ export function fallPaths(): FallPath[] {
     }
   }
   const D = F.deep
-  for (let i = 0; i < D.threads; i++) thread((D.span * (i + 0.5 + rf.range(-D.stray, D.stray))) / D.threads, F.looks[(i * 5 + 2) % F.looks.length]!, i % D.every === D.every - 1 ? F.picks.surge : F.picks.stand, Math.max(1, Math.round(D.grains / F.fold)), true)
+  for (let i = 0; i < D.threads; i++) thread((D.span * (i + 0.5 + rf.range(-D.stray, D.stray))) / D.threads, F.looks[(i * 5 + 2) % F.looks.length]!, i % D.every === D.every - 1 ? F.picks.surge : F.picks.stand, Math.max(1, Math.round(D.grains / F.fold)), D.turns, true)
+  const rt = stream(`${PART}/fall-turns`)
+  const turns: number[] = []
+  while (turns.length < F.bands * F.strands) {
+    const three = [...F.turns]
+    for (let k = three.length - 1; k > 0; k--) {
+      const j = Math.floor(rt.next() * (k + 1))
+      const held = three[k]!
+      three[k] = three[j]!
+      three[j] = held
+    }
+    if (three[0] === turns[turns.length - 1]) three.push(three.shift()!)
+    turns.push(...three)
+  }
   for (let b = 0; b < F.bands; b++) {
     const dealt = Math.max(1, Math.round((F.grains[0] + ((F.grains[1] - F.grains[0]) * b) / (F.bands - 1)) / F.fold))
     const sway = rf.range(-F.sway, F.sway)
-    for (let k = 0; k < F.strands; k++) thread((b + sway + (F.fill * (k + 0.5 + rf.range(-F.stray, F.stray))) / F.strands) / F.bands, F.looks[(b * F.strands + k) % F.looks.length]!, F.picks.stand, dealt)
-    for (let k = 0; k < F.surge; k++) thread((b + F.fill + ((1 - F.fill) * (k + 0.5)) / F.surge) / F.bands, F.looks[(b * F.surge + k + 5) % F.looks.length]!, F.picks.surge, dealt)
+    for (let k = 0; k < F.strands; k++) thread((b + sway + (F.fill * (k + 0.5 + rf.range(-F.stray, F.stray))) / F.strands) / F.bands, F.looks[(b * F.strands + k) % F.looks.length]!, F.picks.stand, dealt, turns[b * F.strands + k]!)
+    // The thread of the surge lies between the last of this band and the first of the next, and goes as neither does.
+    const beside = [turns[b * F.strands + F.strands - 1], turns[(b + 1) * F.strands]]
+    for (let k = 0; k < F.surge; k++) thread((b + F.fill + ((1 - F.fill) * (k + 0.5)) / F.surge) / F.bands, F.looks[(b * F.surge + k + 5) % F.looks.length]!, F.picks.surge, dealt, F.turns.find((t) => !beside.includes(t))!)
   }
   const L = F.loose
   const lead = F.downMmS[0]
@@ -661,7 +680,7 @@ export function fallPaths(): FallPath[] {
     const to = at(low)
     if (to[1] < L.floorMm) continue
     const cycles = Math.max(1, Math.min(L.most, Math.floor(period / (low + FALL.shutter + 0.002))))
-    out.push({ from, to, seconds: low, life: low, slide: -1, vy: -sink, rate: cycles / period, radius: L.radiusMm, id, phase })
+    out.push({ from, to, seconds: low, life: low, slide: -1, vy: -sink, rate: cycles / period, back: false, radius: L.radiusMm, id, phase })
     made++
   }
   return out
@@ -721,9 +740,9 @@ export function grainRows(): Rows {
   // none of them has sand, and the rest draw begins after them.
   const fall = fallPaths()
   const surge = restShare()
-  for (const g of fall) if (fallPick(g.phase, g.id) > surge) put(g.to, g.from, [g.rate, g.seconds, g.vy, g.radius], [g.id, 1, g.phase, g.slide])
+  for (const g of fall) if (fallPick(g.phase, g.id) > surge) put(g.to, g.from, [g.back ? -g.rate : g.rate, g.seconds, g.vy, g.radius], [g.id, 1, g.phase, g.slide])
   const firstFall = n
-  for (const g of fall) if (!(fallPick(g.phase, g.id) > surge)) put(g.to, g.from, [g.rate, g.seconds, g.vy, g.radius], [g.id, 1, g.phase, g.slide])
+  for (const g of fall) if (!(fallPick(g.phase, g.id) > surge)) put(g.to, g.from, [g.back ? -g.rate : g.rate, g.seconds, g.vy, g.radius], [g.id, 1, g.phase, g.slide])
 
   // The grains that lie where they are for good. Those that stand proud of the heap's skin, half sunk in it, so that
   // its outline is grains; and those strewn round it: dust close in, grains, and a few coarse crumbs, fewer with the distance.
