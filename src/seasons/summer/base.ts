@@ -194,6 +194,25 @@ vec3 stoneShareAt(float az, float h) {
   int o = j * ${LIGHT.cols} + i;
   return mix(mix(stoneShare[o], stoneShare[o + 1], fu), mix(stoneShare[o + ${LIGHT.cols}], stoneShare[o + ${LIGHT.cols + 1}], fu), fv);
 }
+// The grains that stand proud of the wall, by where they lie on the unrolled wall in mm: each one round and lit, with its round shade
+// below it. A grain lies anywhere in its cell, so the four cells about a place are asked, and no rows show close by.
+float stoneGritAt(vec2 at, float key) {
+  vec2 q = at / vec2(0.5, 0.7);
+  vec2 first = floor(q - 0.5);
+  float sum = 0.0;
+  for (int i = 0; i < 4; i++) {
+    vec3 cell = vec3(first + vec2(float(i - (i / 2) * 2), float(i / 2)), key);
+    vec2 off = (q - cell.xy - vec2(baseHash(cell + 3.0), baseHash(cell + 17.0))) * vec2(0.5, 0.7);
+    float r = 0.13 + 0.04 * baseHash(cell + 5.0);
+    vec2 lit = off - vec2(-0.1, 0.75) * r;
+    vec2 shade = off + vec2(-0.1, 0.75) * r;
+    float a = max(1.0 - dot(lit, lit) / (r * r), 0.0);
+    float b = max(1.0 - dot(shade, shade) / (r * r), 0.0);
+    float much = baseHash(cell + 29.0);
+    sum += much * much * (a * a - b * b);
+  }
+  return 1.6 * sum;
+}
 `
 
 // While the storm fills the ball less of the low sun comes through it, so the base loses warm light: least on the sunlit left, most in the
@@ -450,9 +469,9 @@ const STONE_AFTER = `
   stoneGrain += mix(1.0, 0.85, stoneFar) * stonePit * (${STONE.crumb.toFixed(2)} * step(0.88, stonePitOn) - ${STONE.pit.toFixed(2)} * step(stonePitOn, 0.14));
   // Read on the approved: down a column of its sand a pale speck a pixel or two high has a dark one right under it. A grain that stands
   // proud takes the light on its top and throws its own speck of shade, most on the sand that is turned to the light.
-  vec3 stoneDashCell = floor(vBasePos * vec3(1.8, 3.6, 1.8) + 19.0);
+  vec2 stoneDashAt = vec2(stoneAz * 55.0, vBasePos.y);
   float stoneDashNear = smoothstep(0.34, 0.2, min(length(dFdx(vBasePos)), length(dFdy(vBasePos))));
-  stoneGrain += 0.2 * (0.4 + 0.75 * baseGrit) * stoneDashNear * mix(0.5, 1.0, smoothstep(6.0, 18.0, vBasePos.y)) * smoothstep(-50.0, -38.0, vBasePos.x) * (1.0 + 0.3 * stoneFaceUp - 0.4 * stoneFaceDown) * (baseHash(stoneDashCell) - baseHash(stoneDashCell + vec3(0.0, 1.0, 0.0)));
+  stoneGrain += 0.3 * (0.4 + 0.75 * baseGrit) * stoneDashNear * mix(0.5, 1.0, smoothstep(6.0, 18.0, vBasePos.y)) * smoothstep(-50.0, -38.0, vBasePos.x) * (1.0 + 0.3 * stoneFaceUp - 0.4 * stoneFaceDown) * (stoneGritAt(stoneDashAt, 19.0) + stoneGritAt(stoneDashAt + vec2(0.27, 0.37), 31.0));
   stoneGrain = max(stoneGrain, 0.3);
   reflectedLight.indirectDiffuse *= stoneGrain;
   reflectedLight.directDiffuse *= stoneGrain;
