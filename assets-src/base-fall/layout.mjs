@@ -122,6 +122,7 @@ export const TWIGS = [
   { az: -80, h: 18, dir: [-0.5, 0.25, 0.83], curl: [-0.7, 0.5, 0.0], len: 11, rad: 0.7, thorns: [0.45] },
   { az: -64, h: 22, dir: [-0.9, 0.3, 0.3], curl: [-0.3, 0.7, 0.3], len: 9, rad: 0.6 },
   { az: 66, h: 9, dir: [0.8, 0.25, 0.55], curl: [0.4, 0.5, 0.2], len: 10, rad: 0.7, thorns: [0.5] },
+  { az: 72, h: 4.5, dir: [-0.25, 0.1, 0.95], curl: [0.2, -0.6, 0.5], len: 32, rad: 1.5, thorns: [0.45] },
 ]
 
 // The thorns a viewer can count, read from the approved image by eye: where each stands on the ring, the way it points
