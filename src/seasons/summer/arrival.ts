@@ -30,8 +30,11 @@ const RAD = Math.PI / 180
 // few grains deep. Its
 // back is the sand in the shade of the sand before it: threads over its breadth but for the outer fringe, their lines
 // long, wide, soft and dim, which close the sheet against the room. Its face is the sand in the light: many fine
-// threads side by side, each with a few short bright lines, so that the lines of neighbours lie staggered and the back
-// shows between them as thin dark lines. The face is dim next to the stone and bright at its outer edge. A few loose
+// threads side by side, each with a few lines, so that the lines of neighbours lie staggered and the back shows between
+// them as thin dark lines. No two lines need be as long: each is some travels of a frame long, most of them near the
+// least, which is what the length law asks (lit for twice its travel, its soft ends not counted), and a few three times
+// that. Nor as light: a line has any tone from the shade's to the sun's, the dim ones the sand's own brown and the
+// lightest pale. The face is dim next to the stone and bright at its outer edge. A few loose
 // grains sink along the outer face, each drawn as the line it travels while the film's shutter is open. Every place is
 // a function of the time since the landing and of the clock, nothing is kept from frame to frame. The mirror of the
 // slab gets none of the grains; medium and low draw a share.
@@ -39,7 +42,7 @@ const LOOK = {
   gravity: 3400,
   lift: { share: 0.6, nearMm: [61.5, 69.0], late: 0.4, upMmS: [70, 170], inMm: 1.1 },
   jump: { count: 8600, shade: 0.3, reach: 0.2, onHeap: 0.1, hopMm: [0.15, 1.0], within: 0.05, radiusMm: [0.04, 0.1] },
-  fall: { count: 1970, gravity: 7000, bands: 26, strands: 4, surge: 1, fill: 0.8, stray: 0.45, sway: 0.1, grains: [13, 13], fold: 1, turns: [3, 4, 5], dashS: 0.0027, long: [0.6, 1.6], ends: 0.35, looks: [0, 7, 1, 8, 15, 3, 9, 4, 5, 10, 12, 4, 13, 6, 11, 14], picks: { stand: [0.02, 0.78], surge: [0.82, 0.95] }, part: [0.02, 0.9], azDeg: [92, 86], off: [1.05, 1.25], h: [38.9, 39.1], outMmS: [72, 150], downMmS: [10, 40], radiusMm: [0.035, 0.05], wide: [0.0004, 0.0006], finePx: 0.7, bow: 16, kink: 0.004, core: [80, 148], tone: [0.1, 0.25, 3.2, 0.8], redder: [1, 1.08, 1.35], warm: [1, 0.82, 0.81], faint: 0.75, shutter: 1, cover: 0.95, keep: 100, rise: 0.012, pale: 0.3, plain: 0.4, lit: 1.3, shaded: 0.08, deep: { threads: 30, grains: 8, every: 6, turns: 3, span: 0.88, stray: 0.4, dashS: 0.02, radiusMm: [0.2, 0.28], wide: [0.0024, 0.0033], cover: 0.95, faint: 1, tone: [0.04, 0.07, 0.14, 1] }, loose: { count: 40, outMmS: [152, 175], lean: 2, sinkMmS: [45, 90], offMm: [0.05, 0.3], azDeg: [85, 87], radiusMm: 0.085, most: 4, stepS: 0.002, floorMm: 3.2, solid: 0.9, lit: 1.3 } },
+  fall: { count: 1371, gravity: 7000, bands: 12, strands: 4, surge: 1, fill: 0.8, stray: 0.45, sway: 0.1, lines: 70, fold: 1, turns: [3, 4, 5], long: [2.9, 10], ends: 0.15, looks: [0, 7, 1, 8, 15, 3, 9, 4, 5, 10, 12, 4, 13, 6, 11, 14], picks: { stand: [0.02, 0.78], surge: [0.82, 0.95] }, part: [0.02, 0.9], azDeg: [92, 86], off: [1.05, 1.25], h: [38.9, 39.1], outMmS: [72, 150], downMmS: [10, 40], radiusMm: [0.04, 0.05], wide: [0.0004, 0.0006], finePx: 0.7, bow: 16, kink: 0.004, core: [80, 148], tone: [0.3, 10], knee: 1.3, over: 0.15, cream: [1, 1.4], stone: 0.22, redder: [1, 1.08, 1.2], warm: [1, 0.82, 0.81], faint: 0.9, shutter: 1, cover: 0.95, keep: 100, rise: 0.012, pale: 0.3, plain: 0.4, lit: 1.3, shaded: 0.08, deep: { threads: 30, grains: 8, every: 6, turns: 3, span: 0.88, stray: 0.4, dashS: [0.012, 0.032], radiusMm: [0.2, 0.28], wide: [0.0024, 0.0033], cover: 0.95, faint: 1, tone: [0.04, 0.065, 0.09, 1] }, loose: { count: 40, outMmS: [152, 175], lean: 2, sinkMmS: [45, 90], offMm: [0.05, 0.3], azDeg: [85, 87], radiusMm: 0.085, most: 12, stepS: 0.002, floorMm: 3.2, solid: 0.9, lit: 1.3 } },
   loose: { x: [16, 136], z: [-70, 112], kind: { proud: [0.26, 0.08] }, thinPx: 0.3, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, under: 3500, radiusMm: [0.07, 0.17, 0.45], small: 0.6, lean: 1.6, thin: 0.45, sunk: 0.3, vary: [0.6, 1.2], apart: 0.3 }, dust: { count: 12400, radiusMm: [0.03, 0.07], reach: 0.13, cover: 0.6 }, grain: { count: 2600, radiusMm: [0.05, 0.1], lean: 1.4, reach: 0.15 }, crumb: { count: 40, radiusMm: [0.12, 0.17], lean: 1.6, reach: 0.35 }, strewn: { behind: [3, 17], thinMm: 0.6, runMm: [0.5, 1, 2, 3, 5, 7, 10, 14], thins: 5, front: 0.1, skinMm: 1.2 }, vary: [0.1, 0.42], warm: [1.0, 0.8, 0.56] },
   sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 0.5, round: [1.6, 4.0], clear: 6 },
@@ -198,7 +201,9 @@ if (aSeed.y < -0.5) {
     back = aFlight.x > 0.0 ? 0.0 : 1.0;
     float turns = max(1.0, floor(uGrainLoop.y * abs(aFlight.x) * ${LOOK.fall.fold.toFixed(1)} + 0.5));
     chance = fract(aSeed.z * ${LOOK.fall.fold.toFixed(1)});
-    open = mix(${LOOK.fall.dashS.toFixed(5)}, ${LOOK.fall.deep.dashS.toFixed(5)}, back) * mix(${LOOK.fall.long[0].toFixed(2)}, ${LOOK.fall.long[1].toFixed(2)}, fract(chance * 631.7));
+    float travel = fallLife * abs(aFlight.x) * ${(LOOK.fall.fold / FPS).toFixed(6)};
+    float span = fract(chance * 631.7);
+    open = max(mix(mix(travel * ${LOOK.fall.long[0].toFixed(2)}, ${LOOK.fall.deep.dashS[0].toFixed(5)}, back), mix(travel * ${LOOK.fall.long[1].toFixed(2)}, ${LOOK.fall.deep.dashS[1].toFixed(5)}, back), mix(span * span, span, back)), 1e-5);
     middle = fract(uGrainLoop.x * turns / ${LOOK.fall.fold.toFixed(1)} + aSeed.z) * fallLife;
   }
   past = max(middle - 0.5 * open, 0.0);
@@ -332,13 +337,16 @@ if (lies > 0.5) vGrainCover = min(1.0, thinner) * mix(1.0, ${LOOK.loose.dust.cov
 vGrainCover *= grown;
 // The threads next to the stone are in the fall's own shade, and the sheet is the brighter the farther out it flies.
 float outward = (length(position.xz - aFrom.xz) - max(aSeed.w, 0.0)) / max(aFlight.y, 1e-3);
-// A grain of the fall is as light as the light that reaches it through the sand beside it: any tone from the shade's
-// to the sun's, and toward the outer face more of them are in the sun. Those at the back of the sheet are in the shade
-// of those before them.
+// A line of the fall is as light as the light that reaches its sand through the sand beside it: any tone from the
+// shade's to the sun's, and all of them dimmer toward the stone. Light over the sun's own adds little: the lightest
+// lines differ, and none burns out. Those at the back of the sheet are in the shade of those before them. A loose grain
+// says with its light that it is one.
 float face = smoothstep(${LOOK.fall.core[0].toFixed(1)}, ${LOOK.fall.core[1].toFixed(1)}, outward);
-float toned = mix(${LOOK.fall.tone[0].toFixed(3)}, mix(${LOOK.fall.tone[1].toFixed(3)}, ${LOOK.fall.tone[2].toFixed(3)}, face), pow(max(fract(chance * 977.0), 1e-4), mix(1.0, ${LOOK.fall.tone[3].toFixed(3)}, face)));
-float shady = mix(${LOOK.fall.deep.tone[0].toFixed(3)}, mix(${LOOK.fall.deep.tone[1].toFixed(3)}, ${LOOK.fall.deep.tone[2].toFixed(3)}, face), pow(max(fract(chance * 977.0), 1e-4), ${LOOK.fall.deep.tone[3].toFixed(3)}));
-vGrainLit = lies > 0.5 ? 1.0 + aSeed.w : falls > 0.5 ? mix(toned, shady, back) + 2.0 * drifts : 1.0;
+float dice = fract(chance * 977.0);
+float dealt = mix(${LOOK.fall.stone.toFixed(3)}, 1.0, face) * exp2(mix(${Math.log2(LOOK.fall.tone[0]).toFixed(3)}, ${Math.log2(LOOK.fall.tone[1]).toFixed(3)}, dice));
+float toned = min(dealt, ${LOOK.fall.knee.toFixed(2)}) * pow(max(dealt / ${LOOK.fall.knee.toFixed(2)}, 1.0), ${LOOK.fall.over.toFixed(2)});
+float shady = mix(${LOOK.fall.deep.tone[0].toFixed(3)}, mix(${LOOK.fall.deep.tone[1].toFixed(3)}, ${LOOK.fall.deep.tone[2].toFixed(3)}, face), pow(max(dice, 1e-4), ${LOOK.fall.deep.tone[3].toFixed(3)}));
+vGrainLit = lies > 0.5 ? 1.0 + aSeed.w : falls > 0.5 ? mix(mix(toned, shady, back), 1000.0, drifts) : 1.0;
 float sunlit = mix(1.0, sandBaseShade(grainW.xyz - vec3(uSandFoot.x, 0.0, uSandFoot.y), uGrainKey), uSandDown);
 vGrainSun = lies > 0.5 ? aFlight.x : 1.0;
 // A grain of the fall in the shade of the stone is as dark as the stone behind it and is all but lost against it.
@@ -457,8 +465,9 @@ void main() {
   float id2 = vGrainLook.y;
   vec3 albedo = mix(${vec(SAND_COLOUR.deep)}, ${vec(SAND_COLOUR.pale)}, smoothstep(0.1, 0.75, id));
   albedo = mix(albedo, ${vec(SAND_COLOUR.dark)}, step(0.93, id2) * (1.0 - falls));
-  float flies = falls * step(2.0, vGrainLit);
-  float white = max(step(id2, mix(0.12, ${LOOK.fall.pale.toFixed(2)}, falls)), flies);
+  float flies = falls * step(999.0, vGrainLit);
+  float creamy = falls * (1.0 - flies) * smoothstep(${LOOK.fall.cream[0].toFixed(2)}, ${LOOK.fall.cream[1].toFixed(2)}, vGrainLit);
+  float white = max(max(step(id2, mix(0.12, ${LOOK.fall.pale.toFixed(2)}, falls)), flies), creamy);
   albedo = mix(albedo, ${vec(SAND_COLOUR.white)}, white);
   float shade = mix(0.25, 1.0, vGrainLook.z) * mix(mix(vGrainLit, 1.0, falls), ${LOOK.fall.loose.lit.toFixed(2)}, flies) * mix(1.0, ${LOOK.fall.lit.toFixed(2)}, falls);
   float ndl = dot(n, uGrainKey);
@@ -486,7 +495,7 @@ void main() {
     col *= mix(1.0, ${LOOK.loose.glint.lit.toFixed(2)}, step(1.5, kind));
   }
   // Light that has come through sand is the redder the less of it is left.
-  if (falls > 0.5 && flies < 0.5) col *= pow(max(vec3(vGrainLit), 1e-3), ${vec(LOOK.fall.redder)}) * ${vec(LOOK.fall.warm)};
+  if (falls > 0.5 && flies < 0.5) col *= pow(max(vec3(vGrainLit), 1e-3), ${vec(LOOK.fall.redder)}) * mix(${vec(LOOK.fall.warm)}, vec3(1.0), creamy);
   vec3 cover = vGrainCover * disc;
   if (falls > 0.5) cover *= vGrainRun * share;
   gl_FragColor = vec4(col * cover, cover.g);
@@ -516,7 +525,7 @@ export const sandGrow = grainUniforms.uSandGrow
 export const sandLift = grainUniforms.uSandLift
 export const sandFoot = grainUniforms.uSandFoot
 
-export const FALL = { gravity: LOOK.fall.gravity, count: LOOK.fall.count, stand: LOOK.flow.stand, gone: LOOK.gone[1]!, pick: LOOK.flow.pick, fade: 1 / LOOK.fall.keep, lead: LOOK.fall.downMmS[0], fold: LOOK.fall.fold, turns: LOOK.fall.turns, deepTurns: LOOK.fall.deep.turns, shutter: (LOOK.fall.shutter * config.film.shutterDegrees) / 360 / FPS }
+export const FALL = { gravity: LOOK.fall.gravity, count: LOOK.fall.count, stand: LOOK.flow.stand, gone: LOOK.gone[1]!, pick: LOOK.flow.pick, fade: 1 / LOOK.fall.keep, lead: LOOK.fall.downMmS[0], fold: LOOK.fall.fold, turns: LOOK.fall.turns, deepTurns: LOOK.fall.deep.turns, long: LOOK.fall.long, ends: LOOK.fall.ends, deepDash: LOOK.fall.deep.dashS, shutter: (LOOK.fall.shutter * config.film.shutterDegrees) / 360 / FPS }
 
 // The stone's flank below the lip, radius at height (assets-src/base-summer/profile.mjs, BODY).
 const stoneAt = (h: number): number => {
@@ -638,12 +647,13 @@ export function fallPaths(): FallPath[] {
     turns.push(...three)
   }
   for (let b = 0; b < F.bands; b++) {
-    const dealt = Math.max(1, Math.round((F.grains[0] + ((F.grains[1] - F.grains[0]) * b) / (F.bands - 1)) / F.fold))
+    const dealt = (t: number): number => Math.max(1, Math.round(F.lines / (t * F.fold)))
     const sway = rf.range(-F.sway, F.sway)
-    for (let k = 0; k < F.strands; k++) thread((b + sway + (F.fill * (k + 0.5 + rf.range(-F.stray, F.stray))) / F.strands) / F.bands, F.looks[(b * F.strands + k) % F.looks.length]!, F.picks.stand, dealt, turns[b * F.strands + k]!)
+    for (let k = 0; k < F.strands; k++) thread((b + sway + (F.fill * (k + 0.5 + rf.range(-F.stray, F.stray))) / F.strands) / F.bands, F.looks[(b * F.strands + k) % F.looks.length]!, F.picks.stand, dealt(turns[b * F.strands + k]!), turns[b * F.strands + k]!)
     // The thread of the surge lies between the last of this band and the first of the next, and goes as neither does.
     const beside = [turns[b * F.strands + F.strands - 1], turns[(b + 1) * F.strands]]
-    for (let k = 0; k < F.surge; k++) thread((b + F.fill + ((1 - F.fill) * (k + 0.5)) / F.surge) / F.bands, F.looks[(b * F.surge + k + 5) % F.looks.length]!, F.picks.surge, dealt, F.turns.find((t) => !beside.includes(t))!)
+    const other = F.turns.find((t) => !beside.includes(t))!
+    for (let k = 0; k < F.surge; k++) thread((b + F.fill + ((1 - F.fill) * (k + 0.5)) / F.surge) / F.bands, F.looks[(b * F.surge + k + 5) % F.looks.length]!, F.picks.surge, dealt(other), other)
   }
   const L = F.loose
   const lead = F.downMmS[0]
@@ -844,6 +854,13 @@ function* grainGeometry(): Generator<void, THREE.BufferGeometry> {
   while (firstSurge > 0 && data[(firstSurge - 1) * GRAIN_ROW + 11] === 1) firstSurge--
   let firstLie = firstFall
   while (firstLie < n && data[firstLie * GRAIN_ROW + 11] === 1) firstLie++
+  let firstFace = firstSurge
+  while (firstFace < firstFall && data[firstFace * GRAIN_ROW + 6]! < 0) firstFace++
+  const behind = firstFace - firstSurge
+  let firstStand = firstFall
+  while (firstStand < firstLie && data[firstStand * GRAIN_ROW + 6]! < 0) firstStand++
+  let firstLoose = firstStand
+  while (firstLoose < firstLie && !(data[firstLoose * GRAIN_ROW + 13]! < 0)) firstLoose++
 
   // The grains that lie are first in the list and then the fall, so that at rest they alone are drawn; then the threads
   // only the surge runs, then the jumping grains. The grains that lie and those that jump are shuffled. The fall is
@@ -860,12 +877,28 @@ function* grainGeometry(): Generator<void, THREE.BufferGeometry> {
       yield
     }
   }
+  // The lines of the face are drawn the dark ones first, as the shader tones them: a pale line is whole wherever it lies.
+  function* paler(first: number, count: number, at: number): Generator<void, void> {
+    const dice = (q: number): number => {
+      const v = Math.fround(data[q * GRAIN_ROW + 12]! * 977)
+      return v - Math.floor(v)
+    }
+    const rows = Array.from({ length: count }, (_, k) => first + k).sort((a, b) => dice(a) - dice(b) || a - b)
+    for (let k = 0; k < count; k++) {
+      const q = rows[k]!
+      index.set([q * 4, q * 4 + 1, q * 4 + 2, q * 4 + 2, q * 4 + 1, q * 4 + 3], (at + k) * 6)
+    }
+    yield
+  }
   yield* order(firstLie, n - firstLie, 0, LOOK.stride)
-  yield* order(firstFall, firstLie - firstFall, n - firstLie, 1)
-  yield* order(firstSurge, firstFall - firstSurge, n - firstFall, 1)
+  yield* order(firstSurge, behind, n - firstLie, 1)
+  yield* order(firstFall, firstStand - firstFall, n - firstLie + behind, 1)
+  yield* paler(firstStand, firstLoose - firstStand, n - firstLie + behind + firstStand - firstFall)
+  yield* order(firstLoose, firstLie - firstLoose, n - firstLie + behind + firstLoose - firstFall, 1)
+  yield* paler(firstFace, firstFall - firstFace, n - firstFall + behind)
   yield* order(0, firstSurge, n - firstSurge, LOOK.stride)
   // Said after the last stop, so that no other making of the grains stands between the saying and the reading (`grains`).
-  still = n - firstFall
+  still = n - firstFall + behind
   aloft = n - firstSurge
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.BufferAttribute(to, 3))
