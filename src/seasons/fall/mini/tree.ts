@@ -4,7 +4,7 @@ import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
-import { chainSolid, glow, glowHook, glowing, limbs, placeGeometry, placePoint, placing, prepareTrunk, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { chainSolid, glowHook, glowing, limbs, placeGeometry, placePoint, placing, prepareTrunk, treeTwinkle, trunkAxis, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { season, tones } from './palette'
 import { PUMPKINS, pumpkinFace } from './props'
@@ -21,16 +21,17 @@ const TWIG_TINT: [number, number, number] = [0.05, 0.047, 0.045]
 const BARK_RELIEF = 1.7
 const EMBER_GAIN = 6.5
 const EMBER_ON_WOOD = { power: 14, reachMm: 0.9 }
-const LAMP_ON_WOOD = { power: 44, reachMm: 15, wrap: 0 }
+const LAMP_ON_WOOD = { power: 172, reachMm: 15, wrap: -0.15 }
+const LAMP_TONE: [number, number, number] = [1, 0.52, 0.3]
 const LAMP_SHIFT: Vec3 = [-4, 0, -8]
 const PUMPKIN_ON_WOOD = { power: 8, reachMm: 6, wrap: 0.1 }
 const POND_ON_WOOD = { power: 2, reachMm: 22, wrap: 0.2 }
-const FILL_ON_WOOD = { power: 30, reachMm: 9, wrap: 0.5 }
-const EDGE_ON_WOOD = { power: 80, reachMm: 6, wrap: 0.45 }
+const FILL_ON_WOOD = { power: 36, reachMm: 9, wrap: 0.5 }
+const EDGE_ON_WOOD = { power: 70, reachMm: 6, wrap: 0.3 }
 const FILL_FROM: Vec3 = [7, 6, 10]
 const EDGE_FROM: Vec3 = [9, 4, -3]
-const SKY: [number, number, number] = [0.1, 0.9, 1.05]
-const EDGE_TONE: [number, number, number] = [0.9, 1, 0.7]
+const SKY: [number, number, number] = [0, 1, 1.1]
+const EDGE_TONE: [number, number, number] = [0.5, 1, 0.8]
 const GROUP = { power: 0.06, reachMm: 5.5, along: 0.72 }
 const HALO = { radiusMm: 0.4, strength: 1.0, hot: 3.2, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
 const POOL = { radiusMm: 1.0, strength: 0.04, hot: 0, pullMm: 0.9, flicker: FLICKER, cycles: CYCLES }
@@ -41,18 +42,19 @@ const HALO_CORE: [number, number, number] = [1, 0.46, 0.13]
 const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
 // Wet black bark: the lamp, the pumpkin at the foot and the green of the pond glance off the ridges as small sharp lights
 // and leave the grooves black. `shine` is the lobe's exponent, `ridge` how far a groove (dark vertex colour) is kept out.
-const GLINT = { shine: 80, ridge: [0.3, 0.8] as [number, number], rough: 0.86 }
-const GLINT_LAMP = { lift: 3.6, power: 1.15, reachMm: 11 }
+const GLINT = { shine: 120, ridge: [0.3, 0.8] as [number, number], rough: 0.86 }
+const GLINT_LAMP = { lift: 3.6, power: 1.6, reachMm: 11 }
 const GLINT_TONE: [number, number, number] = [1, 0.46, 0.14]
 const GLINT_PUMPKIN = { power: 0.9, reachMm: 8 }
 const GLINT_POND = { power: 0.05, reachMm: 24 }
 // The approved bark is black and wet: on the side turned from the lamp the trunk's edge takes a soft grey green line from
 // the air. It is read off the limb's own round, not the bark's relief, so it is one even edge and not a row of bright
 // ridges, and it stays on the trunk: the boughs above keep their warm ember rims.
-const RIM = { tone: [0.6, 0.66, 0.48] as [number, number, number], power: 0.4, sharp: 3, relief: 0.2, far: [0, 0.6] as [number, number], at: [3, 7, 3] as Vec3, reachMm: 7 }
+const RIM = { tone: [0.55, 0.66, 0.6] as [number, number, number], power: 0.5, sharp: 3, relief: 0.08, ridge: [0.9, 0.7] as [number, number], axis: [2, 12] as [number, number], far: [0, 0.6] as [number, number], at: [3, 7, 3] as Vec3, reachMm: 7 }
 
 const clock = { value: 0 }
 const emberGain = { value: EMBER_GAIN }
+const twinkle = treeTwinkle()
 
 const list: InnerLight[] = limbs
   .filter((l) => l.kind === 'limb')
@@ -74,7 +76,7 @@ function onWood(): GlowLight[] {
   const flame = lampFlame()
   return [
     ...embers().map((e): GlowLight => ({ at: e.at, color: tones.emberLight, ...EMBER_ON_WOOD, phase: e.phase })),
-    { at: [flame[0] + LAMP_SHIFT[0], flame[1] + LAMP_SHIFT[1], flame[2] + LAMP_SHIFT[2]], color: tones.lampLight, ...LAMP_ON_WOOD, phase: 0.1 },
+    { at: [flame[0] + LAMP_SHIFT[0], flame[1] + LAMP_SHIFT[1], flame[2] + LAMP_SHIFT[2]], color: LAMP_TONE, ...LAMP_ON_WOOD, phase: 0.1 },
     ...PUMPKINS.filter((p) => p.name === 'tree').map((p): GlowLight => ({ at: pumpkinFace(p, 0.4, 0.6), color: tones.pumpkinLight, ...PUMPKIN_ON_WOOD, phase: 0.68 })),
     { at: placePoint([4, 2, 26]), color: tones.pondLight, ...POND_ON_WOOD, phase: 0.8 },
     { at: placePoint(FILL_FROM), color: SKY, ...FILL_ON_WOOD, phase: 0.6 },
@@ -95,13 +97,16 @@ function glints(): { at: Vec3; color: readonly number[]; power: number; reachMm:
 }
 
 function barkHook(shader: Shader): void {
-  glowHook(shader, undefined, BARK_RELIEF)
+  glowHook(shader, twinkle, undefined, BARK_RELIEF)
   const lit = glints()
+  const [low, high] = RIM.axis.map((h): Vec3 => placePoint([trunkAxis(h)[0], h, trunkAxis(h)[1]])) as [Vec3, Vec3]
+  const span = Math.hypot(high[0] - low[0], high[1] - low[1], high[2] - low[2])
+  const along: Vec3 = [(high[0] - low[0]) / span, (high[1] - low[1]) / span, (high[2] - low[2]) / span]
   shader.vertexShader = shader.vertexShader
-    .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
-    .replace('#include <project_vertex>', `#include <project_vertex>\nvRim = (modelViewMatrix * vec4(${vec3(placePoint(RIM.at))}, 1.0)).xyz;\n${lit.map((l, i) => `vGlint${i} = (modelViewMatrix * vec4(${vec3(l.at)}, 1.0)).xyz;`).join('\n')}`)
+    .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\nvarying vec3 vRound;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
+    .replace('#include <project_vertex>', `#include <project_vertex>\nvRim = (modelViewMatrix * vec4(${vec3(placePoint(RIM.at))}, 1.0)).xyz;\nvec3 rimOut = transformed - ${vec3(low)};\nvRound = normalMatrix * (rimOut - ${vec3(along)} * dot(rimOut, ${vec3(along)}));\n${lit.map((l, i) => `vGlint${i} = (modelViewMatrix * vec4(${vec3(l.at)}, 1.0)).xyz;`).join('\n')}`)
   shader.fragmentShader = shader.fragmentShader
-    .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
+    .replace('#include <common>', `#include <common>\nvarying vec3 vRim;\nvarying vec3 vRound;\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
     .replace(
       '#include <lights_fragment_end>',
       `#include <lights_fragment_end>
@@ -122,18 +127,18 @@ ${lit
   reflectedLight.directSpecular += glintSum * uTwinkle.z * smoothstep(${GLINT.ridge[0].toFixed(2)}, ${GLINT.ridge[1].toFixed(2)}, dot(vColor.rgb, vec3(0.3333)));
   vec3 rimTo = vGlint0 + vViewPosition;
   vec3 rimL = rimTo * inversesqrt(max(dot(rimTo, rimTo), 1e-6));
-  vec3 rimN = mix(nonPerturbedNormal, normal, ${RIM.relief.toFixed(2)});
+  vec3 rimN = mix(vRound * inversesqrt(max(dot(vRound, vRound), 1e-6)), normal, ${RIM.relief.toFixed(2)});
   rimN *= inversesqrt(max(dot(rimN, rimN), 1e-6));
   vec3 rimOff = vRim + vViewPosition;
   float rimNear = dot(rimOff, rimOff) / ${(RIM.reachMm * RIM.reachMm).toFixed(1)};
   float rimEdge = pow(clamp(1.0 - dot(rimN, glintV), 0.0, 1.0), ${RIM.sharp.toFixed(1)}) * smoothstep(${RIM.far[0].toFixed(2)}, ${RIM.far[1].toFixed(2)}, -dot(rimN, rimL));
-  reflectedLight.directSpecular += ${vec3(RIM.tone)} * (${RIM.power.toFixed(3)} * rimEdge * uTwinkle.z / (1.0 + rimNear * rimNear));
+  reflectedLight.directSpecular += ${vec3(RIM.tone)} * (${RIM.power.toFixed(3)} * rimEdge * uTwinkle.z * (${RIM.ridge[0].toFixed(2)} + ${RIM.ridge[1].toFixed(2)} * smoothstep(${GLINT.ridge[0].toFixed(2)}, ${GLINT.ridge[1].toFixed(2)}, dot(vColor.rgb, vec3(0.3333)))) / (1.0 + rimNear * rimNear));
 }`,
     )
 }
 
 function lightHook(shader: Shader): void {
-  Object.assign(shader.uniforms, { uTwinkle: glow.uTwinkle, uBulb: emberGain })
+  Object.assign(shader.uniforms, { uTwinkle: twinkle, uBulb: emberGain })
   shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vBulb;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvBulb = uv;')
   shader.fragmentShader = shader.fragmentShader
     .replace('#include <common>', '#include <common>\nuniform vec4 uTwinkle;\nuniform float uBulb;\nvarying vec2 vBulb;')
@@ -176,7 +181,7 @@ export function* making(): Generator<void, THREE.Object3D> {
   twigs.castShadow = true
   twigs.receiveShadow = true
   yield
-  return new THREE.Group().add(yield* trunkMaking(part, lit, BARK_TINT), twigs)
+  return new THREE.Group().add(yield* trunkMaking(part, twinkle, lit, BARK_TINT), twigs)
 }
 
 export function lights(): THREE.Object3D {
@@ -219,6 +224,6 @@ export function solid(x: number, y: number, z: number): number {
 }
 
 export function update(moment: KitMoment): void {
-  glow.uTwinkle.value.set((CYCLES * moment.time) / moment.period, FLICKER, 1, 0)
+  twinkle.value.set((CYCLES * moment.time) / moment.period, FLICKER, 1, 0)
   clock.value = (((moment.time / moment.period) % 1) + 1) % 1
 }
