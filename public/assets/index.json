@@ -311,13 +311,13 @@
       "summer": [
         {
           "path": "summer/base-carve.lin.w2048.first.webp",
-          "bytes": 184820,
-          "sha": "ccae7a948f417725"
+          "bytes": 178834,
+          "sha": "92cf9df3134651c3"
         },
         {
           "path": "summer/base-carve.lin.w2048.webp",
-          "bytes": 586464,
-          "sha": "32214aad909d3807"
+          "bytes": 568704,
+          "sha": "d6b91d41102b1d1b"
         },
         {
           "path": "summer/base-grain.lin.tile.w512.webp",
@@ -341,8 +341,8 @@
         },
         {
           "path": "summer/base-summer.glb",
-          "bytes": 3144848,
-          "sha": "e00e9174d1c90471"
+          "bytes": 3143920,
+          "sha": "69299ff9f2ec66b3"
         },
         {
           "path": "summer/tree-leaves.srgb.tile.w1024.first.webp",
@@ -388,8 +388,8 @@
         },
         {
           "path": "fall/base-fall.glb",
-          "bytes": 1297948,
-          "sha": "4203a94191e937cb"
+          "bytes": 1315856,
+          "sha": "0be5852222d855d3"
         },
         {
           "path": "fall/base-iron-detail.lin.tile.w1024.first.webp",
@@ -658,8 +658,8 @@
       "summer": [
         {
           "path": "summer/base-carve.lin.w2048.png",
-          "bytes": 3232551,
-          "sha": "9426f37711bc2555"
+          "bytes": 3107856,
+          "sha": "6e7da479f4015089"
         },
         {
           "path": "summer/base-grain.lin.tile.w512.png",
@@ -678,8 +678,8 @@
         },
         {
           "path": "summer/base-summer.glb",
-          "bytes": 7981008,
-          "sha": "ce28a0fe10cf0037"
+          "bytes": 7977668,
+          "sha": "f0de0f7294fa5580"
         },
         {
           "path": "summer/tree-leaves.srgb.tile.w1024.png",
@@ -715,8 +715,8 @@
         },
         {
           "path": "fall/base-fall.glb",
-          "bytes": 2868496,
-          "sha": "718865ac41117d83"
+          "bytes": 2918716,
+          "sha": "ce7c275e03b85989"
         },
         {
           "path": "fall/base-iron-detail.lin.tile.w1024.png",
@@ -759,7 +759,7 @@
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "680633ebca572da4",
-    "summer": "38194819a5eb441a",
-    "fall": "915701a1ada56f20"
+    "summer": "c2e56dad7d58fc67",
+    "fall": "f6731657f7226de5"
   }
 }
