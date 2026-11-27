@@ -4,7 +4,7 @@ import { centrePacePx, evenSet, framesamples, shutterTravelPx, spreadAt, spreadR
 import { Accumulator, type SampleFacts, type Sanity } from '../core/accumulator'
 import type { Assets } from '../core/assets'
 import { finish, type Gfx } from '../core/gl'
-import { sampleSet, type Sample } from '../core/sampler'
+import { pictureSet, type Sample } from '../core/sampler'
 import type { Moment, Stage } from '../core/stage'
 import { barSeconds, beatSeconds, filmTimeline, globePoseAt, prerollSeconds, seasonAt, stateSeconds, stillTimeline, type Timeline } from '../film/timeline'
 import type { SimDriver } from '../particles/driver'
@@ -242,7 +242,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     // settle detail finer than a pixel (dew, tufts, twig edges), so a set chosen anew by `salt`
     // drew the same still ground differently each frame and it crawled. The grain and the
     // shader's seed below still go by the frame.
-    const own: Sample[] = flat ? [] : sampleSet(samples, 0, 'picture').sort((a, b) => a.t - b.t)
+    const own: Sample[] = flat ? [] : pictureSet(samples, tierSamples('final')).sort((a, b) => a.t - b.t)
     const set: { sample: Sample | null; at: number }[] = flat ? [{ sample: null, at: 0 }] : travel && shutterSec > 0 ? evenSet(own, (u) => travel.pace(timeSec + u * shutterSec)) : own.map((s): Timed => ({ sample: s, at: s.t }))
     gfx.renderer.info.reset()
     acc.begin()

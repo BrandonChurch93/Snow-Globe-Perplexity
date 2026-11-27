@@ -66,6 +66,24 @@ export function sampleSet(count: number, salt = 0, name = 'sampler'): Sample[] {
   return out
 }
 
+/**
+ * The set every picture is drawn with. A set of more than `anchor` samples is slid so that its mean place in the pixel is
+ * the anchor set's: a frame drawn with more samples then sits where a frame drawn with `anchor` sits, and a film that
+ * changes its count does not step sideways. Sets of `anchor` or fewer are the plain sets, bit for bit.
+ */
+export function pictureSet(count: number, anchor: number): Sample[] {
+  const set = sampleSet(count, 0, 'picture')
+  if (count <= anchor) return set
+  const mean = (list: Sample[]): [number, number] => [list.reduce((a, s) => a + s.px, 0) / list.length, list.reduce((a, s) => a + s.py, 0) / list.length]
+  const [ax, ay] = mean(sampleSet(anchor, 0, 'picture'))
+  const [mx, my] = mean(set)
+  for (const s of set) {
+    s.px += ax - mx
+    s.py += ay - my
+  }
+  return set
+}
+
 function v4(s: Sample): number {
   return frac(s.px + 0.5 + (s.lu + 1) * 0.37 + (s.lv + 1) * 0.11)
 }

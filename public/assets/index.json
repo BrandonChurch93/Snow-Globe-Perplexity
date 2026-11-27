@@ -378,13 +378,13 @@
       "fall": [
         {
           "path": "fall/base-faces.lin.w1024.first.webp",
-          "bytes": 19034,
-          "sha": "928119ddfba5c6dd"
+          "bytes": 19080,
+          "sha": "816353c695dfa57e"
         },
         {
           "path": "fall/base-faces.lin.w1024.webp",
-          "bytes": 66396,
-          "sha": "962488fbae8c9170"
+          "bytes": 69056,
+          "sha": "f4bf80f5c37a8cb7"
         },
         {
           "path": "fall/base-fall.glb",
@@ -710,8 +710,8 @@
       "fall": [
         {
           "path": "fall/base-faces.lin.w1024.png",
-          "bytes": 95853,
-          "sha": "be45cddb1e4a05f1"
+          "bytes": 95030,
+          "sha": "ece1ea794f2a9eae"
         },
         {
           "path": "fall/base-fall.glb",
@@ -760,6 +760,6 @@
     "winter": "5c39d16f98d3d0be",
     "spring": "d9b043a56b56f3ea",
     "summer": "d3cea4d0e39eea13",
-    "fall": "c4117de5a55c1c0b"
+    "fall": "fe02fc3e48238ea3"
   }
 }

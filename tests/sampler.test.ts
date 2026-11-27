@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { diskPoint, sampleSet } from '../src/core/sampler'
+import { diskPoint, pictureSet, sampleSet } from '../src/core/sampler'
 
 describe('sampler', () => {
   it('is deterministic', () => {
@@ -43,6 +43,26 @@ describe('sampler', () => {
       expect(slices).toEqual(Array.from({ length: n }, (_, i) => i))
     }
     expect(sampleSet(1, 0)[0]!.t).toBe(0.5)
+  })
+
+  it('draws a picture of the final count or fewer with the plain set, and slides a larger set onto the final set\'s mean place', () => {
+    for (const n of [1, 2, 8, 24]) expect(pictureSet(n, 24)).toEqual(sampleSet(n, 0, 'picture'))
+    const mean = (set: { px: number; py: number }[]) => [set.reduce((a, s) => a + s.px, 0) / set.length, set.reduce((a, s) => a + s.py, 0) / set.length]
+    const [ax, ay] = mean(sampleSet(24, 0, 'picture'))
+    for (const n of [25, 48, 96, 128]) {
+      const plain = sampleSet(n, 0, 'picture')
+      const set = pictureSet(n, 24)
+      const [mx, my] = mean(set)
+      expect(mx).toBeCloseTo(ax!, 12)
+      expect(my).toBeCloseTo(ay!, 12)
+      const [px, py] = mean(plain)
+      set.forEach((s, i) => {
+        expect(s.px - plain[i]!.px).toBeCloseTo(ax! - px!, 12)
+        expect(s.py - plain[i]!.py).toBeCloseTo(ay! - py!, 12)
+        expect([s.index, s.lu, s.lv, s.t, s.of]).toEqual([plain[i]!.index, plain[i]!.lu, plain[i]!.lv, plain[i]!.t, plain[i]!.of])
+      })
+    }
+    expect(Math.hypot(ax! - mean(sampleSet(96, 0, 'picture'))[0]!, ay! - mean(sampleSet(96, 0, 'picture'))[1]!)).toBeGreaterThan(0.04)
   })
 
   it('maps the square onto the disk', () => {
