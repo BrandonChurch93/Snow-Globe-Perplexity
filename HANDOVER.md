@@ -306,7 +306,7 @@ Not seen: the frames played at speed; more than four frames of the film; any oth
 Pictures 49 to 54. Nothing built yet. The tree's files are the same as main's. Stills for this: fall-rest hero at 3840, review tier, with the air, without it, and the id picture without the air (`out/work/mine/t11/`). The approved is 2816 wide; hd places below are the frame's, the approved brought to 1920.
 
 Form, each count with its picture:
-- Limbs leaving the trunk: approved 10 by hand (picture 49); ours 10, the nine limbs of `src/miniature/trunk.ts` and the leader.
+- Limbs leaving the trunk: approved 10 by hand (picture 49); ours 10, the nine limbs of `src/miniature/trunk.ts` and the leader. Correction: the approved's 10 is a count by eye; it was not marked on any picture.
 - Twig ends against the sky: approved 39, ours 52 (picture 51). Ours is not the barer by count.
 - Forks: not counted one by one. In the approved limbs do not cross, so 39 ends on 10 limbs make 29 forks. In ours the build grows 149 boughs and twigs on 51 limbs and twigs of the trunk; the skeleton of its shape has 200 meeting points, forks and crossings together, which it cannot tell apart.
 - Sky ringed by wood: approved 1 sure and up to 4, ours 70 (picture 52). The approved's limbs each stand alone against the sky; ours cross into a thicket at the middle of the crown.
@@ -320,3 +320,35 @@ Light on the bark (picture 53; lines laid by hand on limbs of each tree, not pix
 - Trunk, same box: approved median 43,29,21; ours with the air 16,20,12 (green), without 8,16,11.
 
 The fence against the door pumpkin (picture 54), hero still, hd px: post height 71 approved, 68 tenth. Top of the tallest post near the pumpkin 608 approved, 604 tenth. Pumpkin crown 597 approved, 609 tenth; base 627 and 643; height 29 and 34. So the posts are as tall and stand as high in the frame as the approved's; the pumpkin sits 12 to 16 px lower and is 5 px taller, which puts its crown 5 px under the post top where the approved has it 10 px over. Read by hand off enlarged crops, give or take 2 px; the pumpkin's bounds by an orange mask.
+
+## The eleventh list: the tree (decisions 206 and 207), read on a6558ea5 (main 5d7029b3), pushed as 75554f16 (main 680ad25b)
+
+Between a6558ea5 and 75554f16 only main's tools, a test, the status and the log changed; no file under `src`, `assets-src`, `config` or `public` differs. tsc, vitest and the eight draft stills were run again on 75554f16; every other number below was read on a6558ea5.
+
+What was built, all in `assets-src/tree-fall/build.mjs`, `src/seasons/fall/mini/tree.ts` and `tests/fall-tree.test.ts`:
+- Geometry. The bark sleeve and the nine limb sleeves stay. Every bough, twig sleeve and spike of the tenth is gone. Each limb and the stem's top runs on into one tip (10), and each fork place of the layout grows one twig (29 of the 41 fork places that lie on a limb or the stem; a place nearer than 1.3 mm to a used one, or with no free curve, grows none). Each is one long curve to a hooked point, laid one after another so that in the hero view it leaves the wood once and then keeps 0.8 mm from every other piece. The hero pitch 4.5 is written into the build as `LOOK.pitch`; if the hero camera changes, the laying must be run again.
+- The layout's 42 pad twigs are left undrawn in fall (`withoutPadTwigs` in tree.ts, way (i)). The test reads the number of pad twigs from `limbs` of `src/miniature/trunk.ts`, not from a constant, and fails unless exactly that many pieces are dropped and the index at every quality level equals the trunk's without them. Checked by breaking it: with the call removed 0 of 42, with the slack at 0.01 4 of 42, both fail.
+- The collider of the trunk (`trunkSolid`, `src/miniature/trunk.ts`, not fall's file) still carries the 42 pad twigs. Not changed.
+- Light. A pale line on the upper side of limbs and twigs (`LINE`), the air's lift on limbs, twigs and the stem above the first fork only (`AIR`, in the bark's shader, so the trunk below stays dark), the fill and edge tones turned from green, the lamp's light on the wood moved lower and drawn in.
+- Ceiling trial: the crown may reach world y 25.8, 1.3 mm above the old 24.5. Embers stay under 24.5. The glass clearance is untouched.
+
+Measures against the approved (lines laid by projection along the limbs and tips, 4 in the upper crown, 3 lower; the first step's hand lines lay on boughs that are gone, so the two sets are not the same lines):
+- Body with the air: 24.9,17.8,13.8, luma 19.3 (approved 24.7,17.8,14.1 and 19.4; tenth 11,9,8 and 8.9). Without the air 19.7,16.7,13.4.
+- Cuts with light over the sky by 15: 57 percent with the air (upper crown 60, lower 53); approved 61 (56, 72); tenth 34. Without the air 45 (38, 53). The lower limbs are short of the approved. Tone of that light 130,115,96 against 113,99,89: ours is yellower.
+- Trunk, a new box (not the first step's box that gave 43,29,21): approved 43,35,23; ours with the air 36,33,19, without 29,29,18. Red is still 7 short. The far side of the trunk is now dark like the approved's.
+- Form on the id picture at 3840 without the air (picture 61): twig ends 41 (approved 39, tenth 52); sky ringed all round 5, one of them an ember in front of a twig, 4 sky between the layout's limbs (tenth 70, the limbs alone 4); meeting points of the skeleton 50 (tenth 200). Top of the crown hd 253 (approved 202, tenth 255). Upper left ends 5, one above hd 260 (approved 6 and 3) by the projection.
+- By eye, not measured (picture 55): the approved's twigs kink and fork in small steps and its bark is glossier with ember specks; ours are smooth single curves, and four of them on the stem's left stand nearly parallel.
+
+Proof:
+- tsc clean; vitest on a6558ea5 and again on 75554f16 69 files passed, 1 skipped, 968 tests passed, 8 skipped; strict pass; miniatures pass; G15 pass, high 1,773,508 of 1,800,000.
+- Triangles of tree-fall: 37,058 before, 34,740 after (twigs 31,308, lights 3,432). The shared trunk draws 47,480 of its 51,490 in fall.
+- Draft stills on a6558ea5 and again on 75554f16: winter, spring and summer equal main's list; fall-rest 0ee028b40fb929c4, fall-landed 6e64ba57bb361be9.
+- M3 fall-rest at review 0.9159 (base 0.916, miniature 0.974 over 100,925 px); main 0.9159 (base 0.916, miniature 0.989). The miniature's 0.974 is a fall from 0.989, above the floor 0.935. The total is the base's and is under 0.935 on main too.
+- Parts with the air: crown 1.71, trunk 1.08, roof 0.98, wall 0.82, fence 0.90, litter 0.90, chimney 0.86. Without the air (the same boxes on the review still without the air, tenth then eleventh): wall 0.862 and 0.863, chimney 0.786 and 0.793, fence 0.917 and 0.917, roof 0.867 and 0.867. The chimney without the air is under 0.80 in both; nothing in this list touched it.
+- M1 fall-interior: pass before and after; the miniature 473,097 px before, 445,260 after; its top row in the id picture 40 of 1080 before, 28 after (picture 58). A halo of one ember touches row 0 in both (the lights part, which M1 does not count).
+- M4 and M5 at review: shake 3 0.956 and 0.9882 (main at chain 36 0.9571 and 0.9878), shake 4 0.9599 and 0.9996 (0.9608 and 0.9998). Shakes 1 and 2 equal main's.
+- Thin geometry at 3840, final tier: film frames 2364 to 2367 at rest and 2748 to 2751 in the shake that leaves fall (pictures 59 and 60).
+- One frame events in the crown's box (1700,380, 820 by 600), wood dark pixels that are over 20 levels off both neighbours however slid, two middle frames: eleventh 932 brighter and 844 darker in 300 groups, 8.73 per thousand wood dark pixels; tenth 1,879 and 858 in 419 groups, 10.67 per thousand. The tenth's frames are those of 16:27 UTC on the main of that hour, with the air of that hour, not rendered again on this main. Leaves and motes crossing the wood count in on both sides.
+- In the shake: 640 brighter and 2,756 darker in 258 groups, 41.0 per thousand, travel 14.8 px a frame. There are no tenth frames of the shake to set beside it, and at this travel the count cannot tell a smeared twig from a flicker; the four frames were looked at instead.
+
+Not seen: the frames played at speed; more than four frames of either run; the tenth in a shake; the landed state beyond its draft hash; the low camera; medium and low quality on screen (their triangle counts are 20,950 and 11,676).
