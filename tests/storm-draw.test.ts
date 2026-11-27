@@ -400,6 +400,10 @@ describe('how the storm is drawn', () => {
     expect(clock.told[0]).toBeLessThan(clock.told[1])
     expect(clock.told[1]).toBeLessThanOrEqual(1)
     expect(clock.downTold[0]).toBeLessThan(clock.told[0])
+    // a fine head is white rays on the liquid's light tan and no grey puff: most of a ring stands as hairs told apart, and a hair hides more than once over at its middle, yet less than a stout one's
+    expect(clock.told[0]).toBeGreaterThanOrEqual(0.8)
+    expect(clock.seen).toBeGreaterThanOrEqual(1)
+    expect(clock.seen).toBeLessThan(clock.stoutSeen)
     // no hair is finer than a pixel: with the pixel's own softness a hair is a pixel wide at half its height, and wider where it is stout or out of focus, so it is a whole line wherever it lies between the pixels
     expect(2.355 * Math.sqrt(PIXEL_SIGMA2 + clock.wide * clock.wide)).toBeGreaterThanOrEqual(1)
     expect(clock.stoutWide).toBeGreaterThanOrEqual(1)
