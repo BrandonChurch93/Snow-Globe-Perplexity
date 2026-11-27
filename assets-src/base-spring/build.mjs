@@ -5,7 +5,7 @@ import { writeGlb } from '../../tools/lib/glb.mjs'
 import { loadConfig, rel } from '../../tools/lib/paths.mjs'
 import { Soup, blur, clamp, cross3, fbm, hashInt, mix, mulberry, norm3, readRgb, smooth, toLinear, toSrgb, writePng } from '../base-winter/lib.mjs'
 import { lighter, thin } from './thin.mjs'
-import { FLOWERS, LEDGE_PETALS, MUSHROOMS, PATCHES, PROFILE, ROOTS, TRICKLE, TRICKLE_WIDTH, DRIPS } from './layout.mjs'
+import { FLOWERS, LEDGE_PETALS, ROLL_PETALS, MUSHROOMS, PATCHES, PROFILE, ROOTS, TRICKLE, TRICKLE_WIDTH, DRIPS } from './layout.mjs'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const RAD = Math.PI / 180
@@ -516,33 +516,57 @@ const END = PROFILE[PROFILE.length - 1]
 const H_JOIN = 38.5
 const glassR = (h) => Math.sqrt(Math.max(CUP_R * CUP_R - (CENTRE_H - h) ** 2, 0))
 const ease = (h) => (h > H_JOIN ? (h - H_JOIN) ** 2 / (h - H_JOIN + 1.5) : 0)
-const SEAT_FRONT = 4.4
-const BROW_H = END[1] - 4.9
-// How far over the glass's foot the moss stands, in mm above the old collar's 42.9: from the hero camera the plain wall
-// under the miniature's turf ends level across the glass while the glass's own circle climbs to the sides, so the moss
-// climbs a little with it to cover the wall, and falls back to the old collar round the sides and behind.
+const BROW_H = END[1] - 3.1
+const TROUGH = 4.8
+const front = (az) => smooth(66, 34, Math.abs(az))
+// How far over the old collar's 42.9 the roll's top stands. At the front the roll keeps its drawn height and its top falls
+// inward to the glass (TROUGH), so from the hero camera the crest stands in front of the glass's foot and the miniature's
+// bank shows over it, as in the approved; round the sides the moss ends on the glass a little over the old collar.
 function seam(az) {
   const a = Math.abs(az)
-  const front = SEAT_FRONT + 1.2 * (Math.min(a, 30) / 30) ** 2
-  const side = smooth(34, 70, a)
-  return front * (1 - side) + 1.2 * side * (1 - smooth(92, 135, a))
+  const side = 1 - front(az)
+  return (END[1] - 42.9) * (1 - side) + 0.6 * side * (1 - smooth(92, 135, a))
 }
-// The roll's brow stands proud of the cap's face: at the front it is steep against the glass and flattens toward its
-// crown, so the bank at the glass lies in shade and the crown takes the light; round the sides and behind a lower swell
-// keeps the roll overhanging the body, as the approved's does.
+// The roll's brow stands proud of the cap's face: at the front its crown is the crest, and behind the crest the top falls to
+// the glass; round the sides and behind a lower swell keeps the roll overhanging the body, as the approved's does.
 function brow(az, h) {
   const a = Math.abs(az)
   const v = Math.max(END[1] - h, 0) / (END[1] - BROW_H)
-  const bank = smooth(BROW_H - 4, BROW_H, h) * (0.3 * v + 0.7 * v * v)
-  return 4.6 * smooth(66, 34, a) * bank + 2.2 * smooth(40, 70, a) * Math.exp(-(((h - 39.5) / 3.3) ** 2))
+  const bank = smooth(BROW_H - 6, BROW_H, h) * (0.3 * v + 0.7 * v * v)
+  return 4.6 * front(az) * bank + 2.2 * smooth(40, 70, a) * Math.exp(-(((h - 39.5) / 3.3) ** 2))
+}
+// The crest against a level ring, in mm at azimuths, traced on references/approved/spring-rest.png: a little low across the
+// front, lowest on the right shoulder, and climbing the glass at both flanks.
+const CREST = [[-180, 0], [-95, 0], [-73, 2.1], [-69, 2.7], [-63, 2.4], [-55, 2.1], [-49, 1.2], [-41, 0], [-34.6, -1.49], [-30.8, -0.81], [-27, -0.55], [-23.4, -0.15], [-19.9, -0.25], [-16.5, -0.79], [-13.1, -0.55], [-9.8, -0.25], [-6.5, -0.67], [-3.3, -0.63], [0, -0.9], [3.3, -0.77], [6.5, -0.58], [9.8, -1], [13.1, -1.05], [16.5, -1.05], [19.9, -1.04], [23.4, -0.84], [27, -1.3], [30.8, -0.71], [34.6, -0.6], [38.7, -1.2], [43, -2], [49, -1.3], [55, -1.2], [60, 0.4], [63, 1.05], [68, 1.3], [80, 1.2], [95, 0], [180, 0]]
+function crest(az) {
+  let i = 1
+  while (i < CREST.length - 1 && CREST[i][0] < az) i++
+  const [a0, v0] = CREST[i - 1]
+  const [a1, v1] = CREST[i]
+  return mix(v0, v1, smooth(a0, a1, az))
 }
 function surf(az, s, field, liftMm = 0) {
   const m = atS(s)
   const d = sample(field, az, s) * seatOf(s) + liftMm
   const r = m.r + m.nr * d + swell(az, m.h) + brow(az, m.h)
   const h = m.h + m.nh * d
-  const to = h + ((seam(az) - dip(az) - (END[1] - 42.9)) * ease(h)) / ease(END[1])
+  const to = h + ((seam(az) - dip(az) - (END[1] - 42.9)) * ease(h)) / ease(END[1]) - TROUGH * front(az) * smooth(BROW_H, END[1], h) + crest(az) * smooth(H_JOIN, BROW_H, h)
   return { p: outside(place(r + glassR(to) - glassR(h), to, az)), n: turn(m.nr, m.nh, az), r: m.r }
+}
+// Where the roll stands highest at an azimuth, and how far along the profile a place lies that many mm under it on the outer face.
+function crownAt(az) {
+  let best = { s: S_MAP, y: -Infinity }
+  for (let s = S_MAP; s > S_MAP - 14; s -= 0.05) {
+    const y = surf(az, s, low).p[1]
+    if (y > best.y) best = { s, y }
+  }
+  return best
+}
+function underCrown(az, dropMm) {
+  const top = crownAt(az)
+  let s = top.s
+  while (s > S_MAP - 14 && surf(az, s, low).p[1] > top.y - dropMm) s -= 0.05
+  return s
 }
 // The crest is a near level soft line at the front and stands in crowns at the flanks. On it lie
 // a few low swells of unequal width at unequal gaps, the front five traced on references/approved/spring-rest.png.
@@ -592,6 +616,15 @@ function buildRock() {
     }
     return line
   })
+  // The second colour number is the drop under the roll's crown, a tenth to the millimetre: the lit rim follows the crest by it.
+  const plain = rows.findIndex((row) => row.cup)
+  const crowns = []
+  for (let i = 0; i < cols; i++) {
+    let top = 0
+    for (let j = 0; j < plain; j++) if (rows[j].s > S_MAP - 14 && pos[j][i][1] > pos[top][i][1]) top = j
+    crowns.push(top)
+  }
+  const under = (i, j) => (j >= crowns[i] ? 1 : clamp(1 - (pos[crowns[i]][i][1] - pos[j][i][1]) / 10))
   const wound = (i, j) => {
     const a = pos[j][(i + cols - 2) % (cols - 1)]
     const b = pos[j][(i + 1) % (cols - 1)]
@@ -607,7 +640,7 @@ function buildRock() {
     let n = wound(i, j)
     n = Math.hypot(n[0], n[1], n[2]) > 0.5 ? [face * n[0], face * n[1], face * n[2]] : [0, 1, 0]
     const s = rows[j].s
-    return { p: pos[j][i], n, uv: [(az / 360 + 0.5) * REPEATS, s / MOSS_TILE], uv2: [(az + 180) / 360, (yOfS(s) + 0.5) / H], c: [rows[j].cup ? 0 : 1, 0, 0] }
+    return { p: pos[j][i], n, uv: [(az / 360 + 0.5) * REPEATS, s / MOSS_TILE], uv2: [(az + 180) / 360, (yOfS(s) + 0.5) / H], c: [rows[j].cup ? 0 : 1, under(i, j), 0] }
   })
   // The lit edge of the crest is a fuzz of moss heads about half a millimetre apart. The field's columns are wider than a
   // head, so the heads are a fringe of their own on the crest's last half millimetre, each one a form and not a mark.
@@ -616,8 +649,8 @@ function buildRock() {
   const beads = []
   const next = mulberry(9133)
   for (let at = 0; at < (A1 - A0) * RAD * 49.4; ) {
-    const gap = 0.34 + 0.3 * next()
-    beads.push([at + 0.5 * gap, 0.52 * gap, next() < 0.12 ? 0.04 : 0.16 + 0.26 * next()])
+    const gap = 0.6 + 0.9 * next()
+    beads.push([at + 0.5 * gap, 0.52 * gap, next() < 0.12 ? 0.06 : 0.25 + 0.45 * next()])
     at += gap
   }
   const fringeCols = Math.round((A1 - A0) * RAD * 49.4 * 12) + 1
@@ -636,10 +669,22 @@ function buildRock() {
     const az = A0 + ((A1 - A0) * i) / (fringeCols - 1)
     lifts[i] = lift * smooth(A0, A0 + 6, az) * smooth(A1, A1 - 6, az)
   }
-  const fringeRows = [[S_MAP - 0.5, -0.06, 0], [S_MAP - 0.22, 0.02, 1], [S_MAP - 0.02, -0.06, 0.2]]
-  const fringe = fringeRows.map(([s, sunk, share]) => {
+  // At the front the heads stand on the roll's crown, which is the crest the camera sees; round the sides, where the moss
+  // ends on the glass, they stand on its last half millimetre.
+  const crownS = []
+  for (let k = 0; k <= 148; k++) crownS.push(crownAt(A0 + k).s)
+  const fringeS = (az) => {
+    const k = clamp((az - A0) / 148) * 148
+    const i = Math.min(Math.floor(k), 147)
+    return mix(S_MAP - 0.22, mix(crownS[i], crownS[i + 1], k - i), smooth(60, 40, Math.abs(az)))
+  }
+  const fringeRows = [[-0.45, -0.06, 0], [0, 0.02, 1], [0.35, -0.06, 0.2]]
+  const fringe = fringeRows.map(([ds, sunk, share]) => {
     const line = []
-    for (let i = 0; i < fringeCols; i++) line.push(surf(A0 + ((A1 - A0) * i) / (fringeCols - 1), s, low, sunk + share * lifts[i]).p)
+    for (let i = 0; i < fringeCols; i++) {
+      const az = A0 + ((A1 - A0) * i) / (fringeCols - 1)
+      line.push(surf(az, fringeS(az) + ds, low, sunk + share * lifts[i]).p)
+    }
     return line
   })
   soup.grid(fringeCols, fringeRows.length, (i, j) => {
@@ -652,8 +697,8 @@ function buildRock() {
     if (!(Math.hypot(n[0], n[1], n[2]) > 0.5)) n = [0, 1, 0]
     const out = turn(1, 0.3, az)
     if (n[0] * out[0] + n[1] * out[1] + n[2] * out[2] < 0) n = [-n[0], -n[1], -n[2]]
-    const s = fringeRows[j][0]
-    return { p: fringe[j][i], n, uv: [(az / 360 + 0.5) * REPEATS, s / MOSS_TILE], uv2: [(az + 180) / 360, (yOfS(s) + 0.5) / H], c: [1, 0, 0] }
+    const s = fringeS(az) + fringeRows[j][0]
+    return { p: fringe[j][i], n, uv: [(az / 360 + 0.5) * REPEATS, s / MOSS_TILE], uv2: [(az + 180) / 360, (yOfS(s) + 0.5) / H], c: [1, 1, 0] }
   })
   return soup
 }
@@ -793,6 +838,12 @@ function buildGrowth() {
     const g = surf(az, sOf([az, h, extra]), height, 0.25)
     const n = norm3(add(g.n, [rng() - 0.5, rng() * 0.3, rng() - 0.5], 0.5))
     leaf(g.p, n, size * (0.6 + 0.24 * rng()), [1.0, 0.74 + 0.08 * rng(), 0.8 + 0.08 * rng()], rng() * 6.28, 1.2 + 0.4 * rng(), 0.3)
+  }
+  for (const [az, drop, size] of ROLL_PETALS) {
+    const g = surf(az, underCrown(az, drop), low, 0.3)
+    const n = norm3(add(g.n, [rng() - 0.5, 0.4 * rng(), rng() - 0.5], 0.3))
+    // A petal is thin and pale and the room's light comes through it: it is far brighter than a cap of its shade.
+    leaf(g.p, n, size * (0.6 + 0.24 * rng()), [3.9, 3.3 + 0.25 * rng(), 3.5 + 0.25 * rng()], rng() * 6.28, 1.2 + 0.4 * rng(), 0.3)
   }
   return { soup, rootTriangles }
 }
