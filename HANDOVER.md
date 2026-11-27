@@ -2,6 +2,21 @@
 
 Branch agent/p6-fall-base, head c291a11c: the shader commit d2878876 with main 35d00e1b merged in (fall's scene fifth list and air fourth list). The fifth list changed src/seasons/fall/base.ts only. The mesh is as on the fourth list, whose asset script change still stands: `npm run make -- base-fall` must be run and its files committed by /root (80910 triangles, 1448 more than main's 79462; public glb 1348780 bytes, sha eb905811891fd477 on this VM).
 
+## The tenth step (08:37 UTC), the newest head
+
+Pushed head 0f7d05f9: commit 853bdefc, then main d2013ce3 merged (4f185596), then main 82d0b882 merged. Everything below this section describes older heads.
+
+What it is, against c291a11c: at the left the body's light falls off to both edges of each tube (round), the bark's field is long along the vine and finer around it and cut to a narrow line, with a small lean round the tube; away from the left the knobs' height in the normal is halved and the key line no longer breaks on the bark, so the flank's highlights join into one line; twigs are thinner (radius 0.24 to 0.42) and the near thorns have 6 sides, 79,830 triangles in the made mesh, 1,796,373 of 1,800,000 at high.
+
+Proofs on 4f185596: M3 fall-rest at review 0.868 (base 0.913, miniature 0.868); left box median 23.5, 90th percentile 83.2, top 3 percent 233 183 133, runs 7.3 and 5.5 (approved 26.4, 106.0, 234 191 159, 4.1 and 5.2); flank runs 5.4 and 5.5, 90th percentile 98.0; six other draft stills as the list of d2013ce3, fall-rest 20c131488b1344df, fall-landed 227b1db8c05cd105; landed at review drawn and looked at; counts pass; strict pass; frames 2400 to 2403 at 3840 final drawn and looked at, lines steady.
+Proofs on 0f7d05f9: tsc clean; vitest 68 files passed, 1 skipped, 943 passed, 8 skipped; fall's two draft stills the same two values.
+
+Still wrong: at 3840 the left vines read as orange satin with broad pale stripes; the left is too orange and too clean, a few thick tubes where approved is a broken tangle (the mesh, and no triangle is free); the lines are a pattern in the bark and not one highlight that winds along the lit edge, and the approved's angle was not measured; the flank's line is wider than approved's; the warm stripes reach too far toward the middle of the front band. The ruler's 4.5 for the runs along the row was not reached in thirteen tries: lines finer than about 1.5 px at hd merge into a pale band, a short field reads as blotches.
+
+Next: the eleventh step from /root (08:25): the lit stone between the vines reads as static at 3840, single blue white pixels; measure first (step between neighbouring pixels and between blocks of eight, count of points 40 over ground, mean colour, on approved and ours at hd and 3840), then move the grain's energy to mottling of 4 to 10 px at 3840.
+
+Tries are kept in /tmp/look as base.f17.ts to base.f31.ts (f31 is the pushed shader), pictures f17.png to f30.png and fin.png.
+
 ## The heads of the fifth list, in order
 - 127e2210: knobs and a grain of 1.8 in the vines' normal, a narrow lit ridge. M3 base 0.830. Beside the approved at two times it reads as frost: pale speckled patches on black.
 - b2a13724: grain 2.6, wider ridge. M3 base 0.902, which was grain. Ruled out by /root at 06:25: frosted.
