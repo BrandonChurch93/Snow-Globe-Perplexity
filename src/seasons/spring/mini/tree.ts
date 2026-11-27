@@ -5,7 +5,7 @@ import { stageMaterial } from '../../../core/materials'
 import { geometry, meshLevel, prepareModel } from '../../../core/models'
 import { levels } from '../../../core/quality'
 import { lampFlame } from '../../../miniature/roof'
-import { crownOffset, glowHook, glowing, prepareTrunk, trunkMaking, trunkShape, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { crownOffset, glowHook, glowing, prepareTrunk, treeTwinkle, trunkMaking, trunkShape, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import { emitters } from '../../../scene/layout'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { season, tones } from './palette'
@@ -24,6 +24,7 @@ const CLEAR_MM = 1
 // While the storm turns, the crown is a pale glowing cloud in the approved mid-shake image and no dark branch shows in it.
 const STORM = { blossom: [0.3, 0.2, 0.25] as const, pale: 0.25, wood: [0.5, 0.38, 0.38] as const, woodPale: 0.8 }
 const storm = { value: 0 }
+const twinkle = treeTwinkle()
 
 const offset = crownOffset()
 const FORK_Y = offset[1] + trunkShape.fork
@@ -55,7 +56,7 @@ function blossomMaterial(): THREE.MeshStandardMaterial {
     change: 'miniature',
     key: 'tree-blossom-spring',
     hook: (shader) => {
-      glowHook(shader)
+      glowHook(shader, twinkle)
       shader.uniforms.uTreeStorm = storm
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <normal_fragment_maps>', 'normal = normalize(vNormal);')
@@ -86,7 +87,7 @@ function twigMaterial(): THREE.MeshStandardMaterial {
     change: 'miniature',
     key: 'tree-twigs-spring',
     hook: (shader) => {
-      glowHook(shader)
+      glowHook(shader, twinkle)
       shader.uniforms.uTreeStorm = storm
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', '#include <common>\nuniform float uTreeStorm;')
@@ -110,7 +111,7 @@ function barkMaterial(shared: THREE.MeshStandardMaterial): THREE.MeshStandardMat
     extra: { normalMap: shared.normalMap, normalScale: new THREE.Vector2(BARK.normal, BARK.normal) },
     key: 'trunk-spring',
     hook: (shader) => {
-      glowHook(shader, undefined, BARK.relief)
+      glowHook(shader, twinkle, undefined, BARK.relief)
       shader.uniforms.uTreeStorm = storm
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', '#include <common>\nuniform float uTreeStorm;')
@@ -166,7 +167,7 @@ export async function prepare(): Promise<void> {
 }
 
 export function* making(): Generator<void, THREE.Object3D> {
-  const trunk = yield* trunkMaking(PART, lampOn(LAMP_ON_WOOD), tones.bark)
+  const trunk = yield* trunkMaking(PART, twinkle, lampOn(LAMP_ON_WOOD), tones.bark)
   trunk.material = barkMaterial(trunk.material as THREE.MeshStandardMaterial)
   yield
   const blossom = new THREE.Mesh(yield* placed('blossom', lampOn(LAMP_ON_BLOSSOM)), blossomMaterial())
