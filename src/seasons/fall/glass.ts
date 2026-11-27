@@ -91,10 +91,21 @@ export const look = {
     middle: 0.01,
     haze: 0.016,
     hazeMm: 12,
+    // Far behind the scene a glow stands between the house and the tree, as high as the eaves: the approved picture has it,
+    // and the lamp is a dark shape before it. It ends under where the bats fly, since the fog is drawn over them.
+    hazeMid: 0.68,
+    hazeMidAtMm: -2,
+    hazeMidWideMm: 10,
+    hazeMidTopMm: 29,
+    hazeMidMm: 4.5,
+    hazeMidFrontMm: -24,
+    hazeMidBackMm: -38,
+    hazeMidTint: [0.8, 0.84, 0.76],
+    hazeMidGlow: 0.1,
     hazeLumpMm: 16,
     hazeBankMm: 150,
     hazeBillowMm: 64,
-    hazeTint: [0.24, 1.0, 0.4],
+    hazeTint: [0.45, 1.0, 0.55],
     hazeFrontMm: -9,
     hazeBackMm: -24,
     pour: 0.006,
@@ -352,12 +363,16 @@ void main() {
   bound *= max(thrown, 1.0);
   air *= thrown;
   bool fogHere = bound * ${f(FOG_STEP * 1.7)} >= 0.003;
+  float midX = (p.x - ${f(F.hazeMidAtMm)}) / ${f(F.hazeMidWideMm)};
+  float midY = max(h - ${f(F.hazeMidTopMm)}, 0.0) / ${f(F.hazeMidMm)};
+  float midMost = hazeAmp * smoothstep(${f(F.hazeMidFrontMm)}, ${f(F.hazeMidBackMm)}, p.z) * ${f(F.hazeMid)} * exp(-midX * midX - midY * midY);
+  bool midHere = midMost * ${f(FOG_STEP)} >= 0.0006;
   if (p.y < under) discard;
   // The same dust shows the light of the lamp, the windows and the lanterns as a glow in the liquid round them.
   vec3 grid = stageGrid(p);
   vec3 dust = ${vec(F.dustTint)} * grid * ${f(F.dustGlow * FOG_STEP)} * (1.0 + ${f(F.dustStirred)} * lift) * thrown;
   bool dustHere = dust.r + dust.g > 0.0012;
-  if (!fogHere && !dustHere && air * ${f(FOG_STEP)} < 0.0006) discard;
+  if (!fogHere && !midHere && !dustHere && air * ${f(FOG_STEP)} < 0.0006) discard;
   // The roll comes round once a period: two takes of the billows half a turn of the clock apart, the one handed over to the other.
   float k = uFog.x;
   vec2 n = vec2(0.5);
@@ -412,6 +427,7 @@ void main() {
   float rho = amp * wisp * open * (body * mix(wall, mix(around, 1.0, uFogTurn.y), lift) * strands + bank) * thrown;
   // The haze is a glow at the back of the dome: it stands behind the house and the tree, which are dark and clear before it.
   float hazeRho = 0.0;
+  float midRho = 0.0;
   if (hazeAmp * hazeBack > 0.0) {
     // Banks of it, a few to the width of the dome, each standing to its own height, with finer billows on them. They change
     // little along the line of sight from the front, so a bank stays a bank through the depth of the dome.
@@ -425,6 +441,7 @@ void main() {
     float hf = 0.5 + (mix(f0, f1, k) - 0.5) * kn;
     float puff = smoothstep(0.43, 0.57, 0.5 * hz + 0.5 * hf);
     hazeRho = hazeAmp * hazeBack * exp(-max(h - ${f(F.hazeLumpMm)} * (hz - 0.5) * 2.0, 0.0) / ${f(F.hazeMm)}) * (0.03 + 2.2 * puff * puff);
+    midRho = midHere ? midMost * (0.6 + 0.8 * hf) : 0.0;
     rho += hazeRho;
   }
   if (uFog.z > 0.0) {
@@ -433,6 +450,7 @@ void main() {
     rho += uFog.z * ${f(F.pour)} * span * smoothstep(0.46, 0.72, run) * (0.4 + 1.2 * fall) * mix(0.08, 1.0, smoothstep(28.0, 54.0, r)) * mix(1.0, ${f(F.liftedFront)}, smoothstep(-8.0, 24.0, p.z)) * mix(1.0, strands, 0.6);
   }
   if (!fogHere) rho = 0.0;
+  rho += midRho;
   float a = 1.0 - exp(-(rho + air) * ${f(FOG_STEP)});
   a *= seen;
   if (a < 0.0006 && !dustHere) discard;
@@ -441,6 +459,7 @@ void main() {
   // Where it is thick it scatters more and goes pale: mint, not green.
   float thick = clamp(rho * ${f(F.paleMm)}, 0.0, 1.0);
   vec3 col = mix(mix(${vec(F.tint)}, ${vec(F.pale)}, thick), ${vec(F.hazeTint)}, hazeRho / max(rho, 1e-6)) * lit * (1.0 + ${f(F.paleGain)} * thick);
+  col = mix(col, ${vec(F.hazeMidTint)} * (lit + vec3(${f(F.hazeMidGlow)})), midRho / max(rho, 1e-6));
   col = (col * rho + ${vec(F.airTint)} * (1.0 + ${f(F.airGrid)} * (grid.r + grid.g)) * air) / max(rho + air, 1e-6);
   gl_FragColor = vec4(col * a + dust * seen, a);
   // In the cover view the fog says how much of the miniature it hides, as the particles do.
