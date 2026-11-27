@@ -12,11 +12,15 @@ const TAU = Math.PI * 2
 const LEAF_CELL = 1.0
 const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
-const SPRIGS = { share: 1, size: [1.2, 2.2], rise: 0.35, out: 0.34, lift: [0.82, 0.36] }
-// A sprig is a clover of a few soft round lobes of leaf, each of one tone and each about a millimetre across on the tree. Now and then
-// a small point on it is bright (`points`: the chance of a first and of a second; `pointRadius`: how unlike they are in size): these
-// catch the low sun as single sparks of gold. Nothing stands loose around a sprig.
-const SPRIG = { blobs: [4, 6], ring: [0.12, 0.26], radius: [0.17, 0.25], lobe: 0.12, edge: 2.5, rough: 0.3, flat: 0.5, tone: [0.6, 1.05], bright: [1.6, 2.0], fall: 0.5, points: [0.5, 0.15], pointRadius: [0.07, 0.2], pointRing: [0.2, 0.4], mean: 0.1266 }
+// Most tufts lie close on the body (`out`, of their own size). A few (`far`) are smaller (`farSize`) and stand farther off
+// (`farOut`): on a pad's outline these are the single sprigs that stand off its edge, so that the outline is ragged and not one
+// round line.
+const SPRIGS = { share: 1, size: [1.2, 2.2], rise: 0.35, out: [0.1, 0.28], far: 0.22, farSize: [1.0, 1.5], farOut: [0.5, 0.75], lift: [0.82, 0.36] }
+// A sprig is a clover of a few soft round lobes of leaf, each of one tone and each about a millimetre across on the tree. Around
+// its rim stand single leaves, small and bright (`points` of them, evenly about the sprig; `pointRadius`, `pointRing`: their
+// size and how far from the middle they stand): they notch the sprig's outline at leaf size, and on a pad's edge they catch the
+// light one by one, as beads. All of a sprig stays inside its cell.
+const SPRIG = { blobs: [4, 6], ring: [0.12, 0.22], radius: [0.16, 0.22], lobe: 0.12, edge: 2.5, rough: 0.3, flat: 0.5, tone: [0.6, 1.05], bright: [1.6, 2.0], fall: 0.5, points: 6, pointRadius: [0.05, 0.085], pointRing: [0.26, 0.37], mean: 0.1266 }
 const TONE = { deep: [0.5, 0.8, 0.9], mid: [0.74, 1.0, 0.86], tip: [0.86, 1.12, 0.84] }
 // The top of a pad, with open air over it, takes the most light. Its sides and its underside stand in shade, never in black.
 const SHADE = { body: 0.5, clearMm: 2.4, upFrom: 0.2, upTo: 0.85, tight: 1.25, floor: 0.45, curve: 1.3 }
@@ -29,6 +33,10 @@ const WIRE = [0.05, 0.04, 0.03]
 
 const [T, R, C, LN] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts', '/src/seasons/summer/mini/crown.ts', '/src/seasons/summer/mini/lanterns.ts'])
 const rng = R.stream('tree-summer')
+// What is drawn for the sprigs' stand off and for the sprigs' picture comes from streams of their own, so that the lanterns keep
+// their draws and the picture stays the same when the crown is reshaped.
+const edgeRng = R.stream('tree-summer-edge')
+const mapRng = R.stream('tree-summer-sprigs')
 const lerp = (a, b, t) => a + (b - a) * t
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 const smooth = (a, b, v) => {
@@ -219,7 +227,10 @@ function leaves() {
   const n = new THREE.Vector3()
   const t = new THREE.Vector3()
   const b = new THREE.Vector3()
-  const plant = (v, size) => {
+  const plant = (v, drawn) => {
+    const far = edgeRng.next() < SPRIGS.far
+    const size = far ? edgeRng.range(SPRIGS.farSize[0], SPRIGS.farSize[1]) : drawn
+    const out = far ? edgeRng.range(SPRIGS.farOut[0], SPRIGS.farOut[1]) : edgeRng.range(SPRIGS.out[0], SPRIGS.out[1])
     p.fromArray(s.pos, v * 3)
     n.fromArray(s.nor, v * 3)
     t.set(rng.range(-1, 1), rng.range(-1, 1), rng.range(-1, 1))
@@ -230,7 +241,7 @@ function leaves() {
     const lean = n.clone().addScaledVector(t, rng.range(-0.5, 0.5)).addScaledVector(b, rng.range(-0.5, 0.5))
     lean.y += SPRIGS.rise
     lean.normalize()
-    const centre = p.clone().addScaledVector(lean, size * SPRIGS.out)
+    const centre = p.clone().addScaledVector(lean, size * out)
     const cell = rng.int(4)
     const u0 = (cell % 2) * 0.5
     const v0 = Math.floor(cell / 2) * 0.5
@@ -382,20 +393,20 @@ async function leafMaps() {
   let lit = 0
   let seen = 0
   for (let s = 0; s < 4; s++) {
-    const ox = Math.floor(rng.range(0, w - cell))
-    const oy = Math.floor(rng.range(0, h - cell))
-    const count = SPRIG.blobs[0] + rng.int(SPRIG.blobs[1] - SPRIG.blobs[0] + 1)
+    const ox = Math.floor(mapRng.range(0, w - cell))
+    const oy = Math.floor(mapRng.range(0, h - cell))
+    const count = SPRIG.blobs[0] + mapRng.int(SPRIG.blobs[1] - SPRIG.blobs[0] + 1)
     const blobs = []
     for (let k = 0; k < count; k++) {
-      const ring = k === 0 ? 0 : rng.range(SPRIG.ring[0], SPRIG.ring[1])
-      const ang = (k / (count - 1)) * TAU + rng.range(-0.3, 0.3)
-      blobs.push({ x: 0.5 + Math.cos(ang) * ring, y: 0.5 + Math.sin(ang) * ring, r: rng.range(SPRIG.radius[0], SPRIG.radius[1]), lobes: 3 + rng.int(3), turn: rng.range(0, TAU), tone: rng.range(SPRIG.tone[0], SPRIG.tone[1]), fall: 0 })
+      const ring = k === 0 ? 0 : mapRng.range(SPRIG.ring[0], SPRIG.ring[1])
+      const ang = (k / (count - 1)) * TAU + mapRng.range(-0.3, 0.3)
+      blobs.push({ x: 0.5 + Math.cos(ang) * ring, y: 0.5 + Math.sin(ang) * ring, r: mapRng.range(SPRIG.radius[0], SPRIG.radius[1]), lobes: 3 + mapRng.int(3), turn: mapRng.range(0, TAU), tone: mapRng.range(SPRIG.tone[0], SPRIG.tone[1]), fall: 0 })
     }
-    for (const chance of SPRIG.points) {
-      const ring = rng.range(SPRIG.pointRing[0], SPRIG.pointRing[1])
-      const ang = rng.range(0, TAU)
-      const point = { x: 0.5 + Math.cos(ang) * ring, y: 0.5 + Math.sin(ang) * ring, r: rng.range(SPRIG.pointRadius[0], SPRIG.pointRadius[1]), lobes: 3 + rng.int(3), turn: rng.range(0, TAU), tone: rng.range(SPRIG.bright[0], SPRIG.bright[1]), fall: SPRIG.fall }
-      if (rng.range(0, 1) < chance) blobs.push(point)
+    const first = mapRng.range(0, TAU)
+    for (let k = 0; k < SPRIG.points; k++) {
+      const ring = mapRng.range(SPRIG.pointRing[0], SPRIG.pointRing[1])
+      const ang = first + ((k + mapRng.range(-0.3, 0.3)) / SPRIG.points) * TAU
+      blobs.push({ x: 0.5 + Math.cos(ang) * ring, y: 0.5 + Math.sin(ang) * ring, r: mapRng.range(SPRIG.pointRadius[0], SPRIG.pointRadius[1]), lobes: 3 + mapRng.int(3), turn: mapRng.range(0, TAU), tone: mapRng.range(SPRIG.bright[0], SPRIG.bright[1]), fall: SPRIG.fall })
     }
     for (let y = 0; y < cell; y++) {
       for (let x = 0; x < cell; x++) {
