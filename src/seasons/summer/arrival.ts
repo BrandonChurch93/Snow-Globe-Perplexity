@@ -22,14 +22,14 @@ const RAD = Math.PI / 180
 // grain's place is a function of the time since the landing and of the clock, nothing is kept from frame to frame. The
 // mirror of the slab gets none of the grains; medium and low draw a share.
 //
-// A falling grain is drawn as a camera with a quick shutter sees it: as the short line it travels in that time, with
-// its light spread along that line, so the fall is tan grains with a little streak each and not a veil. The line is
-// the same in every sample of one picture: drawn from a few samples it would be a row of dashes.
+// A falling grain is drawn as a camera with a quick shutter sees it: as the short line it travels in that time. Each
+// hides what is behind it, the dark grains too, so the fall is single lit grains with dark between them and not a
+// veil. The line is the same in every sample of one picture: drawn from a few samples it would be a row of dashes.
 const LOOK = {
   gravity: 3400,
   lift: { stop: 0.25, share: 0.6, nearMm: [61.5, 69.0], late: 0.4, upMmS: [70, 170], inMm: 1.1 },
   jump: { count: 8600, shade: 0.3, reach: 0.2, onHeap: 0.1, hopMm: [0.15, 1.0], within: 0.05, radiusMm: [0.04, 0.1] },
-  fall: { count: 9000, gravity: 7000, az: 90, spread: 2.5, most: 2.0, off: [0.9, 1.7], h: [38.7, 39.8], outMmS: [72, 125], lean: 1.7, fliers: { share: 0, far: [1.2, 1.6] }, fanDeg: 1.5, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.05, 0.11], fine: 2.5, core: [0.5, 72, 118], edge: [105, 125, 0.3], thinPx: 0.5, sizes: [0.8, 1.7], soft: { share: 0.08, wide: 2.2 }, shutter: 0.08, cover: 2.7, rise: 0.012, low: [0.66, 0.6, 0.56], shine: [0.4, 1.0], pale: 0.15, least: [0.03, 0.12], bright: [0.75, 1.0], lit: 1.8, shaded: 0.08, mist: { seconds: 0.07, outMmS: [5, 40], upMmS: [5, 45], cover: 0.012, mm: [0.25, 0.5], turn: 0.45 } },
+  fall: { count: 5500, gravity: 7000, az: 90, spread: 2.5, most: 2.0, off: [0.9, 1.7], h: [38.7, 39.8], outMmS: [72, 150], lean: 1.7, fliers: { share: 0.012, far: [1.12, 1.22], brief: 0.15, size: 1.5, solid: 0.9, lit: 1.3 }, fanDeg: 1.5, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.035, 0.085], fine: 2.5, core: [0.3, 72, 125], edge: [120, 150, 0.0], thinPx: 0.3, sizes: [1.0, 1.5], soft: { share: 0, wide: 2.2 }, shutter: 0.15, cover: 40, rise: 0.012, low: [0.085, 0.038, 0.017], shine: [0.38, 0.52], pale: 0.3, plain: 0.4, least: [0.0, 0.01], bright: [0.75, 1.0], lit: 1.3, shaded: 0.08, mist: { seconds: 0.07, outMmS: [5, 40], upMmS: [5, 45], cover: 0.012, mm: [0.25, 0.5], turn: 0.45 } },
   loose: { x: [16, 136], z: [-70, 112], kind: { proud: [0.26, 0.08] }, thinPx: 0.3, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, under: 3500, radiusMm: [0.07, 0.17, 0.45], small: 0.6, lean: 1.6, thin: 0.45, sunk: 0.3, vary: [0.6, 1.2], apart: 0.3 }, dust: { count: 12400, radiusMm: [0.03, 0.07], reach: 0.13, cover: 0.6 }, grain: { count: 2600, radiusMm: [0.05, 0.1], lean: 1.4, reach: 0.15 }, crumb: { count: 40, radiusMm: [0.12, 0.17], lean: 1.6, reach: 0.35 }, strewn: { behind: [3, 17], thinMm: 0.6, runMm: [0.5, 1, 2, 3, 5, 7, 10, 14], thins: 5, front: 0.1, skinMm: 1.2 }, vary: [0.1, 0.42], warm: [1.0, 0.8, 0.56] },
   sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 0.5, round: [1.6, 4.0], clear: 6 },
@@ -169,7 +169,9 @@ float falls = aSeed.y > 0.5 && aSeed.y < 1.5 ? 1.0 : 0.0;
 float lies = aSeed.y > 1.5 ? 1.0 : 0.0;
 // A falling grain is in the picture from the place it has when its quick shutter opens to the place it has when it shuts,
 // or to where it lands if that is sooner.
-float shut = uGrain.w * ${(LOOK.fall.shutter / LOOK.exposure).toFixed(4)};
+float outward = (length(position.xz - aFrom.xz) - aSeed.w) / max(aFlight.y, 1e-3);
+float flier = smoothstep(${(LOOK.fall.outMmS[1] * 1.02).toFixed(1)}, ${(LOOK.fall.outMmS[1] * 1.1).toFixed(1)}, outward);
+float shut = uGrain.w * ${(LOOK.fall.shutter / LOOK.exposure).toFixed(4)} * mix(1.0, ${LOOK.fall.fliers.brief.toFixed(2)}, flier);
 float until = falls > 0.5 ? min(tau + shut, max(fallLife, tau)) : tau;
 float seen = falls > 0.5 ? clamp((until - tau) / max(shut, 1e-5), 0.0, 1.0) : 1.0;
 vec3 nowAt = grainPath(until);
@@ -214,13 +216,13 @@ float blur = min(len, ${LOOK.blurRadii.toFixed(2)} * aFlight.w);
 float thinner = 1.0;
 float soft = 0.0;
 // A falling grain is finer than a pixel. It is drawn as the short line it leaves while the shutter is open, never thinner
-// than a pixel can show, and as much fainter as the line is longer and wider than the grain: the light of the grain is
-// all there, spread over the line. A few of them are drawn wider and softer still.
+// than a pixel can show; only the finest grains on the longest lines are fainter for it. The few that fly clear of the
+// fall are single bright dots.
 if (falls > 0.5) {
   float least = ${LOOK.fall.thinPx.toFixed(2)} * max(-nowV.z, 1.0) / uGrainPx;
   float softly = step(${(1 - LOOK.fall.soft.share).toFixed(2)}, fract(aSeed.x * 37.3 + aSeed.z * 11.9));
   float larger = fract(aSeed.x * 7.7 + aSeed.z * 29.3);
-  float grow = mix(mix(${LOOK.fall.sizes[0]!.toFixed(2)}, ${LOOK.fall.sizes[1]!.toFixed(2)}, larger * larger * larger), ${LOOK.fall.soft.wide.toFixed(2)}, softly);
+  float grow = mix(mix(${LOOK.fall.sizes[0]!.toFixed(2)}, ${LOOK.fall.sizes[1]!.toFixed(2)}, larger * larger * larger), ${LOOK.fall.soft.wide.toFixed(2)}, softly) * mix(1.0, ${LOOK.fall.fliers.size.toFixed(2)}, flier);
   size = max(aFlight.w, least) * grow * alive;
   blur = len;
   float fine = aFlight.w / max(size, 1e-5);
@@ -277,15 +279,15 @@ if (falls > 0.5) {
   float glint = fract(aSeed.x * 53.7 + aSeed.z * 7.1);
   glint *= glint * glint;
   float bright = mix(${LOOK.fall.bright[0].toFixed(2)}, 1.0, glint * glint);
-  vGrainCover = min(1.0, ${LOOK.fall.cover.toFixed(2)} * bright * thinner);
+  vGrainCover = mix(min(1.0, ${LOOK.fall.cover.toFixed(2)} * bright * thinner), ${LOOK.fall.fliers.solid.toFixed(2)} * seen, flier);
   vGrainCover *= smoothstep(0.0, ${LOOK.fall.rise.toFixed(3)}, tau);
   // The quickest grains fly farthest out and are few: they are a little fainter, and the fall's outer edge is single grains and no line.
-  vGrainCover *= 1.0 - ${LOOK.fall.edge[2]!.toFixed(2)} * smoothstep(${LOOK.fall.edge[0]!.toFixed(1)}, ${LOOK.fall.edge[1]!.toFixed(1)}, (length(position.xz - aFrom.xz) - aSeed.w) / max(aFlight.y, 1e-3));
+  vGrainCover *= 1.0 - ${LOOK.fall.edge[2]!.toFixed(2)} * smoothstep(${LOOK.fall.edge[0]!.toFixed(1)}, ${LOOK.fall.edge[1]!.toFixed(1)}, outward);
   if (puff >= 0.0) vGrainCover = ${LOOK.fall.mist.cover.toFixed(3)} * 4.0 * puff * (1.0 - puff);
 }
 if (lies > 0.5) vGrainCover = min(1.0, thinner) * mix(1.0, ${LOOK.loose.dust.cover.toFixed(2)}, step(0.15, aSeed.w) * step(aSeed.w, 0.25));
 vGrainCover *= grown;
-vGrainLit = lies > 0.5 ? 1.0 + aSeed.w : falls > 0.5 ? mix(${LOOK.fall.core[0].toFixed(2)}, 1.0, smoothstep(${LOOK.fall.core[1].toFixed(1)}, ${LOOK.fall.core[2].toFixed(1)}, (length(position.xz - aFrom.xz) - aSeed.w) / max(aFlight.y, 1e-3))) : 1.0;
+vGrainLit = lies > 0.5 ? 1.0 + aSeed.w : falls > 0.5 ? mix(${LOOK.fall.core[0].toFixed(2)}, 1.0, smoothstep(${LOOK.fall.core[1].toFixed(1)}, ${LOOK.fall.core[2].toFixed(1)}, outward)) + 2.0 * flier : 1.0;
 float sunlit = mix(1.0, sandBaseShade(grainW.xyz - vec3(uSandFoot.x, 0.0, uSandFoot.y), uGrainKey), uSandDown);
 vGrainSun = lies > 0.5 ? aFlight.x : 1.0;
 // A falling grain in the shade of the stone is as dark as the stone behind it and is all but lost against it.
@@ -378,15 +380,17 @@ void main() {
   float id = vGrainLook.x;
   float id2 = vGrainLook.y;
   vec3 albedo = mix(${vec(SAND_COLOUR.deep)}, ${vec(SAND_COLOUR.pale)}, smoothstep(0.1, 0.75, id));
-  // A dark grain in the fall is a dark dash across the pale stone behind it; the fall is drawn in the pale grains alone.
+  // The dark between the fall's lit grains is its own (the low grains, below), not the dark sand's.
   albedo = mix(albedo, ${vec(SAND_COLOUR.dark)}, step(0.93, id2) * (1.0 - falls));
-  albedo = mix(albedo, ${vec(SAND_COLOUR.white)}, step(id2, mix(0.12, ${LOOK.fall.pale.toFixed(2)}, falls)));
-  float shade = mix(0.25, 1.0, vGrainLook.z) * vGrainLit * mix(1.0, ${LOOK.fall.lit.toFixed(2)}, falls);
+  float flies = falls * step(2.0, vGrainLit);
+  float white = max(step(id2, mix(0.12, ${LOOK.fall.pale.toFixed(2)}, falls)), flies);
+  albedo = mix(albedo, ${vec(SAND_COLOUR.white)}, white);
+  float shade = mix(0.25, 1.0, vGrainLook.z) * mix(vGrainLit, ${LOOK.fall.fliers.lit.toFixed(2)}, flies) * mix(1.0, ${LOOK.fall.lit.toFixed(2)}, falls);
   float ndl = dot(n, uGrainKey);
   float wrap = clamp((ndl + 0.45) / 1.45, 0.0, 1.0);
   float thru = pow(clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0), 3.0);
   vec3 dome = mix(uGrainGround, uGrainSky, 0.5 + 0.5 * n.y);
-  albedo *= mix(vec3(1.0), ${vec(LOOK.gold)} * (0.7 + 0.6 * fract(id2 * 7.3)), vGrainShape.y);
+  albedo *= mix(vec3(1.0), ${vec(LOOK.gold)} * (0.7 + 0.6 * fract(id2 * 7.3)), vGrainShape.y * (1.0 - ${LOOK.fall.plain.toFixed(2)} * falls * white));
   vec3 col = albedo * RECIPROCAL_PI * (uGrainKeyCol * shade * (wrap + 1.8 + (0.6 + ${LOOK.backlit.toFixed(2)} * vGrainShape.y) * thru) + dome + uRigCardCol * 0.35 * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
   float hk = max(dot(n, normalize(v + uGrainKey)), 0.0);
   col += uGrainKeyCol * shade * step(0.7, fract(id * 17.9)) * pow(abs(hk), 60.0) * 1.2;
@@ -408,7 +412,7 @@ void main() {
   }
   vec3 cover = vGrainCover * disc;
   if (falls > 0.5) {
-    col *= mix(${vec(LOOK.fall.low)}, vec3(1.0), smoothstep(${LOOK.fall.shine[0]!.toFixed(2)}, ${LOOK.fall.shine[1]!.toFixed(2)}, fract(id * 43.7 + id2 * 5.3)));
+    col *= mix(${vec(LOOK.fall.low)}, vec3(1.0), max(flies, smoothstep(${LOOK.fall.shine[0]!.toFixed(2)}, ${LOOK.fall.shine[1]!.toFixed(2)}, fract(id * 43.7 + id2 * 5.3))));
     cover *= smoothstep(${LOOK.fall.least[0]!.toFixed(2)}, ${LOOK.fall.least[1]!.toFixed(2)}, dot(col, vec3(0.2126, 0.7152, 0.0722)));
   }
   gl_FragColor = vec4(col * cover, cover.g);
@@ -483,7 +487,8 @@ export function fallPaths(): FallPath[] {
     const az0 = (F.az + Math.max(-F.most, Math.min(F.most, rf.gauss())) * F.spread) * RAD
     const az1 = az0 + Math.max(-F.most, Math.min(F.most, rf.gauss())) * F.fanDeg * RAD
     const flier = rf.next()
-    const speed = (F.outMmS[0] + (F.outMmS[1] - F.outMmS[0]) * rf.next() ** F.lean) * (flier < F.fliers.share ? F.fliers.far[0]! + (F.fliers.far[1]! - F.fliers.far[0]!) * (flier / F.fliers.share) : 1)
+    const run = F.outMmS[0] + (F.outMmS[1] - F.outMmS[0]) * rf.next() ** F.lean
+    const speed = flier < F.fliers.share ? F.outMmS[1] * (F.fliers.far[0]! + (F.fliers.far[1]! - F.fliers.far[0]!) * (flier / F.fliers.share)) : run
     const h0 = rf.range(F.h[0], F.h[1])
     const r0 = stoneAt(h0) + S.clearMm + rf.range(F.off[0], F.off[1])
     const radius = F.radiusMm[0] + (F.radiusMm[1] - F.radiusMm[0]) * rf.next() ** F.fine
