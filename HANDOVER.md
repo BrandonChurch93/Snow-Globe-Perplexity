@@ -95,3 +95,19 @@ Files touched: `src/seasons/fall/mini/tree.ts`, `src/seasons/fall/mini/props.ts`
 Reads, my boxes, approved against the hd review still with the air (median RGB): trunk body 25,37,24 against 25,33,21; lamp flank 83,46,24 against 72,45,23; right edge 74,77,58 against 42,48,36. The with air reads move by a few levels from run to run of the proof with the leaves in the air.
 
 Still short: the rim on the far side is a broken line of pale ridge edges, not the even soft edge of the approved, and its median is 30 levels under. The lamp flank's ridges are broader than the approved's thin glints. The fence has no short thin pickets between the boards and is seen more end on than in the approved (the shared layout). The ground under the tree and behind the fence is darker and greyer than the approved's red brown earth. M3's miniature number rose to 1.330; what carries it was not broken down.
+
+## After the third list: panes, M3's miniature share (f238a92e on main fe261991)
+
+Files touched: `src/miniature/glow.ts` (by leave, the pane's bar count only), `src/seasons/fall/mini/village.ts`, `src/seasons/fall/mini/tree.ts`, `src/seasons/fall/mini/palette.ts`, `assets-src/village-fall/build.mjs`. Make target changed: `village-fall` (282,938 triangles, as before). Run `npm run make -- village-fall`, `npm run make -- tree-fall`, then `npm run texpack -- --group fall`.
+
+- Panes: `GlowLook.lights` is the count of lights across and up; without it a look gets 2 by 3 as before, and the shader text for every other look is the same. Fall passes 2 by 2 for all three panes, because the approved shows one upright and one cross bar on the purple, the side green and the attic green pane alike. The drape's pale streaks are a second mesh over each pane (`drapeMaterial`, `purpleFolds`, `greenFolds`), kept off the bars. The casings of the two lower windows are darkened in `autumn()` (`CASING`), the attic frame in the generator (`FRAME`).
+- M3's miniature share was 1.330 because of the crown and the trunk, not the fence: the pale cool rim and the blue fill sat on every bough of fall's own `twigs` mesh, and the trunk's ridges took pale edges. `barkHook` acts on `twigs` only; the trunk's body is the shared trunk mesh, lit through the baked lights list. The rim is now confined near one point (`RIM.at`, `RIM.reachMm`) and smoothed (`RIM.relief`); the body takes a near fill (`FILL_ON_WOOD`) and one edge light (`EDGE_ON_WOOD`).
+- Roof: the thin pale line along each course was the worn tone painted at 0.8 on the last sixth of each shingle in `assets-src/village-fall/build.mjs`. It is now a soft band over the lower half at 0.38 (`SHINGLE.wear`) and the shingles' own tone is a little lighter. The shared slates under them are not seen, so nothing in `autumn()` changes the roof you see.
+
+M3 at review: miniature 0.867 (was 1.330 at 57ca3da3, 1.361 on main with its air). Parts, the build's energy over the approved's inside M3's own mask: crown 1.02, trunk 1.14, roof 0.92, wall 0.83, fence 0.99, litter 0.73, chimney 0.75, the rest 0.66.
+
+Still short of the approved picture:
+- The trunk's far edge is about 25 levels under the approved's and its body about 10 red over with the air. The lit ridges are broader than the approved's thin glints; the approved has its fine light in embers and one thin edge line.
+- The purple pane's darkest fifth is lighter and its brightest fifth dimmer than the approved's (96,20,89 and 215,122,216 against 80,6,83 and 244,134,236 before the last small change, not measured again after it).
+- Wall, litter and chimney now carry less fine energy than the approved's. The fence's boards read thin end on; no short pickets. The ground is darker and greyer. Door, wall stones and arch are the shared model's.
+- The two fold meshes add 6 triangles and 2 draw calls to fall at high. To take them back the folds would have to live in the shared pane shader.
