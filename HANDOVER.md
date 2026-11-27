@@ -999,8 +999,9 @@ what was run on `2765d9b3`.
 
 ### 14.3 Item 3, the checks on `2765d9b3`
 
-On the built page of `2765d9b3` (engine `100499a29f66e980`), main `ed9180da` in it. The renders ran one after the
-other; the whole vitest ran beside them at a lower priority, so every time here is a slow one.
+On the built page of `2765d9b3` (engine `100499a29f66e980`), main `ed9180da` in it. The renders of this chain ran one
+after the other, but for my fault, which the last line of the list below tells. The whole vitest ran beside the guards
+and the first half minute of the visit (22:27:13 to 22:33:42 UTC), so the times of those two are slow ones.
 
 - tsc: exit 0.
 - The whole vitest: "Test Files  70 passed | 1 skipped (71)", "Tests  1045 passed | 8 skipped (1053)", exit 0. Main
@@ -1013,26 +1014,28 @@ other; the whole vitest ran beside them at a lower priority, so every time here 
 - M3 of summer: "pass M3 summer-rest: 0.8624 (threshold 0.75, detail.minSharpnessRatio)", base 0.862, miniature
   0.863, as on main. M4 and M5 not touched. No triangles added.
 - Stand-ins, summer at rest: "max 0", black.
-- Determinism: "determinism: pass · 3 pictures, 4 page loads, preview, draft, 169 s"
-- The round of four at low: "ok: 4 of 4 presses taken; 0 with a program linked in the shake or not landed"
-- Strict on winter-rest, spring-rest, summer-rest, fall-rest: NOT COMPLETE: it began last, at 22:44:48, and runs as I write; its last line follows in one line when it ends
+- Determinism: "determinism: pass · 3 pictures, 4 page loads, preview, draft, 169 s".
+- The round of four at low: "ok: 4 of 4 presses taken; 0 with a program linked in the shake or not landed".
+- Strict on winter-rest, spring-rest, summer-rest, fall-rest: "strict: pass, 4 keys under pow, all+smooth,
+  all+smooth+noguard, each row read against the plain picture, where that one differs by its answers (no number, 0,
+  0.577 and 1e30), and where those differ against its own --same picture (engine 100499a29f66e980, drawn by lavapipe):
+  no pixel moves by more than 1 level, at most 0.01% of pixels move".
 - My fault in the running of them: from 22:27 to 22:38 UTC an older chain of mine, held at a pause that I lifted,
   ran a walk of the page beside the guards, the visit and M3, against the rule of one render at a time. Its other
   stages stopped at once ("dist/ does not match the source") and its walk wrote nothing; I ended it. The guards are
   hashes and the visit passed under that load, so I let them stand; nothing of that walk is used.
 
-Not run on this head, said plainly:
+### 14.4 Not run on `2765d9b3`, said plainly
 
-- The strict run on winter-rest, spring-rest, summer-rest, fall-rest (running at the close).
 - The walk from spring into summer at low and medium.
 - The stand-ins of winter, spring and fall (summer alone was made).
-- Visits 4, 7, 11, 13, 14 and 16.
+- Every visit but visit 10 (1 to 9 and 11 to 16; of 11 the line of the watcher alone ran, over the pages of visit 10).
 - The page at addresses it does not know.
 - A request cut off.
 - The early press.
 - The reveal as the browser paces it.
 - The miniatures tool.
-- Item 263 on its host and the four handed out addresses (read on d484bb49 only).
+- Item 263 on its host and the four handed out addresses (read on `d484bb49` only).
 - The points patch (not built).
 
 ### 14.5 Found on the way: summer was not made at quality low or medium on main `5b76c959` (open item 269): mended
@@ -1081,7 +1084,7 @@ Not run on this head, said plainly:
   spring, or it left with what came after `16e0dd29`. The walk from `?season=spring` was NOT RUN again on this head,
   and WHICH PROGRAM IT IS WAS NOT FOUND by the close. `scratch-tools/round-walk-id.mjs` on this branch names each
   program linked in a shake; `scratch-tools/round-walk.mjs` is the walk without the names.
-- The same round on `2765d9b3` reads the stall of 14.4 again: the thread stood 1123 ms at most in the shake into
+- The same round on `2765d9b3` reads the stall of 14.2 again: the thread stood 1123 ms at most in the shake into
   spring, 1695 ms into fall and 1799 ms into winter, each time in `bufferSubData` (2 calls of 1943 ms in all, 5 of
   3936 ms, 1 of 1770 ms). The shakes landed 15.6, 14.7, 16.8 and 25.8 s after the press, at 320 x 320 on this machine.
 - The stall in `bufferSubData` stays the worst thing I know of in a shake; this one comes next until it is found.
@@ -1102,4 +1105,5 @@ Not run on this head, said plainly:
 - A real card, a real screen, 60 frames a second, a finger, sound. Every page here was drawn by the processor.
 - The published host. Safari itself.
 - The stall on a real card, and the patch at work anywhere.
+- The shakes as pictures, and the lawn moving: the walks read numbers, and every picture I looked at stood still.
 - No fresh reviewer has read this work: my rules say I start no agents.
