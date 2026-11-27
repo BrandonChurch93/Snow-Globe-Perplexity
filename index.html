@@ -218,11 +218,17 @@
           }
         }
 
+        // A browser lays a box on whole pixels, and draws a box that is moved where it is moved to. So a picture is laid in
+        // the corner, whole pixels wide and high, and moved and sized from there: it stands between two pixels where its
+        // place is, as the live picture does that comes in over it.
         function put(img, b) {
-          img.style.left = b.x + 'px'
-          img.style.top = b.y + 'px'
-          img.style.width = b.w + 'px'
-          img.style.height = b.h + 'px'
+          var w = Math.round(b.w) || 1
+          var h = Math.round(b.h) || 1
+          img.style.left = img.style.top = '0'
+          img.style.width = w + 'px'
+          img.style.height = h + 'px'
+          img.style.transformOrigin = '0 0'
+          img.style.transform = 'matrix(' + [b.w / w, 0, 0, b.h / h, b.x, b.y].join(',') + ')'
         }
 
         // Where the still does not reach an edge of the screen, copies of it lie under it, each drawn larger about the glass than
