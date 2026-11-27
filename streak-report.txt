@@ -78,3 +78,11 @@ Frame 1388 at preview on the head beed6a06 (engine 8dec00b8dd77ff93, 24 samples,
 - A frame of few samples (under 8) keeps the row of copies, as leaveOut does for the heaps. The film's frames in a change have 24 or more.
 - Not drawn: any other frame of the four changes at 3840 after the change; change 1 (winter to spring, the petals arriving near 680) and change 2 at any size after the change; a master chunk through npm run master; the page in a browser.
 - The first film frame of a run that needs the second mesh links two more programs for spring (petals and their mask) and one for fall. In software I could not tell it from the run's start; it is inside a film render, never on the page.
+
+9. ADDED 23:50 UTC: THE SCATTER THAT ARRIVES, ONE FRAME BEFORE AND AFTER
+Frames 2119 to 2122 of change 3 (summer to fall) at preview, final tier, 24 samples, on the head beed6a06 (engine 8dec00b8dd77ff93), drawn 23:39 to 23:45, no page messages, draw 85.8, 79.2, 81.1, 81.2 s. Fall's leaves are not seen at 2119, first faint at 2120, come in as smears at 2121 and are mostly down at 2122.
+Frame 2121 again on plain main 48a2e3b7 (engine 22b2ad3ea80cf9c7, my own build of it), same size, tier and samples, drawn 23:46 to 23:48, draw 89.6 s, no page messages. Picture 8: the part right of the base at four times, before left, after right.
+Looked at: before, the faster leaves are rows of copies (a comb of several teeth on the nearest leaves); after, each is one smear, with the dotted grain of 24 samples that the petals have at preview.
+Counted: 35,530 pixels differ, 13,336 by more than 2 levels, the largest 63. None differ above row 353. In rows 353 to 359 the 41 that differ are at x 366 to 380 and differ by 2 levels at most. The base, the glass and the table away from the leaves are equal.
+The draw seconds of this one frame (89.6 before, 81.1 after) say nothing about cost: the before was the first frame of its run.
+Still not seen: the arriving scatter of changes 1 and 2 (change 1's petals come in near frame 680) before and after; an arriving frame at 3840 (frame 2121 at 3840 is being drawn on the head as I write).
