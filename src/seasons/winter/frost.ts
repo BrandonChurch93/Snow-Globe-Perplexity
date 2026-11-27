@@ -24,7 +24,7 @@ export const FULL = 2
 setGlass(season, { ringThin: 0.5, topLine: 0.4, windowSoftDeg: 0, windowGrain: 0, arcs: 1.2, arcTint: [1, 0.8, 0.58], arcCool: 2, strip: 0.6 })
 
 const look = {
-  glass: { cover: 1.72, haze: 1.38, slope: 0.55, micro: 1.1, glint: 2.6, light: 0.96, through: 2.4, thin: 0.3, thick: 1.1, blur: 0.012, bend: 0.012, scatter: 0.06, room: 0.5, soften: 0.12, rimMu: 0.3, faceOn: 0.65, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
+  glass: { cover: 1.72, haze: 1.38, slope: 0.55, micro: 1.1, glint: 2.6, light: 0.96, through: 2.4, thin: 0.3, thick: 1.1, blur: 0.012, bend: 0.012, scatter: 0.06, room: 0.5, viewCut: 0.3, mapCut: 0.004, soften: 0.12, rimMu: 0.3, faceOn: 0.65, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
   slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.1, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.38, gainFront: 0.5, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.5, leftBack: 2.0, leftMid: 0.42, leftSkyCut: 0.5, leftWarm: 0.22, leftFrontCut: 0.5, leftHeap: 0.62, leftHeapCut: 0.12, leftHeapSky: 0.6, heapGlint: 0.4, wet: 0.6, focusMm: 35, far: [40, 110], near: [28, 75], farMips: 3.0, nearMips: 3.2, shadeGlint: 0.85, lumpMm: 3.2, lump: 0.5, lumpSheet: 0.16, frontLag: 0.5, frontMm: 80, frontEnd: [0.3, 0.8] },
 }
 const SNOW = { thin: [0.6, 0.68, 0.8], thick: [0.92, 0.955, 0.99], body: [0.9, 0.93, 0.98] }
@@ -41,7 +41,7 @@ const frostUniforms = {
   uGlassLook: { value: new THREE.Vector4(look.glass.cover, look.glass.haze, look.glass.slope, look.glass.micro) },
   uSlabLook: { value: new THREE.Vector4(look.slab.cover, look.slab.pool, look.slab.slope, look.slab.micro) },
   uGlint: { value: new THREE.Vector4(look.glass.glint, look.slab.glint, 0.3, look.glass.light) },
-  uGlassThru: { value: new THREE.Vector4(look.glass.through, look.glass.thin, look.glass.thick, 0) },
+  uGlassThru: { value: new THREE.Vector4(look.glass.through, look.glass.thin, look.glass.thick, look.glass.viewCut) },
 }
 
 export const behindUniforms = {
@@ -242,7 +242,7 @@ void main() {
   } else gl_FragColor = vec4(col * alpha + spark, alpha);
   gl_FragColor *= seen;
   if (uDiag != 0) {
-    if (alpha * seen < 0.3) discard;
+    if (alpha * seen < uGlassThru.w) discard;
     gl_FragColor = stageDiag(albedo, n, 0.0, c, fw / uShape.y);
   } else if (alpha < 0.004) discard;
 }`
@@ -526,6 +526,11 @@ function makeGlass(): THREE.Mesh {
   mesh.renderOrder = 11
   mesh.frustumCulled = false
   mesh.onBeforeRender = (renderer, _scene, _camera, _geometry, material) => copyBehind(renderer, material)
+  // The lens fill's map takes the frost wherever the picture draws it, thinner than the texel view shows: frost left out of
+  // it takes the blur of what is next to it, and a fringe that does so beside a body that does not is cut out along an edge.
+  mesh.userData.inBlurMap = (on: boolean) => {
+    frostUniforms.uGlassThru.value.w = on ? look.glass.mapCut : look.glass.viewCut
+  }
   return mesh
 }
 
