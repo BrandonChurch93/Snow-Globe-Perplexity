@@ -78,7 +78,8 @@ const FACE = { lit: 0.9, warm: [1.15, 1.0, 0.8] as Rgb, litAt: [0.3, 0.6] as [nu
 const WALLS = { deepMm: 0.56, proudMm: 0.45, backMm: 0.62, lowMm: -1.95, doorMm: 3.97, keyMm: 0.85, mortar: 0.87, dark: 0.3, made: 0.9 }
 // The shared ring round the door is nine round lumps. The approved one is a ring of flat wedge stones, paler and warmer
 // than the wall, on jambs of the same stone. Fall draws its own in the make; the shared ring and jambs above `fromMm`
-// go behind the mortar with the wall's stones, and the made ring is toned by `crown` at its top, where the key light falls, by `flank` at its sides and the jambs by `jamb`.
+// go behind the mortar with the wall's stones, and the made ring is toned by `crown` at its top, which
+// reads brighter than the approved's, by `flank` at its sides, which read darker, and the jambs by `jamb`.
 const RING = { crown: [0.85, 0.82, 0.92] as Rgb, flank: [5, 3.6, 3.2] as Rgb, crownFrom: [0.55, 0.9] as [number, number], jamb: [1.3, 0.95, 0.6] as Rgb, reachMm: 0.45, outMm: 1.5, fromMm: 0.35, insideMm: 0.1 }
 // The made shingles are smooth. The approved ones are split wood: the grain map read through its levels along each one.
 const SHAKE = { scale: 0.5, low: 0.35, span: 1.3, reachMm: 3.5 }
