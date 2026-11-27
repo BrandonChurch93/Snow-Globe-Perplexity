@@ -145,7 +145,9 @@ describe('how the storm is drawn', () => {
       const pace = at(f, false)
       const now = depths.map(seen)
       expect(u.uVeilBank.value.z).toBeLessThanOrEqual(bank)
-      expect(u.uVeilBank.value.z).toBeLessThanOrEqual(shared.bank)
+      // never more of the bank than the shared storm has, until the shared storm has opened by itself under the held one, which then is all of it
+      expect(u.uVeilBank.value.z).toBeLessThanOrEqual(Math.max(shared.bank, STORM.bank.density))
+      if (f < last) expect(u.uVeilBank.value.z, `frame ${f} of the window`).toBeLessThanOrEqual(shared.bank)
       expect(u.uVeilBank.value.z).toBeGreaterThanOrEqual(STORM.bank.density - 1e-12)
       expect(u.uVeilRoll.value.z).toBeGreaterThanOrEqual(STORM.white - 1e-12)
       expect(u.uVeil.value.w).toBeGreaterThan(0)
@@ -200,5 +202,52 @@ describe('how the storm is drawn', () => {
     expect(kept).toBeLessThan(1)
     expect(u.uVeilBank.value.z).toBe(STORM.bank.density * kept)
     expect(u.uVeilRoll.value.z).toBe(STORM.white * kept)
+  })
+
+  it("the take over is bent to the picture: by the glass's mean level as it was read on three courses, no pair of frames differs by 5 levels with the storm alone, where the even course fell by 8.7; its first six frames keep the even pace, it never turns back, and it is over before the shared storm has opened by itself, six frames and more before the shake's end", () => {
+    const w = config.shake.swapWindow
+    const perBeat = (60 * config.film.fps) / config.film.defaultBpm
+    const windowFrames = Math.round((w.toBeat - w.fromBeat) * perBeat)
+    const spring = { tint: [1, 1, 1], density: 0.002, rest: 0 }
+    const paceAt = (frame: number): number => {
+      const beat = w.fromBeat + frame / perBeat
+      const past = beat >= w.toBeat - 1e-7
+      const stage = { mix: { veil: past ? 1 : (beat - w.fromBeat) / (w.toBeat - w.fromBeat) }, from: { veil: past ? summerVeil : spring }, to: { veil: summerVeil }, moment: { left: past ? 'spring' : null } }
+      return takePace({ time: 0, period: 1, sinceLanding: -1, arrived: 1, beat, seed: 1, frame: stage } as unknown as KitMoment)
+    }
+    // The ruler is the change's own: the mean of the luma of the 8 bit picture over a disc that rides with the ball, 0.85 of its
+    // radius, on the second shake of the film at draft and hd with the change's cover off. Read on main b4bc96c0 where the course
+    // was even, a frame a sixteenth of the way, and on two bent courses, the level of a frame is the held storm's at that frame
+    // (HELD) and the flood's light over it at that frame (LIGHT) times the share of it that stands at that way (STANDS, by
+    // sixteenths). The flood's light falls by a third between film frames 1409 and 1413 by itself, whatever the course.
+    // The lists begin at the take over's first frame, film frame 1401; the first three frames lie under the cover and are not read.
+    // The course as it stands was then drawn and read by the same ruler: its largest step is 3.96 where these lists say 4.17,
+    // and no level of it lies further than 1.6 from them.
+    const HELD = [138, 138, 138, 138, 138, 138, 138, 138, 138, 138, 138, 138, 138, 138, 138, 138, 137.67, 136.88, 137.09, 138.41, 141.25, 144.45, 146.21, 147.77]
+    const LIGHT = [48.95, 48.95, 48.95, 48.95, 48.95, 48.95, 48.95, 50.4, 49.1, 46.1, 41.3, 35.4, 33.3, 33.4, 33.3, 36.8, 35.4, 36.6, 31.7, 33, 33, 33, 33, 33]
+    const STANDS = [1, 1, 1, 1, 1, 0.958, 0.897, 0.764, 0.62, 0.472, 0.322, 0.19, 0.105, 0.06, 0.024, 0.022, 0]
+    const stands = (pace: number): number => {
+      const at = Math.min(STANDS.length - 1, Math.max(0, pace * (STANDS.length - 1)))
+      const i = Math.min(STANDS.length - 2, Math.floor(at))
+      return STANDS[i]! + (STANDS[i + 1]! - STANDS[i]!) * (at - i)
+    }
+    const first = windowFrames + TAKE.fromFrames
+    const last = first + TAKE.frames
+    const level = (t: number): number => HELD[t]! + LIGHT[t]! * stands(paceAt(first + t))
+    let most = 0
+    for (let t = 4; t < HELD.length; t++) most = Math.max(most, Math.abs(level(t) - level(t - 1)))
+    expect(most).toBeLessThan(5)
+    // the course never turns back and never stands while it runs, and it is whole at its last frame
+    expect(paceAt(first)).toBe(0)
+    for (let f = first + 1; f <= last; f++) expect(paceAt(f), `frame ${f} of the window`).toBeGreaterThan(paceAt(f - 1))
+    for (let f = last; f <= last + 4; f++) expect(paceAt(f)).toBe(1)
+    expect(TAKE.way.length).toBe(TAKE.frames + 1)
+    expect(TAKE.way[0]).toBe(0)
+    // the thinnest lines of sight open in the first six frames and the change is under them: they keep the even pace
+    for (let i = 0; i <= 6; i++) expect(paceAt(first + i)).toBeCloseTo(i / 16, 12)
+    // it begins no earlier than it did, and it is over before the shared storm has opened by itself and well before the hand lets go
+    expect(TAKE.fromFrames).toBe(-3)
+    expect((TAKE.fromFrames + TAKE.frames) / perBeat).toBeLessThan(VEIL_LOOK.openToBeats)
+    expect(w.toBeat + (TAKE.fromFrames + TAKE.frames + 6) / perBeat).toBeLessThanOrEqual(config.shake.liftBeats + config.shake.strokeBeats + config.shake.setDownBeats)
   })
 })
