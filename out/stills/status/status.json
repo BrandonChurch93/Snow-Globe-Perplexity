@@ -1,47 +1,50 @@
 {
-  "number": 228,
-  "time": "2026-11-27 20:28 UTC",
+  "number": 231,
+  "time": "2026-11-27 22:01 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 228 · 2026-11-27 20:28 UTC · Phase 6",
+    "Status 231 · 2026-11-27 22:01 UTC · Phase 6",
     "Phases 1 to 5 complete. Phase 6 in progress. No decision is needed from Brandon now.",
-    "Round one closed at 20:26 UTC (1:26 PM MT). Every expected report was in, read whole, its pictures looked at beside the approved pictures and its branch head checked. Twelve branches are merged on my working main (9dda4ef0) and chain 38 is measuring that tree on a helper machine now. Nothing of it is on origin main or on the live page until the chain is read.",
-    "What is in chain 38, since Status 227. Fall's tree: few long curved boughs with hooked tips where a thicket of thin sticks stood; by my eye the largest step fall has taken (stated by its builder: branch ends 41 against the approved's 39, before 52). Fall's base: the wall's light and dark swing brought down to the approved's. Summer's lawn: fine blades with a lit and a shaded side where pale flat cards stood; it shows at the close camera and in the 4K film, the opening view at 1920 is unchanged. Summer's tree: a string of small lights down the right flank of its domes, with its red test mended. The controls: stated by their builder on a software renderer, the first shake after the page loads no longer stalls (the page stood still 165 ms in all in the first shake against 10,100 ms before) and the opening picture no longer drops to near black before the live picture is whole. On a real graphics card that is unknown. The change of season: summer's heap of sand, winter's frost ferns and the lumps of snow now leave the table as motion. Also in: spring's base, spring's dew mend, summer's glass, summer's base and summer's air from Status 227.",
-    "Looked at by me at 4K at the masters' tier: nine frames of the change of season on its builder's earlier head and one on the merged one. Summer's heap is whole and sharp at 2104, softly drawn out from 2107, nearly gone at 2110; no bands, no beads, no row of copies. Not seen played.",
-    "Not merged, waiting for round two. Fall's cobweb: its builder's own 4K proof shows its outer thread thinner than a pixel, lighting 23 and 26 pixels for one frame against 15 and 11 before, so it could twinkle in the film; only the wall was merged. Fall's air, its eleventh list: it meets summer's air in two shared files (measured here by a trial merge: 3 places), so its builder joins them first.",
-    "Logged as falls, stated by the builders, each alone on main: fall's wall lowers the base's part of M3 from 0.916 to 0.859 (floor 0.85); fall's tree the miniature's part from 0.989 to 0.974; summer's lawn has more pixels that step between two 4K frames on the near left bank (1.12 to 1.60 percent). Each is named in the chain's order with its floor.",
-    "Next. Chain 38's report, then the tenth publish with all of this live. Round two is one judged look: five fresh critics, one a season and one for the change of season, on chain 38's pictures. Every builder already has its round two order from my own eye (summer's pond, base tone, star and seed heads; spring's roll and bank; fall's twigs, embers and cobweb; winter's mound of snow in the change; a stall of about a second inside some shakes) and takes the critic's top items first. The close is named after the critics' lists, not before 22:15 UTC (3:15 PM MT). After it: chain 39, a publish, and the status that asks whether to move on to the film and the 4K masters.",
-    "All four seasons remain below the bar by my eye; his eye outranks mine. Sound credits 7,420 of 10,000, no call since 05:47 UTC on Thursday. No film render and no new preview since Preview 06.",
-    "phase 6: 41.64 h used of its 12.00 h box",
-    "allowance (after the review): 41.64 h used of 12.00 h allowed",
+    "The tenth publish went live at 21:49 UTC (2:49 PM MT) and I took it back at 21:56 UTC (2:56 PM MT). The live page is the ninth publish's build again. Why: a minute after the publish the controls builder reported that on chain 38's tree summer cannot be made at quality low and at quality medium. One guard in summer's village, new in chain 38, expects the full list of the lawn's corners and stops the making when the page draws a lighter list; the page then never shows summer and gives no controls (stated by the builder, who read it in a browser; the code line read by me; git says the line is in chain 38 and not in the ninth publish). At high, and at the plain address on the helper machine, summer comes. So a phone or a tablet that draws below high would have lost summer. Nothing I ran could see it: the capture page reads the full set, and my live checks read the page only at the quality it picks for itself. That gap is mine and is closed from now on: every live check and the measuring run read all four seasons at low and medium as well.",
+    "The page was back on the ninth's build 7 minutes and 37 seconds after the tenth went live. The ninth's tree was built again here: its 17 checked files are equal by sha256 to the ones the ninth publish's security reviewer listed, and the folder has the same 327 files and 160,423,773 bytes as on the ninth. Not known yet: whether the ninth's own tree draws all four seasons at low and medium, since it was never read there either. A helper reads that now, and reads the fault on the tenth's tree with a second pair of eyes.",
+    "The mend is three lines, proposed by the controls builder and being proven on its machine. It goes in as one commit of its own with a test that would have caught it, then into main, then the eleventh publish.",
+    "The change of season was judged by a fresh critic on chain 38's strips at preview size: 8 of 10, ready to film: yes. It calls three of the four changes clean and names fall into winter as the one a viewer could catch: the table goes cold blue a few frames before the core is white. I read its items against the kit before they went on. That item is struck: the kit says the room light crosses across the window and the outside things change inside a bloom of the new season's light, and on the strip the blue on the table rises together with the white in the globe. One nudge went to the change's builder: at summer into fall the sand base's coloured glass dots still show while the twig base climbs. It answered at 22:00 UTC that this will not be whole by the close, so it stays as it is. It also says its second item, the grainy fringe on the arriving petals at film frame 680, is not bettered by the line it built (2.57 levels before, 2.46 after, by its measure), so it holds that line back and pushes only its first item, the pale patch at frames 669 to 671, which is gone.",
+    "Winter's critic: 8 of 10, not ready to film. The storm at the landing is a tight ring and the miniature stays readable, against the settled line that more than half of the miniature is hidden; the tree is dark under bright bulbs; the pond is flat grey; the lamp blows out. Winter has no builder in round two; its list goes into the question to Brandon as it stands.",
+    "So all five critics of round two are in: summer 5, fall 5, spring 6, winter 8, the change of season 8. None of the four seasons is called ready to film. His eye outranks their scores and mine.",
+    "A fault in the film that the critic did not name and I see on the same strip: at film frames 1388 and 1389 the table's petals leave as rows of copies, like comb teeth (open item 268). The shutter's builder drew frame 1388 at 3840 at the masters' tier (76 samples, 741 seconds, stated by it): the rib is finer there, copies 8 to 14 pixels apart, and still readable at the petals' edges at full size (a cut is attached). Its mend is ordered: the petals drawn as streaks, the way the sand and the lights already are. Its builder guesses the cost at under 5 percent of those frames' drawing time; not measured.",
+    "Fall's air: its builder measured that the dark night air the critic asked for is nearer the approved picture than main's pale wash, and that it takes the miniature's part of one measuring number from 0.975 to 0.909, below a floor of 0.974 I had set. I ruled for the approved picture and lifted the floor to 0.90 for this push (decision 219).",
+    "The close of round two stays 22:50 UTC (3:50 PM MT). After it: the merges, one measuring run of everything together (chain 39) which now also reads low and medium, the eleventh publish, Preview 07, then the status that gives the live address with stills, says where each season stands and asks whether to move on to the film and the 4K masters. No round three without his word.",
+    "Sound credits 7,420 of 10,000 (measured from the ledger, 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render and no new preview since Preview 06.",
+    "phase 6: 43.19 h used of its 12.00 h box",
+    "allowance (after the review): 43.19 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-228-1.jpg",
-      "caption": "Fall's tree, approved picture left and the round one push right, in chain 38, below the bar",
-      "w": 1196,
-      "h": 761
-    },
-    {
-      "file": "out/stills/status/status-228-2.jpg",
-      "caption": "Summer's lawn at the close camera at 4K, main above and the round one push below, in chain 38, below the bar",
+      "file": "out/stills/status/status-231-1.jpg",
+      "caption": "The whole film in 24 frames, one every 150 frames, at preview size on chain 38",
       "w": 1200,
-      "h": 950
+      "h": 450
     },
     {
-      "file": "out/stills/status/status-228-3.jpg",
-      "caption": "The opening picture handing over to the live page, six frames, main above going near black and the mend below, in chain 38",
-      "w": 1192,
-      "h": 392
-    },
-    {
-      "file": "out/stills/status/status-228-4.jpg",
-      "caption": "The change of season at 4K at the masters' tier, summer's heap leaving over film frames 2104 to 2110, on its builder's head, in chain 38, not played",
+      "file": "out/stills/status/status-231-2.jpg",
+      "caption": "The change of season, spring into summer, film frames 1382 to 1397 at preview size on chain 38, the table's petals leave as rows of copies at 1388 and 1389, being mended",
       "w": 1200,
-      "h": 477
+      "h": 675
+    },
+    {
+      "file": "out/stills/status/status-231-3.jpg",
+      "caption": "Film frame 1388 at 4K at the masters' tier, a cut at full size right of the base, the petals' smears carry a fine rib at their edges, being mended",
+      "w": 1200,
+      "h": 600
+    },
+    {
+      "file": "out/stills/status/status-231-4.jpg",
+      "caption": "Winter at the landing on chain 38, approved picture left and build right",
+      "w": 1200,
+      "h": 536
     }
   ]
 }
