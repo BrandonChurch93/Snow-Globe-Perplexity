@@ -9,6 +9,10 @@ export function buildField() {
   const mer = P.meridian()
   const d = new Float32Array(W * H)
   const fine = new Float32Array(W * H)
+  const rel = new Float32Array(W * H)
+  const lip = new Float32Array(W * H)
+  const grain = new Float32Array(W * H)
+  const drift = new Float32Array(W * H)
   const bed = new Float32Array(W * H)
   const frac = new Float32Array(W * H)
   const seat = new Float32Array(W * H)
@@ -23,6 +27,10 @@ export function buildField() {
       const o = j * W + i
       d[o] = r.d
       fine[o] = r.fine
+      rel[o] = r.rel
+      lip[o] = r.lip
+      grain[o] = r.grain
+      drift[o] = r.drift
       bed[o] = r.k
       frac[o] = r.f
       seat[o] = r.seat
@@ -39,5 +47,5 @@ export function buildField() {
     const xa = Math.min(Math.max(x, 0), W - 1)
     return sampleBilinear(data, W, H, xa, y)
   }
-  return { W, H, mer, d, fine, bed, frac, seat, halo, hgt, groove, wide, broad, at, dAt: (az, s) => at(d, P.uOfAz(az), s / mer.total) }
+  return { W, H, mer, d, fine, rel, lip, grain, drift, bed, frac, seat, halo, hgt, groove, wide, broad, at, dAt: (az, s) => at(d, P.uOfAz(az), s / mer.total) }
 }
