@@ -143,6 +143,17 @@ export const look = {
     mistLeftMm: [-24, 4] as const,
     mistEven: [0.5, 2.4] as const,
     mistHighMm: [44, 78] as const,
+    // The upper air is no even field: by the approved picture's count it is dealt into small patches, about a quarter of it darker,
+    // about a tenth of it greener and lighter. The size of the patches' noise, the lean of its long way on the picture and how much
+    // shorter it is across (the approved's green streaks lean up to the right), how far the billows bend it, where the dark and the
+    // green ones start and are full along it, and what each does to the mist's light.
+    mistDealMm: 8,
+    mistDealLean: [0.47, 0.88, 0.35] as const,
+    mistDealWarpMm: 3,
+    mistDealDark: [0.42, 0.6] as const,
+    mistDealDarkBy: 0.64,
+    mistDealGreen: [0.64, 0.74] as const,
+    mistDealGreenBy: [1.05, 1.4, 0.74],
     hazeFrontMm: -9,
     hazeBackMm: -24,
     pour: 0.006,
@@ -679,6 +690,14 @@ void main() {
   float a = (1.0 - exp(-rho)) * seen;
   vec3 east = mix(vec3(1.0), ${vec(F.mistEast)}, smoothstep(${f(F.mistEastMm[0])}, ${f(F.mistEastMm[1])}, p.x));
   vec3 col = mix(mix(${vec(F.mistTop)} * east, ${vec(F.mistLow)}, smoothstep(${f(F.mistLowFrom[0])}, ${f(F.mistLowFrom[1])}, stand)), ${vec(F.mistHigh)} * east, smoothstep(${f(F.mistHighMm[0])}, ${f(F.mistHighMm[1])}, h));
+  // The noise is a lattice and shows its rows where it lies square to the picture: it is laid along the lean of the approved's streaks, long that way, and bent by the billows.
+  vec3 qd = vec3(${f(F.mistDealLean[2])} * (${f(F.mistDealLean[0])} * p.x + ${f(F.mistDealLean[1])} * p.y), ${f(F.mistDealLean[1])} * p.x - ${f(F.mistDealLean[0])} * p.y, 0.37 * p.x + 0.29 * p.y) + ${f(F.mistDealWarpMm)} * vec3(fine - 0.5, n - 0.5, 0.0);
+  float d0 = texture(uFogNoise, fogTurn(qd, -0.5 * k) / ${f(F.mistDealMm)} + vec3(0.43, 0.77 + 0.05 * k, 0.29)).r;
+  float d1 = texture(uFogNoise, fogTurn(qd, -0.5 * (k - 1.0)) / ${f(F.mistDealMm)} + vec3(0.43, 0.77 + 0.05 * (k - 1.0), 0.29)).r;
+  float deal = 0.5 + (mix(d0, d1, k) - 0.5) / sqrt(k * k + (1.0 - k) * (1.0 - k));
+  // The low mist that stands behind the scene keeps its even glow: the patches are the upper air's alone.
+  float upper = 1.0 - smoothstep(${f(F.mistLowFrom[0] * 0.5)}, ${f(F.mistLowFrom[1])}, stand);
+  col *= mix(vec3(1.0), mix(${f(F.mistDealDarkBy)}, 1.0, smoothstep(${f(F.mistDealDark[0])}, ${f(F.mistDealDark[1])}, deal)) * mix(vec3(1.0), ${vec(F.mistDealGreenBy)}, smoothstep(${f(F.mistDealGreen[0])}, ${f(F.mistDealGreen[1])}, deal)), upper);
   gl_FragColor = vec4(col * a, a);
 }
 `
