@@ -5,7 +5,7 @@ import { hasTexture, texture } from '../core/textures'
 import { FAR_GLSL, lensUniforms } from './cameras'
 import type { StageFrame } from './frame'
 import { ROOM_GLSL, roomUniforms } from './room'
-import { partChange } from '../shake/change'
+import { leaveOut, LEAVE_OUT, partChange } from '../shake/change'
 
 const G = config.globe
 const footRadius = G.baseDiameterMm / 2
@@ -189,6 +189,13 @@ export class ReflectMix {
   }
 }
 
+/**
+ * The lumps of snow leave the table with the frost that lies round them and by its lengths (winter's `frost.ts` reads them
+ * here): each goes out along the table on its own line from the stage's axis, whole in every sample (change.ts,
+ * `leaveOut`), thins from `thinFromMm` out and is gone at `reachMm`.
+ */
+export const LUMPS_LEAVE = { reachMm: 170, thinFromMm: 100 } as const
+
 export const LUMPS: readonly (readonly [number, number, number, number, number])[] = [
   [-161.5, -108.3, 1.7, 3.1, 0.75],
   [-145.1, -108.3, 6.5, 2.8, 0.7],
@@ -355,6 +362,7 @@ export const surfaceUniforms = {
   uDetail: { value: blank as THREE.Texture },
   uStone: { value: dark as THREE.Texture },
   uLumps: { value: 0 },
+  uLumpsOut: { value: new THREE.Vector2() },
 }
 
 export const slabLightUniforms = {
@@ -384,6 +392,7 @@ uniform vec4 uMirrorSize;
 uniform sampler2D uDetail;
 uniform sampler2D uStone;
 uniform float uLumps;
+uniform vec2 uLumpsOut;
 vec2 slabSlope(vec4 t) {
   vec2 c = (t.rg * 255.0 - 128.0) / 127.0;
   return vec2(c.x, -c.y) * abs(c) * ${f(SLAB.slopeFull)};
@@ -409,7 +418,9 @@ vec2 slabLumps(vec3 at, vec3 toEye, float blurMm) {
   float lit = 0.0;
   for (int i = 0; i < ${LUMPS.length}; i++) {
     vec4 c = slabLumpAt[i];
-    vec3 rel = vec3(at.x - c.x, 0.0, at.z - c.y);
+    // In a change that takes the lumps away each is drawn uLumpsOut.x mm further out on its line from the stage's axis.
+    vec2 place = uLumpsOut.x > 0.0 ? c.xy + normalize(c.xy) * uLumpsOut.x : c.xy;
+    vec3 rel = vec3(at.x - place.x, 0.0, at.z - place.y);
     vec2 s = vec2(dot(rel, across), dot(rel, upward));
     vec2 size = vec2(c.z, 0.5 * c.w) + blurMm;
     vec2 rag = slabNoise(s / (${f(SLAB.lumpGrainMm)} + blurMm) + float(i) * 7.3) + 0.5 * slabNoise(s / (${f(SLAB.lumpGrainMm * 0.37)} + 0.5 * blurMm) + float(i) * 3.1);
@@ -473,7 +484,7 @@ void main() {
   vec2 turned = slabSlope(crumb);
   vec2 tilt = slabSlope(fine) + vec2(turned.x * ${f(Math.cos(crumbTurn))} - turned.y * ${f(Math.sin(crumbTurn))}, turned.x * ${f(Math.sin(crumbTurn))} + turned.y * ${f(Math.cos(crumbTurn))});
   vec3 n = normalize(vec3(tilt.x, 1.0, tilt.y));
-  vec2 lump = uLumps > 0.0 ? uLumps * slabLumps(P, -v, ${f(SLAB.lumpBlur)} * lensBlurMm(depth)) : vec2(0.0);
+  vec2 lump = uLumps > 0.0 ? uLumps * slabLumps(P, -v, ${f(SLAB.lumpBlur)} * lensBlurMm(depth) + uLumpsOut.y) : vec2(0.0);
   float speck = max(spread, ${f(SLAB.speckPx)});
   float dust = clamp(max(textureGrad(uDetail, uvA, dFdx(uvA) * speck, dFdy(uvA) * speck).b, textureGrad(uDetail, uvC, dFdx(uvC) * speck, dFdy(uvC) * speck).b * ${f(SLAB.crumbDust)}), 0.0, 1.0);
   dust = max(dust * (1.0 - min(lump.x, 1.0)), min(lump.y * ${f(SLAB.lumpGain)}, 1.0));
@@ -638,8 +649,13 @@ export function updateSurface(f: StageFrame): void {
   su.uPour.value.setRGB(f.pool.r - f.poolOn.r, f.pool.g - f.poolOn.g, f.pool.b - f.poolOn.b)
   su.uPourOn.value.copy(f.pourOn)
   su.uImage.value.copy(f.image)
+  // The lumps of the season that leaves go out along the table (`LUMPS_LEAVE`) and those of the season that comes rise where
+  // they lie; no instant holds both. In a frame whose samples join, each copy is drawn softer by the step to the next
+  // (`uLumpsOut.y`, mm), so that the copies are the one streak the lump leaves.
   const lumpsA = SLAB.lumpSeasons[f.from.season] ?? 0
-  su.uLumps.value = lumpsA * (1 - partChange('surface-leave', f.change)) + (SLAB.lumpSeasons[f.to.season] ?? 0) * partChange('surface-come', f.change)
+  const go = leaveOut(f.from !== f.to && lumpsA > 0, f.change, f.sample, LUMPS_LEAVE.reachMm, LUMPS_LEAVE.thinFromMm)
+  su.uLumps.value = (go.run < 1 ? lumpsA * go.kept : 0) + (SLAB.lumpSeasons[f.to.season] ?? 0) * partChange('surface-come', f.change)
+  su.uLumpsOut.value.set(go.run < 1 ? go.out : 0, go.run < 1 ? (go.behind + go.ahead) / (2 * LEAVE_OUT.tent) : 0)
   const mirror = f.view === '' && f.planar ? f.reflect : 0
   su.uReflect.value.set(mirror, 1 - mirror, 0, 0)
   const a = f.from.main

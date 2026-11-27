@@ -284,8 +284,8 @@ describe('the change number', () => {
         }
       }
     }
-    // The sand and the frost read this one law and neither works the span out for itself.
-    for (const file of ['src/seasons/summer/slab.ts', 'src/seasons/winter/frost.ts']) {
+    // The sand, the frost and the lumps of snow read this one law and none of them works the span out for itself.
+    for (const file of ['src/seasons/summer/slab.ts', 'src/seasons/winter/frost.ts', 'src/scene/surface.ts']) {
       const text = readFileSync(file, 'utf8')
       expect(text, file).toContain('leaveOut(')
       expect(text, file).not.toContain("partChange('surface-leave'")

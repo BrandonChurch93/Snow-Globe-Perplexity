@@ -6,7 +6,7 @@ import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
 import { setGlass, shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
-import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
+import { LUMPS_LEAVE, SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
 import { LEAVE_OUT, leaveOut } from '../../shake/change'
 import type { KitMoment } from '../kit'
 import { season } from './base'
@@ -294,7 +294,7 @@ float frostSlabGrow(vec2 xz) {
 // fade as the glass's do.
 // The map holds no frost nearer the axis than 37.8 mm (it begins under the foot), and its softest reading reaches 6.2 mm
 // further in: nothing that lay nearer than `bareMm` is worked out.
-const LEAVE = { reachMm: 170, thinFromMm: 100, bareMm: 30, tapPx: 1.5, taps: 16, glintFade: [0.1, 0.4] } as const
+const LEAVE = { ...LUMPS_LEAVE, bareMm: 30, tapPx: 1.5, taps: 16, glintFade: [0.1, 0.4] } as const
 // `uGone`: how far out the frost is (mm), how far its map is drawn out behind that and ahead of it (mm), and the samples of
 // the frame (0 where they do not join). `uGoneAt`: the sample's place in its pixel (x to the right, y up), the focal
 // length, all three in pixels, and the share of the frost that is left.
