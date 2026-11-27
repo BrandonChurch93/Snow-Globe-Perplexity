@@ -388,8 +388,8 @@
         },
         {
           "path": "fall/base-fall.glb",
-          "bytes": 1269136,
-          "sha": "c285686628be4e3c"
+          "bytes": 1270840,
+          "sha": "030ef4c9f69abae2"
         },
         {
           "path": "fall/base-iron-detail.lin.tile.w1024.first.webp",
@@ -715,8 +715,8 @@
         },
         {
           "path": "fall/base-fall.glb",
-          "bytes": 2863628,
-          "sha": "ca50b3eec2025059"
+          "bytes": 2864680,
+          "sha": "0095241350456798"
         },
         {
           "path": "fall/base-iron-detail.lin.tile.w1024.png",
@@ -760,6 +760,6 @@
     "winter": "5c39d16f98d3d0be",
     "spring": "a06f4af617bd0126",
     "summer": "95e870899f865fab",
-    "fall": "5f67c309641337a3"
+    "fall": "e1ef9056f72ed699"
   }
 }

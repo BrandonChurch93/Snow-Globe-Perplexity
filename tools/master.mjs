@@ -10,7 +10,7 @@ import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './li
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
 import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, headerRefFrames, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
-import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, firstPlace, heldLine, heldRanges, hours, intermediateVideo, joinPlan, markedHolder, notNumberFrames, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, parseTake, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, sampleRule, pieceCounts, countFacts, countsLine, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
+import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, firstPlace, heldLine, heldRanges, hours, intermediateVideo, joinPlan, markedHolder, notNumberFrames, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, parseTake, procsGainLine, memoryAvailable, memoryShortLine, watchFrame, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, sampleRule, pieceCounts, countFacts, countsLine, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
 import { Shipper, identityProblem, mainAuthor, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
 const args = parseArgs(process.argv.slice(2))
@@ -354,12 +354,16 @@ async function doChunk(ctx, src, c, progress) {
     let sanityMs
     let first
     let samples
+    const perSample = progress.samplesDone > 0 ? progress.seconds / progress.samplesDone : null
+    const unwatch = watchFrame({ frame: index, expected: planned !== undefined && perSample !== null ? perSample * planned : progress.rendered > 0 ? progress.seconds / progress.rendered : null, say })
     try {
       ;({ png, rgb, samples, notNumber = null, sanityMs = null, first = null } = await src.picture(index))
       if (planned !== undefined && samples !== planned) throw new Error(`the page gave ${planned} samples for this frame when the range was counted and ${samples} when it was drawn`)
     } catch (e) {
       const more = String(e.message).split('\n').slice(1).join('\n')
       throw new Error(`${stoppedLine(c, index, e.message)} ${stays}${more ? `\n${more}` : ''}`)
+    } finally {
+      unwatch()
     }
     const seconds = (Date.now() - t0) / 1000
     if (!fs.existsSync(factsFile)) writeJson(factsFile, src.facts())
@@ -603,6 +607,8 @@ async function render() {
     say(`${ctx.what}: frames ${ctx.chunks[0].first} to ${ctx.chunks[all - 1].last} of ${ctx.total}, ${all} ${all === 1 ? 'chunk' : 'chunks'} of ${SIZE}, ${ctx.format.width} x ${ctx.format.height}, ${ctx.engine ? `${ctx.rule.motion ? 'a base of ' : ''}${ctx.samples} ${ctx.samples === 1 ? 'sample' : 'samples'} a frame` : 'from the opening pack'}${ctx.test ? ', a TEST that no master is made from' : ''}`)
     const slow = ctx.engine && !ctx.standIn ? procsGainLine(ctx.procs, LIMITS) : null
     if (slow) say(slow)
+    const tight = ctx.engine && !ctx.standIn ? memoryShortLine(ctx.procs, ctx.format.id, memoryAvailable()) : null
+    if (tight) say(tight)
     say(`${all - todo.length} ${all - todo.length === 1 ? 'chunk is' : 'chunks are'} finished, ${todo.length} to do, ${progress.left} frames to render (${todo.reduce((n, c) => n + c.last - c.first + 1 - c.missing.length, 0)} more are on disk as PNGs)`)
     if (args.ship !== undefined) {
       shipper = new Shipper({ branch: argText(args, 'ship', ''), say })
