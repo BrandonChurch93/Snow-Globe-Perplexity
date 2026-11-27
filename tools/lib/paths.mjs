@@ -11,7 +11,9 @@ export const writeJson = (p, v) => {
 }
 export const loadConfig = () => readJson(rel('config', 'showcase.json'))
 
-export function parseArgs(argv) {
+// `--no-air` is `npm run still`'s alone (`aid`). Every other tool reads its flags here, and so a gate, a guard, a measure,
+// a film or a poster stops on it before it draws anything.
+export function parseArgs(argv, { aid = false } = {}) {
   const out = { _: [] }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
@@ -25,6 +27,7 @@ export function parseArgs(argv) {
       }
     } else out._.push(a)
   }
+  if ('no-air' in out && !aid) throw new Error('--no-air is a measuring aid of `npm run still` alone. No gate, guard, measure, judged still, film or poster is drawn without the air, and nothing was drawn.')
   return out
 }
 
