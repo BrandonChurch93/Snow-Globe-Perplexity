@@ -527,10 +527,13 @@ describe('the dressing on the glass under a change', () => {
     expect(sets.length).toBe(2)
     expect(frost.split('gl_FragColor *= seen;').length).toBe(2)
     expect(frost.indexOf('gl_FragColor *= seen;')).toBeGreaterThan(Math.max(...sets))
-    // The views that say which part a pixel is read the cover it has left.
-    expect(frost).toContain('if (alpha * seen < 0.3) discard;')
-    // It is laid over what is behind it as one plus what its cover leaves.
+    // The views that say which part a pixel is read the cover it has left, against a cut the frost holds: 0.3 in the plain
+    // view, the picture's own floor where the lens fill's map asks, so no part of a frond takes its neighbour's reach.
+    expect(frost).toContain('if (alpha * seen < uGlassThru.w) discard;')
     const text = readFileSync(file, 'utf8')
+    expect(text).toContain('viewCut: 0.3, mapCut: 0.004')
+    expect(text).toContain('frostUniforms.uGlassThru.value.w = on ? look.glass.mapCut : look.glass.viewCut')
+    // It is laid over what is behind it as one plus what its cover leaves.
     expect(/fragment: GLASS,\s+params: \{ \.\.\.veil \},/.test(text)).toBe(true)
     expect(/const veil = \{[^}]*blendSrc: THREE\.OneFactor,\s+blendDst: THREE\.OneMinusSrcAlphaFactor,/.test(text)).toBe(true)
     thinsAsTheStippleDoesInTheMean()
