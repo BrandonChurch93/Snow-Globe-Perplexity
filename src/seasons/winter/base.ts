@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { config } from '../../config'
 import { lightUniforms } from '../../core/chunks/light'
-import { stageMaterial, stageShader, type Rgb } from '../../core/materials'
+import { baseRoom, pourUniforms, stageMaterial, stageShader, type Rgb } from '../../core/materials'
 import { geometry, prepareModel } from '../../core/models'
 import { stream } from '../../core/rng'
 import { texture } from '../../core/textures'
@@ -600,7 +600,7 @@ export function base(): THREE.Object3D {
     vertexMain: ICE_VERT_MAIN,
     fragment: ICE_FRAG,
     params: { transparent: true },
-    uniforms: { ...roomUniforms, ...iceUniforms },
+    uniforms: { ...roomUniforms, ...iceUniforms, uRigCardCol: baseRoom.uniforms.uRigCardCol },
   })
   Object.assign(ice.defines, { ICE_COUNT: extras.count, ICE_BODY: extras.body.length })
 
@@ -608,18 +608,33 @@ export function base(): THREE.Object3D {
   return group
 }
 
+/**
+ * What the ice takes of the light of a change's cover (materials.ts, `pourOnBase`; lighting.ts, `CHANGE_BLOOM`). It keeps the
+ * room's own light through the fall of the exposure as the wood behind it does (materials.ts, `baseRoom`), and of the pour
+ * at the collar it takes `above` from over it and `below` of that again from under it, off the lit table.
+ */
+const ICE_POUR = { above: 0.2, below: 0.5 }
+
 export function update(moment: KitMoment): void {
   const f = moment.frame
+  const hold = baseRoom.hold
   iceUniforms.uIceKeyDir.value.copy(f.keyDir)
-  iceUniforms.uIceKeyCol.value.copy(f.keyCol)
+  iceUniforms.uIceKeyCol.value.copy(f.keyCol).multiplyScalar(hold)
   iceUniforms.uIceRimDir.value.copy(f.rimDir)
-  iceUniforms.uIceRimCol.value.copy(f.rimCol)
-  iceUniforms.uIceSky.value.copy(f.sky).multiplyScalar(f.fill)
-  iceUniforms.uIceGround.value.copy(f.ground).multiplyScalar(f.fill)
+  iceUniforms.uIceRimCol.value.copy(f.rimCol).multiplyScalar(hold)
+  iceUniforms.uIceSky.value.copy(f.sky).multiplyScalar(f.fill * hold)
+  iceUniforms.uIceGround.value.copy(f.ground).multiplyScalar(f.fill * hold)
+  const pour = pourUniforms.uPourBase.value
+  if (pour.r + pour.g + pour.b > 0) {
+    const sky = iceUniforms.uIceSky.value
+    const ground = iceUniforms.uIceGround.value
+    sky.setRGB(sky.r + pour.r * ICE_POUR.above, sky.g + pour.g * ICE_POUR.above, sky.b + pour.b * ICE_POUR.above)
+    ground.setRGB(ground.r + pour.r * ICE_POUR.above * ICE_POUR.below, ground.g + pour.g * ICE_POUR.above * ICE_POUR.below, ground.b + pour.b * ICE_POUR.above * ICE_POUR.below)
+  }
   const card = lightUniforms.uRigCardCol.value
   const lift = (FLOOR_SHARE / Math.PI) * Math.max(lightUniforms.uRigCardDir.value.y, 0)
   const down = (FLOOR_SHARE / Math.PI) * Math.max(f.keyDir.y, 0)
-  iceUniforms.uIceFloor.value.setRGB(f.keyCol.r * down + card.r * lift, f.keyCol.g * down + card.g * lift, f.keyCol.b * down + card.b * lift)
+  iceUniforms.uIceFloor.value.setRGB(f.keyCol.r * down + card.r * lift, f.keyCol.g * down + card.g * lift, f.keyCol.b * down + card.b * lift).multiplyScalar(hold)
   const swap = config.shake.swapWindow
   const shaking = moment.beat !== null && moment.beat >= swap.fromBeat
   const two = f.from !== f.to && f.change > 0 && f.change < 1

@@ -45,6 +45,14 @@ export function masterConfigProblems(m = M) {
     if (!num(f.loop?.crf) || !num(f.loop?.crfStep) || !num(f.loop?.minCrf) || f.loop.crfStep <= 0 || f.loop.minCrf > f.loop.crf) out.push('deliver.master.final.loop needs crf, crfStep above 0 and minCrf at most crf')
     if (!num(f.loop?.seamDb) || f.loop.seamDb <= 0) out.push('deliver.master.final.loop.seamDb is missing')
   }
+  const slow = m.slow
+  if (slow !== undefined) {
+    const motion = cfg.tiers.final.motion
+    if (!num(slow.underPx) || slow.underPx <= 0) out.push(`deliver.master.slow.underPx (${slow.underPx}) is not a travel in pixels above zero`)
+    if (!Number.isInteger(slow.runFrames) || slow.runFrames < 1) out.push(`deliver.master.slow.runFrames (${slow.runFrames}) is not a whole number of frames, one or more`)
+    if (!motion) out.push('deliver.master.slow needs tiers.final.motion: the travel of a frame is read by that rule')
+    else if (!Number.isInteger(slow.samples) || slow.samples <= cfg.tiers.final.samplesPerFrame || slow.samples > motion.maxSamplesPerFrame) out.push(`deliver.master.slow.samples (${slow.samples}) is not a whole count over tiers.final.samplesPerFrame (${cfg.tiers.final.samplesPerFrame}) and at most tiers.final.motion.maxSamplesPerFrame (${motion.maxSamplesPerFrame})`)
+  }
   if (m.video?.maxrateMbps > 300 || m.video?.bufsizeMbps > 300) out.push(`deliver.master.video is wider than level 5.2 allows the High profile (300 Mbit a second, 300 Mbit of buffer)`)
   return out
 }
@@ -544,7 +552,9 @@ export function sampleRule(what, given = /** @type {any} */ (undefined), c = cfg
   const final = c.tiers.final
   if (base !== final.samplesPerFrame) throw new Error(`deliver.master.samples.${what} is ${base} and tiers.final.samplesPerFrame is ${final.samplesPerFrame}. The count of a master frame follows its motion by the rule of the final tier, which starts from the final tier's count, so the two must be one number. Nothing was drawn.`)
   const m = final.motion
-  return { base, motion: m ? { spacingPx: m.spacingPx, maxSamplesPerFrame: m.maxSamplesPerFrame, ...(m.evenFromPx !== undefined ? { evenFromPx: m.evenFromPx } : {}), ...(m.spreadFromPx !== undefined ? { spreadFromPx: m.spreadFromPx } : {}), ...(m.spreadFullPx !== undefined ? { spreadFullPx: m.spreadFullPx } : {}) } : null, tier: 'final' }
+  const slow = c.deliver.master.slow
+  if (slow && !m) throw new Error('deliver.master.slow needs tiers.final.motion: the travel of a frame is read by that rule. Nothing was drawn.')
+  return { base, motion: m ? { spacingPx: m.spacingPx, maxSamplesPerFrame: m.maxSamplesPerFrame, ...(m.evenFromPx !== undefined ? { evenFromPx: m.evenFromPx } : {}), ...(m.spreadFromPx !== undefined ? { spreadFromPx: m.spreadFromPx } : {}), ...(m.spreadFullPx !== undefined ? { spreadFullPx: m.spreadFullPx } : {}), ...(slow ? { slow: { underPx: slow.underPx, samples: slow.samples, runFrames: slow.runFrames } } : {}) } : null, tier: 'final' }
 }
 
 /** What the page says a frame takes: a whole count, never under the base, never over the rule's most. */
@@ -553,6 +563,64 @@ export function ruleCount(rule, index, given) {
   const most = rule.motion ? Math.max(rule.base, rule.motion.maxSamplesPerFrame) : rule.base
   if (!Number.isInteger(n) || n < rule.base || n > most) throw new Error(`the page gave ${JSON.stringify(given ?? null)} as the samples of frame ${index}, and the rule gives a whole count from ${rule.base} to ${most}. Run npm run build and render again.`)
   return n
+}
+
+/**
+ * The frames of a piece that draw at the slow count. A frame is slow when its travel inside the shutter is under
+ * `slow.underPx`. Slow frames are taken in runs: a run shorter than `slow.runFrames` is left at its own count, and a gap
+ * shorter than that between two runs is drawn slow with them, so the count changes at most once in `runFrames` frames.
+ * The loop is read as a ring. The whole list of travels is needed, and it is the frozen camera path's alone, so every
+ * machine gets the same answer for a frame.
+ */
+export function slowPlan(travel, slow, loop = false) {
+  const n = travel.length
+  travel.forEach((px, i) => {
+    if (typeof px !== 'number' || !Number.isFinite(px) || px < 0) throw new Error(`the page gave ${JSON.stringify(px ?? null)} as the travel of frame ${i}, and a travel is a number of pixels, zero or more. Run npm run build and render again.`)
+  })
+  const is = travel.map((px) => Math.round(px * 1000) / 1000 < slow.underPx)
+  const at = new Array(n).fill(false)
+  const none = { at, runs: [], frames: 0, changes: 0 }
+  if (!n || !is.includes(true)) return none
+  if (!is.includes(false)) return { at: at.fill(true), runs: [{ first: 0, last: n - 1, frames: n }], frames: n, changes: 0 }
+  const start = loop ? is.indexOf(false) : 0
+  let runs = []
+  for (let k = 0, open = -1; k <= n; k++) {
+    const on = k < n && is[(start + k) % n]
+    if (on && open < 0) open = k
+    if (!on && open >= 0) {
+      runs.push({ from: open, to: k - 1 })
+      open = -1
+    }
+  }
+  runs = runs.filter((r) => r.to - r.from + 1 >= slow.runFrames)
+  for (let i = 1; i < runs.length; ) {
+    if (runs[i].from - runs[i - 1].to - 1 < slow.runFrames) runs.splice(i - 1, 2, { from: runs[i - 1].from, to: runs[i].to })
+    else i++
+  }
+  if (loop && runs.length > 1 && runs[0].from + n - runs[runs.length - 1].to - 1 < slow.runFrames) runs.splice(0, runs.length, { from: runs[runs.length - 1].from, to: runs[0].to + n }, ...runs.slice(1, -1))
+  if (loop && runs.length === 1 && n - (runs[0].to - runs[0].from + 1) < slow.runFrames) return { at: at.fill(true), runs: [{ first: 0, last: n - 1, frames: n }], frames: n, changes: 0 }
+  let changes = 0
+  const out = runs.map((r) => {
+    for (let k = r.from; k <= r.to; k++) at[(start + k) % n] = true
+    const first = (start + r.from) % n
+    const last = (start + r.to) % n
+    changes += loop ? 2 : (first > 0 ? 1 : 0) + (last < n - 1 ? 1 : 0)
+    return { first, last, frames: r.to - r.from + 1 }
+  })
+  out.sort((a, b) => a.first - b.first)
+  return { at, runs: out, frames: out.reduce((a, r) => a + r.frames, 0), changes }
+}
+
+/**
+ * The count of every frame of a piece, from what the page says of every frame: the rule of the final tier, and the slow
+ * count in the slow runs where it is more. `got` must hold the whole piece, frame 0 first.
+ */
+export function pieceCounts(rule, got, loop = false) {
+  const counts = got.map((g, i) => ruleCount(rule, i, g))
+  const slow = rule.motion?.slow
+  if (!slow) return { counts, plan: null }
+  const plan = slowPlan(got.map((g) => g?.travelPx), slow, loop)
+  return { counts: counts.map((n, i) => (plan.at[i] ? Math.max(n, slow.samples) : n)), plan }
 }
 
 /** The facts of a list of counts: how many are over the base, the most and where, the sum. */
@@ -574,7 +642,7 @@ export function countFacts(counts, base, first = 0) {
 
 export function countsLine(rule, facts) {
   const s = (n) => `${n} ${n === 1 ? 'sample' : 'samples'}`
-  const how = rule.motion ? `the count of a frame follows its motion (tiers.final.motion: a sample every ${rule.motion.spacingPx} px of travel, at most ${rule.motion.maxSamplesPerFrame}${rule.motion.evenFromPx !== undefined ? `, even sample times from ${rule.motion.evenFromPx} px of travel` : ''}${rule.motion.spreadFromPx !== undefined ? `, a spread from ${rule.motion.spreadFromPx} px` : ''}${rule.motion.spreadFullPx !== undefined ? `, the full spread from ${rule.motion.spreadFullPx} px` : ''})` : rule.tier ? 'tiers.final holds no motion, so no frame follows its motion' : 'the count was given with --samples, so no frame follows its motion'
+  const how = rule.motion ? `the count of a frame follows its motion (tiers.final.motion: a sample every ${rule.motion.spacingPx} px of travel, at most ${rule.motion.maxSamplesPerFrame}${rule.motion.evenFromPx !== undefined ? `, even sample times from ${rule.motion.evenFromPx} px of travel` : ''}${rule.motion.spreadFromPx !== undefined ? `, a spread from ${rule.motion.spreadFromPx} px` : ''}${rule.motion.spreadFullPx !== undefined ? `, the full spread from ${rule.motion.spreadFullPx} px` : ''}${rule.motion.slow ? `; ${rule.motion.slow.samples} in runs of ${rule.motion.slow.runFrames} frames or more under ${rule.motion.slow.underPx} px of travel` : ''})` : rule.tier ? 'tiers.final holds no motion, so no frame follows its motion' : 'the count was given with --samples, so no frame follows its motion'
   if (!facts.over) return `${how}: ${facts.frames === 1 ? 'the one frame draws' : `every one of these ${facts.frames} frames draws`} the base of ${s(rule.base)}`
   return `${how}: ${facts.over} of these ${facts.frames} frames ${facts.over === 1 ? 'draws' : 'draw'} more than the base of ${s(rule.base)}, the most is ${facts.most} (frame ${facts.mostAt}); ${facts.sum} samples in all, ${(facts.sum / (facts.frames * rule.base)).toFixed(2)} times the base`
 }

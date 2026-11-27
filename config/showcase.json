@@ -409,6 +409,11 @@
         "film-b": 24,
         "loop": 24
       },
+      "slow": {
+        "underPx": 1.5,
+        "samples": 96,
+        "runFrames": 30
+      },
       "video": {
         "codec": "libx264",
         "profile": "high",

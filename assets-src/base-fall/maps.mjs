@@ -58,57 +58,40 @@ export async function ironDetail(dir) {
   return writePng(rel(dir, 'base-iron-detail.lin.tile.w1024.png'), px, px, 3, out)
 }
 
-// The carved faces, of our own design: triangles for eyes and nose, a grin with teeth. Four of them, each as a signed
-// distance to the edge of its openings (0.5 at the edge, more inside), in one sheet of two by two.
-const tri = (cx, cy, w, h, lean, flip = 1) => [
-  [cx - (w / 2) * flip, cy - h / 2 + lean * flip * 0],
-  [cx + (w / 2) * flip, cy - h / 2 - lean],
-  [cx + (w / 2) * flip * 0.2, cy + h / 2],
-]
+// The carved faces, of our own design: slanted triangles for eyes, a small nose, a wide grin with ragged teeth. Four of
+// them, each as a signed distance to the edge of its openings (0.5 at the edge, more inside), in one sheet of two by two.
 // A mouth: a crescent whose two edges meet at the corners, with teeth standing into it from above and from below
-// (pointed, or square with `square`).
-function grin(w, top, bottom, lift, teeth, bite, square = false) {
-  const n = 120
+// (pointed, or square with `square`). No two teeth are of one length, and fewer stand below than above.
+const toothLength = (k, seed) => 0.5 + 1.0 * (((k + 1) * 0.6180339887 + seed) % 1)
+function grin(w, top, bottom, lift, teeth, bite, square = false, seed = 0.31) {
+  const n = 160
   const up = []
   const low = []
-  const wave = (x, shift) => {
-    const f = ((x / (2 * w) + 0.5) * teeth + shift) % 1
-    return square ? (f > 0.28 && f < 0.72 ? 1 : 0) : 1 - Math.abs(f * 2 - 1)
+  const wave = (x, count, shift, salt) => {
+    const at = (x / (2 * w) + 0.5) * count + shift
+    const f = at % 1
+    const lean = 0.35 + 0.3 * (((Math.floor(at) + 2) * 0.7548776662 + salt) % 1)
+    const point = f < lean ? f / lean : (1 - f) / (1 - lean)
+    return (square ? (f > 0.28 && f < 0.72 ? 1 : 0) : point) * toothLength(Math.floor(at), salt)
   }
+  const under = Math.max(2, Math.round(teeth * 0.6))
   for (let i = 0; i <= n; i++) {
     const x = -w + (2 * w * i) / n
     const q = (x / w) ** 2
-    const open = (top - bottom) * (1 - q)
-    const b = Math.min(bite, open * 0.42)
-    up.push([x, top + lift * q - b * wave(x, 0.5)])
-    low.push([x, top + lift * q - open + b * wave(x, 0)])
+    const open = (top - bottom) * Math.sqrt(1 - q)
+    up.push([x, top + lift * q - Math.min(bite * wave(x, teeth, 0.5, seed), open * 0.62)])
+    low.push([x, top + lift * q - open + Math.min(bite * wave(x, under, 0.25, seed + 0.47), open * 0.4)])
   }
   return [...up, ...low.reverse().slice(1, -1)]
 }
-// Four carvings that no one would take for copies of one: a sly one with slanted eyes, a brute with a brow and three big
-// teeth, a startled one with round eyes of two sizes, and a scowl.
-const arch = (cx, cy, w, h, thick) => {
-  const top = []
-  const low = []
-  for (let i = 0; i <= 10; i++) {
-    const a = Math.PI * (i / 10)
-    top.push([cx - (w / 2) * Math.cos(a), cy + h * Math.sin(a)])
-    low.push([cx - (w / 2 - thick * 0.4) * Math.cos(a), cy + (h - thick) * Math.sin(a) - thick * 0.1])
-  }
-  return [...top, ...low.reverse()]
-}
-const quad = (cx, cy, w, h, slant, flip) => [
-  [cx - (w / 2) * flip, cy + h / 2 + slant],
-  [cx + (w / 2) * flip, cy + h / 2 - slant],
-  [cx + (w / 2) * flip * 0.8, cy - h / 2],
-  [cx - (w / 2) * flip * 0.9, cy - h / 2 + slant * 0.3],
-]
+// Four carvings that no one would take for copies of one: three that leer, each with its own eyes and its own teeth,
+// and a startled one with round eyes of two sizes.
 const round = (cx, cy, rx, ry, n = 14) => Array.from({ length: n }, (_, i) => [cx + rx * Math.cos((2 * Math.PI * i) / n), cy + ry * Math.sin((2 * Math.PI * i) / n)])
 const DESIGNS = [
-  [tri(-0.36, 0.3, 0.46, 0.34, 0.2, 1), tri(0.36, 0.3, 0.46, 0.34, 0.2, -1), [[-0.07, -0.04], [0.07, -0.04], [0, 0.1]], grin(0.68, -0.3, -0.6, 0.34, 5, 0.12)],
-  [quad(-0.36, 0.32, 0.5, 0.3, 0.13, 1), quad(0.36, 0.32, 0.5, 0.3, 0.13, -1), [[-0.12, -0.1], [0, -0.02], [0.12, -0.1], [0, 0.16]], grin(0.74, -0.26, -0.74, 0.24, 4, 0.17, true)],
-  [round(-0.36, 0.3, 0.2, 0.17, 12), round(0.34, 0.33, 0.16, 0.2, 12), [[-0.08, -0.06], [0.08, -0.06], [0, 0.1]], grin(0.62, -0.24, -0.66, 0.3, 4, 0.14)],
-  [tri(-0.36, 0.34, 0.44, -0.3, -0.1, 1), tri(0.36, 0.34, 0.44, -0.3, -0.1, -1), [[-0.03, -0.12], [0.03, -0.12], [0.03, 0.1], [-0.03, 0.1]], grin(0.62, -0.36, -0.64, -0.22, 6, 0.1)],
+  [[[-0.44, 0.2], [-0.2, 0.19], [-0.3, 0.5]], [[0.12, 0.2], [0.56, 0.3], [0.42, 0.5]], [[-0.07, -0.03], [0.07, -0.03], [0, 0.13]], grin(0.72, -0.2, -0.62, 0.36, 6, 0.15, false, 0.31)],
+  [[[-0.5, 0.5], [-0.04, 0.2], [-0.44, 0.16]], [[0.4, 0.58], [0.54, 0.19], [0.24, 0.21]], [[0.08, 0.09], [0.17, -0.12], [-0.01, -0.12]], grin(0.74, -0.2, -0.74, 0.3, 7, 0.17, false, 0.83).map(([x, y]) => [x + 0.07, y])],
+  [round(-0.36, 0.3, 0.2, 0.17, 12), round(0.34, 0.33, 0.16, 0.2, 12), [[-0.08, -0.06], [0.08, -0.06], [0, 0.1]], grin(0.62, -0.24, -0.66, 0.3, 4, 0.14, false, 0.12)],
+  [[[-0.52, 0.52], [-0.14, 0.25], [-0.5, 0.2]], [[0.24, 0.45], [0.47, 0.31], [0.25, 0.22]], [[-0.05, 0.02], [0.07, 0.0], [0.03, -0.14]], grin(0.66, -0.22, -0.66, 0.32, 6, 0.14, false, 0.57)],
 ]
 function inside(poly, x, y) {
   let c = false

@@ -129,6 +129,7 @@ const spec: Spec = {
       format: 's',
       chunkFrames: 'n',
       samples: { 'film-b': 'n', loop: 'n' },
+      slow: { underPx: 'n', samples: 'n', runFrames: 'n' },
       video: { codec: 's', maxrateMbps: 'n', bufsizeMbps: 'n', profile: 's', level: 's', pixFmt: 's' },
       intermediate: { preset: 's', crf: 'n', minPsnr: 'n', partMb: 'n' },
       final: { preset: 's', passes: 'n', targetMb: { 'film-a': 'n', 'film-b': 'n' }, keyint: 'n', minKeyint: 'n', bframes: 'n', refs: 'n', aqMode: 'n', params: 's', minPsnr: 'n', loop: { crf: 'n', crfStep: 'n', minCrf: 'n', params: 's', seamDb: 'n' } },
