@@ -1,4 +1,5 @@
-import { config, formatById, formats } from '../config'
+import { config, formats, shots } from '../config'
+import { VIEWS } from '../diagnostics/views'
 
 export type Mode = 'live' | 'autopilot' | 'loop' | 'capture' | 'probe'
 const MODES: Mode[] = ['live', 'autopilot', 'loop', 'capture', 'probe']
@@ -22,29 +23,34 @@ export interface Params {
 
 export function readParams(search: string): Params {
   const q = new URLSearchParams(search)
-  const mode = (MODES as string[]).includes(q.get('mode') ?? '') ? (q.get('mode') as Mode) : 'live'
+  const asked = (MODES as string[]).includes(q.get('mode') ?? '') ? (q.get('mode') as Mode) : 'live'
   const season = q.get('season') ?? ''
   const num = (k: string, d: number) => {
     const v = Number(q.get(k))
     return q.has(k) && Number.isFinite(v) ? v : d
   }
-  // A format the config does not name stops a capture, where a tool asked for it; a visitor's address falls back to hd.
-  let format = q.get('format') ?? config.formats.hd.id
-  if (mode === 'capture') formatById(format)
-  else if (!formats.some((f) => f.id === format)) format = config.formats.hd.id
+  // A capture page draws for a tool, and a tool never gets a format it did not name: where the config does not name the
+  // format the page is the live page at hd, which hands out no capture interface (src/main.ts). A visitor has the globe.
+  const named = q.get('format') ?? config.formats.hd.id
+  const known = formats.some((f) => f.id === named)
+  const mode: Mode = asked === 'capture' && !known ? 'live' : asked
   const assets = q.get('assets') ?? (mode === 'capture' ? 'full' : 'web')
+  // A name the app does not know is no name: an unknown shot would play the whole film without its sound, and an
+  // unknown view would flatten the picture.
+  const shot = q.get('shot') ?? ''
+  const diag = q.get('diag') ?? ''
   return {
     mode,
     season: config.seasons.includes(season) ? season : config.defaultSeason,
-    format,
+    format: known ? named : config.formats.hd.id,
     tier: q.get('tier') ?? 'draft',
     assets: Object.hasOwn(config.assetSets, assets) ? assets : 'web',
     quality: q.get('quality') ?? config.live.defaultQuality,
     frame: num('frame', 0),
     first: num('first', 0),
     last: num('last', -1),
-    shot: q.get('shot') ?? '',
-    diag: q.get('diag') ?? '',
+    shot: shots.some((s) => s.id === shot) ? shot : '',
+    diag: diag === 'none' || (VIEWS as readonly string[]).includes(diag) ? diag : '',
     which: q.get('which') ?? 'b',
     deny: (q.get('noext') ?? '').split(',').filter(Boolean),
     simcache: q.get('simcache') === '1',

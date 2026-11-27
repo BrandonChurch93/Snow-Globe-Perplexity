@@ -366,8 +366,8 @@
         },
         {
           "path": "summer/village-summer.glb",
-          "bytes": 3562468,
-          "sha": "14b839bf5adcc6d7"
+          "bytes": 3514480,
+          "sha": "aa753b4ddaab7941"
         },
         {
           "path": "summer/village-turf.lin.tile.webp",
@@ -388,8 +388,8 @@
         },
         {
           "path": "fall/base-fall.glb",
-          "bytes": 1315856,
-          "sha": "0be5852222d855d3"
+          "bytes": 1348716,
+          "sha": "d66d73b37ca03310"
         },
         {
           "path": "fall/base-iron-detail.lin.tile.w1024.first.webp",
@@ -698,8 +698,8 @@
         },
         {
           "path": "summer/village-summer.glb",
-          "bytes": 10958652,
-          "sha": "d628834a0573a4d3"
+          "bytes": 10930868,
+          "sha": "419cb58a9a7ad744"
         },
         {
           "path": "summer/village-turf.lin.tile.png",
@@ -715,8 +715,8 @@
         },
         {
           "path": "fall/base-fall.glb",
-          "bytes": 2918716,
-          "sha": "ce7c275e03b85989"
+          "bytes": 2982724,
+          "sha": "e5326c5e3f64dc72"
         },
         {
           "path": "fall/base-iron-detail.lin.tile.w1024.png",
@@ -759,7 +759,7 @@
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "fb4b9f61b79d3170",
-    "summer": "de1e8abb56efda6c",
-    "fall": "4eb710b8bacc992f"
+    "summer": "bd90c9c78a8427aa",
+    "fall": "37a3c3fc84016e4c"
   }
 }
