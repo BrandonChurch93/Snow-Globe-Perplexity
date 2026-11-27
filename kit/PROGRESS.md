@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 222 · 2026-11-27 18:17 UTC
+Status 223 · 2026-11-27 18:41 UTC
 
-- `out/stills/status/status-222-1.jpg`: Fall at rest on chain 36, approved picture left and build right, not on origin yet, below the bar
-- `out/stills/status/status-222-2.jpg`: Spring at rest on chain 36, approved picture left and build right, not on origin yet, below the bar
-- `out/stills/status/status-222-3.jpg`: Fall after its landing on chain 36, not on origin yet, below the bar
-- `out/stills/status/status-222-4.jpg`: Fall's base at the left flank close up, approved picture left, main in the middle, the sheaf right, for chain 37, below the bar
+- `out/stills/status/status-223-1.jpg`: The four seasons as the app opens in the eighth publish
+- `out/stills/status/status-223-2.jpg`: The live page of the eighth publish opened at fall with its controls, read on a helper machine
+- `out/stills/status/status-223-3.jpg`: Fall's tree, approved picture left and build right, a thicket where the approved has few curved boughs, below the bar
+- `out/stills/status/status-223-4.jpg`: Summer's falling sand at 4K at four times, film frames 1754 to 1757, a trial its builder draws again without its smear, below the bar
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 18:17 UTC
-clock: phase 6, tick of 31.8 minutes
-phase 6: 39.46 h used of its 12.00 h box
-allowance (after the review): 39.46 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 39.46 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 18:41 UTC
+clock: phase 6, tick of 24.2 minutes
+phase 6: 39.86 h used of its 12.00 h box
+allowance (after the review): 39.86 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 39.86 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
