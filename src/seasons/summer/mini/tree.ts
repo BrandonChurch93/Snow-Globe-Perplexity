@@ -5,7 +5,8 @@ import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { haloGeometry } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
-import { bakeGlow, buildTrunk, crownOffset, glow, glowHook, padAxes, placeGeometry, placePoint, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { crownOffset, foot, glow, glowHook, glowing, padAxes, placePoint, placing, prepareTrunk, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { ROW } from '../../../scene/steps'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { clumps, crownPads, leafField } from './crown'
 import { lanterns, type Lantern } from './lanterns'
@@ -28,12 +29,15 @@ const FILL_ON_WOOD = { power: 0.15, reachMm: 1000, wrap: 0.4 }
 const FILL_ON_LEAVES = { power: 0.03, reachMm: 1000, wrap: 0.3 }
 const FILL_FROM: Vec3 = [30, 60, 60]
 const BARK: Rgb3 = [0.26, 0.152, 0.09]
-// The wood stands half again as thick as the shared trunk: each vertex moves out along its normal, less up in the crown and least on the twigs far from the stem.
-const THICK = { footMm: 1.1, crownMm: 0.7, fromMm: 6, toMm: 22, twig: 0.25, nearMm: 5, farMm: 15, limb: 0.85 }
+// The wood keeps the shared trunk's girth from the waist up, and its limbs their own. What this season adds is the foot: under the
+// waist each vertex moves out along its normal, by a length (millimetres, against the height over the ground) that grows toward the
+// ground, so that the stem flares into its roots where the grass begins. `STEM` says what counts as stem for the low sun's rim.
+const FOOT_FLARE: readonly (readonly [number, number])[] = [[1.5, 2.6], [3, 1.7], [5, 0.8], [7, 0.25], [9, 0]]
+const STEM = { fromMm: 6, toMm: 22, nearMm: 5, farMm: 15, limb: 0.85 }
 const BARK_BUMP = 3.4
 // The bark: long flutes down the wood (the bark map drawn out along the grain), dark in their grooves, with the low sun
 // on the edge of the wood that faces it and moss on what faces up near the ground.
-const WOOD = { relief: 0.95, ridges: 5, warp: 2.6, fine: 0.4, low: 0.55, high: 1.35, from: 0.15, to: 0.85, depthMm: 1.5, rim: 4.0, rimTight: 3.4, rimFrom: -0.2, rimTo: 0.5, side: 0.1, wrap: 0.95, air: [0.06, 0.05, 0.045] as Rgb3, haze: [0.011, 0.0085, 0.0055] as Rgb3, pool: 1.1, poolReachMm: 4.5, poolWrap: 0.5, top: 0.45, mossTo: 5.5, moss: 0.45 }
+const WOOD = { relief: 0.95, ridges: 5, warp: 2.6, fine: 0.4, low: 0.55, high: 1.35, from: 0.15, to: 0.85, depthMm: 1.5, rim: 150.0, rimTight: 2.6, rimFrom: -0.2, rimTo: 0.5, side: 0.1, wrap: 0.95, air: [0.06, 0.05, 0.045] as Rgb3, haze: [0.011, 0.0085, 0.0055] as Rgb3, pool: 1.1, poolReachMm: 4.5, poolWrap: 0.5, arms: 3.0, armsReach: 1.5, armsWrap: 0.9, armsFrom: 0.7, armsTo: 1.8, top: 0.45, mossTo: 5.5, moss: 0.45 }
 const MOSS: Rgb3 = [0.3, 0.52, 0.12]
 const ROOT_MM = 4.5
 const LEAF_TINT: Rgb3 = [1, 1, 1]
@@ -47,7 +51,7 @@ const LEAF_TONE = { deep: [0.0095, 0.011, 0.0068] as Rgb3, high: [0.045, 0.06, 0
 // behind the tree lies on each clump's outline where that is turned to it (the clump's own rounded body decides, with little of the single lump, `hem`):
 // the tips of the tufts there are lit yellow green (`fringe`) and the brightest leaves on them stand out as fine points (`rim`), low in the crown as high
 // (`rimBelow`). The lamp's gold points stay off (`lamp`), and the tops carry faint pale dapples in patches.
-const PAD = { soft: 7, round: 0.7, upFrom: -0.75, upTo: 0.55, under: 0.22, sky: [1.3, 1.38, 1.15] as Rgb3, ground: [0.72, 0.6, 0.38] as Rgb3, light: 2.6, wrap: 0.7, shade: 0.45, rim: 24.0, cap: 1.6, fringe: 1.05, even: 0.1, hem: 0.5, rimTight: 3.0, rimFrom: -0.5, rimTo: 0.15, rimTone: [0.84, 0.97, 0.54] as Rgb3, rimShut: 0.2, tipFrom: 0.4, tipTo: 0.8, tipBody: 0.3, rimBelow: 1.0, leafFrom: 0.4, leafTo: 2.0, gold: [1.0, 0.62, 0.14] as Rgb3, speckFrom: 1.7, speckTo: 2.6, inFrom: 0.5, inTo: 0.9, openFrom: 0.5, openTo: 0.9, closed: 0.3, lamp: 0.0, lampFrom: 1.8, lampTo: 4.5, dapple: 0.18, dappleTone: [0.82, 0.9, 0.95] as Rgb3, dapFrom: 0.5, dapTo: 0.8, dapLow: 0.55, dapEven: 0.15, dapBelow: 0.6, dapLowAt: 24, dapHighAt: 36, dapShut: 0.12, lightShut: 0.5, lobeFrom: -0.2, lobeTo: 0.85, warm: 0.02, warmTone: [0.5, 0.3, 0.1] as Rgb3, warmFrom: 0.5, warmTo: 3.0, haze: [0.016, 0.0165, 0.0095] as Rgb3 }
+const PAD = { soft: 7, round: 0.7, upFrom: -0.75, upTo: 0.55, under: 0.22, sky: [1.3, 1.38, 1.15] as Rgb3, ground: [0.72, 0.6, 0.38] as Rgb3, light: 1.7, wrap: 0.7, shade: 0.45, rim: 40.0, cap: 3.4, fringe: 1.0, even: 0.1, hem: 0.5, rimTight: 6.0, rimFrom: -0.5, rimTo: 0.15, rimTone: [1.0, 0.74, 0.26] as Rgb3, rimShut: 0.45, tipFrom: 0.45, tipTo: 0.9, tipBody: 0.3, rimBelow: 1.0, leafFrom: 0.4, leafTo: 2.0, gold: [1.0, 0.62, 0.14] as Rgb3, speckFrom: 0.8, speckTo: 1.5, inFrom: 0.5, inTo: 0.9, openFrom: 0.5, openTo: 0.9, closed: 0.3, lamp: 0.0, lampFrom: 1.8, lampTo: 4.5, dapple: 0.12, dappleTone: [0.82, 0.9, 0.95] as Rgb3, dapFrom: 0.5, dapTo: 0.8, dapLow: 0.55, dapEven: 0.15, dapBelow: 0.6, dapLowAt: 24, dapHighAt: 36, dapShut: 0.12, lightShut: 0.5, lobeFrom: -0.2, lobeTo: 0.85, warm: 0.25, warmTone: [0.5, 0.3, 0.1] as Rgb3, warmFrom: 0.5, warmTo: 3.0, haze: [0.016, 0.0165, 0.0095] as Rgb3 }
 const LANTERN = { rib: 0.3, gores: 12, ring: 0.16, ribs: 26, gain: 0.95, body: 0.5, core: 5.0, tight: 2.2, paper: 0.06, dim: 0.4, first: 2, firstStepS: 0.23, firstRampS: 0.42, stepS: 0.6, rampS: 0.8, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 // The sky a leaf looks for stands up and to the right of the crown, a little toward the lens. A clump counts as a rounded body a
 // little inside its leaves (`side`, `top` and `under` are what it keeps of the leaves' reach beyond the clump's own size).
@@ -196,8 +200,10 @@ function woodHook(shader: Shader, groundY: number): void {
   reflectedLight.directDiffuse += stageKeyC * woodTone * (${WOOD.rim.toFixed(2)} * vStem * woodEdge * smoothstep(${WOOD.rimFrom.toFixed(2)}, ${WOOD.rimTo.toFixed(2)}, dot(woodRound, stageKeyL)));
   vec3 woodTo = ${v3(fork.at)} - vTreeP;
   float woodFar = max(length(woodTo), 1e-3);
-  float woodPool = pow(clamp(1.0 - woodFar / ${(WOOD.poolReachMm * fork.radius).toFixed(2)}, 0.0, 1.0), 2.0) * stageWrap(dot(normalize(vTreeN), woodTo / woodFar), ${WOOD.poolWrap.toFixed(2)});
-  reflectedLight.indirectDiffuse += woodTone * ${glsl3(paper(fork))} * (${WOOD.pool.toFixed(2)} * woodPool * lanternLevel(${fork.order.toFixed(1)}));
+  // Over the large lantern its light climbs the arms: there it reaches farther and lies on more of each arm's round, so that the wood in the notch about the stem is lit.
+  float woodOver = smoothstep(${(WOOD.armsFrom * fork.radius).toFixed(2)}, ${(WOOD.armsTo * fork.radius).toFixed(2)}, -woodTo.y);
+  float woodPool = pow(clamp(1.0 - woodFar / (${(WOOD.poolReachMm * fork.radius).toFixed(2)} * mix(1.0, ${WOOD.armsReach.toFixed(2)}, woodOver)), 0.0, 1.0), 2.0) * stageWrap(dot(normalize(vTreeN), woodTo / woodFar), mix(${WOOD.poolWrap.toFixed(2)}, ${WOOD.armsWrap.toFixed(2)}, woodOver));
+  reflectedLight.indirectDiffuse += woodTone * ${glsl3(paper(fork))} * (${WOOD.pool.toFixed(2)} * mix(1.0, ${WOOD.arms.toFixed(2)}, woodOver) * woodPool * lanternLevel(${fork.order.toFixed(1)}));
   reflectedLight.directDiffuse += stageKeyC * woodTone * (${WOOD.top.toFixed(2)} * smoothstep(0.15, 0.9, normalize(vTreeN).y));
 }`,
   )
@@ -287,7 +293,7 @@ function lampOn(on: { power: number; reachMm: number; wrap: number }): GlowLight
 // Which pad a leaf belongs to, as the way that pad's own rounded body faces there (a flat ellipsoid about the pad's middle), and how open
 // it lies to the sky up and to the right, where the pale light on the tops comes from: the length of leaf that stands in the way, with
 // every clump taken as a plain rounded body. A clump under another, or behind its shoulder, stays dark, and so the clumps read apart.
-function bakePads(g: THREE.BufferGeometry): void {
+function* bakePads(g: THREE.BufferGeometry): Generator<void, void> {
   const pos = g.getAttribute('position')
   const out = new Float32Array(pos.count * 4)
   const frames = crownPads.map((p) => ({ ...p, at: placePoint(p.at) })).map((p) => ({ at: p.at, size: p.size, ...padAxes(p) }))
@@ -321,6 +327,7 @@ function bakePads(g: THREE.BufferGeometry): void {
   const dist = new Float64Array(frames.length)
   const dirs = new Float64Array(frames.length * 3)
   for (let i = 0; i < pos.count; i++) {
+    if (i % ROW === 0) yield
     let least = Infinity
     frames.forEach((f, k) => {
       const dx = pos.getX(i) - f.at[0]
@@ -356,24 +363,27 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareTrunk(), prepareModel(MODEL)])
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const part = `miniature-${season}`
   const fill = placePoint(FILL_FROM)
   const leaves = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(LEAVES), color: new THREE.Color(LEAF_TINT[0], LEAF_TINT[1], LEAF_TINT[2]), vertexColors: true, roughness: 0.82, side: THREE.DoubleSide, hook: leafHook, key: 'tree-leaves-summer' })
-  const g = placeGeometry(geometry(MODEL, 'leaves'))
-  bakePads(g)
-  bakeGlow(g, [...paperOn(GLOW.leaves), lampOn(LAMP_ON_LEAVES), { at: fill, color: tones.sun, ...FILL_ON_LEAVES, phase: 0.6 }])
+  const g = yield* placing(geometry(MODEL, 'leaves'))
+  yield* bakePads(g)
+  yield* glowing(g, [...paperOn(GLOW.leaves), lampOn(LAMP_ON_LEAVES), { at: fill, color: tones.sun, ...FILL_ON_LEAVES, phase: 0.6 }])
+  yield
   const crown = new THREE.Mesh(g, leaves)
   crown.castShadow = true
   crown.receiveShadow = false
-  const trunk = buildTrunk(part, [...paperOn(GLOW.wood), lampOn(LAMP_ON_WOOD), { at: fill, color: tones.sun, ...FILL_ON_WOOD, phase: 0.6 }], BARK)
+  yield
+  const trunk = yield* trunkMaking(part, [...paperOn(GLOW.wood), lampOn(LAMP_ON_WOOD), { at: fill, color: tones.sun, ...FILL_ON_WOOD, phase: 0.6 }], BARK)
+  yield
   const shared = trunk.material as THREE.MeshStandardMaterial
   const wood = trunk.geometry.getAttribute('position') as THREE.BufferAttribute
   const out = trunk.geometry.getAttribute('normal') as THREE.BufferAttribute
   const box = new THREE.Box3().setFromBufferAttribute(wood)
   const stem = { x: 0, z: 0, n: 0 }
   for (let i = 0; i < wood.count; i++) {
-    if (wood.getY(i) - box.min.y > THICK.fromMm) continue
+    if (wood.getY(i) - box.min.y > STEM.fromMm) continue
     stem.x += wood.getX(i)
     stem.z += wood.getZ(i)
     stem.n++
@@ -382,16 +392,27 @@ export function build(): THREE.Object3D {
     const t = Math.min(1, Math.max(0, (v - a) / (b - a)))
     return t * t * (3 - 2 * t)
   }
+  const flare = (h: number): number => {
+    if (h <= FOOT_FLARE[0]![0]) return FOOT_FLARE[0]![1]
+    for (let k = 1; k < FOOT_FLARE.length; k++) {
+      const [h0, d0] = FOOT_FLARE[k - 1]!
+      const [h1, d1] = FOOT_FLARE[k]!
+      if (h <= h1) return d0 + (d1 - d0) * ease(h0, h1, h)
+    }
+    return 0
+  }
   const stemmed = new Float32Array(wood.count)
   for (let i = 0; i < wood.count; i++) {
-    const far = ease(THICK.nearMm, THICK.farMm, Math.hypot(wood.getX(i) - stem.x / stem.n, wood.getZ(i) - stem.z / stem.n))
-    const high = ease(THICK.fromMm, THICK.toMm, wood.getY(i) - box.min.y)
-    const d = (THICK.footMm + (THICK.crownMm - THICK.footMm) * high) * (1 + (THICK.twig - 1) * far)
+    if (i % ROW === 0) yield
+    const far = ease(STEM.nearMm, STEM.farMm, Math.hypot(wood.getX(i) - stem.x / stem.n, wood.getZ(i) - stem.z / stem.n))
+    const high = ease(STEM.fromMm, STEM.toMm, wood.getY(i) - box.min.y)
+    const d = flare(wood.getY(i) - foot[1])
     wood.setXYZ(i, wood.getX(i) + out.getX(i) * d, wood.getY(i) + out.getY(i) * d, wood.getZ(i) + out.getZ(i) * d)
-    stemmed[i] = (1 - far) * (1 - THICK.limb * high)
+    stemmed[i] = (1 - far) * (1 - STEM.limb * high)
   }
   wood.needsUpdate = true
   trunk.geometry.setAttribute('aStem', new THREE.BufferAttribute(stemmed, 1))
+  yield
   trunk.material = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: shared.map ?? undefined, color: new THREE.Color(BARK[0], BARK[1], BARK[2]), vertexColors: true, roughness: 0.86, extra: { normalMap: shared.normalMap, normalScale: new THREE.Vector2(BARK_BUMP, BARK_BUMP) }, hook: (shader) => woodHook(shader, box.min.y + ROOT_MM), key: 'tree-wood-summer' })
   return new THREE.Group().add(trunk, crown)
 }
