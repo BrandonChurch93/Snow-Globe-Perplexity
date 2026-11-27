@@ -1231,6 +1231,11 @@ describe('what the machine may really use', () => {
     }
     const page = fs.readFileSync(rel('tools', 'lib', 'page.mjs'), 'utf8')
     expect(page).toContain('await waitForLock({ wait, say })')
+    expect(page).toContain('say = (line) => console.error(line)')
+    expect(fs.readFileSync(rel('tools', 'hostcheck.mjs'), 'utf8')).toContain("  await waitForLock()\n  writeJson(LOCK, { pid: process.pid, what: 'hostcheck'")
+    const tools = [rel('tools'), rel('tools', 'lib')].flatMap((d) => fs.readdirSync(d).filter((f) => f.endsWith('.mjs') && !f.startsWith('_')).map((f) => path.join(d, f)))
+    expect(tools.length).toBeGreaterThan(40)
+    expect(tools.filter((f) => /(while|for) \([^)]*renderBusy\(\)/.test(fs.readFileSync(f, 'utf8'))).map((f) => path.basename(f))).toEqual([])
     expect(fs.readFileSync(rel('tools', 'master.mjs'), 'utf8')).toContain("Session.open({ local, what: `master ${process.argv.slice(2).join(' ')}`, say })")
   })
 
