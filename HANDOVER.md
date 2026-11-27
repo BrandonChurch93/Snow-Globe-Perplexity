@@ -10,6 +10,9 @@ they say, sections 10 and 11 say so.
 - Walked for this handover: `eb7db90d`, which is `75e5403f` with main `d13d29c6` merged in and nothing else. It is on
   my disk only. I did not push it, so that the branch stays as you took it.
 - Pictures: this branch, `agent/p6-steps-looks`.
+- Brought up to date again at the close of round two (22:50 UTC Nov 27) with section 12 (job 3), section 13 (job 5)
+  and section 14 (round two). The branch is then `2765d9b3`, which holds main `ed9180da`. Where sections 1 to 11 name
+  an older head, sections 12 to 14 say what came after.
 
 Everything below was run in one VM with no GPU: 4 cores, Chromium 147.0.7727.15 drawing through lavapipe, which does not
 link programs aside (no `KHR_parallel_shader_compile`). The live page draws about one frame a second at 320 x 320
@@ -585,3 +588,518 @@ What job 2 changes in the sections above: section 3, line 3 (the stop while summ
 are mended as far as the dressing goes; section 4, item 8 has summer's surface no longer in one piece.
 
 Not seen: nothing at 60 a second, no real card, no sound. No fresh reviewer read this job (I start no agents).
+
+## 12. Job 3: the early press, spring's soft copy, the first still's place, and the smaller things
+
+Your words of 06:12, 07:32, 08:10 and 10:36 UTC Nov 27. Pushed with job 5 (section 13) in one push. Every walk and
+reading in this section is on `59f5e1c6`, which holds main `06954500` (chain 31 and two status commits), against main
+`06954500` built beside it in a second worktree, on the same machine, one walk at a time. The head that was pushed is `15c27670` (20:18 UTC, main `680ad25b` in it), which you merged in chain 38. What ran on it and on `16d9a86a` under it is in 12.10; what ran after the push is in section 14.3.
+
+Commits, oldest first: `b8c3a4ca` and `0f2ac32f` (the early press), `a7700d79` (`setDiagnostic`), `a86c283a` (the
+music loop's test), `f5f86e8f` (spring's soft copy), `ed0c35cc` (line 74), `92b84e57` and `4e79ff1f` (`put()`),
+`a24fc410` (the line in `tools/README.md`), `8576ae67` (my tool). `bf2635e4` is job 5.
+
+### 12.1 The early press (section 4, item 2): mended in the change, the wait before it is longer here
+
+- What was wrong: a season made before the press and not yet handed to the GPU was shown by the first frame of its
+  shake's change, and that frame linked the season's programs and uploaded its buffers: a stop in the middle of the
+  shake.
+- What is changed: the hand of the season pressed for begins at the press, beside the chain (`Hands`,
+  `src/scene/steps.ts`), at the pace the making of a season pressed for has, and the press waits for it. The stage
+  gives the hand back from `expect()` (lines 76 and 77 of `src/core/stage.ts`, by your leave of 08:10), and the page
+  holds the season as not ready until the hand is over (`SeasonLoader.hold`, `src/app/session.ts`; line 322 of
+  `src/app/app.ts`, by the same leave), so the storm of the shake is held as it is for a season that has not loaded.
+  What is left of the hand when the press is `LAST_S` old is done in one piece, so the press never gives up for it.
+  Where the browser links nothing aside the press is old by the clock as well (`0f2ac32f`): there each draw step of a
+  hand waits for its program and a frame, and the session counts a quarter of a second of a frame at most, so by the
+  session alone the change came 45.7 s after the press on this machine.
+- The walk on low you asked for (`scratch-tools/hand-walk.mjs`, 320 x 320, `?quality=low`, the plain address, the left
+  arrow pressed 40 s after the controls came, when the page said `data-detail=ready` and `data-made=making`: winter
+  into fall, whose hand had not begun). What the page said in its own messages, both builds: Shake busy 1 to 2 ms
+  after the press, `data-target=fall` at once, the lit mark winter until the landing and fall at it, the console empty.
+
+  | | `59f5e1c6` | main `06954500` |
+  |---|---|---|
+  | the change first drawn, after the press | 11163 ms | 4191 ms |
+  | programs linked from the press to the change | 25 | 0 |
+  | programs linked from the change to the landing | 0 | 25 |
+  | the thread stood from the change to the landing | never | once, 9914 ms |
+  | landed, after the press | 18537 ms | 23391 ms |
+
+- The same with the space bar (winter into spring, pressed 36 s after the controls): `59f5e1c6` the change at 6360 ms,
+  0 programs linked from the press to the landing, landed at 15780 ms; main the change at 6739 ms, 1 program linked
+  in the change, the thread stood 5707 ms in it, landed at 20212 ms. In this walk of `59f5e1c6` the thread stood once
+  in the change, 1213 ms, inside one `bufferSubData` (12.9: on both builds, not from this job).
+- Not mended, said plainly: on this machine the wait moved, it did not go. From the press to the change of the left
+  arrow's walk the thread of `59f5e1c6` stood 5 times, 7909 ms in all and 4590 ms at most, while the hand linked
+  fall's 25 programs: the storm is on show and the control is busy, and the change comes 7.0 s later than on main.
+  What is gained is that the change and the landing play without a stop, and that the press lands 4.9 s sooner. Where
+  a browser links aside the wait does not hold the thread; no browser here does, so that path was not seen (12.11).
+- Tests: `tests/steps.test.ts`, "the hands of the seasons", "the steps of a hand", "the wait for what a browser links
+  aside", "the seasons a frame shows", "a press for a season that is built and not yet in the GPU's hands" (a visit to
+  a page with a clock for a GPU: no frame shows the season before the GPU has it, the press lands in it, the picture
+  draws on while it waits; the same visit with the press as it was shows the fault). `tests/app.test.ts`, "a season
+  that is loaded and still owed something".
+
+### 12.2 Spring's soft copy (section 4, item 5; `spring-soft.patch` tried inside job 3, as you said): mended
+
+- What was wrong: the trails on spring's glass draw a soft copy of the frame before their own draw
+  (`onBeforeRender`). The hand leaves out what a mesh draws of its own, so the soft pass's program was first linked
+  in the first frame of the first shake into spring, and the shake stood for it.
+- What is changed (`f5f86e8f`): a mesh may give the stage what it draws of its own before a draw (`userData.warm`,
+  `src/scene/stage.ts`), and the hand draws that once too. The glass of spring gives its soft pass
+  (`src/seasons/spring/glass.ts`, yours for this trial), drawn into one pixel of the kind of the frame that is bound.
+  It draws into no picture the page shows and leaves the renderer as it found it.
+- Spring's two guard stills did not move: all eight equal your list for `b22b5be4` (12.10).
+- Four shakes round the seasons on the built page, each once the page is at rest (`scratch-tools/round-walk.mjs`,
+  320 x 320, low): `59f5e1c6` "ok: 4 of 4 presses taken; 0 with a program linked in the shake or not landed", 109
+  programs linked before the seasons are made. Main `06954500`: "NOT ok: 4 of 4 presses taken; 1 with a program
+  linked in the shake or not landed": one program in the first shake into spring, 4920 ms after the press, the thread
+  stood 4425 ms (`getProgramInfoLog` 2463 ms, `getShaderInfoLog` 1915 ms); 108 programs linked before. On the head
+  before the last merge (`448d6b8a`, main `21ebbe2d`) I walked this three times each: ok in 3 of 3, main NOT ok in 3
+  of 3. On `59f5e1c6` once each.
+- The hash `tools/miniatures.mjs` prints over the four dressings moves, as it must: the tool hashes a function by its
+  text, and spring's dressing now holds one more. `59f5e1c6`: dressings `50c49ff328a92248`; main: `528474499f8193ad`.
+  The lines of winter's, summer's and fall's dressing are the same as main's to the last digit; spring's alone
+  differs. The miniatures' hash is main's (`4f125e6ec2e5a361`).
+- Tests: `tests/steps.test.ts`, "what the glass of spring draws of its own before a draw".
+
+### 12.3 The first still's place: `put()` in `index.html` (section 3, line 7): mended in Chromium
+
+- What was wrong: the page gave a still its place as left, top, width and height. A browser lays such a box on whole
+  pixels, so a still whose place fell between two pixels stood up to half a pixel beside the live picture that comes
+  in over it. At 600 x 600 the place is -59.5046, -0.0003, 719.0093 x 600.0078.
+- Two commits. `92b84e57` laid every still in the corner and moved it by a matrix. That put the still in its place
+  but cost sharpness, which I found only after it was committed: at 600 x 600 the still is drawn at half its file's
+  size, and moved by half a pixel the browser draws its own halved copy of the file, smeared over two pixels
+  (sharpness 0.766 of the file's); and where the place is on whole pixels the pixels were no longer main's (1920 x
+  1080: mean 0.442, most 25 of 255 apart). `4e79ff1f` mends both. It is the form on the branch:
+  - a place on whole pixels of the screen (every edge within 0.1 of a pixel) is laid as main lays it, with no matrix:
+    main's pixels, mean 0 and most 0 apart at 1920 x 1080, the phone at a ratio of 3 and the tablet at 2;
+  - any other place is laid in the corner, in a box whole in the pixels of the page and of the screen, and moved and
+    sized by the matrix;
+  - a still at half its file's size, half a pixel aside and without a mask also gets a layer of its own
+    (`will-change: transform`) and is drawn a hair (one part in 100,000) over half, about its own centre. The browser
+    then halves the file itself where the still stands. The hair moves an edge by 0.004 of a pixel;
+  - a picture put before its file has come is put again once it has, because the rule reads the file's size.
+- Why the rule is that narrow. All of this was read in Chromium 147 (`scratch-tools/put-lab.mjs` and
+  `put-lab-read.py`: the page's own script with `put()` swapped, the picture read against the file drawn in place).
+  A picture with a layer of its own is drawn from the smallest halving of its file that is not under its drawn size:
+  at half, or a hair under, that is the browser's halved copy (soft, 0.766); a hair over half it is the whole file,
+  halved where it stands (exact). Without the layer the hair does nothing (0.752), and without the hair the layer does
+  nothing (0.766). On quarter pixels a layer is worse than none, under a mask it softens, and a layer under another
+  picture changes how the one over it is drawn (590 x 590 with a wider rule: 0.715 where it is 0.861 without). So the
+  layer is given to the one case it mends.
+- Read on the built page, the page's own `put()` against main's (place in screen pixels beside where the app puts the
+  still; "apart": the mean difference, of 255, from the file drawn in place; sharpness: the mean step from a pixel to
+  its neighbour as a share of the same in the file drawn in place). The table was read on the build of `2071f160` (main `6922e017`), 18:20 UTC. The page's table of stills on `15c27670` differs from that build's only in the ten hashes and the small pictures: every place is the same number.
+
+  | window | main: place, apart, sharpness | `92b84e57` | now |
+  |---|---|---|---|
+  | 600 x 600 | +0.5, 5.642, 1.007 | +0.1, 2.861, 0.766 | 0.0, 0.312, 1.003 |
+  | 600 x 481 | +0.5, 4.976, 0.999 | +0.2, 3.071, 0.738 | 0.0, 0.291, 1.002 |
+  | 500 x 720 | +0.5, 4.840, 1.002 | +0.1, 2.379, 0.789 | 0.0, 0.311, 1.002 |
+  | 1920 x 1080 | 0.0, 0.029, 1.002 | +0.1, 1.005, 0.943 | 0.0, 0.029, 1.002 (main's pixels) |
+
+  The same as 600 x 600 at 640 x 600, 598 x 600, 480 x 600, 700 x 600, 560 x 481, 700 x 481 and 600 x 720 (place 0.0,
+  apart 0.28 to 0.32, sharpness 1.002 to 1.003), with the card's raster too, and in a browser started at a ratio of 1.
+  Other windows and ratios (1280, 1366, 640, 590, 560, 500, 320 and 2560 wide, phones and a tablet, ratios 1.1, 1.25,
+  1.5, 1.65, 1.75, 2, 2.625 and 3, emulated and in a browser started at the ratio) stand in place and are as sharp as
+  on main.
+- On the walk (`tools/visit.mjs`, step 16, 600 x 600): `59f5e1c6` "ok 16 first-look", the still fits the live picture
+  best with no shift (`fine: [0, 0]`), 7.16 apart. Main `06954500`: "NOT 16 first-look", best moved half a pixel to
+  the left (`fine: [-0.5, 0]`), 9.04 apart. What is left apart is the live picture itself: at 600 x 600 the page
+  draws it on a lower tier than the still was rendered on, and its snow moves. On hd, phone and tablet, `15c27670`, 20:24 to 20:55 UTC: each "3 lines, 0 not ok · console 0 lines · 0 requests failed" (`first-settle`, `first-look`, `controls-watched`).
+- The picture: `job3/first-still-600-before-after-x4.jpg` on this branch.
+- Not mended, as on main: where a ratio is only emulated (DevTools' device mode, and tools that emulate) a place whole
+  in screen pixels but not in page pixels is laid 0.7 of a pixel aside (600 x 600 at a ratio of 2: apart 7.892 on
+  main and here). A browser started at that ratio draws it exactly, on main and here (apart 0.076). I tried the matrix
+  for that case: it mends the emulated 600 x 600 and softens 600 x 481 at a real ratio of 2 (0.932), so it is not in.
+- `tests/first-frame.test.ts`, two hunks, by your leave of 10:36 (in `92b84e57`): the test read a still's place from
+  left, top, width and height alone. It now reads the place from those and from the matrix, so it reads main's
+  `put()` and the new one alike: 25 passed on each, the second run with main `06954500`'s `index.html` put in place
+  on `59f5e1c6` and taken out again.
+- Tests: `tests/app.test.ts`, "where the page puts a picture of the first still", eight tests that run the page's
+  own script. Twelve changes to `put()` that each break the rule (no hair, no layer, a smaller search for the box, a
+  tighter or no test for whole, a listener that adds itself again, a stale place, no test for a mask, no test for the
+  half pixel, not about the centre, the ratio left out, a rounded box) each fail one of them.
+
+### 12.4 Line 74 of `index.html`: a capture address that fell back has its first still (your ruling of 07:32): mended
+
+- What was wrong: the page lays its first still before the app runs, from the address alone, and laid none for any
+  address with `mode=capture`. But a capture address that names a format the app does not have is the live page
+  (job 1), so that page was black until its first live picture.
+- What is changed (`ed0c35cc`): the page reads such an address as the app does and lays the still as for the plain
+  address. A capture page, a film and the loop have no still, as before.
+- On the walk (`tools/visit.mjs`, step 10, 600 x 600): on the head that is pushed (`2765d9b3`, 22:33 UTC) "visit 600x600: 9
+  lines, 0 not ok · console 0 lines · 0 requests failed". `link-unknown-format` came to its first picture after 9.7 s
+  with the still laid first, as the plain page does.
+- Tests: `tests/params.test.ts` runs the page's own script against the app's reading of the same addresses and holds
+  the page's list of formats against `config.formats`.
+
+### 12.5 `setDiagnostic` takes a view only if the app has it (your ruling 3 of 07:32): done, two lines
+
+`a7700d79`, `src/capture/showcase.ts`: the capture interface handed any name to the stage, which drew a flat picture
+for a name it did not know. It now refuses a name that is neither `none` nor one of the app's views, as the address is
+read. Held by its text in `tests/own-keys.test.ts`, because no test can call a capture page. Your ruling 2 is left as
+it is.
+
+### 12.6 The music loops (item 12 of 06:12: a test only)
+
+`a86c283a`, `tests/audio.test.ts`: a loop of 21.6 s with a seam of 2.4 s comes round every 19.2 s, which is eight
+bars. The pack writes each loop one bar longer than it is heard. The seam is as it was. Nothing was heard here: this
+VM has no sound files.
+
+### 12.7 My tool, `tools/visit.mjs` (`8576ae67`): the three faults of section 3, lines 11 to 13, and what job 3 needed
+
+- Line 11: step 5 after step 4 read snow still in the air. Step 4 now ends when the picture has stopped changing
+  (a new line, `stir-settled`). On `16d9a86a`: "visit 600x600: 6 lines, 0 not ok · console 0 lines · 0 requests failed". The stir was taken for settled after 75.2 s, the picture then 1.69 from the one before the stir. At 17 s it was 1.7 from the last picture and 14.06 from the one before the stir, which the old bound took for rest.
+- Line 12: the dim is timed by the page's own clock, from the last thing that woke the controls to the bar being told
+  to dim. Last seen on `59f5e1c6`.
+- Line 13: a request cut off on a page that stays is written apart from one the tool cut off by leaving, and counts
+  with the requests that did not come. NOT RUN on the head that is pushed
+  (`2765d9b3`): the walk against a server that cuts a request off. The close of round two came first.
+- New in step 10: three links that name what the app does not know (12.4). New in step 16: where the still stands
+  is read from its box on the screen, however the page wrote it there.
+
+### 12.8 Two files that are not mine, by your leave of 10:36
+
+- `tests/first-frame.test.ts`, two hunks (12.3).
+- `tools/README.md`, line 87 (`a24fc410`): the miniatures tool's line says what the tool holds since job 2.
+
+### 12.9 Found on the way, not from this job: a shake stands inside one `bufferSubData` now and then
+
+In some shakes one frame stands 0.9 to 1.2 s inside a single `bufferSubData`, on both builds: in the walks of this
+section once in `59f5e1c6`'s space bar walk (1180 ms, in the change), once in its round (1132 ms, first press), and in
+main's walks before the change (912 and 1221 ms). On the head before (`448d6b8a` and main `21ebbe2d`) I counted them:
+3 of 12 shakes on mine, 2 of 12 on main, each one call of 1,632,000 bytes. I did not find which buffer it is. On a
+real card UNKNOWN. It is the worst thing left in a shake on this machine.
+
+### 12.10 Checks, and what they printed
+
+On `16d9a86a` (main `f56da1a6`, engine `97ea843eb66a6612`), one after the other and alone, 19:24 to 20:08 UTC. First what you asked for the level's lines of `src/post/post.ts`:
+- npx tsc --noEmit: exit 0.
+- npx vitest run: "Test Files  68 passed | 1 skipped (69)" and "Tests  1029 passed | 8 skipped (1037)". No sound files here.
+- The eight guards, hd draft, against your list of 19:23: "8 of 8 equal the list". winter-rest 0cab5cd137ba09d9,
+  winter-landed a7ab4af383606ed0, spring-rest caa42db060e03278, spring-landed bfda838820e392ab, summer-rest
+  ac0bba01734380a6, summer-landed 261877d76a8ca74d, fall-rest 274efc38a42f2dec, fall-landed 1742e5bdd5f7c2b7.
+- The round of four (built page, 320 x 320, ?quality=low, Space four times, each once the page is at rest):
+  "ok: 4 of 4 presses taken; 0 with a program linked in the shake or not landed". 110 programs linked before the
+  seasons are made. The first shake: the change first drawn 4346 ms after the press, landed 12449 ms after it, the
+  thread stood 3 times from the press to the landing, 165 ms in all and 59 ms at most. Console empty.
+  Main 6922e017 at 18:41 UTC (its src differs from f56da1a6's only in fall's and spring's own files and two files of
+  src/particles/draw): "NOT ok: 4 of 4 presses taken; 1 with a program linked in the shake or not landed", two programs
+  in the first shake, the thread stood 4 times in it, 10100 ms in all, landed 23111 ms after the press.
+- npm run determinism: "determinism: pass · 3 pictures, 4 page loads, preview, draft, 167 s".
+- Film frames 660 and 690 at draft with the lines (16d9a86a) and without (3023d46e, the merge under it, engine
+  358ace792c91150e): the same bytes. sha256 53766c3a809f5e3f... and ab44590e373bdf44... on both.
+
+Then jobs 3 and 5, on the same head:
+- put(): 70 changes to put() that each break its rule, each fails a test: "lived: 0 []".
+- tests/first-frame.test.ts: "Tests  25 passed (25)" with this index.html, and "Tests  25 passed (25)" with main's
+  index.html put in its place and taken out again. The test reads main's put() and the new one alike.
+- Visit, step 16, 600 x 600: "ok  16 first-look", the still fits the live picture best with no shift (fine [0, 0]),
+  7.19 apart as it came; the still's box by the page [-59.5, 0, 719.01, 600.01], the same as by the app, 0.24 apart.
+  "visit 600x600: 3 lines, 0 not ok · console 0 lines · 0 requests failed". Main 6922e017: "NOT 16 first-look",
+  fine [-0.5, 0], 9.11 apart, 5.01 between the still by the page and by the app.
+- Job 5, the frames in a script's hand (320 x 320, low, 36 frames from the live mark on, 17 ms apart by the page's
+  clock): "ok: at no frame was the still gone and the canvas under full opacity". 0 of 36 frames; the still left 1599 ms
+  after the mark by the wall and 17.1 ms by the page's clock, when the wait was over, the canvas at 1.0000, its own
+  transition none. Main 6922e017: 28 of 36 frames without a still under a canvas short of full sight, the canvas at
+  0.0194 when the still left, "NOT ok: the still was gone under a canvas short of full sight, or it did not leave".
+- The early press (320 x 320, low, the left arrow 44 s after the controls, the page then saying data-detail=ready and
+  data-made=making). The page's own messages: Shake busy 2 ms after the press, data-target=fall at 2 ms, the lit mark
+  winter until the landing and fall at it, console empty. The change first drawn 10853 ms after the press; 25 programs
+  linked from the press to the change, 0 from the change to the landing; the thread stood once in the change, 94 ms;
+  landed 18356 ms after the press. Main 6922e017: the change at 6177 ms, 0 programs before it and 26 in it, the thread
+  stood twice in it, 17779 ms in all, landed 32579 ms after the press.
+- One still of each season at rest with --diag standins, hd draft: "max 0" for winter, spring, summer and fall. Black.
+- npm run strict -- --keys winter-rest,spring-rest,summer-rest,fall-rest: "strict: pass, 4 keys under pow, all+smooth,
+  all+smooth+noguard, each row read against the plain picture, where that one differs by its answers (no number, 0,
+  0.577 and 1e30), and where those differ against its own --same picture (engine 97ea843eb66a6612, drawn by
+  lavapipe): no pixel moves by more than 1 level, at most 0.01% of pixels move".
+- Visit, steps 4 and 5, 600 x 600 (the stir's mend in my tool, c84e0b7a, not walked before today's head):
+  "visit 600x600: 6 lines, 0 not ok · console 0 lines · 0 requests failed". The stir was taken for settled after
+  75.2 s, the picture then 1.69 from the one before the stir. At 17 s it was 1.7 from the last picture and 14.06 from
+  the one before the stir, which the old bound took for rest. look-returned ok, 1.38 from the picture at rest.
+
+On the two merges of main over it, which bring status text only:
+- 2794f8c1, the merge of origin/main 50c72767: no conflict. npx tsc --noEmit: exit 0. npx vitest run:
+  "Test Files  68 passed | 1 skipped (69)" and "Tests  1029 passed | 8 skipped (1037)".
+- 15c27670, the merge of origin/main 680ad25b: no conflict. npx tsc --noEmit: exit 0. npx vitest run: "Test Files  68 passed | 1 skipped (69)" and "Tests  1029 passed | 8 skipped (1037)".
+- The 25 commits of the push that are not on main: each by Brandon Church, each ending with the one trailer.
+
+### 12.11 What I did not see
+
+- Safari and Firefox. `put()`'s layer was read in Chromium 147 only, with the processor's raster and the card's. In
+  a browser that draws a layered picture otherwise, the worst case is the matrix alone: in place, soft at 600 x 600.
+- A browser that links aside. No browser here does, so the wait of the early press was seen only where it holds the
+  thread, and the `until` wait for a link was never taken on a page (held by tests only).
+- A real card, a real screen, anything at 60 a second, a finger, sound.
+- No fresh reviewer read this work: my rules say I start no agents.
+
+## 13. Job 5: the first still leaves only from under a canvas in full sight (`bf2635e4`)
+
+Your word of 10:19 UTC Nov 27. In the same push as job 3. Everything read here is on `59f5e1c6` (holds main
+`06954500`) against main `06954500` built beside it.
+
+- What was wrong: `reveal()` in `src/app/app.ts` ended the first still at the end of the canvas's fade or, if that end
+  was not heard, after a wait of 1500 ms (`REVEAL_MS`). The fade keeps the time of the page's frames, the wait keeps the
+  wall. Where frames come late and carry old times the wait was over early in the fade: the still left from under a
+  canvas at 0.02 of its sight and the page was nearly black until the fade had run out.
+- What is changed: `done()` takes the canvas's transition away (`canvas.style.transition = 'none'`) before it ends the
+  still, as you wrote it. So the canvas stands in full sight in the first frame that has no still. Where the fade ends
+  in time nothing is changed: the fade is 0.5 s by the sheet as before, and a film or the loop has no still and starts
+  at once. `reveal()` is moved out of `startApp` as it was, so that a test can hold it.
+- The test: `tests/app.test.ts`, "the canvas over the first still", five tests. The one of the wait's path with no
+  `transitionend` (after `done` the canvas's own style gives no transition and the mark is set) fails on the old form.
+- Read on the built page with the frames in a script's hand (`scratch-tools/reveal-frames.mjs`: the browser's begin
+  frame control, 320 x 320, `?quality=low`, 36 frames from the live mark on, each 17 ms after the last by the page's
+  clock and 1.0 to 1.7 s by the wall):
+  - main `06954500`: the still left 1556 ms after the live mark by the wall and 0 ms by the page's clock, the canvas
+    at 0.0000. 29 of the 36 frames showed no still under a canvas short of full sight, over 39.0 s of the wall, the
+    canvas at 0.020, 0.052, 0.098, 0.157 and so on to 0.999. The reading's last line: "NOT ok: the still was gone
+    under a canvas short of full sight, or it did not leave".
+  - `59f5e1c6`: the still left 1638 ms after the mark by the wall and 17.1 ms by the page's clock, when the wait was
+    over, the canvas at 1.0000, its own transition none. 0 of the 36 frames showed no still under a canvas short of
+    full sight. "ok: at no frame was the still gone and the canvas under full opacity".
+- Read as the browser paces it (`scratch-tools/reveal-read.mjs`: opacity, still count, frames counted and the clock
+  against the wall, every 3 s for 24 s), one run each. These differ from run to run on this machine, because which
+  comes first, the fade's end or the wait's, hangs on how long the thread stands after the live mark:
+  - 1920 x 1080, main: the wait was over first, 7483 ms after the mark by the wall (700 ms by the page's clock), the
+    canvas at 0.0000; the fade then ran out within 3 ms, and no frame was drawn in between. The reading says NOT ok for
+    those 3 ms. `59f5e1c6`: the thread stood 14.0 s after the mark, the fade's end came first, the canvas at 1.0000. ok.
+  - 320 x 320 on low, main: the fade's end came first in this run (2563 ms by the wall, 16 ms by the page's clock). ok.
+    `59f5e1c6`: the wait was over first (1619 ms by the wall, 616 ms by the page's clock), the canvas at 1.0000, its own
+    transition none. ok.
+- What it costs, by your ruling: where the wait is over before the fade, the picture goes from the still to the live
+  picture in one frame, with no fade between them. The still is a render of a tier and the live picture at 320 x 320
+  on low is not, so that frame is a visible change (the fourth picture on this branch shows the frames). On a page at
+  pace the fade is over in 0.5 s and the wait of 1.5 s never comes first.
+- The first pictures, the 0.5 s of the fade on a healthy clock, a film and the loop are not changed: the eight guard
+  stills equal your list for `b22b5be4`, and "starts a film or the loop at once: no still, no fade and no wait" holds
+  it for the two that have no still.
+- Not seen: a page at 60 a second, where the fade's end comes first. A browser other than Chromium 147. The frame
+  times in the frames reading are given by the script, not by a display.
+
+## 14. Round two: the stall in a shake, the dead capture page (open item 263), and the checks owed
+
+Your words of 20:23, 20:56, 21:18, 21:27, 21:54, 22:02 and 22:19 UTC Nov 27. The head is `2765d9b3`: `15c27670` (which
+main holds since chain 38), main `5b76c959` merged in as `9327c9a5` (no conflict), the mend of item 263 (`d484bb49`),
+the village's mend merged in (`4481f6c5`, section 14.5), main `ed9180da` merged in (`818bcf37`, the main you named at
+22:19), and my own mend on top (`2765d9b3`, section 14.6). Sections 14.1 and 14.2 were read on `d484bb49`; 14.3 says
+what was run on `2765d9b3`.
+
+### 14.1 Item 2, open item 263: a capture address on a host that is not this machine (`d484bb49`): mended
+
+- What `15c27670` did. Its built page on a host that holds `dist/` and nothing else (files by GET and HEAD, 404 for
+  what it lacks, 405 for every other method), opened as `http://snow-globe.example:4191/`:
+  - `?mode=capture`, alone or with `simcache=1` or `format=phone`: black for good. No still, no controls, no word.
+    `window.showcase` was handed out. 8 GETs to `assets-full/` answered 404 and "asset did not load" was thrown.
+  - `?mode=capture&assets=web`, with or without `simcache=1`: black too, the interface handed out, 73 requests, all
+    files.
+  - Driven as a tool drives it (`dev.simcache('stills', 3)`): a GET of `__simcache/<key>/index` answered 404 and two
+    PUTs of checkpoints answered 405. Never driven, never asked.
+  - `?simcache=1` alone: the plain page.
+  - Its own last line: "5 of 6 addresses did not end in the plain page; the capture interface was handed out on 5; 6
+    requests refused with 405 while driven; over the whole run 6 refused with 405, 9 to __simcache, 32 to
+    assets-full, 35 answered 404".
+- The mend. A capture address is a capture page only where a tool serves it: the host is `localhost`, `127.0.0.1` or
+  `[::1]` (`TOOL_HOSTS` in `src/core/params.ts`) and the format is one the config names. Anywhere else it reads exactly
+  as the same address without its mode: the live page with its first still, the web set, no interface, and `simcache`
+  false. `simcache` is armed on a capture page alone, so no live page, film, loop or probe can ask for a checkpoint.
+  `index.html` lays its first still by the same reading (the capture rule, line 76, its comment 75).
+- Files: `src/core/params.ts`, `index.html`, `tests/params.test.ts`, `tools/visit.mjs`, and by your leave of 21:18
+  line 148 of `tests/first-frame.test.ts` (the location handed to the page's script has the host name `localhost`)
+  and one sentence at the end of line 3 of `tools/README.md`.
+- After, the same host and the same name, the built page of `d484bb49` (engine `a78bc347d56a92dd`): every one of
+  `?mode=capture`, `&simcache=1`, `&assets=web`, `&assets=web&simcache=1`, `&format=phone&simcache=1`,
+  `&assets=full&simcache=1` and `?simcache=1` alone ended in the plain page: the still laid before the live picture,
+  the first picture and the controls after 13.0 to 14.7 s (the plain page: 17.8 s), winter lit, the interface absent,
+  the picture 0.5 to 0.64 from the plain page where two plain pages stand 0.12 apart (the snow moves). 93 requests
+  each, all files by GET. Its own last line: "0 of 7 addresses did not end in the plain page; the capture interface
+  was handed out on 0; 0 requests refused with 405 while driven; over the whole run 0 refused with 405, 0 to
+  __simcache, 1 to assets-full, 1 answered 404".
+- The one request left: an address that names `assets=full` asks the host once, by HEAD, whether it holds the first
+  file of that set, is answered 404, and draws from the web set (one line in the console). That is the live page's own
+  rule for a set the host does not hold (`src/core/assets.ts`, `held()`, the first frame's file), as on main for
+  `?assets=full`. It is not a refusal and `simcache` does not arm it. Not changed.
+- Your condition (a), the addresses that are handed out, each opened as written on the same host under
+  `snow-globe.example`, 640 x 360, the page choosing its own level:
+  - `?mode=autopilot`: the first picture after 12.4 s, then the film goes on (32 frames in 38 s here, the pictures
+    69.77 and 22.28 apart from one to the next): the close view of winter's globe, then the wide one. No controls, as a
+    film has none. 0 errors, 77 requests, all files.
+  - `?mode=autopilot&which=a`: the first picture after 14.0 s: the film's opening (the question typed into the
+    composer), 43 frames in 38 s, the pictures 0.48 and 0.57 apart as the words are typed. 0 errors, 79 requests, all
+    files.
+  - `?mode=loop`: the first picture after 9.6 s, then the loop goes on (21 frames in 39.5 s, 36.69 and 40.82 apart):
+    the globe at rest, the storm, at rest again. 0 errors, 67 requests, all files.
+  - `?mode=probe`: ended after 89.6 s, status "Done", 10 lines of text, the first "Snow Globe: frame rate probe", 56
+    frames drawn. 0 errors, 79 requests, all files.
+  - On none of the four was the capture interface handed out, and none asked for `__simcache/` or `assets-full/`.
+  - By the reading: `readParams` gives the same for each of these addresses under every host name (a test in
+    `tests/params.test.ts`, which a change that lets the host decide any mode but capture fails).
+- Your condition (b), every tool that opens a capture page, read in `tools/`:
+  - All of them go through `Session.page()` of `tools/lib/page.mjs` (line 120, `${this.server.url}?mode=capture...`)
+    on the address `serve()` hands out, `http://127.0.0.1:<port>/` (`tools/lib/server.mjs`, lines 85 and 86, which
+    listens on 127.0.0.1 alone). `tools/master.mjs` (line 190) and `tools/hostcheck.mjs` (line 85) start that same
+    server. The farm's helpers (`tools/farm/`) run the same tools in their own clone on their own 127.0.0.1.
+    `tools/render-local.mjs` does the same with the installed Chrome.
+  - No helper's own name, no `0.0.0.0` and no LAN address anywhere. `os.hostname()` (`tools/lib/browser.mjs`, line 57)
+    is a label in records.
+  - `tools/ui-preview/shots.mjs` and `check.mjs` serve vite on 127.0.0.1 and open `/tools/ui-preview/`.
+    `tools/miniatures.mjs`, `tools/lib/grids.mjs` and `tools/poster.mjs` use vite without listening.
+    `tools/visit.mjs`, `tools/walk.mjs` and `tools/standstill.mjs` take `--url` (default `http://localhost:4173/`) and
+    open the live page; the visit's two capture links are the ones that must be the live page (`unknown-format`, and
+    the new one under another name).
+  - A test holds the tools' server to the list: the host in `tools/lib/server.mjs` must be one of `TOOL_HOSTS`.
+- Tests. `tests/params.test.ts`, 19 tests (13 on main): the hosts, the formats, the checkpoints, the handed out
+  addresses under every host name, the page's rule run against the app's reading of the same addresses on every host,
+  that `src/main.ts` hands out the interface and the store of checkpoints only on a page whose address still reads as
+  a capture, and that the page, the app, the tools' server and the visit read one list of hosts.
+- Seven changes that each undo a part of the mend, each fails a test: main's `params.ts` (7 fail), main's
+  `index.html` (1), the host not asked (6), `simcache` armed in any mode (3), the page's list one host short (1), the
+  visit's other name set to `localhost` (1), the host deciding the films and the loop too (2).
+- The walk: `tools/visit.mjs`, step 10, has a new line, `link-capture-elsewhere`. It opens
+  `?mode=capture&simcache=1` on this machine's server under `snow-globe.invalid` (the browser alone takes that name
+  for this machine) and wants the live page: the first picture, the controls, the still, no interface, no page error,
+  near the plain page, and no request to `__simcache/` or `assets-full/`.
+- Pictures: `r2/item263-960.jpg`, `r2/item263-400.jpg`, `r2/handed-out-elsewhere.jpg` on this branch.
+- Not seen: the published host itself (`snow-globe-seasons.pplx.app` answers 401 from here). A host that answers a
+  missing file with the page itself: not run, before or after.
+
+### 14.2 Item 1, the stall inside one `bufferSubData`: found, not mended, a patch for the owner, not proven
+
+- The buffers. They are the four lists of the particles, written by `fill()` of `src/particles/draw/points.ts`:
+  `aNow` (the places now, 1,224,000 bytes), `aPrev` (the places before, 1,224,000), `aData` (size, kind, opacity,
+  phase, 1,632,000) and `aState` (408,000). All four are written whole every frame: 4,488,000 bytes for all 102,000
+  particles of the pool, whatever the level draws (low draws 30,600, medium 61,200).
+- It is not one buffer's fault. The stall falls in whichever write finds the browser's transfer ring full: seen in
+  `aData`, in `aState` and in `aNow` (939.9, 888.1 and 934.2 ms in one warm-up, `scratch-tools/buf-walk.mjs`). The
+  ring is 16 MiB at most and a write waits on its oldest block when there is no room, so 3.7 frames of these writes
+  fill it. Here the software renderer needs 0.9 s a frame at rest at 320 px on low (llvmpipe on 2.1 to 2.5 of 4
+  cores) and more in a shake, so the page is always a frame or more ahead of it.
+- The proof. When the page asks the GPU process for one answer before a frame's first write, no write stalls at all
+  and the answer takes the time instead: 120 of 135 frames 100 ms or more, the middle 926 ms, the most 1729 ms.
+- Counts, one run each, so weak: the page as it is, 3 writes of 888 to 940 ms in one warm-up (101 frames); with only
+  the drawn part written, 1 of 942 ms (122 frames). In a walk of eight shakes on `15c27670`: none in the shakes, none
+  in the rests between. The page's own time in the four writes at rest: 1.6 to 2.7 ms a frame whole, 0.6 ms with the
+  drawn part.
+- No mend inside my files. The wait is the renderer's backlog and only fewer bytes make it rarer.
+- The patch, for the owner of `src/particles/draw/points.ts` (the engine brief's file; both air builders hold it in
+  round two): `points-drawn.patch` on this branch. A level that draws a part of the list sends that part alone: 70 %
+  fewer bytes a frame on low, 40 % on medium, none on high, and nothing in a film.
+- Your ruling of 21:18: not on `agent/p6-steps` until main holds the air builders' parts and you say so; then main
+  merged, the patch as its own commit, and the proof there (the eight guards equal, the stills of low and medium equal
+  to those without it, the whole vitest, the stalls with and without over three runs each).
+- NOT BUILT AND NOT PROVEN at the close. Your line that main holds the air parts had not come, and the time before
+  22:50 went to the fault of 14.5 and the checks on the head that is pushed.
+- NOT SEEN: a real card. There a frame takes milliseconds and the ring should never fill. I cannot say Brandon will
+  not meet it.
+
+### 14.3 Item 3, the checks on `2765d9b3`
+
+On the built page of `2765d9b3` (engine `100499a29f66e980`), main `ed9180da` in it. The renders ran one after the
+other; the whole vitest ran beside them at a lower priority, so every time here is a slow one.
+
+- tsc: exit 0.
+- The whole vitest: "Test Files  70 passed | 1 skipped (71)", "Tests  1045 passed | 8 skipped (1053)", exit 0. Main
+  `ed9180da` reads 1036 passed and 8 skipped; the nine more are six of item 263 and three of 14.6.
+- The eight guards: "8 of 8 equal the list" (winter-rest 0cab5cd137ba09d9, winter-landed a7ab4af383606ed0, spring-rest
+  c5cd17d91bc346bc, spring-landed 066fa33e081d9d26, summer-rest 17a943f21ee9c1cc, summer-landed 682537c019d386eb,
+  fall-rest 2d560947ef218eb4, fall-landed d6cc4fb84a82a611).
+- Visit 10, the links: "visit 600x600: 9 lines, 0 not ok · console 0 lines · 0 requests failed". `link-summer` after
+  10.6 s, `link-capture-elsewhere` ok: the first picture after 9.6 s, the capture interface absent.
+- M3 of summer: "pass M3 summer-rest: 0.8624 (threshold 0.75, detail.minSharpnessRatio)", base 0.862, miniature
+  0.863, as on main. M4 and M5 not touched. No triangles added.
+- Stand-ins, summer at rest: "max 0", black.
+- Determinism: "determinism: pass · 3 pictures, 4 page loads, preview, draft, 169 s"
+- The round of four at low: "ok: 4 of 4 presses taken; 0 with a program linked in the shake or not landed"
+- Strict on winter-rest, spring-rest, summer-rest, fall-rest: NOT COMPLETE: it began last, at 22:44:48, and runs as I write; its last line follows in one line when it ends
+- My fault in the running of them: from 22:27 to 22:38 UTC an older chain of mine, held at a pause that I lifted,
+  ran a walk of the page beside the guards, the visit and M3, against the rule of one render at a time. Its other
+  stages stopped at once ("dist/ does not match the source") and its walk wrote nothing; I ended it. The guards are
+  hashes and the visit passed under that load, so I let them stand; nothing of that walk is used.
+
+Not run on this head, said plainly:
+
+- The strict run on winter-rest, spring-rest, summer-rest, fall-rest (running at the close).
+- The walk from spring into summer at low and medium.
+- The stand-ins of winter, spring and fall (summer alone was made).
+- Visits 4, 7, 11, 13, 14 and 16.
+- The page at addresses it does not know.
+- A request cut off.
+- The early press.
+- The reveal as the browser paces it.
+- The miniatures tool.
+- Item 263 on its host and the four handed out addresses (read on d484bb49 only).
+- The points patch (not built).
+
+### 14.5 Found on the way: summer was not made at quality low or medium on main `5b76c959` (open item 269): mended
+
+- How it showed. Visit 10 on the head of 14.1: ok link-winter, ok link-spring, then "NOT 10 link-summer", no first picture in
+  300 s. On the built page `?quality=low&season=summer` and `?quality=medium&season=summer` never came to a first picture
+  and every frame threw "Cannot read properties of undefined (reading 'kit')". `?quality=high&season=summer` and
+  `?season=summer` were whole. The tree was main's own (`git diff 5b76c959 9327c9a5` is empty).
+- The cause. `withBlades` of `src/seasons/summer/mini/village.ts` (new in `402924c1`) read the lawn's index at the level
+  the page draws. At low and medium that is a lighter list of the `LevelIndex` (`src/core/models.ts`): 44,577 corners
+  over 113,607 vertices at low. The guard threw "village-summer: a blade no longer has three corners of its own". No
+  still shows it: the capture page reads the full set, which has no lighter lists.
+- The mend, by your decision 217, as its own branch: `agent/p6-village-low`, commit `551baa07` off `5b76c959`, merge
+  `16e0dd29` of main `be7560a6`. Main holds it as `ed9180da`. Every blade is read from the fullest list whatever level the
+  page draws. `tests/summer-village-levels.test.ts` makes the village from the web set at every level and fails on the
+  old lines with that error.
+- Proof on `16e0dd29`: tsc exit 0; the whole vitest 1036 passed, 8 skipped; the eight guards equal the list; the built
+  page at low, medium and high for summer each reached the first picture with 0 errors; the shake from spring into
+  summer at low and at medium landed in summer; winter, spring and fall at low and medium each reached the first
+  picture with 0 errors. Lawn faces drawn: high 37,869, medium 22,125, low 14,859, each a whole face of the full list.
+- No other maker under `src/seasons` throws on the size of an index list (the readings by file and line are in the
+  report of 22:16 UTC).
+
+### 14.6 My own mend: a making that throws keeps its failure (`2765d9b3`)
+
+- What was wrong, in my files. A step of a making that threw was lost from its set. The frame that needed the season
+  then took the steps after it, built the set without the part and threw something else in every frame, so the console
+  never named the failure. That is why the fault of 14.5 read "reading 'kit'" and not the village's own words.
+- The change. `take(steps)` in `src/scene/steps.ts` does the step at the front and leaves it there when it throws; a
+  part made in pieces (`inPieces`) throws the same error again once one of its pieces has thrown. `runFor`, `workIn`
+  and the stage's `make()` and `set()` take every step through it.
+- What a visitor sees of a season that cannot be made is not changed: the console now says why, each time.
+- Tests: three in `tests/steps.test.ts`. Taken out one by one, each part fails a test: `take` that forgets the step
+  (2 fail), the kept error (1), the stage shifting on its own (1).
+
+### 14.7 Found by the walks of 14.5, NOT MENDED: one program is linked inside the shake into summer at low and medium
+
+- What the walks read (built page of `16e0dd29`, 320 x 320, each from `?quality=<level>&season=spring`, Space once
+  the page said every season was made): one program linked inside the shake into summer, 1998 ms after the press at
+  low and 2423 ms at medium. The thread stood 2.8 s (low) and 5.0 s (medium) at most in that shake on this machine,
+  and 0.06 s at most in the shake into fall, where no program was linked. Test runs of mine ran beside both walks.
+- It could not show before the mend of 14.5: summer was not made at low or medium at all.
+- On `2765d9b3` the round of four at low from the plain address (winter first, nothing running beside it) linked no
+  program in any of its four shakes: "ok: 4 of 4 presses taken; 0 with a program linked in the shake or not landed".
+  In its shake into summer the thread stood 58 ms at most. So the fault either shows only when the page starts in
+  spring, or it left with what came after `16e0dd29`. The walk from `?season=spring` was NOT RUN again on this head,
+  and WHICH PROGRAM IT IS WAS NOT FOUND by the close. `scratch-tools/round-walk-id.mjs` on this branch names each
+  program linked in a shake; `scratch-tools/round-walk.mjs` is the walk without the names.
+- The same round on `2765d9b3` reads the stall of 14.4 again: the thread stood 1123 ms at most in the shake into
+  spring, 1695 ms into fall and 1799 ms into winter, each time in `bufferSubData` (2 calls of 1943 ms in all, 5 of
+  3936 ms, 1 of 1770 ms). The shakes landed 15.6, 14.7, 16.8 and 25.8 s after the press, at 320 x 320 on this machine.
+- The stall in `bufferSubData` stays the worst thing I know of in a shake; this one comes next until it is found.
+
+### 14.8 `village.ts` line 1169, read for you, no change made
+
+- After the making nothing can go wrong: `merged` (line 1161) is a plain list made from the lists of the level at
+  that step, and `keep`, the mirror's draw range, is a plain number. Neither follows a later change of level.
+- During the making it can. Line 1169 reads `shared.index.count` four steps or more after the merge (the making
+  yields at 1162, 1164, 1166 and 1168 and inside `dressed`, `surfacing` and `withPools`), and the level may change
+  between two steps: the governor in a frame (`src/app/app.ts` 487) or the menu (391). The mirror would then draw the
+  other level's count over this level's list for the life of the page: a part of the cottage missing in the
+  reflection, or decor drawn in it. Deduced from the code, not seen. One line would end it: read the count where the
+  merge is made.
+
+### 14.9 What I did not see
+
+- A real card, a real screen, 60 frames a second, a finger, sound. Every page here was drawn by the processor.
+- The published host. Safari itself.
+- The stall on a real card, and the patch at work anywhere.
+- No fresh reviewer has read this work: my rules say I start no agents.

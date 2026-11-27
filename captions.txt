@@ -61,3 +61,32 @@ job5/still-leaves-frames-before-after.jpg
   still shows the still, though the page's own reading says it is gone at that frame: I take a picture to be one
   frame behind the reading. The controls come in by their own fade in both rows.
   Tier: none, the page's own drawing on low; the first frame is the page's first still.
+
+r2/item263-960.jpg
+  Shows: round two, open item 263. The built page on a host that holds the page alone, opened under the name
+  `snow-globe.example`, 960 x 540. From the left: the plain page, `?mode=capture`, `?mode=capture&simcache=1`.
+  State: top row BEFORE, the build of `15c27670`: the two capture addresses are black for good. Bottom row AFTER, the
+  build of `d484bb49`: both are the plain live page, winter lit, the controls. Not taken again on the head that is
+  pushed (`2765d9b3`).
+  Tier: none, the page's own drawing.
+
+r2/item263-400.jpg
+  Shows: the same host and name, the page 400 px wide. From the left: the plain page and a capture address BEFORE
+  (`15c27670`, black), then the plain page and a capture address AFTER (`d484bb49`, the plain live page).
+  State: before and after, as named.
+  Tier: none, the page's own drawing.
+
+r2/handed-out-elsewhere.jpg
+  Shows: condition (a) of item 263: the four addresses that are handed out, each opened on the same host under
+  `snow-globe.example`, 640 x 360. One row each, from the top: `?mode=autopilot` (three pictures in time),
+  `?mode=autopilot&which=a` (three), `?mode=loop` (three), `?mode=probe` (its first picture and its end).
+  State: AFTER only, the build of `d484bb49`. Each came and went on as it should. The composer in the second row is
+  the film's own opening, as main draws it.
+  Tier: none, the page's own drawing.
+
+r2/village-low-medium.jpg
+  Shows: open item 269, summer on the built page of `16e0dd29` (the tree of main `ed9180da`), 960 x 540 each: left
+  `?quality=low&season=summer`, right `?quality=medium&season=summer`.
+  State: AFTER only. Before the mend neither address came to a first picture, so there is no picture of before. The
+  right one was taken while the page still said its detail was loading.
+  Tier: none, the page's own drawing at low and at medium.
