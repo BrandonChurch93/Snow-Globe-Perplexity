@@ -229,7 +229,7 @@ ${SHADE}
   // The dusk in the room is cool and comes from in front and above: it is what the stones and the moss in the base's own
   // shade are seen by, and it falls on each grain and tuft by the way that one faces, so the shade keeps its grain.
   float liveFill = clamp(dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(-0.25, 0.62, 0.74))) * 0.6 + 0.4, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * mix(vec3(0.8, 1.0, 0.9), vec3(1.08, 0.96, 0.84), baseMoss * smoothstep(30.0, 38.0, vBasePos.y)) * dot(liveSunC, vec3(0.3333)) * (mix(${ROCK.fill.toFixed(2)}, ${ROCK.mossFill.toFixed(2)}, baseMoss) * mix(0.2 + 0.8 * liveFill * liveFill, (0.3 + 0.7 * liveFill * liveFill) * (mix(0.55, 0.85, smoothstep(30.0, 38.0, vBasePos.y)) + 0.9 * smoothstep(0.45, 0.85, baseMossD.b)) * mix(0.9, mix(2.0, 4.4, smoothstep(-45.0, 0.0, vBasePos.x)), smoothstep(30.0, 38.0, vBasePos.y)), baseMoss) * mix(0.25 + 0.75 * baseAo, 0.3 + 0.7 * baseAo, baseMoss) + mix(0.45, 1.0, baseMoss));
+  reflectedLight.indirectDiffuse += diffuseColor.rgb * RECIPROCAL_PI * mix(vec3(0.8, 1.0, 0.9), vec3(1.08, 0.96, 0.84), baseMoss * smoothstep(30.0, 38.0, vBasePos.y)) * dot(liveSunC, vec3(0.3333)) * (mix(${ROCK.fill.toFixed(2)}, ${ROCK.mossFill.toFixed(2)}, baseMoss) * mix(0.2 + 0.8 * liveFill * liveFill, (0.3 + 0.7 * liveFill * liveFill) * (mix(0.55, 0.85, smoothstep(30.0, 38.0, vBasePos.y)) + 0.9 * smoothstep(0.45, 0.85, baseMossD.b)) * mix(0.9, mix(7.0, 4.4, smoothstep(-45.0, -5.0, vBasePos.x)), smoothstep(30.0, 38.0, vBasePos.y)), baseMoss) * mix(0.25 + 0.75 * baseAo, 0.3 + 0.7 * baseAo, baseMoss) + mix(0.45, 1.0, baseMoss));
   // The low sun behind comes through the blossom and grazes the right flank: warm, and strongest on whatever stands out.
   vec3 liveGrazeDir = normalize(mat3(viewMatrix) * vec3(0.9, 0.25, -0.2));
   float liveGrazeM = clamp((dot(liveMacro, liveGrazeDir) + 0.14) / 1.14, 0.0, 1.0);
@@ -244,12 +244,12 @@ ${SHADE}
   // In the low sun the moss of the right flank is a crowd of round heads, each about half a millimetre, and the sun does not
   // reach between them: a slow pattern fixed to the stone, and gone before a head is narrower than two pixels.
   float liveSpan = max(length(dFdx(vBasePos)), length(dFdy(vBasePos)));
-  float liveHeads = baseMoss * max(smoothstep(42.0, 50.0, vBasePos.x), smoothstep(30.0, 38.0, vBasePos.x) * smoothstep(37.0, 34.5, vBasePos.y)) * smoothstep(0.5, 0.25, liveSpan);
+  float liveHeads = baseMoss * max(smoothstep(42.0, 50.0, vBasePos.x), max(smoothstep(30.0, 38.0, vBasePos.x) * smoothstep(37.0, 34.5, vBasePos.y), smoothstep(14.0, 28.0, vBasePos.x) * smoothstep(36.0, 38.5, vBasePos.y))) * smoothstep(0.5, 0.25, liveSpan);
   float liveHead = baseNoise(vBasePos * 2.4 + 3.0);
   float liveBead = mix(1.0, mix(0.3, 1.0, smoothstep(0.3, 0.7, liveHead)), liveHeads);
   vec3 liveDry = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.6, 0.1))) * mix(vec3(1.5, 1.1, 0.8), vec3(1.2, 1.5, 0.72), baseMoss), mix(0.9, 0.8, baseMoss));
   // The film's lens parts red from blue by a pixel at 3840, so a sunlit edge far over white grows a red and a blue line: the low sun rises to a warm cream and no further.
-  vec3 liveLowSun = liveDry * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.66, 0.5) * (${ROCK.flank.toFixed(2)} * liveGraze * mix((0.2 + 0.9 * baseStoneD.b) * mix(0.35, 1.8, baseStoneF.b), (1.0 + 1.2 * liveTuft) * mix(0.5, 1.9, baseClump) * 2.6 * smoothstep(0.1, 0.75, dot(liveSoft, liveGrazeDir)) * mix(1.0, mix(0.12, 3.5, smoothstep(0.45, 0.8, liveHead)), liveHeads), baseMoss) * baseAo);
+  vec3 liveLowSun = liveDry * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.66, 0.5) * (${ROCK.flank.toFixed(2)} * liveGraze * mix((0.2 + 0.9 * baseStoneD.b) * mix(0.35, 1.8, baseStoneF.b), (1.0 + 1.2 * liveTuft) * mix(0.5, 1.9, baseClump) * 3.4 * smoothstep(0.1, 0.75, dot(liveSoft, liveGrazeDir)) * mix(1.0, mix(0.12, 3.5, smoothstep(0.45, 0.8, liveHead)), liveHeads), baseMoss) * baseAo);
   vec3 liveOver = liveLowSun / ${SUN_TOP};
   float liveBlade = mix(1.0, mix(0.5, 1.0, smoothstep(0.25, 0.85, baseMossD.b)), baseMoss);
   reflectedLight.directDiffuse += liveBlade * liveLowSun / pow(max(1.0 + abs(liveOver * liveOver * liveOver), 1.0), vec3(0.3333));
@@ -262,9 +262,14 @@ ${SHADE}
   float liveCrown = smoothstep(34.0, 42.5, vBasePos.y) * mix(0.35, 1.0, liveUp) * liveTop;
   // The sun is behind and to the right, and the glass stands between it and the left of the collar.
   float liveEast = smoothstep(0.1, 0.8, vBasePos.x / 52.0);
-  float liveLip = smoothstep(mix(39.4, 34.0, liveEast), mix(41.4, 38.5, liveEast), vBasePos.y) * mix(0.75, 1.1, smoothstep(0.35, 0.65, baseBlotch)) * mix(0.12, 1.0, liveTop);
-  vec3 liveTip = mix(vec3(0.5, 0.43, 0.25), vec3(0.5, 0.42, 0.198), liveEast) * mix(0.07 + 0.3 * exp(-vBasePos.x * vBasePos.x / 400.0), 1.55, liveEast) * RECIPROCAL_PI * baseMoss * baseAo;
-  vec3 liveCrest = liveTip * (liveKeyC * ((1.7 + 2.1 * liveTuft + 1.5 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim * mix(0.15, 1.0, liveLip) + 2.2 * liveUp * liveUp * liveLip + mix(0.6, 0.08, liveEast) * liveCrown) * max(liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh), liveCrown)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
+  // The lit rim follows the crest, and the mesh says how far under the crest a place lies (its second colour number, a tenth to
+  // the millimetre): a thin line across the front, thicker where the moss clumps, and the whole shoulder on the sun's side.
+  float liveFar = smoothstep(0.45, 0.8, vBasePos.x / 52.0);
+  float liveFront = smoothstep(0.5, 0.8, vBasePos.z / max(length(vBasePos.xz), 1.0));
+  float liveDrop = (1.0 - vBasePaint.y) * 10.0 * mix(1.5, 0.9, baseClump);
+  float liveLip = (1.0 - smoothstep(mix(mix(1.8, 0.25, liveFront), 5.5, liveFar), mix(mix(3.2, 1.3, liveFront), 10.0, liveFar), liveDrop)) * mix(0.75, 1.1, smoothstep(0.35, 0.65, baseBlotch)) * mix(0.12, 1.0, liveTop);
+  vec3 liveTip = mix(vec3(0.5, 0.43, 0.25), vec3(0.5, 0.42, 0.198), liveEast) * mix(0.05 + 0.22 * exp(-vBasePos.x * vBasePos.x / 400.0), 0.42, liveEast) * mix(1.0, mix(0.05, 1.5, smoothstep(0.35, 0.75, liveHead)), liveHeads) * RECIPROCAL_PI * baseMoss * baseAo;
+  vec3 liveCrest = liveTip * (liveKeyC * ((1.7 + 2.1 * liveTuft + 1.5 * liveFuzz) * mix(mix(0.35, 0.08, liveFar), mix(2.0, 2.6, liveFar), baseClump) * (liveRim * liveRim * mix(0.15, 1.0, liveLip) + 2.2 * liveUp * liveUp * liveLip + mix(0.4, 0.08, liveEast) * liveCrown) * max(liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh), liveCrown)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
   liveOver = liveCrest / ${SUN_TOP};
   reflectedLight.directDiffuse += liveBlade * liveCrest / pow(max(1.0 + abs(liveOver * liveOver * liveOver), 1.0), vec3(0.3333));
   reflectedLight.directDiffuse *= liveBead;
