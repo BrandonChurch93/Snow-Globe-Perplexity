@@ -10,7 +10,7 @@ export interface Clump {
   dir: Pad['dir']
 }
 
-export const FULL = { core: 0.9, belly: 0.75, perMm2: 0.2, radius: [1.15, 2.3] as const, small: 0.3, proud: 0.45, under: 0.1, underRadius: [0.7, 1.15] as const, grain: 4.6, middle: 0.42, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
+export const FULL = { core: 0.9, belly: 1.3, perMm2: 0.2, radius: [1.15, 2.3] as const, small: 0.3, proud: 0.45, under: 0.16, underRadius: [0.8, 1.5] as const, grain: 4.6, middle: 0.42, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
 
 // The hero camera looks a little down: a point nearer to it by a millimetre sits lower in the picture by PITCH. The clumps are set
 // out as that camera sees them, so `seen` takes the height in the picture and gives the height in the trunk's frame.
@@ -23,41 +23,49 @@ const seen = (x: number, hs: number, z: number, size: Pad['size'], lx = 0, lz = 
 
 export const clumps: readonly Clump[] = [
   // The top clump, left of the middle, with a knob on its left shoulder and a smaller one at its right.
-  seen(-0.8, 37.6, 0.3, [4.4, 4.4, 4.0], 0.03),
-  seen(-2.6, 40.5, 0.7, [2.2, 2.2, 2.8], -0.05),
+  seen(-0.8, 37.6, 0.3, [4.4, 4.6, 4.0], 0.03),
+  seen(-2.4, 41.4, 0.7, [2.3, 2.2, 2.8], -0.05),
   seen(3.4, 38.6, 0.6, [2.0, 1.6, 2.6], 0.08),
-  // The upper left clump, and a small body behind and under it.
-  seen(-11.7, 35.5, 2.0, [1.7, 3.1, 2.6], -0.2),
-  seen(-7.8, 35.9, 1.5, [2.6, 3.6, 3.0], 0.1),
+  // Its two shoulders: a body at each side, so that the outline runs down from the top to the masses in one curve and not in steps.
+  seen(-5.4, 36.6, 1.4, [2.6, 3.6, 3.0], -0.12),
+  seen(6.2, 35.6, 1.6, [2.8, 3.2, 3.0], 0.15),
+  // The upper left clump, and a small body behind and under it. Its underside falls toward the stem, so the notch under it is a wedge.
+  seen(-11.4, 36.3, 2.0, [2.0, 2.8, 2.6], -0.2),
+  seen(-8.2, 36.1, 1.5, [2.8, 3.6, 3.0], 0.25),
   seen(-9.6, 29.4, -2.2, [1.6, 1.4, 1.6]),
-  // The right mass: lobes that step down to the right, and a tip.
-  seen(6.0, 31.0, 3.0, [2.9, 3.4, 3.5], 0.05),
-  seen(7.2, 35.4, 2.2, [2.6, 2.8, 3.2], 0.1),
-  seen(12.2, 32.0, 1.6, [2.5, 2.9, 3.5], 0.3),
-  seen(13.8, 29.6, 1.8, [1.1, 1.2, 2.0], 0.15),
-  // The large left mass: it reaches farthest out and hangs lower than the rest.
-  seen(-13.9, 29.3, 2.6, [3.0, 1.5, 3.3]),
-  seen(-8.7, 28.9, 3.1, [3.0, 2.4, 3.9], 0.08),
-  seen(-11.6, 26.8, 3.4, [1.7, 1.8, 2.2], -0.05),
-  seen(-4.4, 29.3, 3.2, [1.7, 1.6, 3.0], 0.1),
-  seen(-5.2, 32.4, 2.4, [1.4, 1.5, 2.4], 0.1),
-  // The pad low at the left, over the left limb: thin, with a tip that droops.
-  seen(-16.6, 20.8, 1.4, [1.5, 1.0, 2.0], 0.08),
-  seen(-13.0, 23.0, 3.6, [3.0, 0.5, 3.0], -0.22),
-  seen(-10.9, 24.0, 4.8, [1.7, 0.7, 1.4], -0.06),
-  seen(-8.4, 23.2, 3.6, [2.6, 0.6, 3.0], -0.18),
-  // Right of the stem: a small clump at the fork, a lobe over the right limb and a lump that hangs into the notch above it.
-  seen(2.8, 24.8, 2.6, [1.3, 1.3, 1.6]),
-  seen(7.0, 24.4, 3.1, [2.4, 1.6, 3.7], 0.15),
-  seen(4.9, 28.3, 3.6, [0.7, 1.4, 1.0]),
-  // The mass low at the right, and two sprays of leaves that break the right limb's bare length.
-  seen(11.6, 21.2, 2.8, [2.8, 4.4, 3.9], 0.03),
-  seen(15.8, 20.0, 1.8, [2.3, 2.6, 2.9], 0.12),
-  seen(10.4, 17.6, 3.8, [0.9, 1.2, 1.3], -0.05),
-  seen(10.0, 14.6, 3.5, [1.0, 0.9, 1.0], 0.05),
-  // Bodies about the stem that fill the middle between the masses.
+  // The right mass: lobes that step down to the right, and a tip. It hangs low over the mass under it.
+  seen(6.0, 30.6, 3.0, [2.9, 3.8, 3.5], 0.05),
+  seen(9.8, 33.4, 2.2, [3.0, 3.4, 3.2], 0.1),
+  seen(12.4, 29.0, 1.6, [2.6, 4.6, 3.5], 0.3),
+  seen(14.6, 26.6, 1.8, [1.4, 2.0, 2.0], 0.15),
+  // The large left mass: it reaches farthest out.
+  seen(-14.1, 28.4, 2.6, [3.4, 2.8, 3.3], -0.25),
+  seen(-8.7, 30.2, 3.1, [3.0, 2.3, 3.9], 0.08),
+  seen(-12.4, 28.6, 3.4, [2.0, 1.8, 2.2], -0.1),
+  seen(-4.4, 30.1, 3.2, [2.0, 1.9, 3.0], 0.1),
+  seen(-5.2, 32.0, 2.4, [1.6, 2.0, 2.4], 0.1),
+  // The mass low at the left, over the left limb: the lowest of the crown, a full rounded body that climbs toward the stem.
+  seen(-14.7, 19.9, 1.6, [2.6, 2.4, 2.4], 0.05),
+  seen(-11.6, 21.2, 3.6, [3.4, 2.8, 3.0], -0.2),
+  seen(-8.6, 22.4, 4.4, [2.6, 2.2, 2.0], -0.06),
+  seen(-6.2, 23.4, 3.4, [2.0, 1.6, 2.6], -0.1),
+  // About the stem: a small clump at each side before the fork, which brings the crown's underside down over it, a lobe over the right
+  // limb, and two lumps above it.
+  seen(2.4, 25.0, 3.2, [1.8, 1.6, 1.8]),
+  seen(-1.8, 26.2, 3.4, [1.8, 1.6, 2.0]),
+  seen(7.2, 25.0, 3.1, [2.2, 1.4, 3.7], 0.15),
+  seen(4.6, 27.6, 3.4, [1.0, 2.6, 1.2]),
+  seen(2.6, 30.4, 2.6, [1.4, 2.4, 1.8]),
+  // The mass low at the right, and three small sprays of leaves that break the right limb's bare length.
+  seen(12.0, 22.6, 2.8, [2.8, 3.2, 3.9], 0.03),
+  seen(15.0, 19.8, 1.8, [2.2, 3.0, 2.9], 0.12),
+  seen(10.4, 17.8, 3.8, [0.7, 0.9, 1.0], -0.05),
+  seen(10.0, 15.0, 3.5, [0.6, 0.6, 0.8], 0.05),
+  seen(6.5, 15.8, 3.3, [0.6, 0.7, 0.8], 0.1),
+  // Bodies about the stem that fill the middle between the masses. Under them small windows stay open at each side of the stem, where
+  // the lit arms show.
   seen(0.5, 33.6, -0.6, [4.8, 3.6, 3.3]),
-  seen(-0.3, 31.0, 3.6, [3.4, 3.0, 2.4]),
+  seen(-1.2, 30.5, 3.4, [3.0, 3.4, 2.6]),
   seen(5.8, 24.0, -2.2, [2.0, 1.4, 2.4], 0.1),
 ]
 
@@ -154,12 +162,9 @@ const knobs = (x: number, h: number, z: number): number => {
 
 // Notches through the crown, as the hero camera sees it: each is an ellipse in the plane that faces the camera (its middle, its half
 // width and half height in millimetres, and its tilt in degrees) and runs straight through along the line of sight, which climbs by
-// PITCH for every millimetre toward the camera. The sprigs on their walls close about a millimetre of each side. One lies under
-// the upper left clump, one beside the stem under the top clump.
-export const holes: readonly (readonly [number, number, number, number, number])[] = [
-  [-9.9, 33.9, 3.2, 1.6, 2],
-  [1.2, 32.2, 1.7, 2.1, -8],
-]
+// PITCH for every millimetre toward the camera. The sprigs on their walls close about a millimetre of each side. None is cut now:
+// the notches are what the clumps leave between them, each a wedge that opens at the outline.
+export const holes: readonly (readonly [number, number, number, number, number])[] = []
 
 const cuts = holes.map((o) => ({ x: o[0], h: o[1], a: o[2], b: o[3], cos: Math.cos((o[4] * Math.PI) / 180), sin: Math.sin((o[4] * Math.PI) / 180) }))
 
