@@ -9,7 +9,8 @@ const along = (az) => [Math.cos(az * RAD), 0, -Math.sin(az * RAD)]
 const azOf = (p) => Math.atan2(p[0], p[2]) / RAD
 const sidesAt = (az, near, far) => (L.front(az) <= 125 ? near : far)
 
-// A tube along a path. `radii` per point; `flat` squeezes it toward the ring. Paint: shade, kind, how far along a thorn.
+// A tube along a path. `radii` per point; `flat` squeezes it toward the ring. Paint: shade, kind, and for a vine its
+// radius over 2.5 mm, for a thorn how far along it.
 function tube(soup, pts, radii, sides, paint, flat = 1, vAt = 0, gnarl = 0, seed = 1) {
   const n = pts.length
   const frames = []
@@ -161,6 +162,10 @@ function addStrands() {
     const a0 = r(40, 64)
     push({ a0, span, h0: 5 + 2.8 * i + r(-2, 2), slope: Math.tan((i % 2 ? -1 : 1) * r(24, 56) * RAD) * span * RAD * 53, bend: r(-9, 9), amp: r(1.5, 3.5), k: r(5, 9), ph: r(0, 6.28), rad: r(0.75, 1.15), lift: r(1.0, 4.5), sprawl: 0.6, wander: 2.0, thorn: [4, 8], every: 70, layer: 3, open: true, reach: r(2, 6) })
   }
+  // The wall right of the third face: one thick vine that curls down it and two thin ones that cross it.
+  push({ a0: 50, span: 36, h0: 20, slope: -20, bend: 6, amp: 2.5, k: 7, ph: 1.0, rad: 1.25, lift: 3, sprawl: 0.6, wander: 1.5, thorn: [6, 10], every: 60, layer: 3, open: true, reach: 3 })
+  push({ a0: 54, span: 30, h0: 14, slope: 20, bend: -5, amp: 1.5, k: 6, ph: 2.2, rad: 0.36, lift: 4.5, sprawl: 0.6, wander: 2.2, thorn: [3, 5], every: 200, layer: 3, open: true, reach: 4 })
+  push({ a0: 58, span: 26, h0: 25, slope: -14, bend: 7, amp: 2.0, k: 8, ph: 4.0, rad: 0.32, lift: 5.5, sprawl: 0.6, wander: 2.2, thorn: [3, 5], every: 200, layer: 3, open: true, reach: 4 })
 }
 addStrands()
 
@@ -262,8 +267,8 @@ function thorn(soup, root, dir, len, rad, bend, sides, shade, wide = [0, 1, 0]) 
     p = add3(p, d, step)
     arc += step
   }
-  const A = 1.25
-  const B = 0.85
+  const A = 1.1
+  const B = 0.95
   soup.grid(sides + 1, rings, (i, j) => {
     const a = (i / sides) * 2 * Math.PI
     const t = j / (rings - 1)
@@ -324,35 +329,60 @@ export function buildIron() {
         const out = norm3([p[0], 0, p[2]])
         const open = 0.5 + 0.5 * dot3(nrm, out)
         const depth = smooth(0, 5, Math.hypot(p[0], p[2]) - drumR(clamp(p[1], 0, 38)))
-        return [(0.32 + 0.68 * open) * (0.5 + 0.5 * depth) * (0.75 + 0.25 * smooth(0, 5, p[1])), 0.5, fbm(i * 0.09, a, 64, 8, s.seed + 3, 2)]
+        return [(0.32 + 0.68 * open) * (0.5 + 0.5 * depth) * (0.75 + 0.25 * smooth(0, 5, p[1])), 0.5, clamp(radii[i] / 2.5, 0, 1)]
       }
       tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), !far && s.rad < 0.55 ? 4 : far || s.rad < 0.85 ? 5 : s.rad > 1.65 ? 8 : s.rad > 1.25 ? 7 : 6, shade, 1, s.seed * 0.37, far ? 0 : (s.gnarl ?? 0.2), s.seed)
       from = to
     }
-    let next = r(4, s.every)
+    let next = r(4, s.every * 2.2)
     let run = 0
     for (let i = 2; i < pts.length - 2; i++) {
       run += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1], pts[i][2] - pts[i - 1][2])
       if (run < next) continue
       run = 0
-      next = r(s.every * 0.3, s.every * 0.85)
+      next = r(s.every * 0.66, s.every * 1.87)
       const az = azs[i]
       if (radii[i] < 0.6 || sunk[i] > 0.02) continue
       const t = norm3([pts[i + 1][0] - pts[i - 1][0], pts[i + 1][1] - pts[i - 1][1], pts[i + 1][2] - pts[i - 1][2]])
       const sgn = rng() < 0.5 ? -1 : 1
       const up = s.layer === 0 ? r(-0.15, 0.5) : s.layer === 2 ? r(0.1, 1) : r(-0.8, 0.8)
       const dir = norm3(add3(add3([t[0] * sgn * r(0.5, 1.1), t[1] * sgn, t[2] * sgn * r(0.5, 1.1)], radial(az), r(0.35, 0.9)), [0, 1, 0], up))
-      const len = r(s.thorn[0], s.thorn[1]) * (L.front(az) > 125 ? 0.9 : 1)
-      const rad = radii[i] * r(0.7, 0.9)
+      const len = r(s.thorn[0], s.thorn[1]) * (L.front(az) > 125 ? 0.9 : 1) * 1.4
+      const rad = radii[i] * r(0.7, 0.9) * 1.15
       const probe = [0.1, 0.25, 0.4, 0.55, 0.7, 0.85, 1].map((q) => add3(pts[i], dir, len * q))
       if (probe.some((p) => crossesFace(p)) || probe.some((p) => p[1] < 0.5) || (s.layer !== 2 && probe[6][1] > 37)) {
         refused++
         continue
       }
-      const line = thorn(soup, pts[i], dir, len * 0.92, rad * 1.12, add3([0, r(-1, 1), 0], t, -sgn * r(0.3, 1.6)), sidesAt(az, 6, 4), 0.85, t)
+      const line = thorn(soup, pts[i], dir, len * 0.92, rad * 1.12, add3([0, r(-1.3, 1.3), 0], t, -sgn * r(0.39, 2.08)), sidesAt(az, 6, 4), 0.85, t)
       tips.push(line[line.length - 1])
       thorns++
     }
+  }
+  // The sheaf at the left: thin fibres that stand behind the vines beside the first face, pinched high and fanned out
+  // low, so they cross one another at shallow angles.
+  const pick = mulberry(5521)
+  const f = (a, b) => a + (b - a) * pick()
+  let fibres = 0
+  for (let i = 0; i < 52; i++) {
+    const top = [f(-65, -52), f(20, 27)]
+    const foot = [f(-71, -47), f(8, 13)]
+    const out = [f(1.0, 2.0), f(1.3, 3.0)]
+    const sway = f(-1.8, 1.8)
+    const kink = f(-1.3, 1.3)
+    const turn = f(0, 6.28)
+    const rad = f(0.075, 0.125)
+    const lit = f(0.3, 1)
+    const pts = []
+    const radii = []
+    for (let j = 0; j <= 7; j++) {
+      const t = j / 7
+      const h = mix(top[1], foot[1], t)
+      pts.push(place(drumR(h) + mix(out[0], out[1], t) + 0.25 * Math.sin(t * 5 + i), h, mix(top[0], foot[0], t) + sway * Math.sin(t * Math.PI) + kink * Math.sin(t * 2 * Math.PI + turn)))
+      radii.push(rad * (0.55 + 0.45 * Math.sin(Math.PI * Math.min(t * 0.8 + 0.2, 1))))
+    }
+    tube(soup, pts, radii, 3, (j) => [lit, 0.65, clamp(radii[j] / 2.5, 0, 1)], 1, i * 0.37)
+    fibres++
   }
   // Twigs that leave the ring: ends that rise beside the glass at the two shoulders and poke out past the foot at the
   // left, so the outline of the base is a tangle's and not a drum's.
@@ -375,7 +405,7 @@ export function buildIron() {
       d = norm3(add3(add3(d, curl, 0.16), along(w.az), wob * 0.25))
       p = add3(p, d, w.len / n)
     }
-    const shade = (j, a, q, nrm) => [0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([q[0], 0, q[2]]))), 0.5, fbm(j * 0.09, a, 64, 8, 41, 2)]
+    const shade = (j, a, q, nrm) => [0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([q[0], 0, q[2]]))), 0.5, clamp(radii[j] / 2.5, 0, 1)]
     tube(soup, pts, radii, 6, shade, 1, w.az * 0.13, 0.2, Math.round(w.az + 400))
     for (const at of w.thorns ?? []) {
       const i = Math.round(at * n)
@@ -421,7 +451,7 @@ export function buildIron() {
     thorn(soup, root, dir, t.len, t.rad, add3([0, 0.3, 0], radial(t.az), 0.5), 8, 0.95, cross3(dir, [0, 0, 1]))
     thorns++
   }
-  return { soup, drumTriangles, thorns, refused, strands: STRANDS.length, heroTips, twigs }
+  return { soup, drumTriangles, thorns, refused, strands: STRANDS.length, heroTips, twigs, fibres }
 }
 
 // The pumpkins: a ribbed gourd set into the ring behind each face, its front toward the viewer of that side.

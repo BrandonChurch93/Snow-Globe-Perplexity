@@ -1,49 +1,47 @@
 {
-  "number": 212,
-  "time": "2026-11-27 12:05 UTC",
+  "number": 216,
+  "time": "2026-11-27 14:24 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 212 · 2026-11-27 12:05 UTC · Phase 6",
-    "Decision needed from Brandon, unchanged, one thing only he can do: the automation that restarts this build ends Friday noon Mountain Time and a run may not move its own end. He can move the end to Sunday noon in the automation's settings, or write any line in the thread. Open item 252.",
-    "Chain 30 is read and on origin main since 12:03 UTC (`a6fe2ff4`): fall's base, twelfth step, shader only. On it: tsc and build exit 0, \"pass M3 fall-rest: 0.8838\" at review (the base's part 0.884 from 0.913, over my floor of 0.80), the change's eight measures pass and equal chain 29's, two of the eight guard stills changed (fall's two, as they should), triangles unchanged. The whole vitest did not pass in one run: 951 tests passed and one stopped at its own limit of 300 s after 359 s (the making of the four miniatures three ways; 122 to 124 s on the three chains before); nothing was asserted false. Run again alone on the same tree it passed in 119 s and the miniatures' hashes equal chain 29's. I pushed on that and wrote it in the log as a failed whole run, not as a pass. I do not know the cause; my own picture work ran on the same two cores, and that stops beside a chain's test run from now on. Pictures 1 and 2: fall at rest on it beside the approved picture, and the base's right flank at two times as approved, tenth step, twelfth step. The thin white line on the vines is gone on most; the many thin straight thorns, the copper dashes at the left and the towelling wall stand as before. It does not read further than the tenth, so it stays.",
-    "Fall's air, eighth list: held, not merged. Picture 3: approved, main, the list. Each point now sits in a warm glow as the approved's larger points do, a gain over main's hard white dots. But the leaves at rest are the largest of the three and crowd the upper left, and by its builder's count the small orange class is 414 where the approved has 206. The ninth list is ordered with the leaves first: count and sizes to the approved's by one counter with main's number in a third column, the glow on a dealt share only, the upper air's ground as thin slanted streaks on a grain, the storm's measure and the miniature's sharpness share back.",
-    "Summer's tree, twelfth pass: merged here and in chain 31 since 12:04 UTC, not on origin yet. Picture 4: approved, main, the twelfth pass. Beside main's the crown is darker, carries beads on the upper left rims and holds the three notches; at 400 px it reads as one canopy. Decision 190: it is merged although one of its builder's own numbers went further (the leaf fills 61.0 percent of the crown's hull against main's 59.4, approved 51.9), an exception to my rule that such a part is held, taken on the picture and named; the fill is the first item of the thirteenth pass, then the rim as a band two or three leaves thick, then pads less alike and less level.",
-    "4K motion. Winter's frames 630 to 632 at final: the tree's lights are whole streaks, 28 of 30, 40 of 42 and 40 of 45 unbroken by the builder's count, the flagged ones gaps of 1 to 2 px or several lights run together; I looked at 631 enlarged three times and see streaks, not rows of dots. The beads I saw earlier came from the review tier's 8 samples, which the masters do not use. The lawn: with the lens shut the large steps grow two to four times, so the lens points are not the cause; a joint deal of place, lens and time at 24 samples reads no better (25 and 69 steps over 20 levels against 20 and 43); 48 samples read 10 and 32; 96 read 1 and 6. The builder states that its model failed against the picture and that only the count moves the numbers. By the rule logged at 11:12 no arm at 24 or 48 meets the bar, only 96. One more test is drawing: 96 samples that repeat the present 24 four times, so that only the shadow's per sample seed differs; if that reads like the true 96, the fault is the shadow's grain and can be mended at its taps without the hours. Hours, the builder's estimate from its own logs, a fifth either way: film B about 158 machine hours as now (my 140 was too low), about 221 with the slow frames at 48, about 350 at 96. A cut from 24 to 96 samples inside the film gives one frame with 2.7 times the usual steps on the lawn, because the two sets' mean places differ by 0.05 px; centring each set would take that out. Not ruled yet; the seed test comes first.",
-    "The change of season: its builder's checks on its own head read green by its report (eight guards equal, 24 of 24 lines, no black in the app's shake at high); one pair of frames, 1388 to 1389, moves the glass's mean by 6.2, named and not tuned; its push with final tier frames is expected about 13:20 UTC.",
-    "Below the bar, plainly. Summer: the crown's rim and fill, the base (grey weathered wood where the approved is pale packed sand), seeds as cream stars, lights as even dots, the landing's swirl, the sand stream (it boils at 4K, in rework), the lawn at the close camera, the pond. Fall: the air's leaves and ground, the tree bare of lights, the cottage small and dark, the wall and the fence, the base's thorns, sheaf and wall. Spring: the crest, the roots, the moss's lower edge, the trickle. The change of season, 4K motion on the lawn and the controls.",
-    "Next: chain 31 read and the merged summer set beside the approved before any push; summer's miniature when its report is read; the seed test and the ruling on the samples; Round 23 on summer when its lists are in.",
-    "Render counts since the last status. Drawn here: chain 30 whole (8 stills, one review still, the change's frames, the whole vitest and one file again), chain 31 in work. On helper machines by their reports: 3 winter frames at 3840 final and 2 at review, 3 pairs of the lawn at 3840 (lens shut, joint deal, 48 samples) and one more pair drawing, the tree's and the air's proofs. No frame of the masters yet.",
+    "Status 216 · 2026-11-27 14:24 UTC · Phase 6",
+    "Decision needed from Brandon, unchanged, one thing only he can do: the automation that restarts this build ends today, Friday, at noon Mountain Time and a run may not move its own end. He can move the end to Sunday noon in the automation's settings, or write any line in the thread. Open item 252.",
+    "The seventh publish is live since 14:22 UTC, 7:22 AM Mountain Time. The page now carries the last five check runs, chains 27 to 31: summer's stone base, its glass's fifth list, its air's single swirl, its sand stream and its tree's twelfth pass; fall's air seventh list, its scene's eighth list and its base's twelfth step; and 40 new first pictures of summer and fall. Built in a clean copy of commit `51a7dc40`, engine `82bfc7312855a593`. Read before it went out: tsc exit 0; the whole test run 68 files passed and 1 skipped, 947 tests passed and 9 skipped; the first pictures' check \"poster: pass\"; the ninth security review \"BLOCKS: no\" with no block and no warning, and its 17 file hashes equal a build of the same commit without the sound files. Read after: an unsigned request to the address gets 401, as it should under Organization visibility; the uploaded build file names the engine; the uploaded page equals the built one up to the host's own preview script. Picture 4: this build's summer opened on a helper machine under a software renderer, the live mark at 12 s, in sight at 21 s, 0 console messages, 33 buttons. Still in it: the short black stretch as the still leaves on a slow machine, open item 253, the controls' builder's job 5.",
+    "Chain 32 started at 14:23 UTC on three merges: the first pictures, summer's miniature (`agent/p6-summer-mini` `e569c779`) and fall's base, thirteenth and fourteenth steps (`agent/p6-fall-base` `e71342d9`). Pictures 2 and 3: summer's fence and pond, approved left, main in the middle, the list right. The fence has the approved's form (tall thin posts with round tops, two thin rails), the lamp post's stripe on the pond is narrow and dark, the white speck is gone, the wall is main's stones again. Fall's base: its report came at 14:17 UTC and I looked at its three pictures. The vines are matt and black again with a narrow light where main's carry long bright streaks, and the three bars are met by its builder's numbers: the flank's runs 4.9 and 5.1 against a bar of 5.2 and 5.3, its 90th percentile 105.0 within 10 of the approved's 113.3, the base's part 0.883 against a bar of 0.85. Its builder says plainly that the light still peaks bright and beaded, so the vines lean toward wet beside the approved's soft matt grey. The chain is pushed once its lines are read, about 15:00 UTC.",
+    "Fall's air, ninth list: read, four pictures looked at, held for one thing. In by its builder's counter: the leaves in the window at the approved's count (10 on the approved, 17 on main, 11 now, the longest 22.9 px against 23.1), the points in a glow with the small orange class at 243 against the approved's 206 and main's 273, the third storm's score 0.9846 against main's 0.9811. Held: the new streaks of the upper air read as an even slanted hatch across the sky and the tree's crown, 5 to 12 px wide against the approved's 3 to 4. Ordered: one push now with the streaks out, which I merge after looking at whole frames and a 4K motion count, then the streaks again as its tenth list. The miniature's sharpness share falls from 0.957 to 0.924 with the ninth list, 0.935 with the streaks out by its builder's switching; the causes are fewer leaves and the glow in front of the cottage, both ordered, so decision 194 does not count that against the air down to a floor of 0.92.",
+    "The change of season: its builder pushed four more pictures at 14:12 UTC and I looked at all four. Picture 1: the four changes at their peak at the final tier, film frames 675, 1395, 2115 and 2835, drawn on the pushed head. In each the heart is white without an edge, a glow lies round the glass in the change's own colour (rose, cream gold, amber, ice blue), the base stands lit in mid pass, a pool of light lies on the table and the room's lamps stay in sight. Before this round a flat square wash hid the base and cut the ball. Spring's petals now lift off the table and blow out to the right ahead of the peak. Below the bar by its builder's own words: winter's ferns and summer's sand heap thin away and shear into bands over two frames (668 to 669, 2107 to 2108), and no run of final frames in order was drawn, only single frames. By my look at the draft strips: two bats stand on the bright cover before the base has changed, and the bases pass as a dissolve. Its written report is awaited; not merged, not judged.",
+    "Below the bar, plainly, unchanged since Status 215. Summer: the crown, the base (grey weathered wood where the approved is pale packed sand), seeds as cream stars, lights as even dots, the landing's swirl, the sand stream, the lawn, the pond. Fall: the air's leaves and ground, the tree bare of lights, the cottage small and dark, the wall and the fence, the base's vines, sheaf, wall and pumpkin faces. Spring: the base's cushion, roots, stones, moss's lower edge, trickle and flat pale caps. The change of season until its report is read and judged, the controls, and 4K motion on the lawn until the masters draw at 96.",
+    "Render counts since the last status. Drawn here: nothing before chain 32, which draws its eight draft stills and two measures now. On helper machines by their reports: 2 pages opened for the live check, 4 frames at hd at the final tier for the change's peaks, 4 frames at 3840 at the final tier for fall's base, fall's air stills at hd for its counts. No frame of the masters yet.",
     "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
-    "phase 6: 33.26 h used of its 12.00 h box",
-    "allowance (after the review): 33.26 h used of 12.00 h allowed",
+    "phase 6: 35.58 h used of its 12.00 h box",
+    "allowance (after the review): 35.58 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-212-1.jpg",
-      "caption": "Fall at rest on chain 30 with the base's twelfth step, approved picture left and build right, on origin now, below the bar",
+      "file": "out/stills/status/status-216-1.jpg",
+      "caption": "The change of season at its four peaks at the final tier, film frames 675, 1395, 2115 and 2835, drawn on its builder's pushed head, not on main yet, not judged",
       "w": 1200,
-      "h": 536
+      "h": 676
     },
     {
-      "file": "out/stills/status/status-212-2.jpg",
-      "caption": "Fall's base at the right flank at two times, approved picture left, the tenth step in the middle, the twelfth step right, on origin now, below the bar",
+      "file": "out/stills/status/status-216-2.jpg",
+      "caption": "Summer's fence at four times, approved picture left, main in the middle, the miniature's list right, in chain 32",
       "w": 1200,
-      "h": 300
+      "h": 286
     },
     {
-      "file": "out/stills/status/status-212-3.jpg",
-      "caption": "Fall's air, approved picture left, main in the middle, the eighth list right, held, below the bar",
+      "file": "out/stills/status/status-216-3.jpg",
+      "caption": "Summer's pond at three times, approved picture left, main in the middle, the miniature's list right, in chain 32, below the bar",
       "w": 1200,
-      "h": 400
+      "h": 183
     },
     {
-      "file": "out/stills/status/status-212-4.jpg",
-      "caption": "Summer's tree, approved picture left, main in the middle, the twelfth pass right, in chain 31, below the bar",
+      "file": "out/stills/status/status-216-4.jpg",
+      "caption": "The seventh publish's build opened at summer with its controls, read on a helper machine",
       "w": 1200,
-      "h": 449
+      "h": 675
     }
   ]
 }
