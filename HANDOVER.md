@@ -2,7 +2,21 @@
 
 Branch agent/p6-fall-base, head c291a11c: the shader commit d2878876 with main 35d00e1b merged in (fall's scene fifth list and air fourth list). The fifth list changed src/seasons/fall/base.ts only. The mesh is as on the fourth list, whose asset script change still stands: `npm run make -- base-fall` must be run and its files committed by /root (80910 triangles, 1448 more than main's 79462; public glb 1348780 bytes, sha eb905811891fd477 on this VM).
 
-## The thirteenth step (about 12:55 UTC), the newest head
+## The fourteenth step (about 14:20 UTC), the newest head
+
+/root held the thirteenth (efca8b82) at 13:20 for one thing: the vines read grey (flank runs 6.0 and 5.6, 90th percentile 133.3). The fourteenth is that one thing and nothing else: commit e3414aeb (base.ts, two lines: BRAMBLE.SOFT 0.85 to 1.18, the soft light's power 18 to 60, its bead 0.6 + 0.9 to 0.3 + 1.7), then main 06954500 and bbdd4b03 merged (status files only). The mesh is the thirteenth's; make base-fall is still owed by /root.
+
+Proofs on bbd70386 (e3414aeb with main 06954500, local make): M3 at review 0.8835, base 0.883, miniature 0.957; tsc; whole vitest 948 passed, 8 skipped; strict pass; determinism pass; stand-ins black; draft stills fall-rest fdcfa55bae4d4cd2, fall-landed c6cfb98c9d3c1690, the six others as the list of b22b5be4; frames 2364 to 2367 at 3840 final.
+
+Measures (flank box x 1190 to 1330, y 760 to 920): runs 4.9 and 5.1, 90th percentile 105.0, median 19.4 (approved 3.7, 4.8, 113.3, 34.6). Neutral pixels of x 1080 to 1260, y 700 to 1010 (neutral.py): 75th percentile 31.1, 90th 88.7 (approved 33.0 and 94.4, twelfth 35.6 and 92.2, thirteenth 48.9 and 115.0). The light cut square to four vines (perp.py): 3 to 4 px over half of its peak, the thirteenth 5 to 6. Cells: 1.02 2.25 1.34 0.99 / 0.80 0.58 0.47 0.74 / 1.11 1.05 1.21 1.23.
+
+Tries (t15.py makes base.tN.ts from base.s14.ts): power 60 with the old strength read base 0.789; power 60 at 1.05 read 0.835; the bead at 8 per mm read 0.871 but is finer than the proven 6; power 76 and 110 narrow the light to 2 to 3 px and bring the 90th percentile to 101.0 and 96.0, outside ten of approved's. base.t7.ts is the pushed one.
+
+Still wrong: the light is bright at its peak (about 160 to 230) and broken, so the vines lean toward wet where approved's are matt with a soft grey; the flank's median is low; everything listed under the thirteenth except the band.
+
+Next, /root's order of 13:20, after this push: (2) the pumpkin faces: hard edged cuts with the rind's thickness as a darker rim, ribs on the skin, the three 60 px columns (x 720 to 780, 1020 to 1080, 1260 to 1320) to 0.8 or more by form, not by gain; (3) the sheaf: 9 to 13 lines of 1.6 to 2.0 px across the counted row, curled and crossing; (4) the wall: fewer and larger smooth facets with one glossy edge each, no grain finer than 3 px at hd; (5) the web down to the right foot with more cross threads. Each with approved, twelfth and ours from one counter, three pictures side by side.
+
+## The thirteenth step (about 12:55 UTC)
 
 Pushed head efca8b82: commit 3849097e (src/seasons/fall/base.ts, assets-src/base-fall/mesh.mjs, RECIPE.md) on main a6fe2ff4 (chain 30), then main 4f95670b merged (ebbf96e0, chain 31 and status 213), then efca8b82 (one line of base.ts: the wall's angle round the drum asked in the tested form, since tests/glsl-normalize.test.ts failed on the first form; 6 pixels of the hd review still move by 1 level). Draft stills on efca8b82's content: fall-rest 58138a1c63fae961, fall-landed 01f0ca196c990e4f, the six others as the list of b22b5be4. The whole vitest (948 passed, 8 skipped), tsc, strict, determinism and the stand-ins still were taken on that content too; G15 and the frames at 3840 on a6fe2ff4 with the first form of the angle. The asset script changed, so `npm run make -- base-fall` must be run and its files committed by /root: 77,762 triangles (iron 54,874 with 80 strands and 82 thorns, pumpkins 13,458, wax 8,512, web 918), the twelfth had 79,830. G15 reads 1,759,623 of 1,800,000 at high (1,765,827 before; the base is counted three times there). Everything below this section describes older heads.
 
