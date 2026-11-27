@@ -17,7 +17,7 @@ const TWIG = { each: [0.3, 0.7], length: [0.3, 0.52], seg: 0.8, radius: 0.86, tu
 const SPIKE = { each: [0.05, 0.4], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
 const TIP_R = 0.11
 const THICK = { limb: 1.3, twig: 1.2, bough: 0.9, tip: 0.9 }
-const SLEEVE = { from: -3.2, to: 36.5, split: 15.2, step: [0.45, 0.6], around: [96, 48], out: 0.05, deep: [0.95, 0.34], stem: 0.12, twist: 2.4 }
+const SLEEVE = { from: -3.2, to: 36.5, split: 15.2, step: [0.6, 0.6], around: [192, 48], out: 0.05, deep: [1.15, 0.4], stem: 0.12, twist: 2.4 }
 const EMBER = { count: 26, apart: 4.4, r: [0.15, 0.26], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
 
 const [T, RNG] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
@@ -161,8 +161,10 @@ function barkAt(phi, h) {
   const wander = 0.4 * Math.sin(2 * a + 0.27 * h + 1.1) + 0.28 * Math.sin(3 * a - 0.33 * h + 0.5)
   const broad = Math.pow(Math.abs(Math.sin(4.5 * a + wander)), 0.6)
   const fine = Math.pow(Math.abs(Math.sin(11.5 * a + 1.8 * wander + 0.7 * Math.sin(0.55 * h) + 0.9)), 0.75)
+  const hair = Math.pow(Math.abs(Math.sin(21 * a + 2.6 * wander + 1.1 * Math.sin(0.8 * h + 2 * a) + 2.1)), 0.6)
   const split = 1 - 0.5 * Math.exp(-Math.pow(Math.sin(0.9 * h + 2.3 * Math.sin(3 * a + 1.3) + 5 * a), 2) / 0.02)
-  return (0.76 * broad + 0.24 * fine) * split
+  const knot = 1 - 0.45 * Math.exp(-Math.pow(Math.sin(0.37 * h + 1.7 * Math.sin(2 * a + 0.4) + 3 * a + 0.8), 2) / 0.012)
+  return (0.5 * broad + 0.27 * fine + 0.23 * hair) * split * knot
 }
 function sleeve(from, to, step, around, v0) {
   const hs = []
@@ -191,7 +193,7 @@ function sleeve(from, to, step, around, v0) {
       const r = T.trunkRadius(phi, h) * stout + SLEEVE.out + deep * b * (0.35 + 0.65 * end)
       pos.push(ax + Math.cos(phi) * r, h, az + Math.sin(phi) * r)
       uv.push(((phi + T.trunkTwist(h)) / TAU) * S.barkAround, v / S.barkMm)
-      const shade = (0.16 + 0.84 * Math.pow(smoothstep(0.08, 0.85, b), 1.5)) * (0.8 + 0.2 * smoothstep(-1, 5, h))
+      const shade = (0.07 + 0.93 * Math.pow(smoothstep(0.08, 0.85, b), 1.5)) * (0.8 + 0.2 * smoothstep(-1, 5, h))
       const warm = 0.95 + 0.1 * hash(Math.round(((phi + T.trunkTwist(h) * SLEEVE.twist) / TAU) * 9) + 3)
       col.push(shade * warm, shade * 0.99, shade * (2 - warm) * 0.97)
     }
