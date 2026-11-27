@@ -67,6 +67,16 @@ const litterAt = (x, z) => {
   const shore = smooth(1.0, 1.16, L.pondField(x, z))
   return clamp((base + byFence + underTree + byWall) * (0.25 + 0.75 * shore), 0, 1)
 }
+// How much of the ground's leaf map shows: thick by the fence and under the tree, thin on the path.
+const COVER = { base: 0.16, patch: 0.3, fence: 0.5, tree: 0.42, wall: 0.15, path: 0.25 }
+const coverAt = (x, z) => {
+  const base = COVER.base + COVER.patch * fbm(x * 0.12 + 1.7, z * 0.12 + 4.2, 5, 3)
+  const byFence = COVER.fence * (1 - smooth(0.5, 5, fenceGap(x, z)))
+  const underTree = COVER.tree * (1 - smooth(5, 17, treeGap(x, z)))
+  const byWall = COVER.wall * (1 - smooth(0.3, 3, cottageGap(x, z)))
+  const shore = smooth(1.0, 1.16, L.pondField(x, z))
+  return clamp((base + byFence + underTree + byWall) * (0.25 + 0.75 * shore) * (COVER.path + (1 - COVER.path) * smooth(0.2, 2.2, pathGap(x, z))), 0, 1)
+}
 const mossAt = (x, z) => {
   const patch = 0.26 + 1.1 * fbm(x * 0.09 + 9.3, z * 0.09 + 2.2, 8, 3)
   const bank = 0.2 * (1 - smooth(1.02, 1.3, L.pondField(x, z)))
@@ -119,7 +129,7 @@ const mossAt = (x, z) => {
       const d = 1 - 0.72 * under(p)
       return [k * d, k * d, k * d]
     },
-    surf: (p) => [litterAt(p[0], p[2]) * (1 - under(p)), mossAt(p[0], p[2]) * (1 - 0.6 * under(p))],
+    surf: (p) => [coverAt(p[0], p[2]) * (1 - under(p)), mossAt(p[0], p[2]) * (1 - 0.6 * under(p))],
     uv: (p) => [p[0], p[2]],
   })
 }
@@ -338,7 +348,7 @@ for (const p of PUMPKINS) pumpkin(p)
 // The approved roof is thick, uneven, weathered shingles in a few staggered rows, dark brown violet, with a ridge that
 // sags. These lie just over the shared slope (its fine slates stay underneath, unseen), so the cottage keeps its place and size.
 const CAP = { fromMm: 17.6, keep: 0.84, out: 0.42, thick: 0.9 }
-const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], rise: [0.5, 0.72], gap: 0.16, eave: 0.3, ends: 0.34, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#a9805e'), wear: 0.38 }
+const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], rise: [0.5, 0.72], gap: 0.16, eave: 0.3, ends: 0.34, tones: ['#6e4c44', '#7d584a', '#62464c', '#8a6450', '#70525c', '#584048'].map(lin), worn: lin('#c08a58'), wear: 0.75 }
 {
   const RS = rng(9241)
   const pick = (a) => a[Math.floor(RS() * a.length)]
@@ -385,8 +395,9 @@ const SHINGLE = { rows: 8, over: 1.55, wide: [1.5, 2.5], thick: [0.26, 0.4], ris
           P.setXYZ(i, q[0], q[1], q[2])
           const top = smooth(-0.1, 0.1, y)
           const streak = 0.72 + 0.5 * noise(x * 4.5 + seed, z * 0.8, 7)
-          const lit = top * smooth(0.55, 1, k) * (0.35 + 0.65 * smooth(0.5, 1, noise(x * 3.1 + seed, 9.2, 5) + 0.5))
-          const c = mix3(mul3(tone, streak * (0.42 + 0.58 * top) * (0.6 + 0.4 * k)), SHINGLE.worn, SHINGLE.wear * lit)
+          const lit = top * smooth(0.8, 1, k) * (0.45 + 0.55 * smooth(0.5, 1, noise(x * 3.1 + seed, 9.2, 5) + 0.5))
+          const under = 0.14 + 0.86 * smooth(0.34, 0.62, k)
+          const c = mix3(mul3(tone, streak * (0.1 + 0.9 * top) * under), SHINGLE.worn, SHINGLE.wear * lit)
           col.set(c, i * 3)
         }
         g.setAttribute('color', new THREE.BufferAttribute(col, 3))
@@ -853,18 +864,18 @@ const earthBytes = writePng(
 const litter = new Float32Array(SIZE * SIZE * 4)
 {
   const RL = rng(90211)
-  const tones = ['#7a3c1e', '#84441e', '#6e3018', '#96481c', '#552c1a', '#74401f', '#8c3a1e', '#6c4424', '#b05a22', '#40261a', '#5c3a26', '#4a301e'].map(hexRgb)
-  const n = 190
+  const tones = ['#b4541c', '#c87a28', '#8c2e16', '#d09a3c', '#5a2c18', '#a8481c', '#e0a040', '#742818', '#96601e', '#40241a', '#c06420', '#6a3c20'].map(hexRgb)
+  const n = 760
   for (let k = 0; k < n; k++) {
     const cx = RL() * SIZE
     const cy = RL() * SIZE
-    const len = 55 + 50 * RL()
+    const len = 26 + 26 * RL()
     const wide = len * (0.5 + 0.25 * RL())
     const ang = RL() * TAU
     const ca = Math.cos(ang)
     const sa = Math.sin(ang)
     const tone = tones[Math.floor(RL() * tones.length)]
-    const dark = 0.25 + 0.9 * RL()
+    const dark = 0.45 + 0.75 * RL()
     const rank = 0.06 + 0.94 * ((k + 0.5) / n)
     const lobes = 5 + Math.floor(RL() * 3)
     const ph = RL() * 9
