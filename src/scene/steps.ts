@@ -220,3 +220,19 @@ export function stepsOf<T>(make: () => T): Generator<void, T> {
     return make()
   })()
 }
+
+/**
+ * A part that is made in steps, as one step of a set. Taken, it makes one piece and puts itself back at the front of the
+ * set, until its last piece is made and `made` is given the part. While pieces are left it says that more may follow in
+ * the same frame; the step after its last piece has a frame of its own, as after a part made in one piece.
+ */
+export function inPieces<T>(set: () => Step[], make: () => T, made: (part: T) => void): Step {
+  const pieces = stepsOf(make)
+  const piece = (): boolean => {
+    const p = pieces.next()
+    if (p.done) made(p.value)
+    else set().unshift(piece)
+    return !p.done
+  }
+  return piece
+}
