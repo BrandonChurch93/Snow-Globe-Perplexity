@@ -45,7 +45,7 @@ const MOSS = { low: [0.7, 0.9, 0.6] as Rgb, high: [0.88, 1.02, 0.86] as Rgb, tal
 // dark grey green stones with joints only a little darker, so the tone is bent: joints are held at `floor` of `top` and
 // lose their hue, and only the palest stones reach `top`. The gable is cooler than the side, darker below the purple
 // window's head and lighter toward the side wall's corner, as the approved wall is.
-const STONE = { top: 0.105, knee: 0.17, power: 2.7, floor: 0.26, tone: [0.6, 0.78, 1.0] as Rgb, gable: [0.75, 0.82, 1.05] as Rgb, low: [0.9, 0.92, 0.95] as Rgb, high: [1.2, 1.3, 1.3] as Rgb, corner: [3, 2.1, 2.3] as Rgb, lowMm: 3, eaveMm: 1.2, side: [1.5, 1, 0.98] as Rgb, faceMm: 1.2 }
+const STONE = { top: 0.114, knee: 0.17, power: 2.7, floor: 0.215, tone: [0.6, 0.78, 1.0] as Rgb, gable: [0.75, 0.82, 1.05] as Rgb, low: [0.9, 0.92, 0.95] as Rgb, high: [1.2, 1.3, 1.3] as Rgb, corner: [3, 2.1, 2.3] as Rgb, lowMm: 3, eaveMm: 1.2, side: [1.5, 1, 0.98] as Rgb, faceMm: 1.2 }
 const WALL_LAMP: Rgb = [0.85, 0.6, 0.5]
 const WHITE: Rgb = [1, 1, 1]
 // The shared chimney is pale brick. The approved one is the wall's dark stone, a little greyer.
