@@ -1,7 +1,7 @@
 import { config } from '../../config'
 import { hash2, unit } from '../../core/rng'
 import type { SdfGrid } from '../../core/stage'
-import { globePoseAt, seasonAt, type Timeline } from '../../film/timeline'
+import { eventBeat, eventSeconds, globePoseAt, seasonAt, type Timeline } from '../../film/timeline'
 import { Liquid, LIQUID_CURL, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, ROLL_SLAB_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
 import { BEHAVIOUR, KINDS, KIND_IN, NONE, POOL, SEASONS, type Behaviour } from './kinds'
 import { emptySdf, GROUND_Y, sdfSample, sdfSlope, type Emitter } from './sdf'
@@ -42,6 +42,15 @@ const SWAP_FROM = 0.5
 const SWAP_TO = 0.86
 const HOLD = 0.6
 const GRAVITY_MM = 9810
+const MOTE = KINDS.indexOf('mote')
+const SUMMER = SEASONS.indexOf('summer')
+const RETURN_MM_S = 8.5
+const DRAIN_RISE_SECONDS = config.shake.spinDownSeconds * 0.62
+const DRAIN_FALL_SECONDS = config.states.restSeconds - config.shake.spinDownSeconds
+const DUST_FADE_SECONDS = (config.states.restSeconds - config.shake.settleCheckSeconds) * 0.65
+const DRAIN_INV_HEIGHT = 1 / (0.72 * R)
+const DUST_RETURN_HEIGHT = 0.14 * R
+const DUST_RETURN_INV_HEIGHT = 1 / (0.5 * R)
 const STEER_GAIN = 1.5
 /** A light that is carried off by the storm goes dim and stops blinking; it lights again as it comes within this many reaches of the point it wanders after (at home it is never farther than two). */
 const HOME_NEAR_REACHES = 2.2
@@ -113,6 +122,8 @@ const K_SLOPE = new Float64Array(NK)
 /** The share of a kind that is born away from its emitters, anywhere under the dome: fall's leaves and embers fill the whole volume to the top (the approved pair), not only the air round the tree that sheds them. */
 const BORN_WIDE: Readonly<Record<string, number>> = { leaf: 0.5, ember: 0.55 }
 const K_WIDE = new Float64Array(NK)
+const RETURN_SHARE: Readonly<Record<string, number>> = { mote: 1, flake: 0.08, seed: 0.34 }
+const K_RETURN = Float64Array.from(KINDS, (name) => RETURN_SHARE[name] ?? 0)
 const K_REST2 = new Float64Array(NK)
 const K_KICK = new Float64Array(NK)
 const K_CRUISE = new Float64Array(NK)
@@ -1182,8 +1193,33 @@ export class ParticleEngine {
     const n = this.step
     const t = n * DT
     this.follow(tl, (n + 1) * DT, n)
-    this.model.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t)
-    this.sweep(n)
+    let beat: number | null = null
+    let age = -1
+    const lift = config.shake.liftBeats
+    const stroke = config.shake.swapWindow.fromBeat
+    for (let i = tl.events.length - 1; i >= 0; i--) {
+      const event = tl.events[i]!
+      if (t < event.startSec) continue
+      const end = event.startSec + eventSeconds(event)
+      if (t >= end) {
+        age = t - end
+        break
+      }
+      if (beat !== null) break
+      beat = eventBeat(event, t)
+      if (beat >= stroke) break
+    }
+    let drain = 0
+    let thin = 0
+    if (age > config.states.landedSeconds) {
+      const wake = beat === null ? 1 : 1 - smooth((beat - lift) / (stroke - lift))
+      const rise = smooth((age - config.states.landedSeconds) / DRAIN_RISE_SECONDS)
+      const fall = smooth((age - config.shake.spinDownSeconds) / DRAIN_FALL_SECONDS)
+      drain = wake * RETURN_MM_S * rise * (1 - fall)
+      if (this.nowIx !== SUMMER) thin = wake * smooth((age - config.shake.settleCheckSeconds) / DUST_FADE_SECONDS)
+    }
+    this.model.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t, beat)
+    this.sweep(n, drain, thin)
     if (this.window !== 0) this.blend()
     this.step = n + 1
     this.behind = true
@@ -1285,7 +1321,7 @@ export class ParticleEngine {
     vel[o + 2] = vel[o + 2]! + (uz + sz - vel[o + 2]!) * b
   }
 
-  private sweep(n: number): void {
+  private sweep(n: number, drain: number, thin: number): void {
     const L = this.model
     const c = L.coef
     const wx = c[0]!
@@ -1313,6 +1349,13 @@ export class ParticleEngine {
     const ky = L.carry[1]!
     const kz = L.carry[2]!
     const thrown = kx !== 0 || ky !== 0 || kz !== 0
+    const slipX = L.slip[0]!
+    const slipY = L.slip[1]!
+    const slipZ = L.slip[2]!
+    const turnX = L.slip[3]!
+    const turnY = L.slip[4]!
+    const turnZ = L.slip[5]!
+    const slipping = slipX !== 0 || slipY !== 0 || slipZ !== 0 || turnX !== 0 || turnY !== 0 || turnZ !== 0
     const out = L.clearing
     const m = L.motion
     const gux = m.gx
@@ -1328,7 +1371,8 @@ export class ParticleEngine {
       gey *= s
       gez *= s
     }
-    const bound = L.maxSpeed
+    const bound = L.maxSpeed * L.release
+    const release2 = L.release * L.release
     const lively = bound > (this.window === 1 ? Math.min(MIN_LIFT_IN[this.nowIx]!, MIN_LIFT_IN[this.swapTo]!) : MIN_LIFT_IN[this.nowIx]!)
     const mask = m.ax !== 0 || m.ay !== 0 || m.az !== 0 ? 3 : lively ? 15 : 63
     const eA = this.nowIx
@@ -1374,7 +1418,7 @@ export class ParticleEngine {
           const o = i * 3
           L.velocityAt(xyz[o]!, xyz[o + 1]!, xyz[o + 2]!, u)
           const sp2 = u[0]! * u[0]! + u[1]! * u[1]! + u[2]! * u[2]!
-          if (sp2 > lf * lf) {
+          if (sp2 * release2 > lf * lf) {
             this.toss(i, Math.sqrt(sp2), n)
             continue
           }
@@ -1536,6 +1580,28 @@ export class ParticleEngine {
         fx += kx * hw
         fy += ky * hw
         fz += kz * hw
+      }
+      if (slipping && q < 1) {
+        // The suspended load can bank; the wall and the solid contacts still limit each actual displacement.
+        const q2 = q * q
+        const bulk = 1 - q2 * q2
+        fx += (slipX + turnY * z - turnZ * y) * bulk
+        fy += (slipY + turnZ * x - turnX * z) * bulk
+        fz += (slipZ + turnX * y - turnY * x) * bulk
+      }
+      // The last slow current carries fine suspended material away from the crown. Heavier loads already settle under gravity.
+      if (drain > 0 && q < 1) {
+        const returnShare = K_RETURN[k]!
+        if (returnShare > 0) {
+          const speed = drain * returnShare * (1 - q * q)
+          fy -= speed * (k === MOTE ? smooth((y - DUST_RETURN_HEIGHT) * DUST_RETURN_INV_HEIGHT) : smooth((y + 0.12 * R) * DRAIN_INV_HEIGHT))
+        }
+      }
+      if (k === MOTE && this.window === 0) {
+        if (thin > 0) {
+          const dust = (hash2(i, 781) >>> 24) < 160 ? 0.94 : 0.18
+          opacity[i] = fade[i]! * (1 - dust * thin)
+        } else if (opacity[i] !== fade[i]) opacity[i] = fade[i]!
       }
       const us2 = (ux + rx) * (ux + rx) + (uy + ry) * (uy + ry) + (uz + rz) * (uz + rz)
       if (walled) {
