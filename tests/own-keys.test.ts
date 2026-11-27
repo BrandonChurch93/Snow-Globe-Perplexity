@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { cameraById, cameras, config, particleKinds, tierEvenFromPx, tierMotion, tierSamples, tiers } from '../src/config'
+import { cameraById, cameras, config, particleKinds, tierEvenFromPx, tierMotion, tierSamples, tierTravelRule, tiers } from '../src/config'
 import { poseById, poseOf, poseWith } from '../src/scene/cameras'
 
 // A name that comes from outside (the address, a tool's argument) is looked up among a table's own entries only. A name
@@ -37,21 +37,26 @@ describe('a name from outside finds only what a table holds itself', () => {
       expect(() => tierSamples(id), id).toThrow(/no such tier/)
       expect(tierMotion(id), id).toBeUndefined()
       expect(tierEvenFromPx(id), id).toBeUndefined()
+      expect(tierTravelRule(id), id).toBeUndefined()
     }
     planted(final, () => {
       expect(() => tierSamples(PLANTED)).toThrow(/no such tier/)
       expect(tierMotion(PLANTED)).toBeUndefined()
       expect(tierEvenFromPx(PLANTED)).toBeUndefined()
+      expect(tierTravelRule(PLANTED)).toBeUndefined()
     })
     for (const id of Object.keys(tiers)) {
       expect(tierSamples(id)).toBe(tiers[id]!.samplesPerFrame)
       expect(tierMotion(id)).toBe(tiers[id]!.motion)
       expect(tierEvenFromPx(id)).toBe(tiers[id]!.motion?.evenFromPx)
+      expect(tierTravelRule(id)).toBe(tiers[id]!.motion)
     }
     expect(tierSamples('samples-12')).toBe(12)
     expect(tierSamples('final-48')).toBe(48)
     expect(tierEvenFromPx('final-48')).toBe(final.motion!.evenFromPx)
     expect(tierEvenFromPx('samples-12')).toBeUndefined()
+    expect(tierTravelRule('final-48')).toBe(final.motion)
+    expect(tierTravelRule('samples-12')).toBeUndefined()
   })
 
   it('names no kind of particle for a season the config does not hold', () => {
