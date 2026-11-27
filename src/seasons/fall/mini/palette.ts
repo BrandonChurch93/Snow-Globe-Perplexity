@@ -7,7 +7,7 @@ export const tones: Record<'lamp' | 'flame' | 'lampLight' | 'purple' | 'purpleDr
   lamp: [1, 0.6, 0.24],
   flame: [1, 0.88, 0.62],
   lampLight: [1, 0.58, 0.3],
-  purple: [0.6, 0.045, 0.53],
+  purple: [0.41, 0.03, 0.365],
   purpleDrape: [0.62, 0.03, 0.6],
   purpleLight: [0.95, 0.22, 0.85],
   green: [0.16, 1, 0.12],

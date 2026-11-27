@@ -27,7 +27,7 @@ const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
 const NEAR = { lamp: { power: 12, reachMm: 10 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 13, reachMm: 5.5, ends: 4 }, door: { power: 7, reachMm: 4.5 } }
-const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 2.2, reachMm: 4.2, ends: 3 }, pumpkin: { power: 8, reachMm: 4.5, ends: 3 }, door: { power: 6, reachMm: 5, ends: 3 } }
+const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 3.6, reachMm: 4.2, ends: 3 }, pumpkin: { power: 8, reachMm: 4.5, ends: 3 }, door: { power: 6, reachMm: 5, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.16, hot: 0, bloom: 0.2 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
@@ -48,13 +48,13 @@ const CHIMNEY = { tone: [0.9, 0.95, 0.9] as Rgb, top: 0.26, knee: 0.5, power: 2.
 // The shared slates run from 0.02 (a slate's shadowed top edge) to 0.12 (its lit lower edge). The approved roof is big warm
 // slates with bright lower edges over black gaps, so the tone is bent about `mid` and weathered in patches a few slates wide.
 const ROOF = { tone: [1.65, 1.22, 0.95] as Rgb, grey: 0.55, mid: 0.045, bend: 1.6, patch: [0.6, 1.7] as [number, number] }
-const DOOR: Rgb = [0.1, 0.17, 0.16]
+const DOOR: Rgb = [0.15, 0.31, 0.33]
 // The shared stones are a few large blocks; the approved wall is small chipped stones. Upright stone is broken up by the
 // grain map read coarser, through its levels, so the chips hold their size at any distance.
 const CHIP = { scale: 0.4, low: 0.4, span: 1.2, edges: [0.3, 0.7] as [number, number] }
 // The shared door is one smooth leaf. The approved one is planks: each a tone of its own, a dark groove between them,
 // drawn across the door with the groove's edge held one pixel soft.
-const PLANK = { wideMm: 0.84, groove: 0.16, dark: 0.92, tone: [0.45, 1.2] as [number, number] }
+const PLANK = { wideMm: 0.84, groove: 0.16, dark: 0.92, tone: [0.4, 1.35] as [number, number], grain: [0.55, 0.9] as [number, number] }
 const doorFrame = cottageFrame()
 const chipped: Cover = {
   uniforms: {},
@@ -72,7 +72,8 @@ const chipped: Cover = {
   float fallSoft = max(fwidth(fallPlank), 1e-4);
   float fallGroove = smoothstep(${(0.5 - PLANK.groove).toFixed(3)} - fallSoft, ${(0.5 - PLANK.groove).toFixed(3)} + fallSoft, abs(fract(fallPlank) - 0.5));
   float fallBoard = ${PLANK.tone[0].toFixed(2)} + ${PLANK.tone[1].toFixed(2)} * fract(sin(floor(fallPlank) * 12.9898) * 43758.5453);
-  diffuseColor.rgb *= mix(1.0, fallBoard * (1.0 - ${PLANK.dark.toFixed(2)} * fallGroove), fallDoor);
+  float fallGrain = ${PLANK.grain[0].toFixed(2)} + ${PLANK.grain[1].toFixed(2)} * texture2D(map, vec2(fallAcross * 0.5, vStageLocal.y * 0.05) + 0.37).r;
+  diffuseColor.rgb *= mix(1.0, fallBoard * fallGrain * (1.0 - ${PLANK.dark.toFixed(2)} * fallGroove), fallDoor);
 }
 `,
 }
@@ -80,7 +81,7 @@ const TIMBER: Rgb = [0.4, 0.42, 0.34]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 // The shared shrubs are one soft mass. Dry leaves stand apart: each takes its own tone and its own depth of shade.
 const BUSH = { gain: 5.2, cap: 2, low: 0.35 }
-const GROUND = { soil: 1.7, leaf: 1.6, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
+const GROUND = { soil: 1.7, leaf: 1.15, leafScale: 0.85, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
 const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 4.5, pane: 1.6, pumpkin: 4.5, tight: 0.003, wide: 0.012, wideShare: 0.03, calm: 0.3, lowMm: 3.4, fog: 0.42, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
 
 const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
@@ -105,7 +106,7 @@ function stretched(source: THREE.BufferGeometry): THREE.BufferGeometry {
 }
 
 const flame = tallLamp(lampFlame())
-const STACK = { fromMm: 17.6, keep: 0.7, reachMm: 0.5 }
+const STACK = { fromMm: 17.6, keep: 0.84, reachMm: 0.5 }
 const BUSHES = shrubs().filter((s) => !isIvy(s.r))
 const IVY = shrubs().filter((s) => isIvy(s.r))
 const inIvy = (x: number, y: number, z: number): boolean => IVY.some((s) => Math.hypot((x - s.centre[0]) / s.r[0], (y - s.centre[1]) / s.r[1], (z - s.centre[2]) / s.r[2]) < 1.5)
