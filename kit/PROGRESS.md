@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 200 · 2026-11-27 06:45 UTC
+Status 201 · 2026-11-27 07:15 UTC
 
-- `out/stills/status/status-200-1.jpg`: Summer at the landing as Round 22 judges it, approved picture left and build right, below the bar
-- `out/stills/status/status-200-2.jpg`: Fall's air, the spark trial, approved picture left and trial right at two times, below the bar
-- `out/stills/status/status-200-3.jpg`: Summer's base, seventh list so far from the low camera, main above and the list below, not pushed, below the bar
-- `out/stills/status/status-200-4.jpg`: Summer's tree, the ninth form, approved picture left and form right, with air above and without below, not on main, below the bar
+- `out/stills/status/status-201-1.jpg`: Fall at rest on main after chain 20, the approved picture left and the build right, below the bar
+- `out/stills/status/status-201-2.jpg`: Summer's miniature, the approved picture above, main in the middle, the fourth list below, not on main yet, below the bar
+- `out/stills/status/status-201-3.jpg`: Summer's seeds, the approved picture left and the build right, what the jury named first, below the bar
+- `out/stills/status/status-201-4.jpg`: Spring's base, the approved picture above, the third list in the middle, the fifth list below, merged here and not on origin yet, below the bar
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-27 06:45 UTC
-clock: phase 6, tick of 19.7 minutes
-phase 6: 27.93 h used of its 12.00 h box
-allowance (after the review): 27.93 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 27.93 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-27 07:15 UTC
+clock: phase 6, tick of 30.1 minutes
+phase 6: 28.44 h used of its 12.00 h box
+allowance (after the review): 28.44 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 28.44 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
