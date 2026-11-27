@@ -169,12 +169,9 @@ const STONE_TOP = { sky: 3.2, from: 0.6, to: 0.68, fromMm: 2, toMm: 4 }
 // The shared stone map lies stretched along the walls and reads as courses of logs. The approved's walls are round cobbles of
 // unlike size in dark joints, lit on their upper left: cells drawn pixel by pixel in place of the map's grain, the bump laid flat.
 // The lanterns' patch is capped and would level the stones out: it takes their light and dark after the cap.
-const COBBLE = { cellMm: 0.36, jointFrom: 0.05, jointTo: 0.14, dark: 0.1, darkHigh: 0.85, lit: 1.8, shade: 0.6, litHigh: 0.25, round: 0.26, toneLow: 0.65, toneTop: 1.35, toneHigh: 0.35, gritMm: 0.11, gritDeep: 6, gritNearer: 0.5, gritPx: 0.5, gritWide: 1.15, gritNear: 0.02, gritFar: 0.17, gritPale: 1.7, grit: 0.6, gritHigh: 0.6, highFlat: 1.0, highMean: 1.0, levelLow: 1.1, levelHigh: 0.6, gritFrom: 0.3, gritTo: 0.6, fadeFrom: 0.45, fadeTo: 0.9, mean: 0.8, highFromMm: 9.5, highToMm: 12, low: [0.068, 0.058, 0.072] as Rgb, high: [0.132, 0.068, 0.047] as Rgb, toneFromMm: 7.5, toneToMm: 10.5, cut: 0.5, cutTop: 0.8, stack: 0.5, stackWash: 1, flat: 1.0, smooth: 1.0, patch: 1.0, patchTop: 2.0, small: 0.6, big: 1.4, rough: 0.9, wash: 0.25, washTint: [0.3, 0.4, 0.6] as Rgb, poolCap: 0.05 }
+const COBBLE = { cellMm: 0.66, jointFrom: 0.04, jointTo: 0.1, dark: 0.1, darkHigh: 0.5, lit: 2.2, shade: 0.6, litHigh: 0.6, round: 0.26, gritMm: 0.4, grit: 0.5, gritHigh: 0.75, gritFrom: 0.5, gritTo: 1.0, fadeFrom: 0.35, fadeTo: 0.7, mean: 0.8, highFromMm: 9.5, highToMm: 12, low: [0.068, 0.058, 0.072] as Rgb, high: [0.132, 0.068, 0.047] as Rgb, toneFromMm: 7.5, toneToMm: 10.5, cut: 0.5, cutTop: 0.8, stack: 0.5, stackWash: 1, flat: 1.0, smooth: 1.0, patch: 1.0, patchTop: 2.0, small: 0.6, big: 1.4, rough: 0.9, wash: 0.25, washTint: [0.3, 0.4, 0.6] as Rgb, poolCap: 0.05 }
 // The door stands in an arc of cut stones, pale against the fieldstone, and the lamp beside it lights the jambs: the stones are
 // the shared mesh's own (nine in the ring with a taller key, the jambs stacked under it), told from the wall by where they lie.
-// A cut stone has a dressed face: the broad soft light and dark of the shared stone (cells of `gritMm`, gone where a pixel is
-// wider than `gritFrom` to `gritTo` of a cell) and none of the fieldstone's fine grain, at the hero view as at the close camera.
-const DRESSED = { gritMm: 0.4, grit: 0.5, gritFrom: 0.5, gritTo: 1.0 }
 const ARCH = { toMm: 4.02, keyHalfMm: 0.8, keyToMm: 4.5, gain: 1.0, tint: [1.0, 0.9, 0.76] as Rgb, lamp: 1.3, reachMm: 7.5, gold: [1.0, 0.78, 0.42] as Rgb, wash: 0.5 }
 // The approved cottage has a short stack: what stands over the ridge is drawn in to under half its height, in this season's
 // copy of the mesh and in what the particles meet.
@@ -279,24 +276,10 @@ float cobbleGrit(vec2 p) {
   vec2 f = p - i;
   f = f * f * (3.0 - 2.0 * f);
   return mix(mix(cobbleHash(i).x, cobbleHash(i + vec2(1.0, 0.0)).x, f.x), mix(cobbleHash(i + vec2(0.0, 1.0)).x, cobbleHash(i + vec2(1.0, 1.0)).x, f.x), f.y);
-}
-// The grain of the stone holds its size in the picture, at the close camera as at the hero view: its cells are never finer
-// than \`gritPx\` of a pixel, and one size gives way to the next as the wall goes off or comes near, each size with a field
-// of its own. From \`gritMm\` up the sizes double. Below it (the lens nearer than the hero view's) they go by half octaves,
-// down to \`gritDeep\` halvings, and \`gritNearer\` of an octave finer, so that the grain is nowhere wider in the picture
-// there than at the hero view. A grain is a little wider than tall on the wall, so that it is as wide as tall where the
-// lens looks along the wall.
-float cobbleFine(vec2 q, float mm) {
-  float l = max(log2(mm * ${((2 * COBBLE.gritPx) / COBBLE.gritMm).toFixed(4)}), ${(-COBBLE.gritDeep).toFixed(1)});
-  float u = l < 0.0 ? 2.0 * l - ${(2 * COBBLE.gritNearer).toFixed(2)} * min(-l, 1.0) : l;
-  float n = floor(u);
-  float c = ${COBBLE.gritMm.toFixed(4)} * exp2(max(n, 0.5 * n));
-  float c2 = ${COBBLE.gritMm.toFixed(4)} * exp2(max(n + 1.0, 0.5 * (n + 1.0)));
-  return mix(cobbleGrit(q / c + 37.0 * n), cobbleGrit(q / c2 + 37.0 * (n + 1.0)), u - n);
 }`
 // A stone is round: it turns to the light at its upper left edge and away from it at its lower right one, and is flat between.
-// What is finer than the picture's pixel gives way to its own mean: a joint widens as it thins, the stones fade, and from far
-// off (a pixel wider than `gritTo` mm) the wall is one tone. Under the gable's point the wall is roughcast: the joints go, the grit stays.
+// What is finer than the picture's pixel gives way to its own mean: a joint widens as it thins, the grit fades, and from far
+// off the wall is one tone. Under the gable's point the wall is roughcast: the joints go, the grit stays.
 const cobbleMap = (): string => `float cobbleAny = clamp(vCobble.x + vCobble.z, 0.0, 1.0);
 vec2 cobbleQ = vec2(dot(vStageLocal.xz, vec2(${(frame.u[0] + frame.v[0]).toFixed(4)}, ${(frame.u[1] + frame.v[1]).toFixed(4)})), vStageLocal.y);
 vec2 cobbleFw = fwidth(cobbleQ);
@@ -338,19 +321,10 @@ if (cobbleAny > 0.001) {
   float cobbleJoint = mix(mix(${COBBLE.dark.toFixed(2)}, ${COBBLE.darkHigh.toFixed(2)}, cobbleHigh), 1.0, smoothstep(${COBBLE.jointFrom.toFixed(3)} - 0.5 * cobblePx, ${COBBLE.jointTo.toFixed(3)} + 0.5 * cobblePx, cobbleEdge));
   float cobbleTurn = dot(cobbleTo * inversesqrt(max(dot(cobbleTo, cobbleTo), 1e-4)), vec2(0.6, -0.8));
   float cobbleLit = 1.0 + (1.0 - smoothstep(0.0, ${COBBLE.round.toFixed(2)}, cobbleEdge)) * cobbleTurn * mix(${COBBLE.shade.toFixed(2)}, ${COBBLE.lit.toFixed(2)}, step(0.0, cobbleTurn)) * mix(1.0, ${COBBLE.litHigh.toFixed(2)}, cobbleHigh);
-  vec3 cobbleTone = mix(vec3(${COBBLE.toneLow.toFixed(2)}), vec3(${COBBLE.toneTop.toFixed(2)}, ${(COBBLE.toneTop - 0.05).toFixed(2)}, ${(COBBLE.toneTop - 0.15).toFixed(2)}), cobbleId.x) * mix(vec3(1.0), vec3(1.0, 0.86, 0.72), step(0.6, cobbleId.y));
-  cobbleTone = mix(cobbleTone, vec3(1.0), ${(1 - COBBLE.toneHigh).toFixed(2)} * cobbleHigh);
+  vec3 cobbleTone = mix(vec3(0.5, 0.5, 0.5), vec3(1.45, 1.4, 1.3), cobbleId.x) * mix(vec3(1.0), vec3(1.0, 0.86, 0.72), step(0.6, cobbleId.y));
   vec3 cobbleStone = mix(vec3(${COBBLE.mean.toFixed(2)}), cobbleTone * (cobbleLit * cobbleJoint), 1.0 - smoothstep(${COBBLE.fadeFrom.toFixed(2)}, ${COBBLE.fadeTo.toFixed(2)}, cobblePx));
-  // Under the gable's point the wall is roughcast: no stones, one tone, and the grain alone on it.
-  cobbleStone = mix(cobbleStone, vec3(${COBBLE.highMean.toFixed(2)}), ${COBBLE.highFlat.toFixed(2)} * cobbleHigh);
-  // Single grains on a middle tone: pale ones where the field is high, dark ones where it is low.
-  float cobbleN = cobbleFine(cobbleQ * vec2(${(1 / COBBLE.gritWide).toFixed(4)}, 1.0), max(cobbleFw.x * ${(1 / COBBLE.gritWide).toFixed(4)}, cobbleFw.y));
-  float cobbleSpeck = 1.0 + mix(${COBBLE.grit.toFixed(2)}, ${COBBLE.gritHigh.toFixed(2)}, cobbleHigh) * (${COBBLE.gritPale.toFixed(2)} * smoothstep(${(0.5 + COBBLE.gritNear).toFixed(2)}, ${(0.5 + COBBLE.gritFar).toFixed(2)}, cobbleN) - 1.0 + smoothstep(${(0.5 - COBBLE.gritFar).toFixed(2)}, ${(0.5 - COBBLE.gritNear).toFixed(2)}, cobbleN)) * (1.0 - smoothstep(${COBBLE.gritFrom.toFixed(2)}, ${COBBLE.gritTo.toFixed(2)}, cobbleMm));
-  float cobbleGrain = cobbleSpeck * mix(${COBBLE.levelLow.toFixed(2)}, ${COBBLE.levelHigh.toFixed(2)}, cobbleHigh);
-  // The cut stones of the arch, the jambs and the sills keep their dressed face in place of the grain.
-  float cobbleCut = clamp(vCobble.z / max(vCobble.x + vCobble.z, 1e-3), 0.0, 1.0);
-  if (cobbleCut > 0.0) cobbleGrain = mix(cobbleGrain, 1.0 + ${DRESSED.grit.toFixed(2)} * (2.0 * smoothstep(0.25, 0.75, cobbleGrit(cobbleQ * ${(1 / DRESSED.gritMm).toFixed(4)})) - 1.0) * (1.0 - smoothstep(${DRESSED.gritFrom.toFixed(2)}, ${DRESSED.gritTo.toFixed(2)}, cobbleMm * ${(1 / DRESSED.gritMm).toFixed(4)})), cobbleCut);
-  vec3 cobbleFace = mix(vec3(1.0), cobbleStone, vCobble.x / max(cobbleAny, 1e-3)) * cobbleGrain;
+  float cobbleSpeck = 1.0 + mix(${COBBLE.grit.toFixed(2)}, ${COBBLE.gritHigh.toFixed(2)}, cobbleHigh) * (2.0 * smoothstep(0.25, 0.75, cobbleGrit(cobbleQ * ${(1 / COBBLE.gritMm).toFixed(4)})) - 1.0) * (1.0 - smoothstep(${COBBLE.gritFrom.toFixed(2)}, ${COBBLE.gritTo.toFixed(2)}, cobbleMm * ${(1 / COBBLE.gritMm).toFixed(4)}));
+  vec3 cobbleFace = mix(vec3(1.0), cobbleStone, vCobble.x / max(cobbleAny, 1e-3)) * cobbleSpeck;
   cobbleShade = mix(1.0, clamp(dot(cobbleFace, vec3(0.3, 0.6, 0.1)) * ${COBBLE.patch.toFixed(2)}, 0.0, ${COBBLE.patchTop.toFixed(2)}), cobbleAny);
   diffuseColor.rgb *= mix(vec3(1.0), cobbleFace / max(villageTone * (0.78 + 0.44 * villageMottle), 0.04), cobbleAny);
   villageRough = mix(villageRough, ${COBBLE.rough.toFixed(2)}, cobbleAny);
