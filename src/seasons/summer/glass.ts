@@ -154,8 +154,7 @@ export const look = {
     // a needle toward its foot as toward its tip, so neither end is cut. None is drawn thinner than a pixel, only
     // fainter. They are few, and the bright ones broad or short: the camera of the film draws back from the globe, the
     // limb then crosses a thin line's own width between two frames, and every bright thin line along the limb
-    // flickers there. In their order: ten beside the outline (the knot where the lines meet below, two short spindles;
-    // the tan between the lines; a copper line; copper and cream further up the limb, a dash at their end, one more
+    // flickers there. In their order: eight beside the outline (the tan between the lines; a copper line; copper and cream further up the limb, a dash at their end, one more
     // copper line, and two broad faint ones under them); the tongue past the upper end of the mass and a hair before
     // it; one short hair above the ragged upper edge; and the faint light inward of the mass. The hairs that leave
     // the mass are the sheaf's own. The glow below the foot is the halo's (`sheaf`). A white thread's colour goes by how much white lies at the
@@ -167,8 +166,6 @@ export const look = {
     hot: 11,
     hotAt: [0.9, -0.09] as const,
     threads: [
-      [213.5, 212.3, 0.016, 0.016, 0.003, 0.6, 0, 0.5, 0.5, 1, 0.15, 0, 1],
-      [213.7, 212.4, 0.025, 0.025, 0.003, 0.7, 0, 0.5, 0.5, 1, 0.15, 0, 1],
       [212.5, 198, 0.016, 0.0149, 0.009, 0.12, 0, 4, 3, 0.4, 0, 0, 1],
       [211.5, 199, 0.0195, 0.0185, 0.002, 0.3, 1, 4, 3, 1, 0, 0, 1],
       [203, 190, 0.0295, 0.028, 0.002, 0.15, 1, 4, 4, 1, 0, 0, 1],
