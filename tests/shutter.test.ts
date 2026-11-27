@@ -96,6 +96,11 @@ describe('the samples of a frame that travels', () => {
   })
 
   it('deal the lens points so that their mean under the spread stays near nothing all through the shutter', () => {
+    // Measured with this sum (white noise gives 0.344), five travels each: the set's own order 0.09 to 0.30; the deal at
+    // 24 samples 0.017 to 0.043, 26: 0.011 to 0.023, 33: 0.009 to 0.018, 51: 0.006 to 0.009, 96 to 128: 0.005 to 0.007.
+    // Under one even stride the lens point along the travel swung at 51 samples with a period of 12.8 samples holding
+    // 0.26 of its variance (9.4 px on the picture, the beads of a small light's streak); under the deal the periods over
+    // 6 samples hold 0.02 to 0.07 together.
     const tent = [1, 2, 3, 4, 3, 2, 1].map((w) => w / 16)
     const unit = (v: number[]) => {
       const m = v.reduce((x, y) => x + y, 0) / v.length
