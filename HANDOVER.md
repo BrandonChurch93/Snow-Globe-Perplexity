@@ -108,6 +108,6 @@ M3 at review: miniature 0.867 (was 1.330 at 57ca3da3, 1.361 on main with its air
 
 Still short of the approved picture:
 - The trunk's far edge is about 25 levels under the approved's and its body about 10 red over with the air. The lit ridges are broader than the approved's thin glints; the approved has its fine light in embers and one thin edge line.
-- The purple pane's darkest fifth is lighter and its brightest fifth dimmer than the approved's (96,20,89 and 215,122,216 against 80,6,83 and 244,134,236 before the last small change, not measured again after it).
+- The purple pane's darkest fifth is lighter and its brightest fifth dimmer than the approved's (95,21,88 and 220,139,218 against 80,6,83 and 244,134,236, with the air).
 - Wall, litter and chimney now carry less fine energy than the approved's. The fence's boards read thin end on; no short pickets. The ground is darker and greyer. Door, wall stones and arch are the shared model's.
-- The two fold meshes add 6 triangles and 2 draw calls to fall at high. To take them back the folds would have to live in the shared pane shader.
+- The two fold meshes add 6 triangles and two draws to fall at high (G15 reads 1,789,089 where main reads 1,789,083; its largest draw count over the seasons stays 71 of 140). To take them back the folds would have to live in the shared pane shader.
