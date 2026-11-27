@@ -44,7 +44,7 @@ const GLINT_TONE: [number, number, number] = [1, 0.46, 0.14]
 const GLINT_PUMPKIN = { power: 0.9, reachMm: 8 }
 const GLINT_POND = { power: 0.05, reachMm: 24 }
 // The approved bark is black and wet: on the side turned from the lamp its edge takes a cool grey green line from the air.
-const RIM = { tone: [0.52, 0.7, 0.6] as [number, number, number], power: 4.6, sharp: 3.5, far: [0, 0.6] as [number, number], reachMm: 12 }
+const RIM = { tone: [0.52, 0.7, 0.6] as [number, number, number], power: 3.4, sharp: 3.5, far: [0, 0.6] as [number, number], reachMm: 12 }
 
 const clock = { value: 0 }
 const emberGain = { value: EMBER_GAIN }

@@ -53,8 +53,8 @@ const POSTS = [
   { t: 1.0, tall: 9.3, along: 0.11, out: 0.12, wide: 2.25 },
 ]
 const RAILS = [
-  { at: 2.9, tilt: [0.3, -0.45, 0.35, -0.25, 0.45, -0.35], wide: 1.3 },
-  { at: 6.5, tilt: [-0.4, 0.45, -0.3, 0.5, -0.45, 0.3], wide: 1.2 },
+  { at: 3.5, tilt: [0.3, -0.45, 0.35, -0.25, 0.45, -0.35], wide: 1.3 },
+  { at: 7.3, tilt: [-0.4, 0.45, -0.3, 0.5, -0.45, 0.3], wide: 1.2 },
 ]
 
 export function fenceBoards(): Board[] {
