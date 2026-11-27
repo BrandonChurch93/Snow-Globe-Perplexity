@@ -239,7 +239,7 @@ ${SHADE}
   float liveCrown = smoothstep(34.0, 42.5, vBasePos.y) * mix(0.35, 1.0, liveUp);
   float liveLip = smoothstep(40.0, 42.6, vBasePos.y) * mix(0.4, 1.2, smoothstep(0.35, 0.65, baseBlotch));
   vec3 liveTip = vec3(0.42, 0.6, 0.2) * RECIPROCAL_PI * baseMoss * baseAo;
-  reflectedLight.directDiffuse += liveTip * (liveKeyC * ((2.2 + 2.6 * liveTuft + 2.0 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim * mix(0.35, 1.0, liveLip) + 2.2 * liveUp * liveUp * liveLip + 0.08 * liveCrown) * max(liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh), liveCrown)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
+  reflectedLight.directDiffuse += liveTip * (liveKeyC * ((1.7 + 2.1 * liveTuft + 1.5 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim * mix(0.35, 1.0, liveLip) + 2.2 * liveUp * liveUp * liveLip + 0.08 * liveCrown) * max(liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh), liveCrown)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
   // A grain of dew and the pixel it falls in are together no narrower than a cell and a fifth, with the same light in all.
   vec3 liveAt = vBasePos * 7.5;
   float liveWide = clamp((1.22 - max(length(dFdx(liveAt)), length(dFdy(liveAt)))) / 0.42, 1.0, 2.9);
