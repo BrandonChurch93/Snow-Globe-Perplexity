@@ -17,6 +17,7 @@ export interface GlowLook {
   cycles: number
   through?: number
   paneHot?: number
+  lights?: readonly [number, number]
 }
 
 export function glowPiece(source: THREE.BufferGeometry, kindOf: (i: number, a: number, b: number) => readonly [number, number, number, number]): THREE.BufferGeometry {
@@ -143,6 +144,7 @@ void main() {
 const v3 = (c: readonly [number, number, number]): string => `vec3(${c[0].toFixed(4)}, ${c[1].toFixed(4)}, ${c[2].toFixed(4)})`
 
 export function glowMaterial(part: string, look: GlowLook, clock: THREE.IUniform<number>): THREE.ShaderMaterial {
+  const lights = `vec2(${(look.lights?.[0] ?? 2).toFixed(1)}, ${(look.lights?.[1] ?? 3).toFixed(1)})`
   return stageShader({
     part,
     standIn: false,
@@ -225,7 +227,7 @@ void main() {
     vec3 room = ${v3(look.room)} * (0.78 + 0.52 * lampIn) * (0.86 + 0.28 * sway) + ${v3(look.glass)} * (${(look.paneHot ?? 0).toFixed(3)} * lampIn * lampIn);
     vec3 drape = ${v3(look.curtain)} * (0.55 + 0.45 * fold) * (0.7 + 0.5 * lampIn);
     col = mix(room, drape, side * 0.3);
-    vec2 bars = (0.5 - abs(fract(vUv * vec2(2.0, 3.0)) - 0.5)) * vKind.yz / vec2(2.0, 3.0);
+    vec2 bars = (0.5 - abs(fract(vUv * ${lights}) - 0.5)) * vKind.yz / ${lights};
     float bar = min(bars.x, bars.y);
     col *= 0.78 + 0.22 * smoothstep(0.08, 0.5, bar);
     col = mix(col, ${v3(look.room)} * 0.16, smoothstep(0.15, 0.09, bar));
