@@ -65,11 +65,11 @@ const baseUniforms = {
 const FLOOR_SHARE = 0.1
 // The brambles' tones, measured against the approved image in boxes at the review tier.
 const BRAMBLE = { ALBEDO: 0.4, SPILL: 14, RIM: 0.1, RIM_FRONT: 0, KEY: 0.02, CARD: 0.2, CARD_FRONT: 0, WARM: 0.3, WARM_FRONT: 0, WARM_WEST: 55, CARD_WEST: 36, TOP: 0, BARK: 0.7, LIFT: 0.005, LIFT_WEST: 75, FILL: 0.08, SOFT: 1.18, SOFT_EAST: 8, KNOB: 9, FISSURE: 1.8, BODY: 5, THORN: 0.2, SHEAF: 2.2 }
-const DRUM_SHEEN = 1.75
+const DRUM_SHEEN = 1.6
 const DRUM_FOLD = 3.5
 const DRUM_CRINKLE = 0.8
-const DRUM_GRAIN = 1.8
-const WALL = { CELLS: 34, TALL: 6.6, WARP: 0.7, SEAM: 0.13, FACET: 0.4, DOME: 0.15, ROLL: 0.8, DARK: 0.12, GLOSS: 0.6, GLOSS_POW: 40, COPPER: 0.3, BARK_DARK: 0.2 }
+const DRUM_GRAIN = 3.1
+const WALL = { CELLS: 34, TALL: 6.6, WARP: 0.7, SEAM: 0.13, FACET: 0.4, DOME: 0.15, ROLL: 0.8, DARK: 0.12, GLOSS: 0.6, GLOSS_POW: 40, COPPER: 0.3, BARK_DARK: 0.2, CREASE_WIDE: 0.08, CREASE_DARK: 0.4, CREASE_TILT: 0.4 }
 const PUMPKIN_BODY = 0.042
 const IRON_PARS = `${Object.entries(BRAMBLE).map(([k, v]) => `#define BRAMBLE_${k} ${v.toFixed(3)}`).join('\n')}\n#define DRUM_SHEEN ${DRUM_SHEEN.toFixed(3)}\n#define DRUM_FOLD ${DRUM_FOLD.toFixed(3)}\n#define DRUM_CRINKLE ${DRUM_CRINKLE.toFixed(3)}\n#define DRUM_GRAIN ${DRUM_GRAIN.toFixed(3)}\n${Object.entries(WALL).map(([k, v]) => `#define WALL_${k} ${v.toFixed(3)}`).join('\n')}`
 const flicker: { a: number; b: number; c: number }[] = []
@@ -267,9 +267,13 @@ float baseFibre = step(0.58, baseKind) * baseStrand;
 float wallTurn = dot(vBasePos.xz, vBasePos.xz) > 0.0 ? atan(vBasePos.x, vBasePos.z) : 0.0;
 vec4 lump = baseLump(vec2(wallTurn * (WALL_CELLS / 6.2831853), vBasePos.y / WALL_TALL) + (vec2(baseNoise(vBasePos * 0.16 + 5.0), baseNoise(vBasePos * 0.16 + 37.0)) - 0.5) * WALL_WARP);
 float lumpOn = smoothstep(0.0, WALL_SEAM, lump.z);
-float lumpShade = mix(mix(0.7, WALL_DARK, smoothstep(0.0, 30.0, vBasePos.x)), 1.0, lumpOn);
+// Creases cross the lumps: each plane between them leans its own way and the crease itself is dark.
+vec4 crease = baseLump(vec2(wallTurn * (WALL_CELLS * 2.0 / 6.2831853) + 0.37, vBasePos.y * 2.0 / WALL_TALL + 0.61) + (vec2(baseNoise(vBasePos * 0.4 + 51.0), baseNoise(vBasePos * 0.4 + 73.0)) - 0.5) * 0.5);
+float creaseOn = smoothstep(0.0, WALL_CREASE_WIDE, crease.z);
+float creaseTurn = 6.2831853 * fract(crease.w * 9.13);
+float lumpShade = mix(mix(0.7, WALL_DARK, smoothstep(0.0, 30.0, vBasePos.x)), 1.0, lumpOn) * mix(1.0, mix(WALL_CREASE_DARK, 1.0, creaseOn), smoothstep(8.0, 46.0, vBasePos.x));
 float lumpTurn = 6.2831853 * fract(lump.w * 7.31);
-vec2 lumpTilt = (vec2(cos(lumpTurn), sin(lumpTurn)) * ((0.3 + 0.7 * fract(lump.w * 3.7)) * WALL_FACET) - lump.xy * (WALL_DOME + WALL_ROLL * (1.0 - lumpOn))) * baseDrum;
+vec2 lumpTilt = (vec2(cos(lumpTurn), sin(lumpTurn)) * ((0.3 + 0.7 * fract(lump.w * 3.7)) * WALL_FACET) - lump.xy * (WALL_DOME + WALL_ROLL * (1.0 - lumpOn)) + vec2(cos(creaseTurn), sin(creaseTurn)) * ((0.2 + 0.8 * fract(crease.w * 5.3)) * WALL_CREASE_TILT)) * baseDrum;
 float baseBlotch = baseNoise(vBasePos * 0.35) * 0.6 + baseNoise(vBasePos * 1.3) * 0.4;
 vec3 foldT = normalize(vec3(vBasePos.z, 0.0, -vBasePos.x) + vec3(1e-5, 0.0, 0.0));
 float foldHere = baseFold(vBasePos);
@@ -278,12 +282,12 @@ float foldUp = baseFold(vBasePos + vec3(0.0, 0.4, 0.0));
 float crinkleHere = baseCrinkle(vBasePos);
 float crinkleOn = baseCrinkle(vBasePos + foldT * 0.16);
 float crinkleUp = baseCrinkle(vBasePos + vec3(0.0, 0.16, 0.0));
-float grainHere = baseNoise(vBasePos * 5.50 + 11.0);
-float grainOn = baseNoise((vBasePos + foldT * 0.076) * 5.50 + 11.0);
-float grainUp = baseNoise((vBasePos + vec3(0.0, 0.076, 0.0)) * 5.50 + 11.0);
+float grainHere = baseNoise(vBasePos * 4.60 + 11.0);
+float grainOn = baseNoise((vBasePos + foldT * 0.090) * 4.60 + 11.0);
+float grainUp = baseNoise((vBasePos + vec3(0.0, 0.090, 0.0)) * 4.60 + 11.0);
 // The crease of a fold is dark and dull, its back takes the sheen.
 float baseScale = max(1.0 - smoothstep(0.0, 0.22, foldHere), 0.35 * (1.0 - smoothstep(0.0, 0.16, crinkleHere))) * baseDrum;
-diffuseColor.rgb = mix(mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch), mix(vec3(0.022, 0.031, 0.046), vec3(0.036, 0.05, 0.074), baseBlotch), baseDrum) * mix(1.0, 0.55, baseScale) * mix(BRAMBLE_ALBEDO * mix(1.0, 0.5, baseThorn), 0.6, baseDrum);
+diffuseColor.rgb = mix(mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch), mix(vec3(0.022, 0.031, 0.046), vec3(0.036, 0.05, 0.074), baseBlotch) * vec3(0.9, 1.0, 1.0), baseDrum) * mix(1.0, 0.55, baseScale) * mix(BRAMBLE_ALBEDO * mix(1.0, 0.5, baseThorn), 0.6, baseDrum);
 float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * baseDrum * 0.1;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
 // The leather of the drum is black where the key from the right does not reach it.
@@ -360,10 +364,10 @@ const IRON_AFTER = `
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65 * (1.0 - ironWest)) * mix(vec3(1.0), vec3(1.0, 0.86, 1.0), ironWest);
   reflectedLight.directSpecular += (mix(ironKeyC, ironKeyOpen * baseAo, baseDrum) * vec3(0.8, 0.9, 1.0) * (mix(0.03, 0.4 * baseDim, baseDrum) * pow(abs(ironKh), mix(8.0, 9.0, baseDrum)) + mix(0.15 * pow(abs(ironKh), 40.0) * baseThorn, BRAMBLE_KEY * pow(abs(ironKh), 14.0) * ironGrain, baseStrand)) * ironKl + ironCardC * (0.03 * pow(abs(ironCh), 10.0) + mix(0.08 * pow(abs(ironCh), 40.0) * baseThorn, BRAMBLE_CARD * (BRAMBLE_CARD_FRONT + BRAMBLE_CARD_WEST * ironWest * barkHold * mix(1.0, 0.4, smoothstep(20.0, 34.0, vBasePos.y))) * pow(abs(ironCh), mix(16.0, 70.0, ironWest)) * mix(1.0, pow(abs(max(dot(ironRound, normalize(ironCard + geometryViewDir)), 0.0)), 10.0), ironWest) * (0.05 + 2.4 * barkLine), baseStrand)) * ironCl) * ironSheen;
   // The key rakes the bare leather of the right flank: a broad grey sheen, grained by the hide.
-  reflectedLight.directSpecular += ironKeyOpen * vec3(0.72, 0.92, 1.3) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * mix(ironKl, smoothstep(0.0, 0.2, dot(ironRound, ironKey)), 0.4) * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.03 + 1.3 * smoothstep(0.08, 0.5, foldHere)) * (0.85 + 0.3 * smoothstep(0.05, 0.6, crinkleHere)) * baseAo * lumpShade;
+  reflectedLight.directSpecular += ironKeyOpen * vec3(0.76, 0.92, 1.35) * DRUM_SHEEN * pow(abs(ironKh), 7.0) * mix(0.25, 1.0, creaseOn) * mix(ironKl, smoothstep(0.0, 0.2, dot(ironRound, ironKey)), 0.4) * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.03 + 1.3 * smoothstep(0.08, 0.5, foldHere)) * (0.85 + 0.3 * smoothstep(0.05, 0.6, crinkleHere)) * baseAo * lumpShade;
   // Each lump of the wall turns one glossy facet to the key.
-  vec3 facetN = normalize(normalMatrix * baseBend(lumpTilt + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * 0.3 + vec2(grainHere - grainOn, grainHere - grainUp) * 1.2));
-  reflectedLight.directSpecular += ironKeyOpen * vec3(0.8, 0.94, 1.25) * (WALL_GLOSS * pow(abs(max(dot(facetN, normalize(ironKey + geometryViewDir)), 0.0)), WALL_GLOSS_POW) * smoothstep(0.0, 0.15, dot(facetN, ironKey)) * lumpOn * baseDrum * baseAo * smoothstep(8.0, 46.0, vBasePos.x));
+  vec3 facetN = normalize(normalMatrix * baseBend(lumpTilt + vec2(crinkleHere - crinkleOn, crinkleHere - crinkleUp) * 0.3 + vec2(grainHere - grainOn, grainHere - grainUp) * 1.8));
+  reflectedLight.directSpecular += ironKeyOpen * vec3(0.8, 0.94, 1.25) * (WALL_GLOSS * pow(abs(max(dot(facetN, normalize(ironKey + geometryViewDir)), 0.0)), WALL_GLOSS_POW) * smoothstep(0.0, 0.15, dot(facetN, ironKey)) * lumpOn * mix(0.25, 1.0, creaseOn) * baseDrum * baseAo * smoothstep(8.0, 46.0, vBasePos.x));
   float ironEdge = pow(abs(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
@@ -385,7 +389,7 @@ const IRON_AFTER = `
   float softH = max(dot(softN, normalize(softL + geometryViewDir)), 0.0);
   reflectedLight.directSpecular += vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.9, 0.96, 1.1) * (BRAMBLE_SOFT * (1.0 + BRAMBLE_SOFT_EAST * ironEast) * pow(abs(softH), 60.0) * (0.3 + 1.7 * smoothstep(0.35, 0.75, baseNoise(vBasePos * 6.0 + 57.0))) * smoothstep(0.0, 0.3, dot(softN, softL)) * (0.5 + 0.9 * fibreHere * (0.6 + 0.8 * knobHere)) * smoothstep(0.15, 0.6, baseAo) * (1.0 - baseDrum) * mix(1.0, 0.3, ironWest));
   float lineFace = clamp(dot(lineRound, geometryViewDir), 0.0, 1.0);
-  reflectedLight.indirectDiffuse += vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(1.15, 1.05, 0.95) * (0.36 * baseDrum * lumpShade * mix(0.35, 1.0, baseAo) * mix(0.45, 1.0, smoothstep(-10.0, 30.0, vBasePos.x)) * mix(0.35, 1.0, smoothstep(-52.0, -24.0, vBasePos.x)));
+  reflectedLight.indirectDiffuse += vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * mix(vec3(1.15, 1.05, 0.95) * 0.36, vec3(0.75, 1.06, 1.05) * 1.05, smoothstep(8.0, 46.0, vBasePos.x)) * (baseDrum * lumpShade * mix(0.35, 1.0, baseAo) * mix(0.45, 1.0, smoothstep(-10.0, 30.0, vBasePos.x)) * mix(0.35, 1.0, smoothstep(-52.0, -24.0, vBasePos.x)));
   // The wood is never quite black: the sky lifts it, and at the left the lamps behind fill it warm.
   reflectedLight.indirectDiffuse += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * vec3(0.9, 0.96, 1.15) * BRAMBLE_LIFT * (1.0 + BRAMBLE_LIFT_WEST * ironWest) + uBaseRimCol * vec3(1.0, 0.45, 0.4) * BRAMBLE_FILL * ironWest * (0.4 + 0.6 * ironLeft)) * mix(0.35, 1.0, baseAo) * mix(1.0, 0.8, baseDrum) * mix(1.0, 0.15, baseThorn) * mix(1.0, lineFace * lineFace, baseStrand);
   // A fibre of the sheaf is lit gold from behind along its whole length.
