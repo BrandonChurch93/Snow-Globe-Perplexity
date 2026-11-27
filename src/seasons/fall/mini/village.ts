@@ -42,7 +42,7 @@ const GROUND_FILL = 8
 // stone on the path keeps `keep` of its height over the ground, which also brings the tops down to the level the
 // leaves land on. Under the lamp the made tone reads orange; the approved slabs are grey brown (143,112,90 to
 // 172,132,108) with dark gaps, so the slabs are cooled by `slab` and their sides darkened by `gap`.
-const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4, keep: 0.36, reachMm: 5, stepMm: 4.4, lowMm: -1.2, topMm: 2.7, slab: [0.8, 0.95, 1.5] as Rgb, sideBelow: 0.55, gap: 0.25 }
+const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4, keep: 0.36, reachMm: 5, stepMm: 4.4, lowMm: -1.2, topMm: 2.7, slab: [0.95, 1.2, 2.4] as Rgb, sideBelow: 0.55, gap: 0.25 }
 const FENCE = { reachMm: 1.25, sinkMm: 5, keep: 0.67, footMm: 0.6, nearMm: 0.9 }
 // The made posts are boards 2 mm wide with a round top and read as bollards. The approved's are narrower boards (8 to 9
 // px at hd against 12 to 14) that run to a point, so at load each post keeps `keep` of its width and its top is drawn in.
@@ -52,7 +52,7 @@ const MOSS = { low: [0.7, 0.9, 0.6] as Rgb, high: [0.88, 1.02, 0.86] as Rgb, tal
 // dark grey green stones with joints only a little darker, so the tone is bent: joints are held at `floor` of `top` and
 // lose their hue, and only the palest stones reach `top`. The gable is cooler than the side, darker below the purple
 // window's head and lighter toward the side wall's corner, as the approved wall is.
-const STONE = { top: 0.114, knee: 0.17, power: 2.7, floor: 0.215, tone: [0.6, 0.78, 1.0] as Rgb, gable: [0.75, 0.82, 1.05] as Rgb, low: [0.95, 0.98, 0.9] as Rgb, high: [2.2, 1.65, 1.55] as Rgb, corner: [2.32, 1.81, 2.13] as Rgb, gableFloor: 0.4, lowMm: 3, eaveMm: 1.2, side: [1.5, 1, 0.98] as Rgb, faceMm: 1.2 }
+const STONE = { top: 0.114, knee: 0.17, power: 2.7, floor: 0.215, tone: [0.6, 0.78, 1.0] as Rgb, gable: [0.75, 0.82, 1.05] as Rgb, low: [0.82, 0.8, 0.86] as Rgb, high: [1.7, 1.35, 1.45] as Rgb, corner: [3.0, 2.21, 2.28] as Rgb, gableFloor: 0.4, lowFloor: 0.32, mossed: 0.6, lowMm: 3, eaveMm: 1.2, side: [1.5, 1, 0.98] as Rgb, faceMm: 1.2 }
 const WALL_LAMP: Rgb = [0.85, 0.6, 0.5]
 const WHITE: Rgb = [1, 1, 1]
 // The shared chimney is pale brick. The approved one is the wall's dark stone, a little greyer.
@@ -422,13 +422,13 @@ function* autumn(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeom
         const lit = 1 - Math.exp(-Math.pow(lum / STONE.knee, STONE.power))
         const onGable = near && c.along > cottage.halfLength - STONE.faceMm
         const drop = onGable ? 1 - smooth(cottage.window.sill + cottage.window.height, cottage.window.sill + cottage.window.height + STONE.lowMm, y - frame.floor) : 0
-        const floor = onGable ? STONE.floor + (STONE.gableFloor - STONE.floor) * (1 - drop) : STONE.floor
+        const floor = onGable ? STONE.lowFloor + (STONE.gableFloor - STONE.lowFloor) * (1 - drop) : STONE.floor
         const bite = ((STONE.top * (floor + (1 - floor) * lit)) / Math.max(lum, 1e-4)) * soot
         const corner = 1 - smooth(-cottage.halfWidth, 0.5 * cottage.halfWidth, c.across)
         const tint = (j: number): number => STONE.gable[j]! * (STONE.high[j]! * (1 + (STONE.corner[j]! - 1) * corner) * (1 - drop) + STONE.low[j]! * drop)
         const face: Rgb = !near ? WHITE : onGable ? [tint(0), tint(1), tint(2)] : c.across < STONE.faceMm - cottage.halfWidth ? STONE.side : WHITE
         r = (lum + (r - lum) * lit) * (MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k) * bite * STONE.tone[0] * face[0]
-        gr = (lum + (gr - lum) * lit) * (MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k) * bite * STONE.tone[1] * face[1]
+        gr = (lum + (gr - lum) * lit) * (MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k) * bite * STONE.tone[1] * face[1] * (1 + STONE.mossed * Math.pow(1 - lit, 3) * drop)
         b = (lum + (b - lum) * lit) * (MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k) * bite * STONE.tone[2] * face[2]
       }
     } else if (kind === 1) {
