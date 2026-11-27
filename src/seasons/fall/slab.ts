@@ -25,7 +25,7 @@ interface LeafExtras {
 // The skitter. A leaf lies `pushMm` nearer the foot than its place before the landing (less the further off it lies,
 // by `reachMm`); the thump's air reaches it at `waveMmPerSecond` and it slides out to its place over `slideSeconds`
 // (a longer slide for some), hopping `hopMm` and turning `spin` radians as it goes; one in `tumble` turns over.
-const SKITTER = { pushMm: 34, reachMm: 85, waveMmPerSecond: 520, slideSeconds: 0.75, hopMm: 3.2, spin: 2.6, tumble: 0.1 }
+const SKITTER = { pushMm: 34, reachMm: 85, waveMmPerSecond: 520, slideSeconds: 0.75, hopMm: 3.2, spin: 2.6, tumble: 0.1, wakeSeconds: 0.05 }
 const leafUniforms = {
   uLeafMap: { value: null as THREE.Texture | null },
   uLeafTime: { value: new THREE.Vector4(99, 0, 0, 0) },
@@ -41,7 +41,6 @@ uniform vec4 uLeafTime;
 uniform vec4 uLeafSpan;
 uniform vec4 uLeafMove;
 uniform vec4 uLeafTurn;
-uniform vec4 uFoot;
 varying vec2 vLeafUv;
 varying vec3 vLeafN;
 varying vec4 vLeafOne;
@@ -53,9 +52,8 @@ ${STAGE_GUST_GLSL}
 const LEAF_VERT_MAIN = `
 vec2 leafRest = (color.xy - 0.5) * uLeafSpan.x;
 float leafId = uv1.x;
-vec2 leafOut = leafRest - uFoot.xy;
-float leafFar = length(leafOut);
-vec2 leafDir = leafOut / max(leafFar, 1.0);
+float leafFar = length(leafRest);
+vec2 leafDir = leafRest / max(leafFar, 1.0);
 float leafGap = max(leafFar - uLeafSpan.z, 0.0);
 float leafPush = min(uLeafMove.x * exp(-leafGap / uLeafMove.y) * (0.45 + 0.9 * leafHash(leafId * 3.1)), max(leafGap - 2.0, 0.0));
 float leafWait = leafGap / uLeafMove.z + 0.05 * leafHash(leafId * 9.7);
@@ -63,7 +61,7 @@ float leafLong = uLeafMove.w * (0.6 + 1.3 * leafHash(leafId * 5.3));
 float leafT = clamp((uLeafTime.x - leafWait) / leafLong, 0.0, 1.0);
 float leafEase = 1.0 - (1.0 - leafT) * (1.0 - leafT) * (1.0 - leafT);
 float leafLeft = 1.0 - leafEase;
-float leafLive = leafLeft * step(0.0001, leafT);
+float leafLive = leafLeft * smoothstep(0.0, ${SKITTER.wakeSeconds.toFixed(2)}, uLeafTime.x - leafWait);
 float leafStir = smoothstep(0.0, 6.0, leafPush);
 float leafSide = (leafHash(leafId * 7.9) - 0.5) * 0.9 * leafPush;
 vec2 leafAt = leafRest - leafDir * (leafPush * leafLeft) + vec2(-leafDir.y, leafDir.x) * (leafSide * leafLeft * (1.0 - leafLeft) * 4.0 * 0.5);
@@ -74,10 +72,12 @@ float leafOver = step(leafHash(leafId * 8.3), uLeafTurn.z) * leafStir;
 float leafRoll = leafOver * leafLeft * 6.2831853 * (leafHash(leafId * 1.7) < 0.5 ? 1.0 : 2.0) + (1.0 - leafOver) * 0.5 * sin(leafEase * 9.0 + leafId * 40.0) * leafLive * leafStir;
 // Inside a change the leaves are carried: blown out ahead of the front of light when fall leaves, flown out behind it when fall comes.
 if (uState.w > 0.5) {
-  vec3 leafGust = stageGust(leafRest, leafHash(leafId * 11.3), leafHash(leafId * 12.7));
+  float gustSeed = leafHash(leafId * 11.3);
+  vec3 leafGust = stageGust(leafRest, gustSeed, leafHash(leafId * 12.7));
   leafAt += (dot(leafRest, leafRest) > 0.0 ? normalize(leafRest) : vec2(1.0, 0.0)) * leafGust.x;
   leafHop += ${GUST.heightMm.toFixed(1)} * (0.4 + 0.6 * leafHash(leafId * 12.7)) * leafGust.y;
-  leafRoll += 3.14159265 * (1.0 + floor(leafHash(leafId * 11.3) * 2.99)) * leafGust.z;
+  float gustTurns = uState.w < 1.5 ? 1.0 + 0.4 * gustSeed : 1.0 + floor(gustSeed * 2.99);
+  leafRoll += 3.14159265 * gustTurns * leafGust.z;
   leafYaw += (leafHash(leafId * 12.7) - 0.5) * 3.0 * leafGust.z;
 }
 vec3 leafOff = vec3(position.x - leafRest.x, position.y, position.z - leafRest.y);
