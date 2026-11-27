@@ -5,7 +5,7 @@ import { FRAME } from '../src/app/framing'
 import * as THREE from 'three'
 import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, PASS_EVEN, passCount, passLevel, passShare, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS, stageUniforms, stillLevel } from '../src/core/materials'
 import { STILL_SIDE, stillBytes } from '../src/core/still'
-import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeShown, changeSpan, coverShown, partChange, SEASONAL_PARTS, VEIL_LEAVE, veilCrossed } from '../src/shake/change'
+import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeShown, changeSpan, coverShown, LEAVE_OUT, leaveOut, partChange, SEASONAL_PARTS, VEIL_LEAVE, veilCrossed } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 import { loopMoment, timelineMoment } from '../src/film/moments'
 import { loopSeconds } from '../src/film/loop'
@@ -213,6 +213,82 @@ describe('the change number', () => {
       if (!leaving && !coming) continue
       for (const part of OUTSIDE) expect(partChange(part, c), `${part} at ${c}`).toBe(leaving ? 0 : 1)
       expect(c <= BASE_PASS.from || c >= BASE_PASS.to, `the base passes at ${c}`).toBe(true)
+    }
+  })
+
+  it('takes what lies on the table as one piece out along it, whole in every sample, and at even shares of the shutter where the samples of a frame join', () => {
+    const frame = FRAME_BEATS / WINDOW
+    const shutter = (config.film.shutterDegrees / 360) * frame
+    const d = DRESSING_CHANGE
+    const REACH = 200
+    const THIN = 150
+    const STILL = { run: 0, out: 0, behind: 0, ahead: 0, of: 0, kept: 1 }
+    const law = (c: number): number => REACH * partChange('surface-leave', c) ** 2
+    // In a change that does not take it away, and at rest, the thing lies where it lay whatever the change number says.
+    for (const c of [0, d.leaveFrom, (d.leaveFrom + d.leaveTo) / 2, d.leaveTo, 1]) {
+      expect(leaveOut(false, c, null, REACH, THIN)).toEqual(STILL)
+      expect(leaveOut(false, c, { t: 0.3, of: 24, hold: c }, REACH, THIN)).toEqual(STILL)
+    }
+    // In one that does, it lies still until the leaving begins and is gone when it ends.
+    expect(leaveOut(true, 0, null, REACH, THIN)).toEqual(STILL)
+    expect(leaveOut(true, d.leaveFrom, null, REACH, THIN)).toEqual(STILL)
+    const last = leaveOut(true, d.leaveTo, null, REACH, THIN)
+    expect(last.run).toBe(1)
+    expect(last.out).toBeCloseTo(REACH, 9)
+    expect(last.kept).toBeCloseTo(0, 9)
+    // On the way it only goes out, from rest (under a millimetre in the first quarter of a frame, so no frame is a step
+    // from the still one), faster and faster, and it thins only past `thinFromMm`.
+    expect(leaveOut(true, d.leaveFrom + frame / 4, null, REACH, THIN).out).toBeLessThan(1)
+    let before = 0
+    let pace = 0
+    for (let c = d.leaveFrom; c <= d.leaveTo + 1e-12; c += frame / 64) {
+      const go = leaveOut(true, c, null, REACH, THIN)
+      expect(go.out).toBeGreaterThanOrEqual(before)
+      expect(go.out - before).toBeGreaterThanOrEqual(pace - 1e-9)
+      expect(go.kept).toBeCloseTo(Math.min(1, (REACH - go.out) / (REACH - THIN)), 12)
+      if (go.out <= THIN) expect(go.kept).toBe(1)
+      expect([go.behind, go.ahead, go.of]).toEqual([0, 0, 0])
+      pace = go.out - before
+      before = go.out
+    }
+    // A frame of fewer samples than `join`, a sample that does not say where its frame began, and the page's one sample
+    // a frame hold the thing at the sample's own moment, sharp: nothing is read along the way.
+    const mid = d.leaveFrom + 2.3 * frame
+    for (const sample of [null, { t: 0.4 }, { t: 0.4, of: 24 }, { t: 0.4, of: LEAVE_OUT.join - 1, hold: mid - shutter / 2 }, { t: 0.4, of: 2, hold: mid - shutter / 2 }]) {
+      const go = leaveOut(true, mid, sample, REACH, THIN)
+      expect(go.out).toBe(law(mid))
+      expect([go.behind, go.ahead, go.of]).toEqual([0, 0, 0])
+    }
+    // From `join` samples on the copies lie at even shares of the shutter from the frame's first sample on, a sample's
+    // share being its rank in time: wherever in its share a sample is taken, and whatever change number its own moment
+    // has, it draws the thing at the same place. The grain of each copy reaches to the copy `tent` steps behind it and
+    // the copy `tent` steps ahead of it, so the tents of neighbours add up to the same at every place between.
+    expect(LEAVE_OUT.join).toBe(PASS_EVEN)
+    expect(LEAVE_OUT.tent).toBeGreaterThanOrEqual(2)
+    for (const of of [LEAVE_OUT.join, 24, 41]) {
+      for (const hold of [d.leaveFrom - shutter / 3, d.leaveFrom + 1.2 * frame, d.leaveFrom + 4.7 * frame, d.leaveTo - shutter / 2]) {
+        const copies = Array.from({ length: of }, (_, k) => leaveOut(true, hold + ((k + 0.5) / of) * shutter, { t: (k + 0.5) / of, of, hold }, REACH, THIN))
+        for (let k = 0; k < of; k++) {
+          const go = copies[k]!
+          const at = hold + (k / of) * shutter
+          expect(go.of).toBe(of)
+          expect(go.out).toBeCloseTo(law(at), 12)
+          expect(go.run).toBeCloseTo(partChange('surface-leave', at), 12)
+          for (const [t, change] of [[(k + 0.02) / of, 0.1], [(k + 0.98) / of, 0.9]] as const) expect(leaveOut(true, change, { t, of, hold }, REACH, THIN)).toEqual(go)
+          expect(go.behind).toBeGreaterThanOrEqual(0)
+          expect(go.ahead).toBeGreaterThanOrEqual(0)
+          expect(go.out - go.behind).toBeCloseTo(law(at - (LEAVE_OUT.tent * shutter) / of), 12)
+          expect(go.out + go.ahead).toBeCloseTo(law(at + (LEAVE_OUT.tent * shutter) / of), 12)
+          if (k + LEAVE_OUT.tent < of) expect(go.out + go.ahead).toBeCloseTo(copies[k + LEAVE_OUT.tent]!.out, 9)
+          if (k >= LEAVE_OUT.tent) expect(go.out - go.behind).toBeCloseTo(copies[k - LEAVE_OUT.tent]!.out, 9)
+        }
+      }
+    }
+    // The sand reads this law and does not work the span out for itself.
+    for (const file of ['src/seasons/summer/slab.ts']) {
+      const text = readFileSync(file, 'utf8')
+      expect(text, file).toContain('leaveOut(')
+      expect(text, file).not.toContain("partChange('surface-leave'")
     }
   })
 
