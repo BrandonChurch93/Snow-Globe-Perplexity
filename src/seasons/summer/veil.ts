@@ -12,7 +12,7 @@ import type { KitMoment, SeasonKit } from '../kit'
 // `rest` takes nearly all of that share back (0.04 x 0.2 x density is the share). The shared haze fogs what stands in the liquid
 // as well as what lies behind it, and it cost the miniature a quarter of its fine detail at rest; the warm air behind the
 // miniature is the wall layer's haze in `glass.ts`, which is drawn behind the cottage and the tree.
-export const veil: SeasonKit['veil'] = { tint: [1.75, 1.4, 0.86], density: 0.09, rest: -0.0007, bankWhite: 0.3 }
+export const veil: SeasonKit['veil'] = { tint: [1.7, 1.45, 1.1], density: 0.09, rest: -0.0007, bankWhite: 0.3 }
 export const particles: SeasonKit['particles'] = { firefly: { color: [1, 0.97, 0.2], glow: 11 }, seed: { color: [1.3, 1.16, 0.9], glow: 0 }, mote: { color: [0.9, 0.62, 0.24], glow: 0.2 } }
 
 // The storm outlasts the shake. The shared veil thins with the liquid's turbulence, which is spent by the time the globe is set
@@ -21,13 +21,16 @@ export const particles: SeasonKit['particles'] = { firefly: { color: [1, 0.97, 0
 // the veil is summer's own: `share` of the storm haze, `uneven` of it in the liquid's wisps so the dark shows between them, and
 // `calms` of the shared drift bank taken off. That bank is winter's snow going to the wall; in summer it stood as a cream slab
 // over the ground and a white crescent inside the left limb, where the approved image has seeds over a ghosted miniature.
-// A share of that bank is kept: it is the bright haze low down that whitens the ground and the foot of the tree.
+// None of that bank is kept now (`calms` is 1): the bright haze low down is the held storm's own bank, below.
 // All of it is weighted by summer's share of the change, so the other seasons see nothing of it.
 // `white` is the haze of the held storm in the liquid itself, in folds (`fold` of it; the rest is even): it is thickest where the
 // line of sight through the ball is longest, at its middle, so the tree and the cottage are washed and the lanterns bloom in it.
 // `bank` is the haze of the held storm that lies over the miniature: below `level` (in radii, up from the middle) it is whole, and
 // it thins over `soft` above that, so the cottage and the foot of the tree are ghosted and the upper dome keeps its dark gaps.
-export const STORM = { share: 0.24, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.97, calms: 0.9, bank: { level: -0.17, soft: 0.25, density: 0.006, even: 0.7 }, white: 0.0004, fold: 0.9 }
+// It lies low and thin now, over the ground, the pond and the foot of the cottage, so the lower inside keeps its lights and its darks
+// under the down. Its `density` is also the floor the take over's way was proved on: under about 0.005 a line of sight 100 mm deep
+// opens by more than a sixth between two frames near the take over's end, and the take over's test says so.
+export const STORM = { share: 0.2, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.97, calms: 1, bank: { level: -0.4, soft: 0.25, density: 0.005, even: 0.7 }, white: 0.0003, fold: 0.75 }
 
 const ramp = (v: number, from: number, to: number): number => {
   const t = Math.min(1, Math.max(0, (v - from) / (to - from)))
@@ -61,7 +64,7 @@ export function stormHeld(moment: KitMoment): number {
  * frame a sixteenth, the glass's mean level stood for six frames while nine tenths of the flood went, then fell by 5.3, 8.0,
  * 8.7, 8.5 and 6.5 levels on five frames running (shake 2 of the film at draft and hd on main b4bc96c0, frames 1408 to 1412,
  * by the change's ruler: the mean luma of the 8 bit frame over 0.85 of the ball's disc, the change's cover off). That is a
- * step the eye takes for a cut while the room stands. So the course is bent to the picture: the level was read on that
+ * step the eye reads as a cut, since the room about the globe stands still. So the course is bent to the picture: the level was read on that
  * course and on two bent ones, and the way set so it falls by 2.8 to 4.0 a frame on thirteen frames running, 1407 to 1419
  * (3.96 at the most, as drawn). The first six frames keep the even pace: the thinnest lines of sight open in them a seventh
  * between two frames as it is, and the change is under them. Then the course all but stands for five frames, one sixteenth
