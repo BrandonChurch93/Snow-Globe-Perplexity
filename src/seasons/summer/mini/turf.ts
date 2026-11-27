@@ -5,6 +5,10 @@ import { cottage, cottageFrame, fence, groundAt, innerRadiusMm, pondField, steps
 // both read it here.
 export const RISE = { lawnMm: 1.4, cottageMm: 1.4, treeMm: 3.4, reachMm: 10, pondFrom: 1.02, pondTo: 1.5, pathFrom: 1.0, pathTo: 4.5, glassFrom: 2.5, glassTo: 11, fence: 0.45, fenceFrom: 1.5, fenceTo: 7, doorOutMm: 0.5 }
 
+// The tufts the low sun shines through: a broad blade narrows to `top` of its foot at the neck and ends in a point. The mesh
+// builds them so and the shader works out a blade's width in pixels from the same numbers.
+export const SUN_TUFT = { top: 0.5, neck: 0.8, wideMm: 0.39 }
+
 const smooth = (a: number, b: number, v: number): number => {
   const t = Math.min(1, Math.max(0, (v - a) / (b - a)))
   return t * t * (3 - 2 * t)

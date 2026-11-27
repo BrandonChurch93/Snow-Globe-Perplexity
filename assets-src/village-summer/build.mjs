@@ -38,7 +38,7 @@ const LOAF = { seed: 5081, dome: 0.85, shear: 0.25, sink: 0.3, wet: 0.45, tones:
 const SLAB = { tones: ['#a8957f', '#b3a08c', '#9c8872', '#bba995'], lumps: 0.16, chips: 0.04, moss: 0.6, mossFrom: 0.5, mossTo: 0.85, mossTone: '#6f7a3c', lift: 1.0, foot: 0.7, top: 0.4, heel: 0.5, heelMm: 0.6 }
 // Pebbles lie in handfuls at the loaves' feet and along the rims, not in an even string.
 const PEBBLE = { clusters: 22, each: [4, 9], spread: 1.5, size: [0.25, 0.65], fine: 0.45, from: 150, to: 400, feet: 6, clearMm: 0.2, tones: ['#b5a58c', '#cfc2a8', '#9a8a74', '#ddd0b8'], lumps: 0.2, chips: 0.05, moss: 0.25, mossFrom: 0.5, mossTo: 0.85, lift: 0.8, foot: 0.75, top: 0.35, wet: 0.5, crease: 0.35, creaseMm: 0.3, heel: 0.5, heelMm: 0.3 }
-const REED = { blades: 6, tall: [2.5, 4.5], wide: [0.2, 0.32], lean: [0.04, 0.28], standDeg: 5, stands: [[165, 5], [178, 7], [192, 6], [215, 3], [305, 3], [325, 5], [342, 7], [357, 6], [375, 5]], dry: { x: -17.5, z: 24.6, r: 1.5, n: 9, tall: 0.75 } }
+const REED = { blades: 6, tall: [2.5, 4.5], wide: [0.2, 0.32], lean: [0.04, 0.28], standDeg: 5, stands: [[165, 5], [178, 7], [192, 6], [215, 3], [305, 3], [325, 5], [342, 7], [357, 6], [375, 5]], dry: { x: -17.5, z: 24.6, r: 1.5, n: 9, tall: 0.75 }, sun: { rim: [[30, 3], [44, 4], [58, 3], [122, 3], [136, 4], [150, 3]], field: [0.985, 1.03], lawn: [[29, 12, 5, 5], [32, 21, 4.5, 4], [27, 28, 3.5, 3], [-18, 30, 4, 4], [-16, 38, 3, 3]], blades: 5, tall: [1.2, 2.3], wide: [0.15, 0.24], top: TF.SUN_TUFT.top, neck: TF.SUN_TUFT.neck, fan: 0.55, lit: [0.55, 1.0] } }
 const GARLAND = { seed: 5087, r: 5.4, from: 0.1, to: 0.86, over: 18, down: 9, w: [0.6, 1.5], leaves: 13, leaf: 1.1, tone: [0.35, 1.1], shade: 0.4, rose: [0.4, 0.6], roseEvery: 1, shrubRose: 1.35 }
 const TONES = {
   grass: ['#1c3413', '#274616', '#30531a', '#213c15'].map(lin),
@@ -730,10 +730,17 @@ let pebbles = 0
     const places = []
     for (const [deg, n] of REED.stands) for (let k = 0; k < n; k++) places.push(() => shoreAt(deg + qr(-REED.standDeg, REED.standDeg), qr(0.975, 1.03)))
     for (let k = 0; k < REED.dry.n; k++) places.push(() => { const a = qr(0, TAU); const d = REED.dry.r * Math.sqrt(Q()); return [REED.dry.x + Math.cos(a) * d, REED.dry.z + Math.sin(a) * d * 0.7] })
+    const shade = places.length
+    // Tufts the low sun shines through stand last in the run, so the reeds before them keep their places: along the pond's near
+    // rim at its two ends and in clusters on the banks. Their blades are broad, face the lens and end in a short point over a
+    // neck, three triangles each, so that a quality level drops whole blades. The shader knows them by a surface number of 2 and more.
+    for (const [deg, n] of REED.sun.rim) for (let k = 0; k < n; k++) places.push(() => shoreAt(deg + qr(-REED.standDeg, REED.standDeg), qr(REED.sun.field[0], REED.sun.field[1])))
+    for (const [cx, cz, r, n] of REED.sun.lawn) for (let k = 0; k < n; k++) places.push(() => { const a = qr(0, TAU); const d = r * Math.sqrt(Q()); return [cx + Math.cos(a) * d, cz + Math.sin(a) * d * 0.7] })
     for (const [i, place] of places.entries()) {
-      const dry = i >= places.length - REED.dry.n
+      const dry = i >= shade - REED.dry.n && i < shade
+      const sun = i >= shade
       const [x, z] = place()
-      const tall = qr(REED.tall[0], REED.tall[1]) * (dry ? REED.dry.tall : 1)
+      const tall = sun ? qr(REED.sun.tall[0], REED.sun.tall[1]) : qr(REED.tall[0], REED.tall[1]) * (dry ? REED.dry.tall : 1)
       const deep = 0.8 + 0.5 * Q()
       const lit = dry ? clamp(0.8 + 0.3 * Q()) : clamp(0.45 + 0.45 * Q())
       if (gapTo(shown, x, z) < 0.1 || loafGap(x, z) < 0.1 || hardGap(x, z) < 0.5) continue
@@ -742,7 +749,33 @@ let pebbles = 0
       const top = mul3(mix3(qp(TONES.tip), qp(TONES.straw), dry ? 0.6 : 0.4), deep * 1.15)
       const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
       const up = norm3([(Q() - 0.5) * 0.4, 1, (Q() - 0.5) * 0.4])
-      for (let b = 0; b < REED.blades; b++) {
+      for (let b = 0; b < (sun ? REED.sun.blades : REED.blades); b++) {
+        if (sun) {
+          const turn = qr(-0.5, 0.5)
+          const side = [Math.cos(turn), 0, Math.sin(turn)]
+          const w = qr(REED.sun.wide[0], REED.sun.wide[1])
+          const h = tall * qr(0.55, 1.1)
+          const ox = x + qr(-0.45, 0.45)
+          const oz = z + qr(-0.3, 0.3)
+          const own = 2 + qr(REED.sun.lit[0], REED.sun.lit[1])
+          let T = [ox + h * qr(-REED.sun.fan, REED.sun.fan), y0 + h, oz + h * qr(-0.15, 0.15)]
+          const far = Math.hypot(T[0], T[1], T[2])
+          if (far > L.innerRadiusMm - BANK.tipMm) T = sc(T, (L.innerRadiusMm - BANK.tipMm) / far)
+          const O = [ox, y0, oz]
+          const N = [O[0] + (T[0] - O[0]) * REED.sun.neck, O[1] + (T[1] - O[1]) * REED.sun.neck, O[2] + (T[2] - O[2]) * REED.sun.neck]
+          const A = [[O[0] - side[0] * w, O[1], O[2] - side[2] * w], base, 0]
+          const B = [[O[0] + side[0] * w, O[1], O[2] + side[2] * w], base, 0]
+          const NA = [[N[0] - side[0] * w * REED.sun.top, N[1], N[2] - side[2] * w * REED.sun.top], top, REED.sun.neck]
+          const NB = [[N[0] + side[0] * w * REED.sun.top, N[1], N[2] + side[2] * w * REED.sun.top], top, REED.sun.neck]
+          for (const [q, c, t] of [A, B, NB, A, NB, NA, NA, NB, [T, top, 1]]) {
+            cell.pos.push(...q)
+            cell.nor.push(...up)
+            cell.col.push(c[0] * (0.32 + 0.95 * t), c[1] * (0.32 + 0.95 * t), c[2] * (0.32 + 0.95 * t))
+            cell.tip.push(t)
+            cell.sun.push(own)
+          }
+          continue
+        }
         const yaw = Q() * TAU
         const lean = qr(REED.lean[0], REED.lean[1])
         const dir = [Math.cos(yaw), 0, Math.sin(yaw)]
