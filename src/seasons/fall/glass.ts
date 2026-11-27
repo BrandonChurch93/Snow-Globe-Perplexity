@@ -101,8 +101,8 @@ export const look = {
     lumpMm: 5,
     lumpFineMm: 1.8,
     middle: 0.01,
-    haze: 0.016,
-    hazeMm: 12,
+    haze: 0.036,
+    hazeMm: 4.8,
     // Far behind the scene a glow stands between the house and the tree, as high as the eaves: the approved picture has it,
     // and the lamp is a dark shape before it. It ends under where the bats fly.
     hazeMid: 0.68,
@@ -114,10 +114,10 @@ export const look = {
     hazeMidBackMm: -38,
     hazeMidTint: [0.8, 0.84, 0.76],
     hazeMidGlow: 0.1,
-    hazeLumpMm: 16,
+    hazeLumpMm: 7,
     hazeBankMm: 150,
     hazeBillowMm: 64,
-    hazeTint: [0.78, 0.92, 0.76],
+    hazeTint: [0.66, 0.95, 0.66],
     hazeWarm: 0.3,
     // At rest a pale mist stands in the liquid behind the scene, from the ground to about half the height of the ball,
     // brightest behind the right side of the trunk, and thins to a dark blue green at the top. It is laid on the far half of the
@@ -125,6 +125,8 @@ export const look = {
     mist: 0.74,
     mistAir: 0.38,
     mistMm: 15,
+    mistStand: 2.4,
+    mistLowFrom: [0.1, 0.45] as const,
     mistLumpMm: 9,
     mistTrunk: 2.6,
     mistAtMm: 14,
@@ -132,7 +134,7 @@ export const look = {
     mistBillowMm: 120,
     mistPatchMm: 62,
     mistPatch: [0.4, 0.62] as const,
-    mistLow: [0.14, 0.135, 0.088],
+    mistLow: [0.13, 0.25, 0.11],
     mistTop: [0.062, 0.058, 0.052],
     mistHigh: [0.078, 0.062, 0.066],
     mistLeft: 0.3,
@@ -671,9 +673,9 @@ void main() {
   float f1 = texture(uFogNoise, fogTurn(q, -0.5 * (k - 1.0)) / ${f(F.mistPatchMm)} + vec3(0.67 + 0.2 * n, 0.19 + 0.06 * (k - 1.0), 0.83)).r;
   float fine = 0.5 + (mix(f0, f1, k) - 0.5) / sqrt(k * k + (1.0 - k) * (1.0 - k));
   float clump = smoothstep(${f(F.mistPatch[0])}, ${f(F.mistPatch[1])}, fine);
-  float rho = ${f(F.mist)} * (${f(F.mistAir)} * (${f(F.mistEven[0])} + ${f(F.mistEven[1])} * clump * clump) + stand * (0.5 + clump + ${f(F.mistTrunk)} * exp(-off * off))) * (0.6 + 0.8 * n);
+  float rho = ${f(F.mist)} * (${f(F.mistAir)} * (${f(F.mistEven[0])} + ${f(F.mistEven[1])} * clump * clump) + ${f(F.mistStand)} * stand * (0.5 + clump + ${f(F.mistTrunk)} * exp(-off * off))) * (0.6 + 0.8 * n);
   float a = (1.0 - exp(-rho)) * seen;
-  vec3 col = mix(mix(${vec(F.mistTop)}, ${vec(F.mistLow)}, stand), ${vec(F.mistHigh)}, smoothstep(${f(F.mistHighMm[0])}, ${f(F.mistHighMm[1])}, h));
+  vec3 col = mix(mix(${vec(F.mistTop)}, ${vec(F.mistLow)}, smoothstep(${f(F.mistLowFrom[0])}, ${f(F.mistLowFrom[1])}, stand)), ${vec(F.mistHigh)}, smoothstep(${f(F.mistHighMm[0])}, ${f(F.mistHighMm[1])}, h));
   gl_FragColor = vec4(col * a, a);
 }
 `
