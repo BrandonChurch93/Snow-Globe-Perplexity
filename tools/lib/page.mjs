@@ -49,14 +49,31 @@ export function renderBusy() {
   }
 }
 
-async function takeLock(what, wait) {
-  ensureDir(path.dirname(LOCK))
+export function lockWaitLine(busy, seconds) {
+  const m = Math.floor(seconds / 60)
+  return `waiting for the render that holds this clone's lock: ${busy.what} (pid ${busy.pid}), ${m === 0 ? 'from now' : `${m} min so far`}. Nothing is drawn here meanwhile and no time ends the wait. If pid ${busy.pid} is not a render of this clone, stop this and remove ${path.relative(rel(), LOCK)}.`
+}
+
+/** Waits while another render holds the lock, with one line at once and one a minute after. It gives up nothing. */
+export async function waitForLock({ busy = renderBusy, wait = true, say = (line) => console.error(line), now = Date.now } = {}) {
+  const t0 = now()
+  let next = 0
   for (;;) {
-    const busy = renderBusy()
-    if (!busy) break
-    if (!wait) throw new Error(`a render job is running in this VM: ${busy.what} (pid ${busy.pid})`)
+    const holder = busy()
+    if (!holder) return
+    if (!wait) throw new Error(`a render job is running in this VM: ${holder.what} (pid ${holder.pid})`)
+    const seconds = (now() - t0) / 1000
+    if (seconds >= next) {
+      say(lockWaitLine(holder, seconds))
+      next = (Math.floor(seconds / 60) + 1) * 60
+    }
     await new Promise((r) => setTimeout(r, 1000))
   }
+}
+
+async function takeLock(what, wait, say) {
+  ensureDir(path.dirname(LOCK))
+  await waitForLock({ wait, say })
   writeJson(LOCK, { pid: process.pid, what, since: new Date().toISOString() })
 }
 
@@ -69,11 +86,11 @@ process.on('exit', dropLock)
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => process.exit(1))
 
 export class Session {
-  static async open({ local = false, headless = true, what = process.argv.slice(1).map((a) => path.basename(a)).join(' '), wait = true } = {}) {
+  static async open({ local = false, headless = true, what = process.argv.slice(1).map((a) => path.basename(a)).join(' '), wait = true, say = /** @type {((line: string) => void) | undefined} */ (undefined) } = {}) {
     const s = new Session()
     s.hash = requireBuild()
     checkDisk()
-    await takeLock(what, wait)
+    await takeLock(what, wait, say)
     s.server = await serve()
     try {
       s.browser = await launch({ local, headless })
