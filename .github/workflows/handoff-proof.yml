@@ -11,7 +11,6 @@ name: handoff proof
 
 on:
   workflow_dispatch:
-  push: { branches: [agent/p6-handoff] }
 
 # A newer push ends the run of an older one. A push that asks only for the list of shader messages has a group of
 # its own, so that it does not end a whole proof that is still running.
