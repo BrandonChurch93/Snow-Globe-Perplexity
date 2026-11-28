@@ -15,7 +15,7 @@ import { Padded } from './particles/engine/live'
 import { LoopPaths } from './particles/engine/loop'
 import { LiveRunner, spawnEngineWorker } from './particles/engine/remote'
 import type { Emitter } from './particles/engine/sdf'
-import { createStage } from './scene/createStage'
+import { createStage, MADE_ORDER } from './scene/createStage'
 
 declare global {
   interface Window {
@@ -95,7 +95,7 @@ if (capture) {
   const fraction = named ? named.particleFraction : 1
   const sim = new ParticleEngine({ season: config.defaultSeason, fraction })
   const particles = new SourceSwitch(sim)
-  const stage = levelled(createStage(gfx, particles, assets))
+  const stage = levelled(createStage(gfx, particles, assets, MADE_ORDER))
   const collider = colliderOf(stage)
   const emitters = emittersOf(stage)
   sim.setCollider(collider, emitters)
