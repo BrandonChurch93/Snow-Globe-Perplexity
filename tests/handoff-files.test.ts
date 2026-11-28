@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { once } from 'node:events'
 import { spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import sharp from 'sharp'
 import * as L from '../tools/lib/handoff.mjs'
@@ -11,6 +12,10 @@ import * as Work from '../tools/lib/handoff-work.mjs'
 import { PROFILE_ENV, profileRoot, rememberBrowser, stopVerifiedProcess } from '../tools/lib/handoff-processes.mjs'
 import { compareLoopScreenshot, decodeScreenshot, LOOP_SCREENSHOT_MEASURE, validScreenshotSpec } from '../tools/lib/handoff-screenshot.mjs'
 import { encodeMasterChunk, haveFfmpeg } from '../tools/lib/encode.mjs'
+import { readBack, recordsFor, recordsZip } from '../tools/lib/handoff-upload.mjs'
+import { readAssetStream } from '../tools/lib/handoff-release-assets.mjs'
+import { redactRecordText, releaseBody, releaseMachine, safeDraftIdentity } from '../tools/lib/handoff-record-privacy.mjs'
+import { zipRead, zipWrite } from '../tools/lib/handoff-zip.mjs'
 
 const roots: string[] = []
 const temporary = () => {
@@ -232,5 +237,130 @@ describe('screenshot proof', () => {
     expect(await proof(bad)).toMatchObject({ pass: false, found: expect.stringContaining('MEASURED') })
     expect(await proof(good)).toMatchObject({ pass: true, found: expect.stringContaining('MEASURED') })
     expect(await proof(path.join(root, 'not there.mp4'))).toMatchObject({ pass: false })
+  })
+})
+
+describe('release readback', () => {
+  const env = { gh: 'fake gh', slug: 'owner/repo' }
+  const ctx = { say: () => {}, note: () => {} }
+  const names = ['video.mp4', 'reports.zip']
+  const contents = [Buffer.from('the film'), Buffer.from('the records')]
+  const sum = (value: Buffer) => createHash('sha256').update(value).digest('hex')
+  const wanted = contents.map((value, i) => ({ name: names[i], label: names[i], bytes: value.length, sha256: sum(value) }))
+  const assets = wanted.map((w, i) => ({ id: i + 71, name: w.name, label: w.label, size: w.bytes, digest: `sha256:${w.sha256}`, state: 'uploaded' }))
+  const list = (assetsOfRelease: { digest?: string }[] = assets) => vi.fn(async () => ({ ok: true, kind: '', json: { draft: true, assets: assetsOfRelease }, bytes: Buffer.alloc(0) }))
+  const fetch = (which = contents) => vi.fn(async (_ctx: unknown, _endpoint: unknown, id: number) => {
+    const value = which[id - 71]
+    return { bytes: value.length, sha256: sum(value), why: '' }
+  })
+
+  it('downloads each listed asset and passes only if every byte count and SHA-256 match', async () => {
+    const get = list()
+    const fetchAsset = fetch()
+    const good = await readBack(ctx, env, 27, wanted, { get, fetchAsset })
+    expect(get).toHaveBeenCalledWith(ctx, env, 'GET', 'repos/owner/repo/releases/27')
+    expect(fetchAsset.mock.calls.map(([, , id]) => id)).toEqual([71, 72])
+    expect(good.rows.filter((r: { pass: boolean | null }) => r.pass === false)).toEqual([])
+    const wrong = Buffer.from('bad film')
+    expect(wrong.length).toBe(contents[0].length)
+    const bad = await readBack(ctx, env, 27, wanted, { get, fetchAsset: fetch([wrong, contents[1]]) })
+    expect(bad.rows.filter((r: { pass: boolean | null }) => r.pass === false)).toMatchObject([{ check: 'downloaded from the draft: video.mp4' }])
+    const short = await readBack(ctx, env, 27, wanted, { get, fetchAsset: fetch([contents[0], contents[1].subarray(0, 3)]) })
+    expect(short.rows.filter((r: { pass: boolean | null }) => r.pass === false)).toMatchObject([{ check: 'downloaded from the draft: reports.zip' }])
+  })
+
+  it('fails when GitHub omits the listed digest or a download supplies no hash', async () => {
+    const get = list([{ ...assets[0], digest: undefined }, assets[1]])
+    const back = await readBack(ctx, env, 27, wanted, { get, fetchAsset: fetch() })
+    expect(back.rows.filter((r: { pass: boolean | null }) => r.pass === false)).toMatchObject([{ check: 'on the release: video.mp4', found: expect.stringContaining('did not list a valid SHA-256') }])
+    const partial = await readBack(ctx, env, 27, wanted, { get: list(), fetchAsset: async () => ({ bytes: 4, sha256: null, why: 'the download did not complete' }) })
+    expect(partial.rows.filter((r: { pass: boolean | null }) => r.pass === false)).toMatchObject([
+      { check: 'downloaded from the draft: video.mp4', found: expect.stringContaining('no SHA-256 from the download') },
+      { check: 'downloaded from the draft: reports.zip', found: expect.stringContaining('no SHA-256 from the download') },
+    ])
+    const noLocal = await readBack(ctx, env, 27, [{ ...wanted[0], sha256: '' }, wanted[1]], { get: list(), fetchAsset: fetch() })
+    expect(noLocal.rows.filter((r: { pass: boolean | null }) => r.pass === false)).toMatchObject([{ check: 'downloaded from the draft: video.mp4' }])
+  })
+
+  it('hashes a child asset response incrementally and discards a hash on an unsuccessful exit', async () => {
+    const bytes = Buffer.alloc(1024 * 1024, 13)
+    const response = (code: number) => vi.fn<NonNullable<Parameters<typeof readAssetStream>[3]>>((_file, _args, options) => spawn(process.execPath, ['-e', `const b = Buffer.alloc(1024 * 64, 13); for (let i = 0; i < 16; i++) process.stdout.write(b); process.exitCode = ${code}`], options))
+    const good = response(0)
+    expect(await readAssetStream(ctx, env, 71, good)).toEqual({ bytes: bytes.length, sha256: sum(bytes), why: '' })
+    expect(good.mock.calls[0].slice(0, 2)).toEqual(['fake gh', ['api', '--method', 'GET', '-H', 'Accept: application/octet-stream', 'repos/owner/repo/releases/assets/71']])
+    expect(await readAssetStream(ctx, env, 71, response(3))).toEqual({ bytes: bytes.length, sha256: null, why: 'the download did not complete' })
+  })
+})
+
+describe('release and records privacy', () => {
+  const ctx = (H: string) => ({ H, say: () => {} })
+  const mode = { small: true }
+
+  it('uses the platform and known card in draft metadata and refuses a legacy or mismatched draft', () => {
+    const host = 'A-Private-Computer'
+    const card = 'NVIDIA GeForce RTX 5080'
+    const machine = releaseMachine({ platform: 'win32', cards: [{ name: 'AMD Radeon Graphics' }, { name: card }], renderer: `ANGLE (${card} Direct3D)` })
+    const renderTime = '2026-11-28T12:00:00.000Z'
+    const engineHash = '7dbb2c54aa42b34a'
+    const commit = '2'.repeat(40)
+    const names = L.releaseNames({ date: renderTime, engineHash, machine })
+    const body = releaseBody({ machine, engineHash, commit, renderTime })
+    expect(machine).toBe(`Windows ${card}`)
+    expect([names.tag, names.title, body].join('\n')).not.toContain(host)
+    expect(releaseMachine({ platform: 'darwin' })).toBe('macOS')
+    expect(body).toContain('visible to everyone with write access to this repository')
+    const legacy = L.releaseNames({ date: renderTime, engineHash, machine: host })
+    const draft = { draft: true, tag_name: names.tag, name: names.title, body }
+    expect(safeDraftIdentity(draft, names, body)).toBe(true)
+    expect(safeDraftIdentity({ ...draft, tag_name: legacy.tag, name: legacy.title }, names, body)).toBe(false)
+    expect(safeDraftIdentity({ ...draft, body: `made on ${host}` }, names, body)).toBe(false)
+    expect(safeDraftIdentity({ ...draft, body: releaseBody({ machine, engineHash, commit, renderTime: '2026-11-28T12:01:00.000Z' }) }, names, body)).toBe(false)
+  })
+
+  it('redacts a home root in plain text, file URLs and escaped JSON without touching sibling paths', () => {
+    const windows = String.raw`C:\Users\Case Name`
+    const output = redactRecordText(JSON.stringify({ path: `${windows}\\Desktop\\render.txt`, similar: `${windows}-other\\Desktop` }), windows)
+    expect(JSON.parse(output)).toEqual({ path: '~\\Desktop\\render.txt', similar: `${windows}-other\\Desktop` })
+    expect(redactRecordText('from c:/USERS/case name/Desktop and file:///C:/Users/Case%20Name/Desktop', windows)).toBe('from ~/Desktop and file:///~/Desktop')
+    const posix = '/home/left'
+    const inputs = `exact "${posix}"; nested ${posix}/render; file://${posix}/report; other ${posix}2/report; under /tmp${posix}/report`
+    expect(redactRecordText(inputs, posix)).toBe('exact "~"; nested ~/render; file://~/report; other /home/left2/report; under /tmp/home/left/report')
+  })
+
+  it('redacts text in a new records zip and leaves approval and ownership entries out', () => {
+    const H = fs.mkdtempSync(path.join(process.cwd(), '.handoff-records-test-'))
+    roots.push(H)
+    const home = os.homedir()
+    const report = path.join(home, 'Desktop', 'render report.txt')
+    write(path.join(H, 'render.json'), JSON.stringify({ report }))
+    for (const file of ['approval-render.json', 'approval-upload.json', 'approval-asked.json', 'job-approve.json', 'report-approve.txt']) write(path.join(H, file), 'do not include')
+    for (const name of ['browser-profiles', 'browser-processes', 'failed-test-ownership']) {
+      fs.mkdirSync(path.join(H, name))
+      write(path.join(H, name, 'private.json'), 'do not include')
+    }
+    const zip = zipRead(recordsZip(ctx(H), mode).file)
+    const own = zip.filter(({ name }) => name.startsWith(path.basename(H) + '/'))
+    expect(own.map(({ name }) => path.basename(name))).toEqual(['render.json'])
+    expect(JSON.parse(own[0].data.toString('utf8'))).toEqual({ report: `~${path.sep}Desktop${path.sep}render report.txt` })
+    expect(fs.readFileSync(path.join(H, 'render.json'), 'utf8')).toBe(JSON.stringify({ report }))
+  })
+
+  it('removes private entries and redacts an older cached zip before it can be reused', () => {
+    const H = temporary()
+    const dir = path.join(H, 'upload')
+    const file = path.join(dir, L.recordsName())
+    fs.mkdirSync(dir)
+    const home = os.homedir()
+    zipWrite(file, [
+      { name: 'out/work/handoff/approval-render.json', data: 'do not include' },
+      { name: 'out/work/handoff/browser-processes/process.json', data: 'do not include' },
+      { name: 'out/work/handoff/report-render.txt', data: `in "${path.join(home, 'Desktop')}"\n` },
+    ])
+    const made = recordsFor(ctx(H), mode)
+    expect(made.entries).toBe(1)
+    expect(zipRead(made.file).map(({ name, data }) => [name, data.toString('utf8')])).toEqual([['out/work/handoff/report-render.txt', `in "~${path.sep}Desktop"\n`]])
+    const hash = L.sha256File(file)
+    expect(recordsFor(ctx(H), mode)).toMatchObject({ file, entries: 1 })
+    expect(L.sha256File(file)).toBe(hash)
   })
 })
