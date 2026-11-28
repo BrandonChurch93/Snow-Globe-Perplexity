@@ -1,0 +1,166 @@
+# Item 294: what the live page does when the browser takes its WebGL context away, read where a graphics card draws.
+# Each job builds the page at one commit on a hosted machine, opens it in the installed Chrome and runs
+# tools/lostcontext.mjs of this push on it: the context is taken with the WEBGL_lose_context extension in eight cases,
+# and what stands on the screen, what reaches the card, whether the page comes back and every line of the console are read.
+# Twice: origin main as it stood at this push (named main: the page without the mend, where the test is red) and the
+# head of the push (the after). The jobs named console open the page with no loss, in two seasons on Windows, until every
+# season is made, and write every line of the console (item 282: the lines Direct3D writes for a shader).
+# It starts by hand, and on every push to agent/p6-context-294-ci: the branch is for this reading and is not merged.
+# It has no timer and never starts on main. Every job ends green whatever happens: a red run sends a mail. What a job
+# read is the step "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
+name: item 294 lost context
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [agent/p6-context-294-ci]
+
+permissions:
+  contents: read
+
+jobs:
+  context:
+    name: lost context ${{ matrix.tree.name }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+        # A tree with no head named is the head of the push itself.
+        tree:
+          - { name: main, head: a7d799f29f87df2f97693dc32ea61217bef71a88, sizes: hd }
+          - { name: after, head: '', sizes: 'hd,phone' }
+    steps:
+      - name: the tool of this push
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          path: _tool
+          persist-credentials: false
+          sparse-checkout: |
+            tools/lostcontext.mjs
+          sparse-checkout-cone-mode: false
+
+      - name: the page at the commit to be read
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.tree.head || github.sha }}
+          path: page
+          persist-credentials: false
+
+      - name: install and build
+        continue-on-error: true
+        timeout-minutes: 20
+        shell: bash
+        working-directory: page
+        run: |
+          mkdir -p out/work/context
+          echo "tree ${{ matrix.tree.name }}, commit $(git rev-parse HEAD), machine ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)" | tee out/work/context/tree.txt
+          npm ci --no-audit --no-fund
+          npm run build
+          echo "built: $(cat dist/build.json)" | tee -a out/work/context/tree.txt
+
+      - name: the losses
+        continue-on-error: true
+        timeout-minutes: 45
+        shell: bash
+        working-directory: page
+        run: |
+          cp ../_tool/tools/lostcontext.mjs tools/lostcontext.mjs
+          node tools/lostcontext.mjs --dist dist --name "${{ matrix.tree.name }}-${{ runner.os }}" --local --sizes ${{ matrix.tree.sizes }} --limit 240 --ready 240
+
+      - name: what was read
+        if: always()
+        continue-on-error: true
+        shell: bash
+        working-directory: page
+        run: cat out/work/context/tree.txt out/work/context/*/lines.txt
+
+      - name: the files
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: context-${{ matrix.tree.name }}-${{ runner.os }}
+          path: page/out/work/context
+          if-no-files-found: warn
+          retention-days: 14
+
+  console:
+    name: console ${{ matrix.tree.name }} windows
+    runs-on: windows-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        tree:
+          - { name: main, head: a7d799f29f87df2f97693dc32ea61217bef71a88 }
+          - { name: after, head: '' }
+    steps:
+      - name: the tool of this push
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          path: _tool
+          persist-credentials: false
+          sparse-checkout: |
+            tools/lostcontext.mjs
+          sparse-checkout-cone-mode: false
+
+      - name: the page at the commit to be read
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.tree.head || github.sha }}
+          path: page
+          persist-credentials: false
+
+      - name: install and build
+        continue-on-error: true
+        timeout-minutes: 20
+        shell: bash
+        working-directory: page
+        run: |
+          mkdir -p out/work/context
+          echo "tree ${{ matrix.tree.name }}, commit $(git rev-parse HEAD), machine ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)" | tee out/work/context/tree.txt
+          npm ci --no-audit --no-fund
+          npm run build
+          echo "built: $(cat dist/build.json)" | tee -a out/work/context/tree.txt
+
+      # A page that is not whole in four minutes or not made in six more is given up by the tool itself: ten minutes a season.
+      - name: the console in fall
+        continue-on-error: true
+        timeout-minutes: 13
+        shell: bash
+        working-directory: page
+        run: |
+          cp ../_tool/tools/lostcontext.mjs tools/lostcontext.mjs
+          node tools/lostcontext.mjs --dist dist --name "console-${{ matrix.tree.name }}-fall" --local --cases usual --sizes hd --season fall --quality plain --limit 240 --ready 360
+
+      - name: the console in winter
+        continue-on-error: true
+        timeout-minutes: 13
+        shell: bash
+        working-directory: page
+        run: |
+          cp ../_tool/tools/lostcontext.mjs tools/lostcontext.mjs
+          node tools/lostcontext.mjs --dist dist --name "console-${{ matrix.tree.name }}-winter" --local --cases usual --sizes hd --season winter --quality plain --limit 240 --ready 360
+
+      - name: what was read
+        if: always()
+        continue-on-error: true
+        shell: bash
+        working-directory: page
+        run: cat out/work/context/tree.txt out/work/context/*/lines.txt
+
+      - name: the files
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: console-${{ matrix.tree.name }}-Windows
+          path: page/out/work/context
+          if-no-files-found: warn
+          retention-days: 14
