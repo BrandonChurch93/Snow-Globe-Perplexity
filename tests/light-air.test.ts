@@ -42,8 +42,8 @@ describe('the grid light a flake takes', () => {
     expect(LIGHT_FRAG_PARS).toContain('uniform float uGridAir;')
     expect(LIGHT_FRAG_PARS).toContain('return colour * (q * q / max(q * q + uGridAir * uGridAir, 1e-9));')
     const grid = LIGHT_FRAG_PARS.slice(LIGHT_FRAG_PARS.indexOf('vec3 stageGrid(vec3 local)'), LIGHT_FRAG_PARS.indexOf('void stageGridRead('))
-    expect(grid).toContain('a = stageGridAir(texture(uGridA, stageGridAt(local, 0.0)).rgb) * stageGridGain(')
-    expect(grid).toContain('b = stageGridAir(texture(uGridB, stageGridAt(local, 0.0)).rgb) * stageGridGain(')
+    expect(grid).toContain('a = stageGridAir(textureLod(uGridA, stageGridAt(local, 0.0), 0.0).rgb) * stageGridGain(')
+    expect(grid).toContain('b = stageGridAir(textureLod(uGridB, stageGridAt(local, 0.0), 0.0).rgb) * stageGridGain(')
     expect(grid).toContain('return mix(a, b, uGrid.x) + stageFlood(local);')
     const read = LIGHT_FRAG_PARS.slice(LIGHT_FRAG_PARS.indexOf('void stageGridRead('), LIGHT_FRAG_PARS.indexOf('void stageGridLit('))
     expect(read.match(/air \+= stageGridAir\(c\.rgb\) \* gain;/g)?.length).toBe(2)
@@ -53,8 +53,8 @@ describe('the grid light a flake takes', () => {
 
   it('is also given without the knee and without the flood, for the glints of what flies', () => {
     const warm = LIGHT_FRAG_PARS.slice(LIGHT_FRAG_PARS.indexOf('vec3 stageGridWarm(vec3 local)'), LIGHT_FRAG_PARS.indexOf('vec3 stageKeyBent('))
-    expect(warm).toContain('a = texture(uGridA, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridA, stageGridAt(local, 2.0)), uGridGainA);')
-    expect(warm).toContain('b = texture(uGridB, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridB, stageGridAt(local, 2.0)), uGridGainB);')
+    expect(warm).toContain('a = textureLod(uGridA, stageGridAt(local, 0.0), 0.0).rgb * stageGridGain(textureLod(uGridA, stageGridAt(local, 2.0), 0.0), uGridGainA);')
+    expect(warm).toContain('b = textureLod(uGridB, stageGridAt(local, 0.0), 0.0).rgb * stageGridGain(textureLod(uGridB, stageGridAt(local, 2.0), 0.0), uGridGainB);')
     expect(warm).toContain('return mix(a, b, uGrid.x);')
     expect(warm).not.toContain('stageGridAir')
     expect(warm).not.toContain('stageFlood')

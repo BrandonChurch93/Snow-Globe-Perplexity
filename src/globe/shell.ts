@@ -440,18 +440,19 @@ vec3 glassSeen(vec3 o, vec3 d, float soft, int k, float own) {
       vec3 keyLocal = uKeyDir * uTurn;
       vec3 lit = uSky * (0.2 + 0.8 * open) + uKeyCol * max(keyLocal.y, 0.0) * open * (0.35 + 0.65 * smoothstep(-0.4, 0.5, dot(dot(q.xz, q.xz) > 0.0 ? normalize(q.xz) : vec2(1.0, 0.0), normalize(keyLocal.xz + 1e-4))));
       float wear = 0.75 + 0.5 * glassNoise(vec3(q.xz * 0.35, 1.0));
-      return uBase * lit * wear * 0.3183 + uPool * uBase * 0.2 * (1.0 - open);
-    }
-    vec3 ow = uTurn * (o + vec3(0.0, CENTRE_Y, 0.0)) + uGlobeAt;
-    if (dw.y < -0.003 && ow.y > 0.0) {
-      vec3 s = ow + dw * (-ow.y / dw.y);
-      float dist = length(s.xz - uGlobeAt.xz);
-      float contact = 0.8 * (1.0 - smoothstep(BASE_R * 0.85, BASE_R * 1.5, dist));
-      float lit = exp(-dist * dist / (2.0 * 650.0 * 650.0));
-      vec3 slab = uRoomFloor * (1.0 - 0.6 * contact) + uSlab * uKeyCol * max(uKeyDir.y, 0.0) * (1.0 - contact) * lit;
-      slab += uSlab * uPool * 3.0 * exp(-dist * dist / (2.0 * 110.0 * 110.0)) * (1.0 - 0.6 * contact);
-      float away = smoothstep(1400.0, 2900.0, length(s.xz));
-      return mix(slab * ${num(glassLook.floor)}, c, away);
+      c = uBase * lit * wear * 0.3183 + uPool * uBase * 0.2 * (1.0 - open);
+    } else {
+      vec3 ow = uTurn * (o + vec3(0.0, CENTRE_Y, 0.0)) + uGlobeAt;
+      if (dw.y < -0.003 && ow.y > 0.0) {
+        vec3 s = ow + dw * (-ow.y / dw.y);
+        float dist = length(s.xz - uGlobeAt.xz);
+        float contact = 0.8 * (1.0 - smoothstep(BASE_R * 0.85, BASE_R * 1.5, dist));
+        float lit = exp(-dist * dist / (2.0 * 650.0 * 650.0));
+        vec3 slab = uRoomFloor * (1.0 - 0.6 * contact) + uSlab * uKeyCol * max(uKeyDir.y, 0.0) * (1.0 - contact) * lit;
+        slab += uSlab * uPool * 3.0 * exp(-dist * dist / (2.0 * 110.0 * 110.0)) * (1.0 - 0.6 * contact);
+        float away = smoothstep(1400.0, 2900.0, length(s.xz));
+        c = mix(slab * ${num(glassLook.floor)}, c, away);
+      }
     }
   }
   return c;
@@ -486,7 +487,7 @@ float glassHair(vec3 n) {
 
 // Whatever a graphics card answers where GLSL leaves the answer open, the glass does not paint it: a pixel of the
 // glass that came out as no number adds no light and keeps all of what is behind it, which is clear glass.
-const NUMBER_GUARD = '  if (any(isnan(gl_FragColor)) || any(isinf(gl_FragColor))) gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);'
+const NUMBER_GUARD = '  if (numberBroken(gl_FragColor)) gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);'
 
 const THROUGH = `
 ${GLASS_GLSL}
@@ -729,7 +730,7 @@ void main() {
       float uj = clamp((sj - ${num(glassLook.bend.from)}) / ${num(1 - glassLook.bend.from)}, 0.0, 1.0);
       float to = sj - ${num(glassLook.bend.shift)} * pow(abs(uj), ${num(glassLook.bend.power)});
       vec3 tap = textureLod(uBehind, (gl_FragCoord.xy + outward * ((to - s) / bendPer)) / uBehindSize, 0.0).rgb;
-      if (any(isnan(tap)) || any(isinf(tap))) tap = vec3(0.0);
+      if (numberBroken(tap)) tap = vec3(0.0);
       bent += max(tap, 0.0);
     }
     float bendOn = uRingAmt.z * smoothstep(0.0, ${num(glassLook.bend.soft)}, bendAt) * limb * (1.0 - smoothstep(${num(Math.cos(glassLook.bend.bubbleDeg[1] * RAD))}, ${num(Math.cos(glassLook.bend.bubbleDeg[0] * RAD))}, dot(n, uBubbleAt)));
@@ -743,7 +744,7 @@ void main() {
     for (int i = 0; i < ${glassLook.seat.mirrorTaps}; i++) {
       float uj = clamp(footU - ((float(i) + 0.5) / ${num(glassLook.seat.mirrorTaps)} - 0.5) * footPer / ${num(glassLook.seat.mirrorMm)}, 0.0, 1.0);
       vec3 tap = textureLod(uBehind, (gl_FragCoord.xy + footSlope * ((${num(glassLook.seat.mirrorSpanMm)} * uj + ${num(glassLook.seat.mirrorMm)} * footU) / (footPer * footPer))) / uBehindSize, 0.0).rgb;
-      if (any(isnan(tap)) || any(isinf(tap))) tap = vec3(0.0);
+      if (numberBroken(tap)) tap = vec3(0.0);
       foot += max(tap, 0.0);
     }
     lit += min(foot / ${num(glassLook.seat.mirrorTaps)}, vec3(${num(glassLook.seat.mirrorCap)})) * (${num(glassLook.seat.mirror)} * 6.75 * footU * (1.0 - footU) * (1.0 - footU) * footLimb * limb * (1.0 - ${num(glassLook.seat.lineDepth)} * line));

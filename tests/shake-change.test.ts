@@ -358,6 +358,95 @@ describe('the change number', () => {
     expect(light).toContain('0.45) * own);')
   })
 
+  it("ends the foot's image in winter's frost on the line it had while the foot stands and the frost lies: with the foot up or the frost on its way that end is spread over the depth the foot hid", () => {
+    const text = readFileSync('src/seasons/winter/frost.ts', 'utf8')
+    const open = '\nconst SHEET = `\n'
+    const from = text.indexOf(open)
+    expect(from).toBeGreaterThanOrEqual(0)
+    const sheet = text.slice(from + open.length, text.indexOf('`\n', from + open.length))
+    // One number ends the zone at the foot's axis. At rest it is the step it was and nothing new is read. It is spread when
+    // the frost is on its way out, when the foot is lifted or when it leans: the last two are how the table's shade knows
+    // that the foot is off the table (`slabShade`, surface.ts).
+    expect(sheet).toContain('  float imageHalf = sqrt(max(uFoot.z * uFoot.z - xz.x * xz.x, 0.0));\n  float imageAhead = xz.y - imageHalf;\n')
+    expect(sheet).toContain(
+      '  float imageFront = step(0.0, xz.y);\n' +
+        '  if (uGone.x > 0.0 || uFoot.w > 0.0 || dot(uLean.zw, uLean.zw) > 0.0) {\n' +
+        '    float imageSpread = max(imageHalf, min(uGone.x, ${IMAGE_LEAVE_MM.toFixed(1)}));\n' +
+        '    if (imageSpread > 0.0) imageFront = smoothstep(-imageSpread, imageSpread, xz.y);\n' +
+        '  }\n',
+    )
+    expect(sheet).toContain('smoothstep(uFoot.z + 3.0, uFoot.z - 3.0, abs(xz.x)) * imageFront;\n')
+    expect(sheet.split('step(0.0, xz.y)').length).toBe(2)
+    expect(sheet.split('imageFront').length).toBe(4)
+    expect(sheet.split('imageSpread').length).toBe(5)
+    expect(readFileSync('src/scene/surface.ts', 'utf8')).toContain('  if (uFoot.w > 0.0 || dot(uLean.zw, uLean.zw) > 0.0) {\n')
+    const least = Number(/\nconst IMAGE_LEAVE_MM = (\d+(?:\.\d+)?)\n/.exec(text)?.[1])
+    expect(least).toBeGreaterThan(0)
+
+    // The same rule in numbers, at places across the foot (x) and along the way the camera looks (z), in mm from the axis.
+    const radius = config.globe.baseDiameterMm / 2
+    const smooth = (a: number, b: number, v: number): number => {
+      const t = Math.min(1, Math.max(0, (v - a) / (b - a)))
+      return t * t * (3 - 2 * t)
+    }
+    const hid = (x: number): number => Math.sqrt(Math.max(radius * radius - x * x, 0))
+    const step = (z: number): number => (z >= 0 ? 1 : 0)
+    const front = (x: number, z: number, out: number, up: boolean): number => {
+      const spread = out > 0 || up ? Math.max(hid(x), Math.min(out, least)) : 0
+      return spread > 0 ? smooth(-spread, spread, z) : step(z)
+    }
+    // Well inside a spread, clear of the rounding at its two ends.
+    const within = (z: number, spread: number): boolean => Math.abs(z) < spread - 1e-4
+    const DZ = 0.86
+    const across = [-radius - 4, -radius, -radius + 0.05, -0.9 * radius, -0.5 * radius, -7, 0, 3, 0.31 * radius, 0.8 * radius, radius - 0.4, radius, radius + 1.5]
+    for (const x of across) {
+      const h = hid(x)
+      for (let i = -80; i < 80; i++) {
+        const z = (i + 0.5) * DZ
+        // At rest the end is the step it was.
+        expect(front(x, z, 0, false)).toBe(step(z))
+        const up = front(x, z, 0, true)
+        if (Math.abs(z) >= h) {
+          // A place that is seen while the foot stands is read as it was, the foot up or down.
+          expect(up).toBe(step(z))
+        } else if (within(z, h)) {
+          // What the foot hid: no line. The end rises from the back of the foot to its front, half way at the axis, and from
+          // one place to the next by no more than its width allows.
+          const back = front(x, z - DZ, 0, true)
+          expect(up).toBeGreaterThan(0)
+          expect(up).toBeLessThan(1)
+          expect(up).toBeGreaterThanOrEqual(back)
+          expect(up - back).toBeLessThanOrEqual((0.75 * DZ) / h + 1e-12)
+          expect(up + front(x, -z, 0, true)).toBeCloseTo(1, 12)
+        }
+        // The leaving begins from what stood there: its first moment moves the end by nothing under a foot that is up, and
+        // by nothing beside the foot whether it is up or down.
+        expect(front(x, z, 1e-6, true)).toBe(up)
+        if (h === 0) expect(front(x, z, 1e-6, false)).toBe(step(z))
+        // In the leaving the end is spread by what the foot hid or by how far the frost is out, whichever is more, the
+        // second up to `least` and no further. The spread never narrows as the frost goes, and the foot's lift adds nothing.
+        let wide = h
+        for (const out of [0.2, 1, 0.5 * least, least, 2 * least, 60, 170]) {
+          const spread = Math.max(h, Math.min(out, least))
+          expect(spread).toBeGreaterThanOrEqual(wide)
+          wide = spread
+          const gone = front(x, z, out, false)
+          expect(gone).toBe(front(x, z, out, true))
+          if (Math.abs(z) >= spread) expect(gone).toBe(step(z))
+          else if (within(z, spread)) {
+            expect(gone).toBeGreaterThan(0)
+            expect(gone).toBeLessThan(1)
+          }
+        }
+        expect(wide).toBe(Math.max(h, least))
+      }
+    }
+    // Along its axis the standing foot hides its whole radius either way, and at its two ends and beside it nothing.
+    expect(hid(0)).toBe(radius)
+    expect(hid(radius)).toBe(0)
+    expect(hid(-radius - 4)).toBe(0)
+  })
+
   it('raises a cover that comes up fast, is whole across the span and dies away as a tail past the end of the window', () => {
     const span = changeSpan('base')
     const cover = CHANGE_COVER
@@ -667,7 +756,7 @@ describe('the dressing on the glass under a change', () => {
     const gone = /\nbool stageGone\(float c\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1] ?? ''
     const body = /if \(uState\.z < -9\.0\) \{([^}]+)\}/.exec(gone)?.[1]?.replace(/\s+/g, ' ').trim()
     expect(body).toBe('h = stageHash(vec3(gl_FragCoord.xy, uPass.x)); if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w; h = fract(h + uPass.y);')
-    expect(STAGE_FRAG_PARS).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
+    expect(gone).toContain('gone = uState.w > 1.5 ? h < c : h >= c;')
     // And the share it is held against: the share that has passed, and in a frame of two to seven samples the whole number of
     // samples under that share times the count plus the pixel's own level on the still tile, as a share of the count.
     const change = /\nfloat stageChange\(\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1] ?? ''
@@ -748,21 +837,20 @@ describe('the dressing on the glass under a change', () => {
 
   it('holds the pattern still where the page draws one sample a frame, so a pixel goes once and stays gone, and leaves a captured frame as it was', () => {
     const body = /\nbool stageGone\(float c\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1]
-    expect(body?.split('\n')[0]).toBe('  if (uPass.w < 0.5) return stageGoneStill(c);')
-    // What a captured frame runs is every line after that one, and it is the text it was before the page's own path left it.
-    expect(body?.split('\n').slice(1).join('\n')).toBe(
+    expect(body?.split('\n').slice(0, 2)).toEqual(['  bool still = uPass.w < 0.5;', '  bool gone = still && stageGoneStill(c);'])
+    // What a captured frame runs is every line after those two, and it is what it was before the page's own path left it, written with one exit.
+    expect(body?.split('\n').slice(2).join('\n')).toBe(
       [
-        '  if (uState.w > 0.5) {',
+        '  if (!still && uState.w > 0.5) {',
         '    float h = stageHash(vec3(gl_FragCoord.xy, uSeed));',
         '    if (uState.z < -9.0) {',
         '      h = stageHash(vec3(gl_FragCoord.xy, uPass.x));',
         '      if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w;',
         '      h = fract(h + uPass.y);',
         '    } else if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * 0.14, 0.001, 0.999);',
-        '    if (uState.w > 1.5 ? h < c : h >= c) return true;',
+        '    gone = uState.w > 1.5 ? h < c : h >= c;',
         '  }',
-        '  if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;',
-        '  return false;',
+        '  return gone || (!still && uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w);',
       ].join('\n'),
     )
     // A captured frame never takes the page's branch, whatever its tier, and the page always does.
@@ -775,8 +863,8 @@ describe('the dressing on the glass under a change', () => {
     // Nothing in it reads the frame: no seed, no share of a pass, and no hash but the pixel's own.
     expect(still).not.toMatch(/uSeed|uPass|stageHash/)
     expect(still).toContain('float h = stageStill(ivec2(gl_FragCoord.xy));')
-    expect(still).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
-    expect(still).toContain('return uFlags.w < 1.0 && stageStill(ivec2(gl_FragCoord.yx) + 29) >= uFlags.w;')
+    expect(still).toContain('gone = uState.w > 1.5 ? h < c : h >= c;')
+    expect(still).toContain('return gone || (uFlags.w < 1.0 && stageStill(ivec2(gl_FragCoord.yx) + 29) >= uFlags.w);')
     // The level is the middle of the byte the tile holds for the pixel, read whole and from nothing else.
     expect(STAGE_FRAG_PARS).toContain('uniform highp sampler2D uStill;')
     expect(STAGE_FRAG_PARS).toContain('float stageStill(ivec2 at) {\n  return (floor(texelFetch(uStill, at & 127, 0).r * 255.0 + 0.5) + 0.5) / 256.0;\n}')
@@ -882,8 +970,8 @@ describe('the dressing on the glass under a change', () => {
   const kept = (mode: number, c: number, presence: number, h: number, h2: number): boolean => !(mode > 0.5 && (mode > 1.5 ? h < c : h >= c)) && !(presence < 1 && h2 >= presence)
   /** The share is the part of all hashes that the stipple keeps, and a picture thinned by it is the mean of the samples that keep it and that drop it. */
   const thinsAsTheStippleDoesInTheMean = (): void => {
-    expect(STAGE_FRAG_PARS).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
-    expect(STAGE_FRAG_PARS).toContain('if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;')
+    expect(STAGE_FRAG_PARS).toContain('gone = uState.w > 1.5 ? h < c : h >= c;')
+    expect(STAGE_FRAG_PARS).toContain('return gone || (!still && uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w);')
     const n = 240
     for (const mode of [MODE.always, MODE.incoming, MODE.outgoing])
       for (const c of [0, 0.125, 0.37, 0.5, 0.815, 1])

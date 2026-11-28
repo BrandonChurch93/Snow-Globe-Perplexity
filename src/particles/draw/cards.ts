@@ -413,6 +413,8 @@ export const CARD_VERT = `
     vec2 holdC = vec2(0.0);
     // the down and the lights of the storm are drawn near where they are at the middle of the exposure: carried along its whole path from one moment of the shutter to the next, a short stroke is a row of dashes, a head a long smear and a light a faint thread
     if (storming && (${at(SHAPE.seed)} || ${at(SHAPE.light)})) holdC = -stC * uStorm.y * (uPoint.z / max(shut, 1e-6) - (1.0 - uStorm.x)) * (${at(SHAPE.light)} ? ${n(CARD.glow.stormHold)} : (whole > 0.5 ? ${n(CARD.hair.stormHold)} : ${n(CARD.line.stormHold)}));
+    // above the pixels of the hd picture a light of the storm stands at its place of the middle of the exposure in every sample already (shader.ts, VERT_MAIN), so there is nothing of its own path to hold it back from
+    if (storming && ${at(SHAPE.light)} && uPoint.w > 1.0) holdC *= 1.0 - min(uPoint.w - 1.0, 1.0);
     if (storming && ${at(SHAPE.light)} && uMidHold.x > 0.0) {
       // In a frame of the film the ball travels a little inside the shutter while it is set down and while it rocks after the landing, and each sample draws the ball where it stands at its own moment. A light's one streak, carried with the ball from sample to sample, was a band of lines side by side. So a light is held against the ball's travel as it is held against its own path: it is drawn at its place in the ball as the ball stands at the middle of the exposure, through the glass as the glass stands there, by the share that stands (points.ts, lightRide)
       // the moments of a travelling frame's samples are moved a little from their shares of the shutter, and the hold above reads the share: the light is put back by that much of its own path
@@ -643,6 +645,8 @@ export const CARD_VERT = `
       vL3.z = glowC;
       vL3.w = 1.0 + ${n(CARD.line.stormMistScene)} * mistSceneC;
     }
+    // the film's lens looks through another place in every sample and lays a seed's stroke out once for each, over what is left of its circle beside the share the stroke stands still by (shader.ts, lensC). The small glint at a stroke's head then stands once for every sample, a bunch of dots, two dozen of them at the stills' close camera (open item 277). A stroke that is no mist reads nothing else here, so its card says how far the lens lays it out, in pixels of the hd picture, and the glint goes out by that (cardStreak)
+    if (${at(SHAPE.seed)} && lineC > 0.5 && mistC < 0.5) vL3.z = (1.0 - lensC) * abs(coc) / uPoint.w;
     float detC = ca.x * cb.y - ca.y * cb.x;
     detC = abs(detC) < 1e-5 ? 1e-5 : detC;
     vec2 qnC = vec2(nV.x * cb.y - nV.y * cb.x, ca.x * nV.y - ca.y * nV.x) * (rC / detC);
@@ -733,6 +737,7 @@ export const CARD_FRAG_PARS = `${REST_LIGHT}
 /** The down of the seeds' heads: every form at every lean, drawn once at start (down.ts). */
 uniform sampler2D uDown;
 uniform vec4 uPoint;
+uniform float uWhole;
 uniform float uStormLanding;
 uniform mat4 projectionMatrix;
 ${CLOCK_HASH}/** One ring of a clock's hairs (looks.ts, CARD.clock): the three hairs about the pixel's own angle, each a line that fades toward its tip and ends in a tuft, or the mean of them all where they stand closer than a hair is wide. The share told of the ring's light stands as hairs that are told apart and the rest as the mean. */
@@ -791,15 +796,13 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
     float ends = abs(q.x) - 1.0;
     if (ends > e.x) e = vec3(ends, q.x < 0.0 ? -1.0 : 1.0, 0.0);
     return e;
-  }
-  if (shape < ${n(SHAPE.fleck + 0.5)}) {
+  } else if (shape < ${n(SHAPE.fleck + 0.5)}) {
     float r = length(q) + 1e-4;
     float ang = dot(q, q) > 0.0 ? atan(q.y, q.x) : 0.0;
     float lobes = 2.0 + floor(fract(own.x * 7.0) * 4.0);
     float rim = (0.6 + 0.2 * mix(0.3, 1.0, own.y) * sin(lobes * ang + 6.2831853 * own.x) + 0.1 * sin((lobes + 3.0) * ang + 6.2831853 * own.y)) * mix(1.0, 0.45, fract(own.y * 13.0) * abs(sin(ang + 6.2831853 * own.x)));
     return vec3(r - rim, q.x / r, q.y / r);
-  }
-  if (shape > ${n(SHAPE.bat - 0.5)}) {
+  } else if (shape > ${n(SHAPE.bat - 0.5)}) {
     float tt = abs(q.y);
     q.x -= vL4.y * tt * tt;
     float lead = 0.1 + 0.24 * smoothstep(0.0, 0.4, tt) - 0.52 * pow(smoothstep(0.4, 1.0, tt), 1.4);
@@ -817,15 +820,14 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
     float ear = max(abs(tt - 0.065) * 2.2 + (q.x - 0.52), 0.4 - q.x);
     if (ear < e.x) e = vec3(ear, 1.0, 0.0);
     return e;
-  }
-  if (cardLeafForm(own) > 0.5) {
+  } else if (cardLeafForm(own) > 0.5) {
     vec2 m = cardMaple(q);
     vec2 c = (q - vec2(${n(CARD.maple.mid)}, 0.0)) / m.y;
     vec3 e = vec3(m.y - m.x, c.x, c.y);
     float st = max(abs(q.y) - 0.035, max(q.x - ${n(CARD.maple.mid)}, -1.0 - q.x));
     if (st < e.x) e = vec3(st, 0.0, side);
     return e;
-  }
+  } else {
   float stem = 0.16;
   float v = clamp((u - stem) / (1.0 - stem), 0.0, 1.0);
   float w = u < stem ? 0.035 : max(cardLeafHalf(v, own), 0.035 * (1.0 - smoothstep(0.0, 0.2, v)));
@@ -834,6 +836,7 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
   float ends = abs(q.x) - 1.0;
   if (ends > e.x) e = vec3(ends, q.x < 0.0 ? -1.0 : 1.0, 0.0);
   return e;
+  }
 }
 /** A card far out of focus is its outline spread by the lens: a soft blob with the outline's own middle, length and width. x, y, z: the blob's form in the card's axes; w: how much of the blob is drawn (0 for a sharp card). */
 vec4 cardBlob = vec4(0.0);
@@ -1305,7 +1308,14 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     bareGain *= mix(1.0, ${n(CARD.spark.restPaleDim)}, paleS);
     bareGain = mix(bareGain, min(bareGain, ${n(CARD.spark.restPaleMost)} / max(vCore.w * rc * rc / vc, 1e-4)), paleS);
     vcBare = max(vc / bareTight, spark ? (1.0 - paleS) * (1.0 - glowS) * (1.0 - disc) * (1.0 - vL2.w) * ${n(CARD.spark.restWarmPx * CARD.spark.restWarmPx)} * uPoint.w * uPoint.w : 0.0);
-    core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * exp(-0.5 * d2 / vcBare) * fade * bareGain;
+    float bell = exp(-0.5 * d2 / vcBare);
+    // above the pixels of the hd picture (the film at 3840) a light of the storm is slim (looks.ts, CARD.glow, stormSlim): across, its core is no softer than so many pixels of the hd picture, and it falls off at its sides more steeply than a bell does, so that it is a whole bright line at its middle with no wide soft flank for the film's curve to lift into a slab. Its length, its ends, its place and the light at its middle are as they were. Where a pixel is a pixel of the hd picture none of this is read, and none of it in the app at any size (uWhole)
+    if (!spark && uPoint.w > 1.0 && uWhole < 0.5 && tightL > 0.0) {
+      // no base of a power is below nought here (a variance over a square, one and a power, a squared distance over a variance): the guards say so to a graphics card that has no answer for one that is, and change no value
+      float slimV = vcBare * pow(max(1.0 + pow(max(vcBare / (${n(CARD.glow.stormSlim[0] * CARD.glow.stormSlim[0])} * uPoint.w * uPoint.w), 0.0), ${n(CARD.glow.stormSlim[1])}), 1.0), ${n(-1 / CARD.glow.stormSlim[1])});
+      bell = mix(bell, exp(-0.5 * pow(max(d2 / slimV, 0.0), ${n(CARD.glow.stormSlim[2])})), tightL * min(uPoint.w - 1.0, 1.0));
+    }
+    core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * bell * fade * bareGain;
     float lid = 0.0;
     if (disc > 0.0) {
       float rd = ${n(CARD.glow.discWide)} * sg;
@@ -1478,7 +1488,8 @@ void cardStreak(vec2 p, int kind, vec4 k, vec4 look) {
       if (fract(vL3.x * 733.0) >= ${n(STORM_LANDING.line.stormLockShare)}) lit = mix(lit, plainL, uStormLanding);
     }
     // the seed at the head of some strokes catches the low sun: one small warm glint
-    if (fract(vL3.x * 419.0) < ${n(CARD.line.stormGlint)}) glint = exp(-0.5 * dot(hp, hp) / (vStreak.w + ${n(CARD.line.stormGlintPx * CARD.line.stormGlintPx)} * uPoint.w * uPoint.w));
+    // where the film's lens lays the stroke out over more than a couple of pixels of the hd picture, as its card says, the glint goes out by degrees, the stroke stays (decision 246): under the first of the two it is whole to the last bit, so no frame of the film and no still at the hero camera moves
+    if (fract(vL3.x * 419.0) < ${n(CARD.line.stormGlint)}) glint = exp(-0.5 * dot(hp, hp) / (vStreak.w + ${n(CARD.line.stormGlintPx * CARD.line.stormGlintPx)} * uPoint.w * uPoint.w)) * (1.0 - smoothstep(${n(CARD.line.stormGlintLaidPx[0])}, ${n(CARD.line.stormGlintLaidPx[1])}, vL3.z));
   }
   float headW = 0.0;
   float seen = vCore.w * look.z;
