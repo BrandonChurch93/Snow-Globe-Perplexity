@@ -1,13 +1,13 @@
 # Item 294: what the live page does when the browser takes its WebGL context away, read where a graphics card draws.
-# Each job builds the page at one commit on a hosted machine, opens it in the installed Chrome and runs
-# tools/lostcontext.mjs of this push on it. The job named lost context takes the context with the WEBGL_lose_context
-# extension in eight cases, at two sizes, and reads what stands on the screen, which season mark is lit, what reaches
-# the card, whether the page comes back and every line of the console. The job named console opens the page with no
-# loss, in two seasons on Windows, until the page says its whole pictures have arrived (ready) or ten minutes have
-# passed, and writes every line of the console (item 282: the lines Direct3D writes for a shader).
-# The first run (46148923668) read the losses on main's build and on the branch's, on macOS and on Windows. The second
-# (46151819966) read the console only, on main's build and on the branch's with item 282's commit. This third run
-# reads the branch's last head alone (01929331): the losses on macOS, the console on Windows.
+# The first run (46148923668) read forced losses on main's build and on the branch's, on macOS and on Windows. The
+# second (46151819966) read the console on Windows. The third (46155758590) read the branch's last head alone.
+# This fourth run is addition 4: a hosted macOS machine takes the context away by itself when main's page is left
+# open in winter. Each job builds two pages on one machine, the branch's last head (01929331) and main (73399375),
+# and opens them in turn in the installed Chrome: a browser begun for each load, the page left 150 s from its first
+# picture with nothing done to it, then read once and photographed. Four jobs: the address with nothing after it and
+# ?quality=low&season=winter, each on two machines, four browsers a build on each, so eight browsers an arm.
+# The tool is written out of this file by the step named the tool: this branch carries the workflow file and
+# nothing else new. It is tools/leftalone.mjs in the files of each job.
 # It starts by hand, and on every push to agent/p6-context-294-ci: the branch is for this reading and is not merged.
 # It has no timer and never starts on main. Every job ends green whatever happens: a red run sends a mail. What a job
 # read is the step "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
@@ -22,56 +22,413 @@ permissions:
   contents: read
 
 jobs:
-  context:
-    name: lost context ${{ matrix.tree.name }} ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+  alone:
+    name: left alone ${{ matrix.address }} ${{ matrix.part }}
+    runs-on: macos-latest
     timeout-minutes: 55
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest]
-        # A tree with no head named is the head of the push itself.
-        tree:
-          - { name: last, head: '0192933119e9737c8db81e48286b3855ca7dd9da', sizes: 'hd,phone' }
+        address: [plain, low]
+        part: [1, 2]
     steps:
-      - name: the tool of this push
+      - name: the page at the last head
         continue-on-error: true
         uses: actions/checkout@v4
         with:
-          path: _tool
-          persist-credentials: false
-          sparse-checkout: |
-            tools/lostcontext.mjs
-          sparse-checkout-cone-mode: false
-
-      - name: the page at the commit to be read
-        continue-on-error: true
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.tree.head || github.sha }}
+          ref: '0192933119e9737c8db81e48286b3855ca7dd9da'
           path: page
           persist-credentials: false
 
-      - name: install and build
+      - name: the page of main
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: '7339937548e2a290fb659a29192bf150fb93f5b1'
+          path: base
+          persist-credentials: false
+
+      - name: install and build both
         continue-on-error: true
         timeout-minutes: 20
         shell: bash
-        working-directory: page
         run: |
-          mkdir -p out/work/context
-          echo "tree ${{ matrix.tree.name }}, commit $(git rev-parse HEAD), machine ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)" | tee out/work/context/tree.txt
-          npm ci --no-audit --no-fund
-          npm run build
-          echo "built: $(cat dist/build.json)" | tee -a out/work/context/tree.txt
+          mkdir -p page/out/work/context
+          for tree in page base; do
+            cd "$GITHUB_WORKSPACE/$tree"
+            echo "tree $tree, commit $(git rev-parse HEAD), machine ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)" | tee -a "$GITHUB_WORKSPACE/page/out/work/context/tree.txt"
+            npm ci --no-audit --no-fund
+            npm run build
+            echo "built: $(cat dist/build.json)" | tee -a "$GITHUB_WORKSPACE/page/out/work/context/tree.txt"
+          done
 
-      - name: the losses
+      - name: the tool
+        continue-on-error: true
+        shell: bash
+        run: |
+          cat > page/tools/leftalone.mjs <<'LEFTALONE_END'
+          import fs from 'node:fs'
+          import path from 'node:path'
+          import sharp from 'sharp'
+          import { ensureDir, launch, outWork } from './lib/browser.mjs'
+          import { parseArgs, rel, writeJson } from './lib/paths.mjs'
+          import { serve } from './lib/server.mjs'
+
+          /**
+           * Item 294, addition 4: the live page left alone on a machine that takes the WebGL context away by itself.
+           *
+           * Each build is served from this machine. For each reading a browser is begun for that one load, the page is opened
+           * and nothing is done to it for --leave seconds from its first picture: no press, no question, no picture. What is
+           * known of those seconds is what the page and the browser say by themselves. A script put before the page hears every
+           * loss and every return of a context ahead of the page's own listeners and watches the marks the page writes on
+           * itself (the first picture, the still, the notice, the controls); the browser tells every load and every line of the
+           * console. Then, once, the page is read and a picture is taken, and a second one 1.5 s later to see whether it moves.
+           *
+           *   node tools/leftalone.mjs --builds last=dist,main=../base/dist [--address plain|low] [--count 4] [--leave 150]
+           *                            [--local] [--name NAME] [--force 5,25]
+           *     --builds   the builds to read, each a name and its dist; they take turns, one browser at a time
+           *     --address  plain: the address with nothing after it; low: ?quality=low&season=winter
+           *     --count    browsers for each build
+           *     --leave    the seconds the page is left from its first picture
+           *     --local    the installed Chrome with its graphics card; without it the pinned browser
+           *     --force    for a check of this tool only: takes the context with WEBGL_lose_context that many seconds after the
+           *                first picture. A reading with it is not a page left alone, and says so.
+           *
+           * Files: out/work/context/<name>/: one picture for each browser, a sheet of them, lines.txt and result.json.
+           * It ends with 0 whatever it read. Run it alone on the machine.
+           */
+
+          const args = parseArgs(process.argv.slice(2))
+          const str = (k, d) => (args[k] && args[k] !== true ? String(args[k]) : d)
+          const builds = str('builds', `last=${rel('dist')}`)
+            .split(',')
+            .map((b) => ({ name: b.slice(0, b.indexOf('=')), dist: path.resolve(b.slice(b.indexOf('=') + 1)) }))
+          const where = str('address', 'low') === 'plain' ? 'plain' : 'low'
+          const query = where === 'plain' ? '' : '?quality=low&season=winter'
+          const count = Number(str('count', '4'))
+          const LEAVE = Number(str('leave', '150')) * 1000
+          const local = args.local === true
+          const name = str('name', `alone-${where}`)
+          const force = str('force', '')
+            .split(',')
+            .filter(Boolean)
+            .map((s) => Number(s) * 1000)
+          const dir = ensureDir(outWork('context', name))
+          const FIRST_MS = 90_000
+          const LOST = 'The globe stopped drawing. Reload the page to try again.'
+          const CANNOT = 'This browser cannot draw the globe. A current Chrome, Safari, Firefox or Edge can.'
+          const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+          const within = (p, ms, otherwise) => Promise.race([p, sleep(ms).then(() => otherwise)]).catch(() => otherwise)
+
+          const out = []
+          const say = (line) => {
+            out.push(line)
+            process.stdout.write(`${line}\n`)
+          }
+
+          /** Put before the page. It listens and looks; it changes nothing the page reads and asks nothing of the card. */
+          function watch() {
+            const tell = (what, detail) => {
+              try {
+                const p = window.__told(what, detail === undefined ? '' : String(detail))
+                if (p && p.catch) p.catch(() => undefined)
+              } catch {
+                // a page that is going away tells nothing
+              }
+            }
+            const ms = () => Math.round(performance.now())
+            document.addEventListener(
+              'webglcontextlost',
+              (e) => {
+                tell('lost', ms())
+                // After the page's own listeners: whether it asked the browser to keep the context for it.
+                setTimeout(() => tell('asked to keep it', e.defaultPrevented ? 'yes' : 'no'), 0)
+              },
+              true,
+            )
+            document.addEventListener('webglcontextrestored', () => tell('context given back', ms()), true)
+            const last = {}
+            const seen = () => {
+              const d = document.documentElement.dataset
+              const ui = document.getElementById('ui')
+              const imgs = [...(document.getElementById('first')?.querySelectorAll('img') ?? [])]
+              const files = imgs.filter((i) => !i.src.startsWith('data:')).map((i) => (i.currentSrc || i.src).replace(/^.*\/first\//, '').replace(/\?.*$/, ''))
+              const now = {
+                'first picture': d.firstPicture ?? '',
+                seasons: d.made ?? '',
+                'whole pictures': d.detail ?? '',
+                controls: ui?.dataset.interface ?? '',
+                still: [...new Set(files)].join(' '),
+                'soft picture': String(imgs.length - files.length),
+                notice: ui?.querySelector('[role="status"]')?.textContent ?? '',
+                'cannot mark': d.cannot ?? '',
+              }
+              for (const k in now) {
+                if (now[k] === (last[k] ?? (k === 'soft picture' ? '0' : ''))) continue
+                last[k] = now[k]
+                tell(k, `${now[k] || 'gone'} (${ms()})`)
+              }
+            }
+            new MutationObserver(seen).observe(document, { attributes: true, childList: true, subtree: true, attributeFilter: ['data-first-picture', 'data-made', 'data-detail', 'data-interface', 'data-live', 'data-cannot', 'src', 'srcset'] })
+            document.addEventListener('visibilitychange', () => tell('visibility', document.visibilityState))
+          }
+
+          /** The one reading at the end. */
+          const read = (page) =>
+            page.evaluate(() => {
+              const doc = document.documentElement
+              const view = document.getElementById('view')
+              const first = document.getElementById('first')
+              const ui = document.getElementById('ui')
+              const imgs = [...(first?.querySelectorAll('img') ?? [])]
+              const stills = imgs.filter((i) => !i.src.startsWith('data:'))
+              const notice = ui?.querySelector('[role="status"]')
+              const shown = (el) => (el ? getComputedStyle(el).opacity : '')
+              let memory = null
+              try {
+                memory = sessionStorage.getItem('globe:loaded-after-loss')
+              } catch {
+                memory = 'refused'
+              }
+              return {
+                address: location.search,
+                visibility: document.visibilityState,
+                firstPicture: doc.dataset.firstPicture ?? '',
+                made: doc.dataset.made ?? '',
+                detail: doc.dataset.detail ?? '',
+                cannot: doc.dataset.cannot ?? '',
+                canvas: view ? shown(view) : 'no canvas',
+                stills: [...new Set(stills.map((i) => (i.currentSrc || i.src).replace(/^.*\/first\//, '').replace(/\?.*$/, '')))],
+                stillOpacity: stills.length ? shown(stills[0]) : '',
+                stillArrived: stills.length > 0 && stills.every((i) => i.complete && i.naturalWidth > 0),
+                soft: imgs.length - stills.length,
+                notice: notice ? notice.textContent : '',
+                controls: ui?.dataset.interface ?? '',
+                things: ui ? ui.children.length : -1,
+                buttons: ui ? ui.querySelectorAll('button').length : -1,
+                lit: [...document.querySelectorAll('[data-season][aria-pressed="true"]')].map((b) => b.dataset.season).join(' '),
+                memoryAge: memory === null || memory === 'refused' ? memory : Math.round((Date.now() - Number(memory)) / 1000),
+              }
+            })
+
+          /** After the picture: whether the page's context is lost, and whether this browser still gives a WebGL2 context and from what. */
+          const card = (page) =>
+            page.evaluate(() => {
+              const view = document.getElementById('view')
+              let lost = 'no canvas'
+              try {
+                const gl = view ? view.getContext('webgl2') : null
+                lost = gl ? String(WebGL2RenderingContext.prototype.isContextLost.call(gl)) : 'no WebGL2 context on the canvas'
+              } catch (e) {
+                lost = `not read: ${e.message}`
+              }
+              let fresh = 'refused'
+              let renderer = ''
+              try {
+                const gl = document.createElement('canvas').getContext('webgl2')
+                if (gl) {
+                  fresh = 'given'
+                  const info = gl.getExtension('WEBGL_debug_renderer_info')
+                  renderer = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : ''
+                  gl.getExtension('WEBGL_lose_context')?.loseContext()
+                }
+              } catch (e) {
+                fresh = `not read: ${e.message}`
+              }
+              return { lost, fresh, renderer }
+            })
+
+          async function stats(file) {
+            const { data, info } = await sharp(file).removeAlpha().greyscale().raw().toBuffer({ resolveWithObject: true })
+            let sum = 0
+            let dark = 0
+            for (let i = 0; i < data.length; i++) {
+              sum += data[i]
+              if (data[i] < 12) dark++
+            }
+            return { mean: sum / data.length, dark: dark / data.length, width: info.width, height: info.height }
+          }
+
+          const results = []
+
+          async function one(build, n) {
+            const tag = `${build.name}-${n}`
+            const browser = await launch({ local })
+            const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 })
+            const events = []
+            let t0 = Date.now()
+            const note = (what, detail = '') => events.push({ at: Date.now() - t0, what, detail: String(detail) })
+            await context.exposeBinding('__told', (_source, what, detail) => note(String(what), detail))
+            const page = await context.newPage()
+            page.on('console', (m) => note('console', `${m.type()}: ${m.text()}`))
+            page.on('pageerror', (e) => note('pageerror', e.message))
+            page.on('framenavigated', (f) => f === page.mainFrame() && note('load', new URL(f.url()).search || 'nothing after the address'))
+            page.on('crash', () => note('the page crashed'))
+            await page.addInitScript(watch)
+            const record = { build: build.name, n, address: where, browser: browser.version(), forced: force.length > 0 }
+            try {
+              t0 = Date.now()
+              await page.goto(build.url + query).catch((e) => note('the load failed', String(e.message).split('\n')[0]))
+              // Left alone from here: only this tool's own clock runs.
+              const first = () => events.find((e) => e.what === 'first picture' && e.detail.startsWith('1'))
+              while (!first() && Date.now() - t0 < FIRST_MS) await sleep(100)
+              const t1 = first() ? t0 + first().at : Date.now()
+              record.firstPictureMs = first() ? first().at : null
+              for (const at of force) {
+                await sleep(Math.max(0, t1 + at - Date.now()))
+                const took = await within(
+                  page.evaluate(() => {
+                    const gl = document.getElementById('view')?.getContext('webgl2')
+                    const take = gl?.getExtension('WEBGL_lose_context')
+                    if (!take) return 'no context to take'
+                    take.loseContext()
+                    return 'taken by the tool'
+                  }),
+                  10_000,
+                  'not taken',
+                )
+                note('FORCED', took)
+              }
+              await sleep(Math.max(0, t1 + LEAVE - Date.now()))
+              note('the end of the wait')
+              // The page is read before any picture: a browser that gives no picture has still said what stands.
+              record.state = await within(read(page), 15_000, null)
+              if (!record.state) {
+                await sleep(2000)
+                record.state = await within(read(page), 15_000, null)
+              }
+              const file = path.join(dir, `${tag}.png`)
+              const shot = async (to) => {
+                try {
+                  await page.screenshot({ path: to, timeout: 30_000 })
+                  return true
+                } catch (e) {
+                  note('no picture', String(e.message).split('\n')[0])
+                  return false
+                }
+              }
+              if (await shot(file)) {
+                const s = await stats(file)
+                record.picture = { file: path.relative(rel(), file), mean: Number(s.mean.toFixed(2)), dark: Number(s.dark.toFixed(4)) }
+                await sleep(1500)
+                const later = path.join(dir, `${tag}-later.png`)
+                if (await shot(later)) {
+                  const a = await sharp(file).removeAlpha().raw().toBuffer()
+                  const b = await sharp(later).removeAlpha().raw().toBuffer()
+                  let differ = 0
+                  for (let i = 0; i < a.length; i += 3) if (a[i] !== b[i] || a[i + 1] !== b[i + 1] || a[i + 2] !== b[i + 2]) differ++
+                  record.picture.differ = differ
+                  fs.rmSync(later, { force: true })
+                }
+              }
+              record.card = await within(card(page), 15_000, null)
+            } catch (e) {
+              note('the tool stopped', String(e.message ?? e).split('\n')[0])
+            }
+            await within(browser.close(), 20_000, null)
+
+            // The account, in seconds from the first picture of the first load.
+            const base = record.firstPictureMs ?? 0
+            const sec = (at) => ((at - base) / 1000).toFixed(1)
+            const lines = events.filter((e) => e.what === 'console' || e.what === 'pageerror')
+            const losses = events.filter((e) => e.what === 'lost')
+            const loads = events.filter((e) => e.what === 'load')
+            const st = record.state
+            let ends = 'not read'
+            if (st) {
+              const stays = st.notice !== '' && st.stills.length > 0
+              if (stays && st.notice === LOST) ends = 'stays on its still with the words of a globe that stopped drawing'
+              else if (stays && st.notice === CANNOT) ends = 'stays on its still with the words of a browser that cannot draw'
+              else if (st.notice !== '') ends = `a notice and no still: "${st.notice}"`
+              else if (st.stills.length > 0 || st.soft > 0) ends = st.firstPicture === '1' ? 'on its still, waiting' : 'on its first still, before any picture'
+              else if (st.canvas !== '0' && st.canvas !== 'no canvas' && st.controls === 'shown') {
+                // A canvas in full sight says nothing of what it shows: the card and the two pictures say whether it draws.
+                if (record.card?.lost === 'true') ends = 'the canvas in sight with its context lost, no still and no notice'
+                else if (record.picture?.differ === 0) ends = 'the canvas and its controls, and the picture does not move'
+                else if (record.picture?.differ > 0) ends = 'the canvas and its controls, drawing'
+                else ends = 'the canvas and its controls, no picture to tell whether it draws'
+              } else ends = 'neither a still nor a canvas with its controls'
+              if (record.picture && record.picture.dark > 0.85) ends += ' (the picture is dark)'
+              if (record.picture && record.picture.mean > 240) ends += ' (the picture is white)'
+            }
+            record.ends = ends
+            record.losses = losses.map((e) => Number(sec(e.at)))
+            record.loads = loads.length
+            record.lines = lines.map((e) => e.detail)
+            record.events = events.map((e) => ({ s: Number(sec(e.at)), what: e.what, detail: e.detail }))
+            results.push(record)
+
+            say(`${tag} (${where}${record.forced ? ', FORCED: not a page left alone' : ''}): first picture ${record.firstPictureMs === null ? `none in ${FIRST_MS / 1000} s` : `${record.firstPictureMs} ms after the load began`}; losses ${losses.length}${losses.length ? ` at ${record.losses.join(', ')} s` : ''}; loads ${loads.length} (${Math.max(0, loads.length - 1)} by the page itself); console and page errors ${lines.length}`)
+            say(`      at the end: ${ends}${st ? `; address ${st.address || 'nothing after it'}; lit ${st.lit || 'none'}; canvas opacity ${st.canvas}; still ${st.stills.join(' ') || 'none'}${st.stills.length ? ` at opacity ${st.stillOpacity}` : ''}; notice "${st.notice}"; controls ${st.controls || 'none'}; ${st.things} things in the interface, ${st.buttons} buttons; seasons ${st.made || 'no mark'}; tab ${st.visibility}; memory of a load after a loss ${st.memoryAge === null ? 'none' : `${st.memoryAge} s old`}` : ''}`)
+            say(`      picture: ${record.picture ? `${path.basename(record.picture.file)}, mean ${record.picture.mean}, dark share ${record.picture.dark}, ${record.picture.differ === undefined ? 'no second picture' : `${record.picture.differ} pixels differ 1.5 s later`}` : 'none given'}${record.card ? `; the page's context lost: ${record.card.lost}; a new WebGL2 context in this browser: ${record.card.fresh}${record.card.renderer ? ` (${record.card.renderer})` : ''}` : '; the card was not read'}`)
+            for (const e of record.events) {
+              if (e.what === 'console' || e.what === 'pageerror') continue
+              say(`      ${String(e.s).padStart(7)} s  ${e.what}${e.detail ? `: ${e.detail.slice(0, 160)}` : ''}`)
+            }
+            for (const l of [...new Set(record.lines)].slice(0, 16)) {
+              const same = record.events.filter((e) => (e.what === 'console' || e.what === 'pageerror') && e.detail === l)
+              say(`      line (${same.length} times, first at ${same[0].s} s): ${l.slice(0, 240)}`)
+            }
+          }
+
+          for (const b of builds) {
+            b.server = await serve({ dist: b.dist })
+            b.url = b.server.url
+            b.engine = fs.existsSync(path.join(b.dist, 'build.json')) ? fs.readFileSync(path.join(b.dist, 'build.json'), 'utf8').trim() : 'no build.json'
+          }
+          say(`left alone, ${name}: ${builds.map((b) => `${b.name} ${b.engine}`).join('; ')}; ${local ? 'the installed Chrome' : 'the pinned browser'}; address ${where === 'plain' ? 'with nothing after it' : query}; ${count} browsers a build, each begun for its load and left ${LEAVE / 1000} s from its first picture; 1920 x 1080`)
+          // Written after every browser: a run that is stopped keeps what it read.
+          const save = () => {
+            fs.writeFileSync(path.join(dir, 'lines.txt'), `${out.join('\n')}\n`)
+            writeJson(path.join(dir, 'result.json'), { name, address: where, leaveSeconds: LEAVE / 1000, local, builds: builds.map((b) => ({ name: b.name, dist: b.dist, engine: b.engine })), results })
+          }
+          for (let n = 1; n <= count; n++) {
+            for (const b of builds) {
+              await one(b, n).catch((e) => say(`${b.name}-${n}: the tool stopped: ${String(e.message ?? e).split('\n')[0]}`))
+              save()
+            }
+          }
+          for (const b of builds) await b.server.close()
+
+          // One sheet: a row for each build, its browsers side by side, the picture at the end of the wait.
+          const high = 270
+          const wide = 480
+          const parts = []
+          builds.forEach((b, row) => {
+            for (let n = 1; n <= count; n++) {
+              const r = results.find((x) => x.build === b.name && x.n === n)
+              const left = 8 + (n - 1) * (wide + 8)
+              const top = 8 + row * (high + 52)
+              const label = r ? `${b.name} ${n}: ${r.losses.length} lost${r.losses.length ? ` at ${r.losses.join(', ')} s` : ''}; ${r.loads} loads` : `${b.name} ${n}: not read`
+              const ends = r ? r.ends.slice(0, 70) : ''
+              const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+              parts.push({ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${wide}" height="40"><text x="0" y="15" font-family="sans-serif" font-size="13" fill="#e8e8e8">${esc(label)}</text><text x="0" y="33" font-family="sans-serif" font-size="12" fill="#b8b8b8">${esc(ends)}</text></svg>`), left, top })
+              if (r?.picture) parts.push({ input: { file: path.join(rel(), r.picture.file) }, left, top: top + 42 })
+            }
+          })
+          for (const p of parts) if (p.input.file) p.input = await sharp(p.input.file).resize(wide, high).png().toBuffer()
+          if (parts.length) await sharp({ create: { width: 8 + count * (wide + 8), height: 8 + builds.length * (high + 52), channels: 3, background: '#202226' } }).composite(parts).png().toFile(path.join(dir, 'sheet.png'))
+
+          for (const b of builds) {
+            const mine = results.filter((r) => r.build === b.name)
+            const lost = mine.filter((r) => r.losses.length > 0)
+            const count2 = (text) => mine.filter((r) => r.ends === text).length
+            const kinds = [...new Set(mine.map((r) => r.ends))].map((k) => `${count2(k)} ${k}`).join('; ')
+            say(`${b.name}: ${mine.length} browsers; a loss in ${lost.length}; two or more losses in ${mine.filter((r) => r.losses.length > 1).length}; at the end: ${kinds}`)
+          }
+          save()
+          process.exit(0)
+          LEFTALONE_END
+          cp page/tools/leftalone.mjs page/out/work/context/leftalone.mjs
+          wc -l page/tools/leftalone.mjs
+
+      # Eight browsers, each about three minutes: the load, 150 s, the reading and two pictures.
+      - name: the pages left alone
         continue-on-error: true
         timeout-minutes: 40
         shell: bash
         working-directory: page
-        run: |
-          cp ../_tool/tools/lostcontext.mjs tools/lostcontext.mjs
-          node tools/lostcontext.mjs --dist dist --name "${{ matrix.tree.name }}-${{ runner.os }}" --local --sizes ${{ matrix.tree.sizes }} --limit 240 --ready 240
+        run: node tools/leftalone.mjs --builds last=dist,main=../base/dist --address ${{ matrix.address }} --count 4 --leave 150 --local --name "alone-${{ matrix.address }}-${{ matrix.part }}"
 
       - name: what was read
         if: always()
@@ -85,83 +442,7 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: context-${{ matrix.tree.name }}-${{ runner.os }}
-          path: page/out/work/context
-          if-no-files-found: warn
-          retention-days: 14
-
-  console:
-    name: console ${{ matrix.tree.name }} windows
-    runs-on: windows-latest
-    timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      matrix:
-        tree:
-          - { name: last, head: '0192933119e9737c8db81e48286b3855ca7dd9da' }
-    steps:
-      - name: the tool of this push
-        continue-on-error: true
-        uses: actions/checkout@v4
-        with:
-          path: _tool
-          persist-credentials: false
-          sparse-checkout: |
-            tools/lostcontext.mjs
-          sparse-checkout-cone-mode: false
-
-      - name: the page at the commit to be read
-        continue-on-error: true
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.tree.head || github.sha }}
-          path: page
-          persist-credentials: false
-
-      - name: install and build
-        continue-on-error: true
-        timeout-minutes: 20
-        shell: bash
-        working-directory: page
-        run: |
-          mkdir -p out/work/context
-          echo "tree ${{ matrix.tree.name }}, commit $(git rev-parse HEAD), machine ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)" | tee out/work/context/tree.txt
-          npm ci --no-audit --no-fund
-          npm run build
-          echo "built: $(cat dist/build.json)" | tee -a out/work/context/tree.txt
-
-      # A page that is not whole in four minutes or not made in six more is given up by the tool itself: ten minutes a season.
-      - name: the console in fall
-        continue-on-error: true
-        timeout-minutes: 13
-        shell: bash
-        working-directory: page
-        run: |
-          cp ../_tool/tools/lostcontext.mjs tools/lostcontext.mjs
-          node tools/lostcontext.mjs --dist dist --name "console-${{ matrix.tree.name }}-fall" --local --cases usual --sizes hd --season fall --quality plain --until detail --limit 240 --ready 600
-
-      - name: the console in winter
-        continue-on-error: true
-        timeout-minutes: 13
-        shell: bash
-        working-directory: page
-        run: |
-          cp ../_tool/tools/lostcontext.mjs tools/lostcontext.mjs
-          node tools/lostcontext.mjs --dist dist --name "console-${{ matrix.tree.name }}-winter" --local --cases usual --sizes hd --season winter --quality plain --until detail --limit 240 --ready 600
-
-      - name: what was read
-        if: always()
-        continue-on-error: true
-        shell: bash
-        working-directory: page
-        run: cat out/work/context/tree.txt out/work/context/*/lines.txt
-
-      - name: the files
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: console-${{ matrix.tree.name }}-Windows
+          name: alone-${{ matrix.address }}-${{ matrix.part }}
           path: page/out/work/context
           if-no-files-found: warn
           retention-days: 14
