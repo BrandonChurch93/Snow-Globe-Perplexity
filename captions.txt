@@ -44,4 +44,7 @@ streak-17-frame-1389-uhd-left-of-base-head-and-trial.jpg: frame 1389, the cut le
 streak-18-frame-1388-uhd-rib-before-head-and-trial-4x.png: film frame 1388 at 3840 x 2160, x 560 to 760, y 1600 to 1680 at four times: before any mend (5b76c959), on the head beed6a06, on the same trial. The rib is in all three.
 streak-19-frame-1388-uhd-second-place-before-head-and-trial-6x.png: frame 1388, x 830 to 950, y 1600 to 1680 at six times, the same three.
 streak-20-frame-1388-uhd-left-of-base-head-and-trial.jpg: frame 1388, the cut left of the base at one to one, head left and the same trial right.
+streak-21-frame-1388-uhd-rib-before-head-and-lens-by-part-4x.png: film frame 1388 at 3840 x 2160, final tier, 76 samples, x 560 to 760, y 1600 to 1680 at four times: before any mend (5b76c959), on the head beed6a06, and with each part of a sample seen from its own point of the lens (drawn in the builder's tree on main 588258f3, engine e2fc1e2e240e141d, together with the two mends of streak-16 to streak-20). The rib is gone; a finer grain stands in its place.
+streak-22-frame-1388-uhd-second-place-before-head-and-lens-by-part-6x.png: frame 1388, x 830 to 950, y 1600 to 1680 at six times, the same three.
+streak-23-frame-1388-uhd-left-of-base-head-and-lens-by-part.jpg, streak-24-frame-1388-uhd-right-of-base-head-and-lens-by-part.jpg: frame 1388, the two cuts at one to one, head left and the lens point by the part right.
 streak-report.txt: the report of the mend (decision 220, open item 268), with every number.
