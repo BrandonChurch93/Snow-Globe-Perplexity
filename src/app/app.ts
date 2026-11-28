@@ -157,11 +157,13 @@ export function startApp(d: AppDeps): AppBridge {
   let shown = params.season
   let next = 0
   let gone = false
+  // The season of the still that a lost context left on the page (see `stand` below): the marks show that one lit.
+  let laid: string | null = null
   let keepStill: () => void = () => undefined
 
   const state = (): AppState => ({
     ready,
-    season: session.season,
+    season: laid ?? session.season,
     target: session.target,
     busy: playing === 'live' && session.busy,
     quality: governor.level.id,
@@ -579,6 +581,7 @@ export function startApp(d: AppDeps): AppBridge {
     stand(): string {
       const season = playing === 'live' ? (session.target ?? session.season) : shown
       gone = true
+      laid = season
       cancelAnimationFrame(next)
       keepStill()
       stage.stop?.()
@@ -592,12 +595,13 @@ export function startApp(d: AppDeps): AppBridge {
         placeStill()
       }
       delete canvas.dataset.live
+      tell()
       return season
     },
     cannot(): void {
       if (!ui) return
       face?.dispose()
-      void import('../ui/cannot').then((m) => m.showCannot(ui)).catch(() => undefined)
+      void import('../ui/cannot').then((m) => m.showCannot(ui, 'lost')).catch(() => undefined)
     },
   })
 
