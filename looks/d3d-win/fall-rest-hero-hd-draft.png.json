@@ -1,0 +1,85 @@
+{
+  "engineHash": "144059cb99b0d134",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "c5bc5c38fdabce09",
+    "summer": "e54346370f9c451d",
+    "fall": "762ec02dc7ee1a90"
+  },
+  "format": "hd",
+  "tier": "draft",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 158.0.8127.89",
+  "graphics": "installed browser, graphics card on",
+  "renderer": "card",
+  "machine": "runnervmop6rv · 4 x AMD EPYC 7763 64-Core Processor                 · 16379 MB",
+  "time": "2026-11-28T04:09:56.082Z",
+  "diag": "",
+  "spec": {
+    "id": "",
+    "season": "fall",
+    "state": "rest",
+    "camera": "hero",
+    "tier": "draft",
+    "format": "hd",
+    "assets": "full",
+    "diag": "",
+    "interface": false,
+    "live": ""
+  },
+  "noext": [],
+  "seconds": 71.569,
+  "timings": {
+    "simMs": 8487.999999999942,
+    "drawMs": 62382.70000000007,
+    "samples": 2,
+    "steps": 3456
+  },
+  "precision": "float32",
+  "standIns": 1,
+  "counts": {
+    "triangles": 1169379,
+    "drawCalls": 62,
+    "particles": 102000
+  },
+  "framing": {
+    "globe": {
+      "cx": 960,
+      "cy": 467.67901740126274,
+      "r": 376.96554629536996
+    },
+    "base": {
+      "left": 597.8286732017048,
+      "right": 1322.171326798295,
+      "top": 709.1023468384356,
+      "foot": 1029.8254169683203
+    },
+    "frameHeightMm": 172.94955118476292,
+    "frameWidthMm": 307.46586877291185,
+    "heroFill": 0.8037025771261214,
+    "cornerReachMm": 182.0728848812925
+  },
+  "errors": [
+    "warning: THREE.WebGLProgram: Program Info Log: (1185,1): warning X4000: use of potentially uninitialized variable (f_glassSeen_int)\n(1203,1): warning X4000: use of potentially uninitialized variable (f_glassSeen_int)",
+    "warning: THREE.WebGLProgram: Program Info Log: (507,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(507,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(968,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(981,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (504,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(504,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(913,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(926,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (498,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(498,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(901,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(914,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (529,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(529,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(1128,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(1141,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (529,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(529,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(1129,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(1142,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (532,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(532,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(1132,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(1145,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (550,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(550,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(1148,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(1161,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (534,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(534,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(1132,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(1145,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (494,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(507,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (494,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(507,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (494,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(507,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (524,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(524,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(1122,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(1135,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (482,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(495,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (482,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(495,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (483,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(496,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (483,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(496,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (483,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(496,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (483,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(496,1): warning X4000: use of potentially uninitialized variable (f_stageGone)",
+    "warning: THREE.WebGLProgram: Program Info Log: (483,1): warning X4000: use of potentially uninitialized variable (f_stageGoneStill)\n(496,1): warning X4000: use of potentially uninitialized variable (f_stageGone)"
+  ]
+}
