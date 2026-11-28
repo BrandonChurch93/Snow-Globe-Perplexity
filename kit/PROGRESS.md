@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 240 · 2026-11-28 02:07 UTC
+Status 241 · 2026-11-28 02:21 UTC
 
-- `out/stills/status/status-240-1.jpg`: Spring's glass at the landing, bare on main above and dressed with the mend below, in chain 42, not live yet
-- `out/stills/status/status-240-2.jpg`: The petals' weave at 4K at two times, film frame 1388, main left and the last mend right, a trial, not merged
-- `out/stills/status/status-240-3.jpg`: Spring's glass at the landing with the mend at the page's low, medium and high quality, in chain 42, not live yet
-- `out/stills/status/status-240-4.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-241-1.jpg`: Spring after a shake on chain 42, drops and runs on the glass, on main now, not live yet
+- `out/stills/status/status-241-2.jpg`: Summer's fireflies at 4K at eight times, film frame 1440, flat bars on main above and single streaks in the trial below, not pushed
+- `out/stills/status/status-241-3.jpg`: The petals' smears at 4K at full size, film frame 1389 left of the base, with the last mend on its pushed head, not merged
+- `out/stills/status/status-241-4.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-28 02:07 UTC
-clock: phase 6, tick of 19.4 minutes
-phase 6: 47.30 h used of its 12.00 h box
-allowance (after the review): 47.30 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 47.30 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-28 02:21 UTC
+clock: phase 6, tick of 13.6 minutes
+phase 6: 47.52 h used of its 12.00 h box
+allowance (after the review): 47.52 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 47.52 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
@@ -3056,3 +3056,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 02:11 UTC. DECISION 255, summer's fireflies at 4K (open item 276), after the air builder's first pair of pictures of 02:08 UTC, nothing pushed. Its report is read whole and its four pictures looked at here beside the approved shake picture at three times (out/work/notes/reports/summer-air-276/). Seen here at 3840 at the masters' tier, film frame 1440: the wide flat bars, the three lines side by side and the slab of the head are single fine streaks that go out softly at both ends in the trial. At film frame 1470, where the ball stands nearly still, head and trial differ little: the slow bright lights are 4 to 5 px across with a flat middle in both, and one light is a row of four beads in both. STATED by the builder: two causes (a streak ended by a round cap, and a light drawn where the ball stood at each sample's moment, so one light became a band); two cures in its own three files, read by summer's lights in the storm alone; at 400 px the whole frames cannot be told apart; the lights are somewhat fainter at 1:1; the approved's streaks are about 3 to 3.6 px at that scale; no still, no measure and no test yet. Rulings: the direction is taken and the proofs go on; a floor on brightness (each streak's peak not under the head's at the same place), the colour stays yellow green and no paler middle, because the settled line says yellow green; the width at 3840 may be slimmed by a number of the lights' own as a second commit that can be taken or left, one try, with every hd picture the same bytes and a strip of five 4K frames in a row; the bead row's cause is looked for; the ride stays in the builder's own files with a test on its check; proofs by sha256 on the eight guards and on four film frames without summer's lights; main is merged before the report. Not merged, not on the live page.
 
 - 02:11 UTC. DECISION 256, the render instructions (decisions 234 and 254), on the handoff builder's two questions of 02:10 UTC. MEASURED by it through gh: the repo is public today. Rulings: the test word of the upload may run on the public repo, because it sends only stand-ins of a few bytes that it makes itself to a draft release and removes that draft by its id; it takes no path from the command line, so no film can go out through it; the real word refuses on a public repo and that refusal is proven as the repo stands. The test word may be tried on a hosted Windows machine with the run's own token, in one job of its own with write on contents at that job's level alone, every other job read only, the token in no file and no log, and a last step that removes any draft left behind and fails the job when it had to. It is no stored secret, so the first order's rule stands. Reason: Brandon's machine is Windows and the send is the last step of his render. The push trigger of the proof runs is removed in the last commit; what reaches main starts by hand only. The builder's guess for its last report moved to about 11:30 UTC (4:30 AM MT Saturday); a stage note comes when the file without the upload step is whole and proven, so that a fresh reader can begin.
+
+- 02:18 UTC. CHAIN 42 PASSED and is on origin main (60f4d0ae7e6b32ba9005dc7065bd4da484535294, sources of merge 1583a486): spring's glass dressed at the landing (decision 252, open item 274). MEASURED by the chain's helper on the merged tree, its report read whole (out/work/notes/reports/chain-42/report-42.txt): tsc and build exit 0; engine dc59c0d7c2daa6ab as expected; seven guard stills equal chain 41's list and spring-landed alone moved, to 957c3e4d84f44258, equal to its builder's value; M3 spring-rest 0.9247 (base 0.925, miniature 0.972), equal to chain 39's; M4 0.9694, 0.889, 0.9572, 0.961 and M5 0.9932, 1, 0.99, 0.9998, all equal to chain 41's; G15 pass with 1,774,148 of 1,800,000 triangles at high; the whole test run 1061 passed and 8 skipped in 72 files, 0 failed. MEASURED here: the moved still's sha256 begins 957c3e4d84f44258 and the picture was looked at: drops and runs stand on the glass after the shake. The guard list in force from now: winter-rest 0cab5cd137ba09d9, winter-landed a7ab4af383606ed0, spring-rest e4fc69143cfbec0c, spring-landed 957c3e4d84f44258, summer-rest f3f5192c31aec551, summer-landed fa8eb988dc74c972, fall-rest acacfc9d63a8103c, fall-landed e5f5ad025f58dfcd. Not on the live page yet: the fourteenth publish follows. Still owed by the helper: the twelve looks, the 4K pair with the globe standing still and the strip of the change (extras A, B, C). Below the bar as decision 252 says: trails pale on pale at the landing, one bunch at the upper right, no run from film frame 684 to 700.
