@@ -36,7 +36,7 @@ interface SeasonSet {
   materials: THREE.Material[]
   arrival: THREE.Material[]
   glass: THREE.Object3D[]
-  /** Whether a frame has shown the set: from then on the GPU has all of it. */
+  /** Whether a frame has shown the set: the GPU has what that frame drew of it, and nothing of what the set hid then. */
   shown: boolean
 }
 
@@ -71,6 +71,25 @@ function picturesOf(m: THREE.Material, linked: Linked['uniforms']): THREE.Textur
   for (const v of Object.values(m)) take(v)
   for (const u of Object.values({ ...(m as THREE.ShaderMaterial).uniforms, ...linked })) take(u?.value)
   return out
+}
+
+/** Whether a frame drawn now draws `o`: neither it nor anything it hangs from is hidden. */
+export function inSight(o: THREE.Object3D): boolean {
+  for (let up: THREE.Object3D | null = o; up; up = up.parent) if (!up.visible) return false
+  return true
+}
+
+/**
+ * The name of the hand that takes what the frames of `season` have not drawn. No season has that name, and a hand is
+ * worked on in a shake only for the season pressed for: so no press waits for this one, and none finds it at work.
+ */
+export const hiddenOf = (season: string): string => `hidden of ${season}`
+
+function drawnUnder(root: THREE.Object3D, take: (d: Drawn) => void): void {
+  root.traverse((o) => {
+    const d = o as Drawn & { isPoints?: boolean; isLine?: boolean }
+    if (d.material && (d.isMesh || d.isPoints || d.isLine)) take(d)
+  })
 }
 
 const BLUR_CLEAR = new THREE.Color(0, 1, 0.5)
@@ -128,6 +147,10 @@ export class GlobeStage implements Stage {
   /** The picture the page paints into while it draws one sample a frame; none on a page that captures. */
   private live: THREE.WebGLRenderTarget | null = null
   private readonly hands = new Hands((season) => this.hand(season))
+  /** The seasons made before the page drew. None has a hand: the frames that show one make what they draw of it. */
+  private readonly early = new Set<string>()
+  /** What a hand has drawn, so that none is drawn by two. */
+  private readonly given = new WeakSet<THREE.Object3D>()
   private readonly pace = new FramePace()
   private readonly scratch = new Map<string, THREE.WebGLRenderTarget>()
   private stale = false
@@ -202,11 +225,24 @@ export class GlobeStage implements Stage {
       }
       workIn(m.steps, season, await this.turnFor(season), this.wish, this.pace, NOW)
     }
-    if (!this.live) return
+    if (!this.live) {
+      this.early.add(season)
+      return
+    }
     // A season nobody pressed for is not waited for: it can be shown from here on, and a frame that shows it before its
     // hand is done makes the rest itself, as it always did. The season a press waits for is not ready until the GPU has
     // it: the frame that would make the rest is in the middle of its shake.
     await this.hands.made(season, this.wish.awaits(season))?.catch(NOTHING)
+  }
+
+  /**
+   * A frame shows `season`. Where the season was made before the page drew, the second such frame begins the hand of what
+   * the two have not drawn. Not the first: the page counts its first picture from the second frame it draws
+   * (src/app/app.ts), and a hand begun at the first worked before that one on a page that draws slowly.
+   */
+  private shows(season: string, s: SeasonSet): void {
+    if (this.live && s.shown && this.early.delete(season)) this.hands.made(hiddenOf(season), false)
+    s.shown = true
   }
 
   /** The next frame in which something may be done for `season`: none while a shake is in the air that does not go into it. */
@@ -250,22 +286,51 @@ export class GlobeStage implements Stage {
   /**
    * Hands a season that is not on show to the GPU: its programs, its pictures, its buffers. The first frame that showed a
    * season made them all at once, and that frame is in the middle of the first shake into it. Here they are made a few a
-   * frame while the picture rests. The programs are asked for first, all of them, so that a browser which links aside
-   * (KHR_parallel_shader_compile) links them while the page draws on; then each mesh is drawn once, alone, into one pixel
-   * of a picture of the page's own kind, which is the only way the renderer takes a buffer before the frame that needs it,
-   * and which is where a browser that does not link aside waits for a program, one a frame.
+   * frame while the picture rests.
    */
-  private async hand(season: string): Promise<void> {
-    const s = this.sets.get(season)
-    const live = this.live
-    if (!s || s.shown || !live) return
-    const { renderer } = this.gfx
-    const go = (): boolean => !s.shown && this.live !== null
+  private async hand(name: string): Promise<void> {
+    const s = this.sets.get(name)
+    if (!s) return this.handHidden(name)
+    if (!this.live) return
+    if (!s.shown) {
+      const meshes: Drawn[] = []
+      for (const root of s.objects) drawnUnder(root, (d) => meshes.push(d))
+      const pictures = [s.grid as THREE.Texture]
+      for (const e of this.assets.entries(name)) if (e.picture && hasTexture(e.name)) pictures.push(texture(e.name))
+      // A frame that shows the season before its hand is done makes the rest itself, as it always did.
+      await this.give(name, meshes, pictures, () => !s.shown && this.live !== null, () => true)
+    }
+    // It made what it drew, and nothing of what the season hid then.
+    if (s.shown) this.hands.made(hiddenOf(name), false)
+  }
+
+  /**
+   * Hands over what the frames have shown and never drawn. A part that is hidden while the picture rests comes out in a
+   * shake, and its program was linked in the middle of that one: the wash of spring's storm, as the first shake of a page
+   * that begins in spring rose; the bubble of the glass, as the first shake of a page that begins in another season came
+   * into winter. No hand had them: a hand is for a season that is not on show, and the glass had none.
+   */
+  private async handHidden(name: string): Promise<void> {
+    if (!this.live) return
+    const owed = (d: Drawn): boolean => !this.given.has(d) && !inSight(d)
     const meshes: Drawn[] = []
-    for (const root of s.objects) root.traverse((o) => {
-      const d = o as Drawn & { isPoints?: boolean; isLine?: boolean }
-      if (d.material && (d.isMesh || d.isPoints || d.isLine)) meshes.push(d)
-    })
+    const take = (d: Drawn): void => void (owed(d) && meshes.push(d))
+    for (const s of this.sets.values()) if (s.shown) for (const root of s.objects) drawnUnder(root, take)
+    for (const part of [this.shell.through, this.shell.shell, this.shell.bubble, this.shell.stamp]) drawnUnder(part, take)
+    if (meshes.length) await this.give(name, meshes, [], () => this.live !== null, owed)
+  }
+
+  /**
+   * Gives `meshes` to the GPU for as long as `go` says, each for as long as it is `owed`. The programs are asked for
+   * first, all of them, so that a browser which links aside (KHR_parallel_shader_compile) links them while the page
+   * draws on; then each mesh is drawn once, alone, into one pixel of a picture of the page's own kind, which is the only
+   * way the renderer takes a buffer before the frame that needs it, and which is where a browser that does not link
+   * aside waits for a program, one a frame.
+   */
+  private async give(name: string, meshes: Drawn[], first: THREE.Texture[], go: () => boolean, owed: (d: Drawn) => boolean): Promise<void> {
+    const live = this.live
+    if (!live) return
+    const { renderer } = this.gfx
     const aside = (target: THREE.WebGLRenderTarget, work: () => void): void => {
       const bound = renderer.getRenderTarget()
       const { calls, triangles, points, lines } = renderer.info.render
@@ -279,11 +344,12 @@ export class GlobeStage implements Stage {
     }
     // A browser that cannot link aside is not asked to: three writes a warning to the console of one that is.
     const linksAside = renderer.extensions.has('KHR_parallel_shader_compile')
-    const run = (steps: (() => void)[]): Promise<void> => handIn(steps, season, this.wish, this.pace, HAND_MS, go, () => this.turnFor(season), NOW, !linksAside)
+    const run = (steps: (() => void)[]): Promise<void> => handIn(steps, name, this.wish, this.pace, HAND_MS, go, () => this.turnFor(name), NOW, !linksAside)
     const like = this.scratchOf(live.texture.type, live.samples)
     const linked: Promise<unknown>[] = []
     await run(
-      meshes.map((d) => () =>
+      meshes.map((d) => () => {
+        if (!owed(d)) return
         aside(like, () => {
           const below = d.children
           d.children = []
@@ -293,18 +359,27 @@ export class GlobeStage implements Stage {
           } finally {
             d.children = below
           }
-        }),
-      ),
+        })
+      }),
     )
     // A press that has waited `LAST_S` waits no longer for a link: the draws below wait for each program in turn.
-    if (linked.length) await until(Promise.all(linked), () => !go() || this.wish.last(season), () => this.frameOrSoon())
+    if (linked.length) await until(Promise.all(linked), () => !go() || this.wish.last(name), () => this.frameOrSoon())
     // What a mesh draws of its own before its draw is drawn here once too (`userData.warm`): the draws below leave it out,
     // and its program was linked in the first shake into the season.
-    await run(meshes.flatMap((d) => (typeof d.userData.warm === 'function' ? [() => aside(like, () => (d.userData.warm as (r: THREE.WebGLRenderer) => void)(renderer))] : [])))
+    await run(
+      meshes.flatMap((d) =>
+        typeof d.userData.warm === 'function'
+          ? [
+              () => {
+                if (owed(d)) aside(like, () => (d.userData.warm as (r: THREE.WebGLRenderer) => void)(renderer))
+              },
+            ]
+          : [],
+      ),
+    )
 
-    const pictures = new Set<THREE.Texture>([s.grid])
-    for (const e of this.assets.entries(season)) if (e.picture && hasTexture(e.name)) pictures.add(texture(e.name))
-    for (const d of meshes) for (const m of materialsOf(d)) for (const t of picturesOf(m, (renderer.properties.get(m) as Linked).uniforms)) pictures.add(t)
+    const pictures = new Set<THREE.Texture>(first)
+    for (const d of meshes) if (owed(d)) for (const m of materialsOf(d)) for (const t of picturesOf(m, (renderer.properties.get(m) as Linked).uniforms)) pictures.add(t)
     await run([...pictures].map((t) => () => renderer.initTexture(t)))
 
     const draw = (d: Drawn, target: THREE.WebGLRenderTarget, cast: boolean): void =>
@@ -340,7 +415,16 @@ export class GlobeStage implements Stage {
       })
     // What the table mirrors is drawn into a picture of another kind, and a card may keep a program apart for each kind.
     const mirrored = this.quality.surfaceReflection === 'planar' && live.samples > 0 ? this.scratchOf(live.texture.type, 0) : null
-    await run(meshes.flatMap((d) => [() => draw(d, like, d.castShadow), ...(mirrored ? [() => draw(d, mirrored, false)] : [])]))
+    const into = mirrored ? [like, mirrored] : [like]
+    await run(
+      meshes.flatMap((d) =>
+        into.map((target, i) => () => {
+          if (!owed(d)) return
+          draw(d, target, i === 0 && d.castShadow)
+          if (i === into.length - 1) this.given.add(d)
+        }),
+      ),
+    )
   }
 
   /**
@@ -565,11 +649,11 @@ export class GlobeStage implements Stage {
     updateCover(this.source)
     this.draw.frame(this.source, f)
 
-    for (const s of this.sets.values()) {
+    for (const [season, s] of this.sets) {
       const on = !sliceOnly && (s === a || s === b)
       for (const o of s.objects) o.visible = on
       if (!on) continue
-      s.shown = true
+      this.shows(season, s)
       const mode = single ? MODE.always : s === a ? MODE.outgoing : MODE.incoming
       for (const m of s.materials) setPresence(m, mode, 1)
       const here = single ? arrived : s === a ? 1 : 0
