@@ -112,3 +112,24 @@ SEEN:
 - 681 and 682: before, each fast petal is a row of whole copies, overlapping like scales, with stepped edges. After, each is one smear, and at preview's 24 samples the smear is coarse: a dotted grain that I see plainly at four times and can see at 1:1 on the brightest petals.
 COUNTED on the pixels that hold petal below row 340 (red, the fine part being the frame less its own blur of 1.5 px): spread of the fine part before, after: 679 4.45, 4.45; 680 10.0, 10.0; 681 10.24, 9.47; 682 13.7, 12.56. The fine part is not more after than before; it is copies' edges before and dots after.
 SO: the smear changes the row of copies and leaves the fringe as it was. The fringe is not the gust's: it sits at petals that have stopped or nearly, where the second mesh draws what the first drew. NOT SEEN: these frames at 3840, where a frame has more samples (frame 1388 has 76 against 24 here) and the dots would be finer; what makes the fringe (I did not read change.ts for it).
+
+12. ADDED 01:32 UTC, 28 November: OPEN ITEM 278 (THE WEAVE IN THE SMEARS) AND THE RIB IN 1388. THE TWO MENDS I PROPOSED DO NOT TAKE EITHER AWAY
+The trial stands in my tree on main 588258f3, nothing pushed to the code branch. Engine 1110400a96435bfb. It holds two changes to the second mesh only:
+(a) the still tile is laid at a place of its own in every sample (76 places, none nearer than 9.1 px to another), so the grain of one sample is unrelated to the next;
+(b) the front that thins a part of the table (`stageChange`) is taken at each part's own moment, not at the sample's.
+Frames at 3840 x 2160, final tier, 76 samples, no page messages, one render at a time: 1389 in 827 s (draw 813.6 s), sha256 bafcf4d235ace141; 1388 in 898 s (draw 894.6 s), sha256 aa1f3a4e2316b3c0. The head's frames are those of section 10 (beed6a06), the frame before any mend is 5b76c959.
+Pictures: 16 (1389, the coarsest place, head above trial, four times), 17 (1389, left of the base at 1:1, head and trial), 18 (1388, the rib, before any mend, head, trial, four times), 19 (1388, root's second place, the same three, six times), 20 (1388, left of the base at 1:1, head and trial).
+MEASURED, red channel, the fine part being the frame less its own blur of 1.5 px; "wave" is the strongest wave of 3.5 to 12 px:
+- 1389, my coarsest place (x 420 to 720, y 1550 to 1650): spread of the fine part 1.78 head, 1.81 trial; wave 0.92 levels at 12.0 px, both.
+- 1389, root's place (x 440 to 640, y 1555 to 1615): spread 1.93 head, 1.95 trial; wave 1.44 levels at 11.8 px head, 1.43 trial.
+- 1388, the rib (x 585 to 649, y 1612 to 1645): spread 1.51 before, 1.60 head, 1.64 trial; wave 1.41 at 9.1 px before, 1.66 at 5.8 px head, 1.71 at 5.8 px trial.
+- 1388, root's first place (x 580 to 710, y 1610 to 1670): spread 1.83 before, 1.88 head, 1.92 trial; wave 1.13 at 11.8 px, 1.03 at 7.6 px, 1.05 at 7.6 px.
+- 1388, root's second place (x 850 to 930, y 1610 to 1670): spread 3.48 before, 3.43 head, 3.44 trial; wave 2.41, 2.36, 2.29, all at 11.4 px.
+THE NUMBER ROOT ASKED FOR, the agreement of 1388 at root's two places:
+- the part of 0.8 to 4 px: before against head 0.945 and 0.881; before against trial 0.943 and 0.879; head against trial 0.993 and 0.979.
+- the fine part (under 1.5 px): before against head 0.642 and 0.709; before against trial 0.628 and 0.704; head against trial 0.805 and 0.813.
+So the weave of 0.8 to 4 px at those two places is nine tenths the same as it was before any mend of mine, and (a) with (b) leaves it as the head has it.
+Head against trial over the whole frame: 1389, 542,369 pixels differ, 52,715 by more than 2 levels, the largest 14; 1388, 544,731, 89,013, the largest 15. None by more than 2 levels above row 1296 in either.
+SEEN: the weave is ribs across the smears, 6 to 12 px apart (1389: on a petal at x 900 to 1100, y 1470 to 1560, and at x 540 to 680, y 1585 to 1645; 1388: the rib, and root's two places). They are the same on the head and on the trial, and in 1388 the same as before any mend. Neither (a) nor (b) takes them away, and neither makes them worse.
+SO, plainly: my answer of 00:47 (the tile at one place in every sample makes the weave) explained little of it, and my guess of 00:38 (the kick of the foot) was wrong. The tile and the front are not the cause. (a) and (b) are harmless by these numbers but are not proven as a gain; I would not keep them on that ground alone.
+NOT SEEN: any frame without the lens; the frames played.
