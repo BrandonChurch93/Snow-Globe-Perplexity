@@ -63,6 +63,18 @@ describe('the command line', () => {
     expect(L.argProblem(['render', '--worker'])).toBe('')
     expect(L.argProblem(['stamp', '--only', 'film-b:120'])).toBe('')
   })
+  it('refuses a switch the stamp does not know, before anything is drawn', () => {
+    for (const ok of [[], ['--proof'], ['--again'], ['--local'], ['--released', 'true'], ['--released', 'false'], ['--only', 'film-b:120,film-b:720,loop:0,opening:450', '--proof'], ['--only', 'loop:0', '--again', '--local']]) expect(L.argProblem(['stamp', ...ok])).toBe('')
+    expect(L.argProblem(['stamp', '--help'])).toContain('knows no "--help"')
+    expect(L.argProblem(['stamp', '--release', 'true'])).toContain('knows no "--release"')
+    expect(L.argProblem(['stamp', 'released'])).toContain('knows no "released"')
+    expect(L.argProblem(['stamp', '--released'])).toContain('true or false')
+    expect(L.argProblem(['stamp', '--released', 'yes'])).toContain('true or false')
+    expect(L.argProblem(['stamp', '--only'])).toContain('what:frame')
+    expect(L.argProblem(['stamp', '--only', '--proof'])).toContain('what:frame')
+    expect(L.argProblem(['stamp', '--only', 'film-b'])).toContain('what:frame')
+    expect(L.argProblem(['stamp', '--proof', 'true'])).toContain('takes no value')
+  })
   it('reads the test switches from one variable and refuses a word it does not know', () => {
     const t = L.testSwitches('software, small,tones,angle=d3d11,refs=film-b:120+loop:0,stretch=720-721/1,fast-watch')
     expect(t).toMatchObject({ software: true, small: true, tones: true, angle: 'd3d11', refs: 'film-b:120+loop:0', stretch: '720-721/1', fastWatch: true, linux: false, inline: false })

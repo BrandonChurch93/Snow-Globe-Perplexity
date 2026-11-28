@@ -904,10 +904,32 @@ export function secondsLeft(counts, done, cost, gain = 1) {
 export const COMMANDS = ['setup', 'doctor', 'test', 'render', 'check', 'deliver', 'upload', 'clean']
 /** A word of the tool's own tests, which the handoff file never names: it sends stand-in files and takes no argument at all. */
 export const UPLOAD_TEST_WORD = 'upload-test'
+/**
+ * The switches of `stamp`, the remote team's word. One it does not know is refused before anything is drawn: a
+ * mistyped switch would otherwise start hours of drawing, or write a stamp other than the one that was meant.
+ */
+export function stampArgProblem(rest) {
+  const plain = ['again', 'proof', 'local']
+  for (let i = 0; i < rest.length; i++) {
+    const a = rest[i]
+    const value = rest[i + 1]
+    const has = value !== undefined && !value.startsWith('--')
+    if (plain.includes(a.slice(2)) && a.startsWith('--')) {
+      if (has) return `stamp: ${a} takes no value, and it was given "${value}"`
+    } else if (a === '--only') {
+      if (!has || !/^[a-z-]+:\d+(,[a-z-]+:\d+)*$/.test(value)) return 'stamp: --only wants frames as what:frame,what:frame'
+      i++
+    } else if (a === '--released') {
+      if (value !== 'true' && value !== 'false') return 'stamp: --released wants true or false'
+      i++
+    } else return `stamp knows no "${a}". Its switches are --only, --again, --proof, --released and --local (render/README.md)`
+  }
+  return ''
+}
 export function argProblem(argv) {
   const words = [...COMMANDS, UPLOAD_TEST_WORD]
   if (argv.length === 1 && words.includes(argv[0])) return ''
   if (argv.length === 2 && words.includes(argv[0]) && argv[1] === '--worker') return ''
-  if (argv[0] === 'stamp') return ''
+  if (argv[0] === 'stamp') return stampArgProblem(argv.slice(1))
   return `this tool takes one word and nothing else: ${COMMANDS.join(', ')}. It was given "${argv.join(' ')}"`
 }

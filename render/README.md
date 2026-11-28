@@ -51,6 +51,8 @@ Each helper commits its files of `render/refs/` and nothing else. When all are m
 | `--released false` | sets it back |
 | `--local` | draws in the installed Chrome instead of the pinned browser. Not for the references of the release |
 
+A switch that is not in this table is refused before anything is drawn, with FAIL as the last line.
+
 ## At the freeze, in order
 
 1. Merge everything that moves a picture. Run `npm ci`, the build, and read the engine hash.
