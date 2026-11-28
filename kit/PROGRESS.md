@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 263 · 2026-11-28 12:18 UTC
+Status 264 · 2026-11-28 12:39 UTC
 
-- `out/stills/status/status-263-1.jpg`: Fall into winter at film frame 2836 at 4K at its own size, the main branch above with winter's base carrying fall's three burning faces and the what-if below with none burning, waits for your word
-- `out/stills/status/status-263-2.jpg`: The what-if at 4K, film frames 2782, 2794, 2804 and 2806, fall's faces going out one after another, not on main
-- `out/stills/status/status-263-3.jpg`: Film frame 2782 at 4K at its own size, the main branch above and the what-if below, the right face going out, ladders of level bars on the roots in both, open item 291
-- `out/stills/status/status-263-4.jpg`: Still: fall rest hero, hd, draft
+- `out/stills/status/status-264-1.jpg`: Film frame 2828 at 4K at its own size, both ends of the base's top, the main branch above and the what-if below, the dotted patches and striped twigs in both, only the faces differ
+- `out/stills/status/status-264-2.jpg`: Film frames 2806 and 2812 at 4K at their own size, the right end of the base, the main branch above and the what-if below, the web and the hatched twigs in both
+- `out/stills/status/status-264-3.jpg`: The render handoff's short test at 4K on hosted Windows through Direct3D 11 left and hosted macOS right, run 46130923210, in each pair the cloud's reference left and what the machine drew right
+- `out/stills/status/status-264-4.jpg`: Still: summer landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-28 12:18 UTC
-clock: phase 6, tick of 25.3 minutes
-phase 6: 57.47 h used of its 12.00 h box
-allowance (after the review): 57.47 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 57.47 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-28 12:39 UTC
+clock: phase 6, tick of 21.0 minutes
+phase 6: 57.82 h used of its 12.00 h box
+allowance (after the review): 57.82 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 57.82 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
