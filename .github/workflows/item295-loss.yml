@@ -31,11 +31,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { arm: q5-webkit, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:|4:season=spring', stay: 40, after: 5, spindump: 0, flags: '', more: '--webkit' }
-          - { arm: q5-macos-14, os: macos-14, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:|3:season=spring', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
-          - { arm: q5-macos-15, os: macos-15, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:|3:season=spring', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
-          - { arm: q5-macos-26, os: macos-26, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:|3:season=spring', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
-          - { arm: q5-macos-15-intel, os: macos-15-intel, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:|3:season=spring', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q2-no-graphite, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '12:', stay: 40, after: 5, spindump: 0, flags: '--disable-features=SkiaGraphite', more: '--oslog all' }
+          - { arm: q2-every-log, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '12:', stay: 40, after: 5, spindump: 0, flags: '', more: '--oslog all' }
     steps:
       - name: the tools of this branch
         continue-on-error: true
