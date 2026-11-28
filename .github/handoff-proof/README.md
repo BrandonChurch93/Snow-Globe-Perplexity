@@ -34,7 +34,15 @@ Hosted macOS machines update Chrome while a job runs. When that stops a render l
 of step 2.2 of the handoff file says, as the agent would: the short test again, then the render line again, three
 times at most in one job. The verdict lists those lines under names that end in `after-update` and
 `test-after-real-update`. The update that the tool's own test makes up (job `windows-gitbash-small`) is a line of
-its own and proves the same row on Windows.
+its own and proves the same row on Windows. It is met in the middle of the render, with finished chunks on disk.
+
+The calibration picture is drawn once for a build on the machine and kept. Every small job proves that with
+chunks on disk: the first render call is ended when at least two chunks of film B are finished, the short test is
+run again (the line `test-in-mid-render`), and the render line then goes to its end, where the films are joined
+and proven. The flow notes the sha256 of the kept picture before and after that test, and a test that replaced it
+is a `PROBLEM` of the verdict. In a small run the renderer keeps the render's chunks where the test keeps its
+own, so the tool sets them aside while a small test runs and puts them back; a real render has a folder of its
+own that the test never touches.
 
 A short test that fails is made up too, by a switch that raises the floors of the comparison out of reach. Every
 small job runs such a test first (the line `test-fails`), looks into the folder it leaves on the Desktop, runs the

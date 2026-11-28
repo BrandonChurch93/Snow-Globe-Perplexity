@@ -12,9 +12,9 @@
     "film-b:2440",
     "film-b:2880"
   ],
-  "engineHash": "fc272474aa83fe51",
-  "commit": "08690cd40907e8747431a334c0cf007473f4c461",
-  "made": "2026-11-28T05:49:52.021Z",
+  "engineHash": "74660360c1965b4f",
+  "commit": "c45960f410f9b8718beb222fc8374b5386ea955f",
+  "made": "2026-11-28T08:55:35.932Z",
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "c5bc5c38fdabce09",
@@ -74,10 +74,10 @@
       "what": "film-b",
       "frame": 120,
       "name": "winter at rest",
-      "engineHash": "fc272474aa83fe51",
+      "engineHash": "74660360c1965b4f",
       "samples": 24,
       "travelPx": 2.73,
-      "seconds": 135.8,
+      "seconds": 147.4,
       "png": {
         "sha256": "188d0fc9058522f6de412b7b1a7a87f615813f214a1a0360cbe0accb11f1e573",
         "bytes": 14031775
@@ -129,10 +129,10 @@
       "what": "film-b",
       "frame": 720,
       "name": "spring in storm, just landed",
-      "engineHash": "fc272474aa83fe51",
+      "engineHash": "74660360c1965b4f",
       "samples": 24,
       "travelPx": 7.27,
-      "seconds": 204,
+      "seconds": 212,
       "png": {
         "sha256": "a0f74bad16db639165a1a17e84025a52491684a28b35eb232faef190bc82fc4f",
         "bytes": 12772503
@@ -184,10 +184,10 @@
       "what": "loop",
       "frame": 0,
       "name": "the first frame of the loop, which is also the screenshot",
-      "engineHash": "fc272474aa83fe51",
+      "engineHash": "74660360c1965b4f",
       "samples": 96,
       "travelPx": 0.09,
-      "seconds": 385.4,
+      "seconds": 384.7,
       "png": {
         "sha256": "dff51b5e335ad41fbb03f1190dfc86a47ecfc668c6318a964a69008deada7680",
         "bytes": 13329762
@@ -239,7 +239,7 @@
       "what": "opening",
       "frame": 450,
       "name": "the opening while the prompt is typed",
-      "engineHash": "fc272474aa83fe51",
+      "engineHash": "74660360c1965b4f",
       "samples": 0,
       "pack": "665ac47671ead473d999f38848f854408e3a83b92459ecb66413e87120acec77",
       "renderer": "none: read from the opening pack, never drawn",

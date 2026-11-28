@@ -2,10 +2,10 @@
   "what": "loop",
   "frame": 0,
   "name": "the first frame of the loop, which is also the screenshot",
-  "engineHash": "fc272474aa83fe51",
+  "engineHash": "74660360c1965b4f",
   "samples": 96,
   "travelPx": 0.09,
-  "seconds": 385.4,
+  "seconds": 384.7,
   "png": {
     "sha256": "dff51b5e335ad41fbb03f1190dfc86a47ecfc668c6318a964a69008deada7680",
     "bytes": 13329762

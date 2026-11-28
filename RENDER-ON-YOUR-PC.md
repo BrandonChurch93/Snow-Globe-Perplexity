@@ -265,6 +265,23 @@ How the frames are compared, and why so:
   while the page says it draws there is written as a `LOOK` line.
 - After the two seconds of film are drawn, the test reads from each chunk's own record what drew it. It must be the
   card the doctor named. So a test that drew nothing, or drew elsewhere, cannot pass as proof of the card.
+- The calibration picture. Before the test draws anything else it looks for one still picture that this machine
+  draws once for a build of the film and keeps in `out/work/master`. Every finished piece of the film (a chunk)
+  names that picture, and the films are joined only from chunks that all name the same one. So it is drawn once,
+  by the first test, and kept. No later test and no render draws it anew or replaces it, however often the lines
+  of this file are run, in whatever order, and after a restart of the computer too. You never delete it.
+- The test also says, in one line of its report, whether this machine draws that picture the same twice. It draws
+  a second one into its own folder, compares it with the kept one, and prints how many pixels differ and the
+  largest difference in levels of any channel. The line is marked `noted`. It is no pass and no fail, and the
+  second picture never replaces the kept one. What is known of it:
+  - Measured: on the Windows test machines (Direct3D 11, in software) the picture came out the same every time,
+    24 drawings on ten machines. On the macOS test machines (Metal) it came out another one every time, 8
+    drawings and 8 different pictures. That is why it is kept and not drawn again.
+  - Measured: on both kinds of test machine the short test was run again in the middle of a render, with
+    finished chunks on disk, and the render line then went to its end and its films were joined and proven. On
+    Windows the row for a Chrome that updated itself (2.2) was followed the same way, with chunks on disk.
+  - Not known: whether an NVIDIA card or the MacBook's own card draws it the same twice. The line of this test
+    says it for this machine. Whatever it says, the film is whole, because the kept picture is the one in use.
 
 Good: `PASS: the short test passed on <the graphics card>: ...`. The test film is then on the Desktop as
 `Snow Globe Seasons - Test - 3840x2160.mp4`, with the sheet of pictures beside it as
@@ -326,6 +343,9 @@ node tools/handoff.mjs test
 
 Good: the pull says `Already up to date.` or `Fast-forward`, and the three lines each end with `PASS:`.
 
+When the pull brought a new build of the film, this test draws the calibration picture (1.5) for that build,
+once, and keeps it. When it brought none, the test keeps the one it has.
+
 Bad: the pull says anything with `fatal` or `error`, or asks to merge: stop and report. Do not merge, stash or reset.
 git asks for a sign in: that is for Brandon.
 
@@ -352,6 +372,17 @@ them, do not lock the screen, do not start a game and do not let Chrome update u
 The tool keeps the computer awake by itself while it draws and lets it sleep again when it ends. It changes no
 power setting. It never draws a finished frame twice, and it never joins frames of two graphics cards into one film.
 
+The render draws no new calibration picture: it uses the one the test kept (1.5), on every start. Two lines of
+its output say that it mended something by itself. They are no failures and need nothing from you. Give both to
+Brandon in the report of 2.7 if you see them:
+
+- `the record of the calibration picture was gone or could not be read ...: the record is written again from them`.
+  The record was lost while finished chunks lay on disk. The tool wrote it again from what those chunks say and
+  drew no new picture, so every chunk goes on naming one picture.
+- `... finished chunks (...) on disk name another build or another calibration picture, and are drawn again
+  before the films are joined`. This is the one case in which finished chunks are drawn again: they do not
+  belong to this build and its kept picture. It costs their time once more, and the film comes out whole.
+
 Good: `PASS: the two films, the loop and the screenshot are made in ...`.
 
 Bad, each with the one thing to do:
@@ -362,7 +393,7 @@ Bad, each with the one thing to do:
 | a final mix is missing or is not the one the stamp names | stop and tell Brandon: the two files `audio/final/film-a.wav` and `audio/final/film-b.wav` must be put into the clone by him |
 | it was stopped before it ended (sleep, restart, a closed window) | run the same line again. It carries on from the last finished frames. If it stops a second time at the same place, stop and report |
 | `the WebGL context was lost` (the driver reset the card, or the card ran out of memory) | run the same line again, once. It carries on. If it is lost a second time at the same place, stop and report. Change no setting (rule 8) |
-| `Chrome is now version ...: the browser was updated` | Chrome updated itself in the middle. Run `node tools/handoff.mjs test` again. When it ends with `PASS:`, run the render line again: it carries on from the last finished frames, and the report names both versions of Chrome. When the test ends with `FAIL:`, do not run the render line: nothing more is drawn with a browser the test did not pass on (the tool refuses it too). Stop and give Brandon `out/work/handoff/report-test.txt` |
+| `Chrome is now version ...: the browser was updated` | Chrome updated itself in the middle. Run `node tools/handoff.mjs test` again. It keeps the calibration picture (1.5), so what was drawn before the update and what is drawn after it are joined into one film. When it ends with `PASS:`, run the render line again: it carries on from the last finished frames, and the report names both versions of Chrome. When the test ends with `FAIL:`, do not run the render line: nothing more is drawn with a browser the test did not pass on (the tool refuses it too). Stop and give Brandon `out/work/handoff/report-test.txt` |
 | the page draws in software, or on another card | stop and report. Nothing drawn is lost |
 | too little free disk | stop and report. Nothing drawn is lost |
 | anything else | stop and report |

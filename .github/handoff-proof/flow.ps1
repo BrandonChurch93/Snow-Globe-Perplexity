@@ -91,14 +91,16 @@ if ($env:PROOF_MODE -eq 'small') {
   Line 'doctor-again' '0' 'node tools/handoff.mjs doctor'
   Line 'test-again' '0' 'node tools/handoff.mjs test'
   Line 'render-first-call' '3' 'node tools/handoff.mjs render' -Once
-  # wait for the first finished chunk, then end the process that renders and everything it started
+  # wait until at least two chunks are finished, then end the process that renders and everything it started
   $Chunk = $null
+  $Chunks = @()
   $Tries = 0
   if ($script:LastCode -eq 3) { $Tries = 400 }
-  for ($i = 0; $i -lt $Tries -and -not $Chunk; $i++) {
-    $Chunk = Get-ChildItem -Path 'out/master/test/film-b' -Filter '*.mp4' -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $Chunk) { Start-Sleep -Seconds 3 }
+  for ($i = 0; $i -lt $Tries -and $Chunks.Count -lt 2; $i++) {
+    $Chunks = @(Get-ChildItem -Path 'out/master/test/film-b' -Filter '*.mp4' -ErrorAction SilentlyContinue | Sort-Object Name)
+    if ($Chunks.Count -lt 2) { Start-Sleep -Seconds 3 }
   }
+  if ($Chunks.Count -ge 1) { $Chunk = $Chunks[0] }
   if (-not $Chunk) {
     Note 'PROBLEM: the render finished no chunk to stop it after; the flow ends here'
     node (Join-Path $Help 'after.mjs') $env:PROOF_OUT
@@ -111,6 +113,17 @@ if ($env:PROOF_MODE -eq 'small') {
   taskkill /PID $Job.pid /T /F
   Note 'the process that renders was ended by force with everything it had started'
   Start-Sleep -Seconds 3
+  # The short test again in the middle of the render, with finished chunks on disk. The calibration picture is
+  # drawn once for a build on the machine and kept: a test that drew a new one here would leave chunks that name
+  # two pictures, and the films would not be joined.
+  $Cal1 = (Get-Content -Raw 'out/work/master/calibration.json' | ConvertFrom-Json).sha256
+  Note "finished chunks of film B on disk before the test in the middle of the render: $(@(Get-ChildItem -Path 'out/master/test/film-b' -Filter '*.mp4' -ErrorAction SilentlyContinue).Count)"
+  Line 'test-in-mid-render' '0' 'node tools/handoff.mjs test' 'is kept and not drawn again'
+  $Cal2 = (Get-Content -Raw 'out/work/master/calibration.json' | ConvertFrom-Json).sha256
+  $Twice = (Get-Content -Raw 'out/work/handoff/test.json' | ConvertFrom-Json).calibration.twice.line
+  Note "the kept calibration picture before the test in the middle of the render: $Cal1; after it: $Cal2. The second drawing of that test: $Twice"
+  if ($Cal1 -ne $Cal2) { Note 'PROBLEM: the test in the middle of the render replaced the kept calibration picture' }
+  Note "finished chunks of film B on disk after the test in the middle of the render: $(@(Get-ChildItem -Path 'out/master/test/film-b' -Filter '*.mp4' -ErrorAction SilentlyContinue).Count)"
   Line 'render-carries-on' '0' 'node tools/handoff.mjs render' 'carrying on'
   $Sha2 = (Get-FileHash -LiteralPath $Chunk.FullName -Algorithm SHA256).Hash
   Note "the chunk finished before the stop: sha256 $Sha1; after the render carried on: $Sha2"

@@ -4,6 +4,7 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import crypto from 'node:crypto'
 import { spawn, spawnSync } from 'node:child_process'
 import { rel, readJson, writeJson } from './paths.mjs'
 import { engineHash } from './hashes.mjs'
@@ -543,13 +544,125 @@ async function fillSimcache(ctx, mode, whats) {
 async function calibrate(ctx, mode) {
   const r = await runTool(ctx, 'master.mjs', ['--calibrate', ...(mode.local ? ['--local'] : [])])
   if (r.code !== 0) return { ok: false, why: `the calibration picture could not be drawn: ${whyOf(r)}` }
-  const c = readOr(rel('out', 'work', 'master', 'calibration.json'))
+  const c = readOr(CAL_FILE())
   return c ? { ok: true, seconds: c.seconds, sha256: c.sha256 } : { ok: false, why: 'the calibration picture left no record' }
 }
 
-function calibrationValid(mode, hash) {
-  const c = readOr(rel('out', 'work', 'master', 'calibration.json'))
-  return !!c && c.engineHash === hash && c.renderer === (mode.local ? 'card' : c.renderer)
+// The calibration picture and its record, where the renderer keeps them
+const CAL_FILE = () => rel('out', 'work', 'master', 'calibration.json')
+const CAL_PNG = () => rel('out', 'work', 'master', 'calibration.png')
+// the note the renderer writes beside every still it draws
+const CAL_SIDE = () => `${CAL_PNG()}.json`
+const shaOfFile = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex')
+
+/** A second drawing that was cut short left the kept pair under its other name: it comes back before anything else. */
+function calibrationHome(ctx, cut = true) {
+  for (const f of [CAL_FILE(), CAL_PNG(), CAL_SIDE()]) {
+    if (!fs.existsSync(`${f}.kept`)) continue
+    fs.rmSync(f, { force: true })
+    fs.renameSync(`${f}.kept`, f)
+    if (cut) ctx.note(`put back after a second drawing that was cut short: the kept ${path.basename(f)}`)
+  }
+}
+
+/** The records of the finished chunks of film B and of the loop that lie on disk, whatever build and picture they name. */
+function engineChunksOnDisk(ctx, mode, parts) {
+  const out = []
+  // the tool's own small run: while a test runs, the render's chunks stand aside (holdSmallRender)
+  const dir = mode.small && fs.existsSync(path.join(ctx.H, 'small-render-chunks')) ? path.join(ctx.H, 'small-render-chunks') : chunksDir(mode)
+  for (const part of parts) {
+    if (part.what === 'opening') continue
+    for (const c of L.chunkLines(part.first, part.last, mode.chunk)) {
+      const stem = path.join(dir, part.what, L.chunkFile(part.what, c))
+      if (!fs.existsSync(`${stem}.mp4`) || !fs.existsSync(`${stem}.json`)) continue
+      const r = readOr(`${stem}.json`)
+      out.push({ what: part.what, frames: c.last - c.first + 1, engineHash: r?.engineHash ?? null, renderer: r?.renderer ?? null, machine: r?.machine ?? null, calibration: r?.calibration ?? null })
+    }
+  }
+  return out
+}
+
+/**
+ * The calibration picture is drawn once for a build on this machine and kept. Every chunk names it, and the films
+ * are joined only from chunks that name one and the same, so nothing here replaces a record that the renderer
+ * takes: the short test and the render both come through this, however often and in whatever order.
+ * Where the record is gone or cannot be read while finished chunks of this machine and build name a picture, the
+ * record is written again from their word and nothing is drawn. Where a picture must be drawn although chunks lie
+ * on disk, that is said at once with their count: they name another one and are drawn again before the join.
+ * `draw: false` only looks and says what would be done (the render's refusals come before anything is drawn).
+ */
+async function keptCalibration(ctx, mode, hash, parts, { draw = true } = {}) {
+  calibrationHome(ctx)
+  const { machineId, rendererName } = await import('./browser.mjs')
+  const want = { engineHash: hash, renderer: rendererName(mode.local), machine: machineId() }
+  const onDisk = engineChunksOnDisk(ctx, mode, parts)
+  const step = L.calibrationStep({ record: readOr(CAL_FILE()), chunks: onDisk, want })
+  const others = (sha) => onDisk.filter((c) => !L.chunkCounts(c, { what: c.what, engineHash: hash, calibration: sha }))
+  const again = (list) => `${list.length} finished ${list.length === 1 ? 'chunk' : 'chunks'} (${sum(list.map((c) => c.frames))} frames) on disk ${list.length === 1 ? 'names' : 'name'} another build or another calibration picture, and ${list.length === 1 ? 'is' : 'are'} drawn again before the films are joined`
+  if (step.do === 'keep') {
+    ctx.say(`the calibration picture of this build on this machine is kept and not drawn again: ${step.sha256.slice(0, 12)}`)
+  } else if (step.do === 'restore') {
+    const png = CAL_PNG()
+    if (fs.existsSync(png) && shaOfFile(png) !== step.sha256) fs.rmSync(png, { force: true })
+    writeJson(CAL_FILE(), { sha256: step.sha256, engineHash: want.engineHash, renderer: want.renderer, machine: want.machine, restored: new Date().toISOString(), restoredFrom: `${step.chunks} finished chunks (${step.frames} frames) that this machine drew for this build` })
+    ctx.say(`the record of the calibration picture was gone or could not be read, and ${step.chunks} finished ${step.chunks === 1 ? 'chunk' : 'chunks'} (${step.frames} frames) of this build name the picture ${step.sha256.slice(0, 12)}: the record is written again from them and no new picture is drawn, so every chunk goes on naming one picture`)
+  } else if (!draw) {
+    return { ok: true, did: 'draw', sha256: null, seconds: null, again: others(null).length }
+  } else {
+    const list = others(null)
+    if (list.length) ctx.say(`no calibration picture of this build is kept on this machine and no finished chunk of it names one, so one is drawn. ${again(list)}`)
+    const cal = await calibrate(ctx, mode)
+    if (!cal.ok) return { ok: false, why: cal.why }
+    ctx.say(`the calibration picture is drawn for this build on this machine and kept from here on: ${cal.sha256.slice(0, 12)} (${cal.seconds} s)`)
+    return { ok: true, did: 'draw', sha256: cal.sha256, seconds: cal.seconds, again: list.length }
+  }
+  const list = others(step.sha256)
+  if (list.length) ctx.say(again(list))
+  return { ok: true, did: step.do, sha256: step.sha256, seconds: readOr(CAL_FILE())?.seconds ?? null, again: list.length }
+}
+
+/**
+ * Whether this machine draws the calibration picture the same twice: a second one is drawn into the test's own
+ * folder and compared with the kept one. The kept pair stands aside under another name meanwhile and comes back
+ * whatever happens; it is never replaced. What comes out is a line of the report, no pass and no fail.
+ */
+async function calibrationTwice(ctx, mode, T) {
+  const json = CAL_FILE()
+  const png = CAL_PNG()
+  const kept = readOr(json)
+  if (!kept) return { why: 'no kept record to compare with' }
+  const keptPng = fs.existsSync(png) && shaOfFile(png) === kept.sha256
+  const secondJson = path.join(T, 'calibration-second.json')
+  const secondPng = path.join(T, 'calibration-second.png')
+  // aside: the picture first, then the record. Back: the record first, then the picture. calibrationHome mends a cut
+  if (fs.existsSync(CAL_SIDE())) fs.renameSync(CAL_SIDE(), `${CAL_SIDE()}.kept`)
+  if (fs.existsSync(png)) fs.renameSync(png, `${png}.kept`)
+  fs.renameSync(json, `${json}.kept`)
+  let r = null
+  let second = null
+  try {
+    r = await runTool(ctx, 'master.mjs', ['--calibrate', ...(mode.local ? ['--local'] : [])])
+    second = r.code === 0 ? readOr(json) : null
+    if (second && fs.existsSync(png)) {
+      fs.rmSync(secondPng, { force: true })
+      fs.renameSync(png, secondPng)
+    }
+    if (second) writeJson(secondJson, second)
+  } finally {
+    fs.rmSync(json, { force: true })
+    fs.rmSync(png, { force: true })
+    fs.rmSync(CAL_SIDE(), { force: true })
+    calibrationHome(ctx, false)
+  }
+  if (!second) return { why: `the second picture could not be drawn: ${r ? whyOf(r) : 'the renderer did not start'}` }
+  const out = { sha256: second.sha256, kept: kept.sha256, same: second.sha256 === kept.sha256, seconds: second.seconds }
+  if (keptPng && fs.existsSync(secondPng)) {
+    const a = await rgbOfFile(png)
+    const b = await rgbOfFile(secondPng)
+    const apart = a.width === b.width && a.height === b.height ? L.pixelsApart(a.data, b.data, 3) : null
+    if (apart) Object.assign(out, apart)
+  }
+  return out
 }
 
 async function makeSound(ctx, file, kind, seconds, { from = null, offset = 0 } = {}) {
@@ -623,7 +736,43 @@ export function dropFailedTest(ctx, result) {
   }
 }
 
+// The small run of the tool's own tests keeps the chunks of its render where the short test keeps its own (the
+// renderer puts both in one folder there; a real render has a folder of its own that the test never touches).
+// So a small test sets a small render's chunks aside while it runs and puts them back at its end.
+const smallHeld = (ctx) => path.join(ctx.H, 'small-render-chunks')
+function holdSmallRender(ctx) {
+  if (!ctx.T.small) return
+  const here = rel('out', 'master', 'test')
+  const held = smallHeld(ctx)
+  if (fs.existsSync(held)) return
+  const started = (readOr(path.join(ctx.H, 'render-state.json'))?.sessions ?? []).length > 0
+  if (started && fs.existsSync(here)) {
+    fs.renameSync(here, held)
+    ctx.note(`small run: the chunks of the render stand aside in ${short(held)} while the test runs`)
+  }
+}
+function backSmallRender(ctx) {
+  if (!ctx.T.small) return
+  const here = rel('out', 'master', 'test')
+  const held = smallHeld(ctx)
+  if (!fs.existsSync(held)) return
+  fs.rmSync(here, { recursive: true, force: true })
+  fs.mkdirSync(path.dirname(here), { recursive: true })
+  fs.renameSync(held, here)
+  ctx.note(`small run: the chunks of the render are back in ${short(here)}`)
+}
+
 export async function shortTest(ctx) {
+  calibrationHome(ctx)
+  holdSmallRender(ctx)
+  try {
+    return await shortTestOnce(ctx)
+  } finally {
+    backSmallRender(ctx)
+  }
+}
+
+async function shortTestOnce(ctx) {
   const rows = []
   const row = (check, found, wanted, pass) => rows.push({ check, found, wanted, pass })
   const result = { pass: false, why: '', rows, time: new Date().toISOString() }
@@ -665,13 +814,19 @@ export async function shortTest(ctx) {
 
   // how long, said before anything is drawn
   ctx.say(`the short test: ${refs.length} reference ${refs.length === 1 ? 'frame' : 'frames'} and film B frames ${stretch.first} to ${stretch.last} at ${mode.format.width} x ${mode.format.height}, ${mode.small ? "small and in few samples, a run of the tool's own tests" : "the masters' tier"}`)
-  const cal = await calibrate(ctx, mode)
+  // the calibration picture: drawn once for a build on this machine and kept, never replaced by a test
+  const cal = await keptCalibration(ctx, mode, hash, renderParts(stamp, mode))
   if (!cal.ok) return fail(cal.why)
+  // and whether this machine draws it the same twice: a line of the report, no pass and no fail
+  const twice = await calibrationTwice(ctx, mode, T)
+  ctx.say(`the calibration picture drawn twice on this machine: ${L.twiceLine(twice)}`)
+  row('the calibration picture drawn twice', L.twiceLine(twice), `noted only: the kept one (${cal.sha256.slice(0, 12)}) stays and is the one every chunk names`, null)
+  if (!(cal.seconds > 0)) cal.seconds = twice.seconds > 0 ? twice.seconds : 0
   const tierSamples = cfg.tiers.review.samplesPerFrame
   const perSampleGuess = (cal.seconds / tierSamples) * ((mode.format.width * mode.format.height) / (cfg.formats.hd.width * cfg.formats.hd.height))
   const samplesAhead = mode.small ? (refs.length + stretch.last - stretch.first + 1) * 2 : sum(refs.filter((r) => r.what !== 'opening').map((r) => r.samples)) + sum(counts['film-b'].slice(stretch.first, stretch.last + 1))
   const guess = samplesAhead * perSampleGuess
-  result.calibration = { seconds: cal.seconds, sha256: cal.sha256 }
+  result.calibration = { seconds: cal.seconds, sha256: cal.sha256, did: cal.did, twice: { ...twice, line: L.twiceLine(twice) } }
   ctx.say(`the calibration picture took ${cal.seconds} s. By that, the test draws ${samplesAhead} samples in about ${L.hoursText(guess)} (a rough guess before anything is measured)`)
   if (guess > 20 * 60) ctx.say(`THIS MACHINE IS SLOW: the short test will take about ${L.hoursText(guess)}. It goes on by itself and nothing needs doing meanwhile`)
 
@@ -1028,9 +1183,22 @@ function renderParts(stamp, mode) {
   return [{ what: 'film-b', first: 0, last: stamp.frames['film-b'] - 1 }, { what: 'loop', first: 0, last: stamp.frames.loop - 1 }, { what: 'opening', first: 0, last: stamp.frames.opening - 1 }]
 }
 
-const chunkDone = (mode) => (what, c) => {
-  const stem = path.join(chunksDir(mode), what, L.chunkFile(what, c))
-  return fs.existsSync(`${stem}.json`) && fs.existsSync(`${stem}.mp4`)
+/**
+ * Whether a chunk is finished on disk for the render that goes on. `kept()` gives the build and the kept
+ * calibration picture: a chunk of film B or of the loop that names another one does not count and is drawn again.
+ */
+const chunkDone = (mode, kept) => {
+  const known = new Map()
+  return (what, c) => {
+    const stem = path.join(chunksDir(mode), what, L.chunkFile(what, c))
+    if (!fs.existsSync(`${stem}.json`) || !fs.existsSync(`${stem}.mp4`)) return false
+    const k = kept()
+    const key = `${stem}|${k.calibration ?? ''}`
+    if (known.get(key)) return true
+    const ok = L.chunkCounts(readOr(`${stem}.json`), { what, engineHash: k.engineHash, calibration: k.calibration })
+    if (ok) known.set(key, true)
+    return ok
+  }
 }
 
 /** A small pack of the opening for the tool's own tests, made from the real one: every frame, at the small size. */
@@ -1077,7 +1245,12 @@ export async function fullRender(ctx) {
   const procs = mode.small ? 2 : (test?.procs ?? 1)
   const need = diskNeed(stamp, mode, test?.disk ?? null, procs)
   const parts = renderParts(stamp, mode)
-  const done = chunkDone(mode)
+  // the tool's own small run: chunks that a test set aside and could not put back come back first
+  backSmallRender(ctx)
+  // the calibration picture, before the first look at the chunks: kept, or written again from the chunks' word.
+  // Where one must be drawn, that is done further down, after the refusals
+  let cal = await keptCalibration(ctx, mode, hash, parts, { draw: false })
+  const done = chunkDone(mode, () => ({ engineHash: hash, calibration: cal.sha256 }))
   const planNow = L.resumePlan({ parts, chunkFrames: mode.chunk, batchChunks: BATCH_CHUNKS, done })
   // what is already drawn needs no room again
   const share = 1 - sum(planNow.map((p) => p.framesDone)) / sum(planNow.map((p) => p.frames))
@@ -1138,14 +1311,14 @@ export async function fullRender(ctx) {
   }
   ctx.heartbeatLine = () => beat().line
 
-  if (!calibrationValid(mode, hash)) {
-    const cal = await calibrate(ctx, mode)
+  if (!cal.sha256) {
+    cal = await keptCalibration(ctx, mode, hash, parts)
     if (!cal.ok) return end(fail(cal.why))
   }
   const expected = { renderer: test?.renderer ?? doc.renderer, browser: test?.browser ?? doc.page.browser }
   // the tool's own test of a browser that updated itself: see browserMovedPretend
   const movedFile = path.join(ctx.H, 'browser-moved.json')
-  const moved = L.browserMovedPretend({ on: ctx.T.browserMoved === true, seen: readOr(movedFile)?.seen ?? null, testTime: test?.time })
+  const moved = L.browserMovedPretend({ on: ctx.T.browserMoved === true, seen: readOr(movedFile)?.seen ?? null, testTime: test?.time, framesDone: session.framesAtStart })
   if (moved.mark) writeJson(movedFile, { seen: new Date().toISOString() })
   if (moved.pretend) expected.browser = `${expected.browser} ${L.MADE_UP_UPDATE}`
   const guard = async () => {

@@ -1265,6 +1265,88 @@ describe('a browser that updated itself between the test and the render, as the 
   it('marks the made up version in plain words, so that no report reads as a real update', () => {
     expect(L.MADE_UP_UPDATE).toContain("the tool's own test made up")
   })
+  it('is met with chunks on disk: a start that finds no finished frame draws first and is not stopped', () => {
+    expect(L.browserMovedPretend({ on: true, seen: null, testTime: '2026-11-28T02:00:00Z', framesDone: 0 })).toEqual({ pretend: false, mark: false })
+    expect(L.browserMovedPretend({ on: true, seen: null, testTime: '2026-11-28T02:00:00Z', framesDone: 12 })).toEqual({ pretend: true, mark: true })
+  })
+})
+
+describe('the calibration picture: drawn once for a build on the machine and kept', () => {
+  const want = { engineHash: 'e1', renderer: 'card', machine: 'pc · 16 x cpu · 65536 MB' }
+  const rec = { sha256: 'a'.repeat(64), engineHash: 'e1', renderer: 'card', machine: want.machine, seconds: 4 }
+  const chunk = (calibration: string | null, more = {}) => ({ what: 'film-b', frames: 30, engineHash: 'e1', renderer: 'card', machine: want.machine, calibration, ...more })
+  it('takes a record by the rule the renderer itself has: this build, this renderer, this machine, a sha256', () => {
+    expect(L.calibrationKept(rec, want)).toBe(true)
+    expect(L.calibrationKept(null, want)).toBe(false)
+    expect(L.calibrationKept({ ...rec, engineHash: 'e0' }, want)).toBe(false)
+    expect(L.calibrationKept({ ...rec, renderer: 'swiftshader' }, want)).toBe(false)
+    expect(L.calibrationKept({ ...rec, machine: 'another' }, want)).toBe(false)
+    expect(L.calibrationKept({ ...rec, sha256: undefined }, want)).toBe(false)
+  })
+  it('keeps a record that is valid, whatever lies on disk: no test and no render replaces it', () => {
+    expect(L.calibrationStep({ record: rec, chunks: [], want })).toEqual({ do: 'keep', sha256: rec.sha256 })
+    expect(L.calibrationStep({ record: rec, chunks: [chunk('b'.repeat(64))], want })).toEqual({ do: 'keep', sha256: rec.sha256 })
+  })
+  it('writes a lost record again from the finished chunks of this machine and build, and draws nothing', () => {
+    const b = 'b'.repeat(64)
+    expect(L.calibrationStep({ record: null, chunks: [chunk(b), chunk(b, { what: 'loop', frames: 6 })], want })).toEqual({ do: 'restore', sha256: b, chunks: 2, frames: 36 })
+    // a record of another build is no record of this one
+    expect(L.calibrationStep({ record: { ...rec, engineHash: 'e0' }, chunks: [chunk(b)], want }).do).toBe('restore')
+  })
+  it('draws when there is no record and no chunk of this machine and build names a picture', () => {
+    const b = 'b'.repeat(64)
+    expect(L.calibrationStep({ record: null, chunks: [], want })).toEqual({ do: 'draw', sha256: null })
+    for (const other of [{ engineHash: 'e0' }, { machine: 'another' }, { renderer: 'swiftshader' }, { what: 'opening' }, { calibration: null }]) expect(L.calibrationStep({ record: null, chunks: [chunk(b, other)], want }).do).toBe('draw')
+  })
+  it('takes the picture that the most frames name where finished chunks name two', () => {
+    const b = 'b'.repeat(64)
+    const c = 'c'.repeat(64)
+    expect(L.calibrationOfChunks([chunk(c), chunk(b), chunk(b)], want).map((x) => [x.sha256[0], x.chunks, x.frames])).toEqual([['b', 2, 60], ['c', 1, 30]])
+    expect(L.calibrationStep({ record: null, chunks: [chunk(c), chunk(b), chunk(b)], want }).sha256).toBe(b)
+  })
+  it('counts a finished chunk only when it names this build and the kept picture, so the join never finds two', () => {
+    const kept = { what: 'film-b', engineHash: 'e1', calibration: rec.sha256 }
+    expect(L.chunkCounts({ engineHash: 'e1', calibration: rec.sha256 }, kept)).toBe(true)
+    expect(L.chunkCounts({ engineHash: 'e1', calibration: 'b'.repeat(64) }, kept)).toBe(false)
+    expect(L.chunkCounts({ engineHash: 'e0', calibration: rec.sha256 }, kept)).toBe(false)
+    expect(L.chunkCounts({ engineHash: 'e1' }, kept)).toBe(false)
+    expect(L.chunkCounts(null, kept)).toBe(false)
+    // before a picture is kept, no chunk of the engine counts
+    expect(L.chunkCounts({ engineHash: 'e1', calibration: rec.sha256 }, { ...kept, calibration: null })).toBe(false)
+    // the opening is no drawing of the engine and names no picture
+    expect(L.chunkCounts({ engineHash: '' }, { ...kept, what: 'opening' })).toBe(true)
+  })
+  it('counts the pixels that differ between two drawings and the largest difference in any channel', () => {
+    const a = Uint8Array.from([10, 20, 30, 40, 50, 60, 70, 80, 90])
+    expect(L.pixelsApart(a, Uint8Array.from(a))).toEqual({ pixels: 0, most: 0, total: 3 })
+    expect(L.pixelsApart(a, Uint8Array.from([10, 20, 30, 41, 50, 57, 70, 80, 90]))).toEqual({ pixels: 1, most: 3, total: 3 })
+    expect(L.pixelsApart(a, Uint8Array.from([11, 20, 30, 40, 50, 60, 70, 80, 95]))).toEqual({ pixels: 2, most: 5, total: 3 })
+    expect(L.pixelsApart(a, Uint8Array.from([1, 2, 3]))).toBe(null)
+  })
+  it('says it in one line of the report, with no dash and no shout, and as no pass and no fail', () => {
+    const same = L.twiceLine({ pixels: 0, most: 0, total: 2073600 })
+    const not = L.twiceLine({ pixels: 1234, most: 3, total: 2073600 })
+    expect(same).toBe('the same twice: a second drawing differs from the kept one in 0 of 2,073,600 pixels, the largest difference in any channel is 0 levels')
+    expect(not).toBe('not the same twice: a second drawing differs from the kept one in 1,234 of 2,073,600 pixels, the largest difference in any channel is 3 of 255 levels')
+    expect(L.twiceLine({ same: false })).toMatch(/^not the same twice by the sha256 of the file/)
+    expect(L.twiceLine({ same: true })).toMatch(/^the same twice by the sha256 of the file/)
+    expect(L.twiceLine({ why: 'the second picture could not be drawn: no browser' })).toBe('not compared: the second picture could not be drawn: no browser')
+    for (const t of [same, not, L.twiceLine({ same: false }), L.twiceLine(null)]) expect(t).not.toMatch(/[—!]/)
+  })
+  it('is proven with chunks on disk: both flows run the short test in the middle of the render, and the made up update comes after it', () => {
+    for (const f of ['flow.sh', 'flow.ps1']) {
+      const text = fs.readFileSync(rel('.github', 'handoff-proof', f), 'utf8')
+      const first = text.indexOf('render-first-call')
+      const mid = text.indexOf('test-in-mid-render')
+      const on = text.indexOf('render-carries-on')
+      expect(first, f).toBeGreaterThan(0)
+      expect(mid, f).toBeGreaterThan(first)
+      expect(on, f).toBeGreaterThan(mid)
+      expect(text, f).toContain('PROBLEM: the test in the middle of the render replaced the kept calibration picture')
+    }
+    const sh = fs.readFileSync(rel('.github', 'handoff-proof', 'flow.sh'), 'utf8')
+    expect(sh.indexOf("line render-stops-for-browser 1 'node tools/handoff.mjs render' 'the browser was updated'")).toBeGreaterThan(sh.indexOf('line test-in-mid-render'))
+  })
 })
 
 describe('the browser versions a render drew with', () => {

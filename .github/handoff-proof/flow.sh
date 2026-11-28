@@ -120,16 +120,9 @@ if [ "$PROOF_MODE" = small ]; then
     [ -n "$WINPID" ] && MSYS_NO_PATHCONV=1 taskkill /PID "$WINPID" /F > /dev/null 2>&1
     note "the program that held the test film is ended"
   fi
-  # a browser that updated itself between the test and the render (made up by a switch of the tool's own tests):
-  # the render stops, the test is run again as the file says, and the render then starts
-  case ",$PROOF_SWITCHES," in *,browser-moved,*)
-    line render-stops-for-browser 1 'node tools/handoff.mjs render' 'the browser was updated'
-    line test-after-update 0 'node tools/handoff.mjs test'
-    ;;
-  esac
-  # the first call, which comes back while the render goes on in the background. Then wait for the first finished
-  # chunk, and end the process that renders, and it alone. When a real update of the browser stops the render
-  # before that, the row is followed and the first call is made again
+  # the first call, which comes back while the render goes on in the background. Then wait until at least two
+  # chunks are finished, and end the process that renders, and it alone. When a real update of the browser stops
+  # the render before that, the row is followed and the first call is made again
   FIRST=render-first-call
   REPORT=out/work/handoff/report-render.txt
   ENDED=''
@@ -139,7 +132,7 @@ if [ "$PROOF_MODE" = small ]; then
     ALSO_OK="$(also_ok)" ONCE=1 line "$FIRST" 3 'node tools/handoff.mjs render'
     if [ "$LAST_CODE" = 3 ]; then
       for i in $(seq 1 400); do
-        ls out/master/test/film-b/*.mp4 > /dev/null 2>&1 && break
+        [ "$(ls out/master/test/film-b/*.mp4 2> /dev/null | wc -l)" -ge 2 ] && break
         if [ "$REPORT" -nt "$PROOF_OUT/before-the-render" ] && tail -2 "$REPORT" | grep -q '^FAIL: '; then
           ENDED="$REPORT"
           break
@@ -176,6 +169,27 @@ if [ "$PROOF_MODE" = small ]; then
   fi
   note "the process that renders was ended by force, and only it: what it had started is left behind"
   sleep 3
+  # The short test again in the middle of the render, with finished chunks on disk. The calibration picture is
+  # drawn once for a build on the machine and kept: a test that drew a new one here would leave chunks that name
+  # two pictures, and the films would not be joined (hosted macOS draws it differently every time).
+  CAL1="$(node -p "require('./out/work/master/calibration.json').sha256")"
+  note "finished chunks of film B on disk before the test in the middle of the render: $(ls out/master/test/film-b/*.mp4 2> /dev/null | wc -l | tr -d ' ')"
+  line test-in-mid-render 0 'node tools/handoff.mjs test' 'is kept and not drawn again'
+  CAL2="$(node -p "require('./out/work/master/calibration.json').sha256")"
+  note "the kept calibration picture before the test in the middle of the render: $CAL1; after it: $CAL2. $(node -p "'The second drawing of that test: ' + (((require('./out/work/handoff/test.json').calibration || {}).twice || {}).line || 'no line')")"
+  [ "$CAL1" = "$CAL2" ] || note "PROBLEM: the test in the middle of the render replaced the kept calibration picture"
+  note "finished chunks of film B on disk after the test in the middle of the render: $(ls out/master/test/film-b/*.mp4 2> /dev/null | wc -l | tr -d ' ')"
+  # A browser that updated itself in the middle of the render, with chunks on disk (made up by a switch of the
+  # tool's own tests): the render stops, the test is run again as the file says, and the render then carries on
+  case ",$PROOF_SWITCHES," in *,browser-moved,*)
+    line render-stops-for-browser 1 'node tools/handoff.mjs render' 'the browser was updated'
+    note "finished chunks of film B on disk when the made up update stopped the render: $(ls out/master/test/film-b/*.mp4 2> /dev/null | wc -l | tr -d ' ')"
+    line test-after-update 0 'node tools/handoff.mjs test' 'is kept and not drawn again'
+    CAL3="$(node -p "require('./out/work/master/calibration.json').sha256")"
+    note "the kept calibration picture after the test that followed the made up update: $CAL3"
+    [ "$CAL1" = "$CAL3" ] || note "PROBLEM: the test after the made up update replaced the kept calibration picture"
+    ;;
+  esac
   render_line render-carries-on 0 'carrying on'
   SHA2="$(node -e "console.log(require('crypto').createHash('sha256').update(require('fs').readFileSync(process.argv[1])).digest('hex'))" "$CHUNK")"
   note "the chunk finished before the stop: sha256 $SHA1; after the render carried on: $SHA2"

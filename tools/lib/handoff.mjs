@@ -86,14 +86,104 @@ export function floorsOfTest(floors, high) {
  * the render is told that the test passed on another version than the one it sees, from the first time it looks
  * until a short test has been started after that. `seen` is when the render first looked (null: never), `testTime`
  * when the last short test started. `mark` says that this look is the first and its time is to be kept.
+ * `framesDone` is how many frames lie finished on disk at this start (left out: not looked at).
+ * @param {{ on: any, seen: any, testTime: any, framesDone?: number }} p
  */
-export function browserMovedPretend({ on, seen, testTime }) {
+export function browserMovedPretend({ on, seen, testTime, framesDone }) {
   if (!on) return { pretend: false, mark: false }
-  if (!seen) return { pretend: true, mark: true }
+  // with chunks on disk, as a browser updates itself in the middle of a render: a start that finds none waits
+  if (!seen) return framesDone === 0 ? { pretend: false, mark: false } : { pretend: true, mark: true }
   const t = Date.parse(testTime ?? '')
   return { pretend: !(Number.isFinite(t) && t > Date.parse(seen)), mark: false }
 }
 export const MADE_UP_UPDATE = "of before an update that the tool's own test made up"
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The calibration picture: one still that a machine draws for a build. Every chunk of the film names the sha256 of
+// its file, and the films are joined only from chunks that all name one and the same picture. So it is drawn once
+// for a build on the machine and kept; whatever is run afterwards uses the kept one.
+
+/** The rule by which the renderer itself takes a record of the calibration picture as this machine's and this build's. */
+export function calibrationKept(record, { engineHash, renderer, machine }) {
+  return !!record && record.engineHash === engineHash && record.renderer === renderer && record.machine === machine && typeof record.sha256 === 'string' && record.sha256.length > 0
+}
+
+/**
+ * The calibration pictures that finished chunks name, the one that holds the most frames first. Only chunks that
+ * this machine drew for this build with this renderer count: another machine's word says nothing of this one.
+ * `chunks` are the records of the finished chunks, each with its count of frames.
+ */
+export function calibrationOfChunks(chunks, { engineHash, renderer, machine }) {
+  const tally = new Map()
+  for (const c of chunks ?? []) {
+    if (!c || c.what === 'opening' || c.engineHash !== engineHash || c.renderer !== renderer || c.machine !== machine) continue
+    if (typeof c.calibration !== 'string' || !c.calibration) continue
+    const t = tally.get(c.calibration) ?? { sha256: c.calibration, chunks: 0, frames: 0 }
+    t.chunks += 1
+    t.frames += c.frames ?? 0
+    tally.set(c.calibration, t)
+  }
+  return [...tally.values()].sort((a, b) => b.frames - a.frames || b.chunks - a.chunks || (a.sha256 < b.sha256 ? -1 : 1))
+}
+
+/**
+ * What is done about the calibration picture before anything is drawn.
+ * keep: a record is here that the renderer takes. It is never replaced.
+ * restore: the record is gone or cannot be read, and finished chunks that this machine drew for this build name a
+ *   picture. The record is written again from their word and nothing is drawn: a new picture could come out
+ *   another one, and the chunks on disk would then not be joined with those drawn after it.
+ * draw: no record and no chunk of this machine and build: the picture is drawn, once.
+ */
+export function calibrationStep({ record, chunks, want }) {
+  if (calibrationKept(record, want)) return { do: 'keep', sha256: record.sha256 }
+  const named = calibrationOfChunks(chunks, want)
+  if (named.length) return { do: 'restore', sha256: named[0].sha256, chunks: named[0].chunks, frames: named[0].frames }
+  return { do: 'draw', sha256: null }
+}
+
+/**
+ * Whether a finished chunk on disk counts for the render that goes on. A chunk of the opening is no drawing of the
+ * engine and names no calibration picture. A chunk of film B or of the loop counts when it names this build and
+ * the kept calibration picture: any other one is drawn again before the films are joined, so that the join never
+ * finds two pictures.
+ */
+export function chunkCounts(record, { what, engineHash, calibration }) {
+  if (!record) return false
+  if (what === 'opening') return true
+  return record.engineHash === engineHash && typeof calibration === 'string' && calibration.length > 0 && record.calibration === calibration
+}
+
+/** Two pictures of one size, pixel by pixel: how many differ, and the largest difference in any channel. */
+export function pixelsApart(a, b, channels = 3) {
+  if (!a || !b || a.length !== b.length || a.length % channels !== 0) return null
+  let pixels = 0
+  let most = 0
+  for (let i = 0; i < a.length; i += channels) {
+    let d = 0
+    for (let k = 0; k < channels; k++) {
+      const x = Math.abs(a[i + k] - b[i + k])
+      if (x > d) d = x
+    }
+    if (d > 0) {
+      pixels += 1
+      if (d > most) most = d
+    }
+  }
+  return { pixels, most, total: a.length / channels }
+}
+
+/** The one line of the short test that says whether this machine draws the calibration picture the same twice. */
+export function twiceLine(t) {
+  if (!t) return 'not compared'
+  if (t.why) return `not compared: ${t.why}`
+  if (Number.isInteger(t.pixels)) {
+    const n = (x) => String(x).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    return t.pixels === 0
+      ? `the same twice: a second drawing differs from the kept one in 0 of ${n(t.total)} pixels, the largest difference in any channel is 0 levels`
+      : `not the same twice: a second drawing differs from the kept one in ${n(t.pixels)} of ${n(t.total)} pixels, the largest difference in any channel is ${t.most} of 255 levels`
+  }
+  return t.same ? 'the same twice by the sha256 of the file (the kept picture itself is not on disk, so no pixels are counted)' : 'not the same twice by the sha256 of the file (the kept picture itself is not on disk, so no pixels are counted)'
+}
 
 /**
  * The versions of the browser a render drew with, in the order of its starts. Each start keeps the version its short
