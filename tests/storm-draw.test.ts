@@ -592,6 +592,99 @@ describe('how the storm is drawn', () => {
     for (let k = 0; k < 16; k++) expect(none.elements[k]!).toBeCloseTo(k % 5 === 0 ? 1 : 0, 12)
   })
 
+  it('decision 255 point 3, the width at 3840: above the pixels of the hd picture, in the film alone, a light of the storm is slim across and stands in every sample where it is at the middle of the exposure; at hd, at rest and in the app none of it is read', () => {
+    const [cap, capPower, bellPower] = CARD.glow.stormSlim
+    // the cap is said in pixels of the hd picture and is about half of one; the knee between a light's own core and the cap is sharp, and the sides fall more steeply than a bell's
+    expect(cap).toBeGreaterThanOrEqual(0.4)
+    expect(cap).toBeLessThanOrEqual(0.7)
+    expect(capPower).toBeGreaterThanOrEqual(2)
+    expect(bellPower).toBeGreaterThan(1)
+    expect(bellPower).toBeLessThanOrEqual(4)
+    const num = (v: number): string => (Number.isInteger(v) ? v.toFixed(1) : String(v))
+    const light = `(shape > ${(SHAPE.light - 0.5).toFixed(1)} && shape < ${(SHAPE.light + 0.5).toFixed(1)})`
+
+    // the fragment: the bell as it was, then the slim one (above hd, outside the app, in the storm, never a spark), then the core that reads it. The ends of item 276 are set before it
+    const slim = [
+      'float bell = exp(-0.5 * d2 / vcBare);',
+      'if (!spark && uPoint.w > 1.0 && uWhole < 0.5 && tightL > 0.0) {',
+      `float slimV = vcBare * pow(1.0 + pow(vcBare / (${num(cap * cap)} * uPoint.w * uPoint.w), ${num(capPower)}), ${num(-1 / capPower)});`,
+      `bell = mix(bell, exp(-0.5 * pow(d2 / slimV, ${num(bellPower)})), tightL * min(uPoint.w - 1.0, 1.0));`,
+      'core = rc * rc / vc',
+      '* bell * fade * bareGain;',
+    ]
+    let at = CARD_FRAG_PARS.indexOf('d2 = dot(dE, dE);')
+    expect(at).toBeGreaterThan(0)
+    for (const line of slim) {
+      const next = CARD_FRAG_PARS.indexOf(line, at)
+      expect(next, line).toBeGreaterThan(at)
+      at = next
+    }
+    expect(CARD_FRAG_PARS.split('slimV').length - 1).toBe(2)
+    expect(CARD_FRAG_PARS).toContain('uniform float uWhole;')
+    expect(CARD_FRAG_PARS.split('uWhole < 0.5').length - 1).toBe(1)
+    // the bell as it was is still the one the core reads where the slim one is not: it is written once and nothing else sets it
+    expect(CARD_FRAG_PARS.split('bell = ').length - 1).toBe(2)
+
+    // the card: above hd the light is not put back along its path, since it does not travel it. The line stands after the hold as it was and before the ride, and is read by the light alone
+    const hold = CARD_VERT.indexOf('holdC = -stC * uStorm.y * (uPoint.z / max(shut, 1e-6) - (1.0 - uStorm.x))')
+    const whole = CARD_VERT.indexOf(`if (storming && ${light} && uPoint.w > 1.0) holdC *= 1.0 - min(uPoint.w - 1.0, 1.0);`)
+    const ride = CARD_VERT.indexOf(`if (storming && ${light} && uMidHold.x > 0.0) {`)
+    expect(hold).toBeGreaterThan(0)
+    expect(whole).toBeGreaterThan(hold)
+    expect(ride).toBeGreaterThan(whole)
+    expect(CARD_VERT.split('holdC *=').length - 1).toBe(1)
+
+    // the place: after the line every kind reads, which is as it was, the light alone goes to its place of the middle of the exposure
+    const path = VERT_MAIN.indexOf('vec3 nowL = mix(aPrev, aNow, uPoint.x + shut * uStorm.y * afloat * (storming ? 1.0 - uStorm.x : 1.0));')
+    const middle = VERT_MAIN.indexOf(`if (storming && abs(shape - ${num(SHAPE.light)}) < 0.5 && uPoint.w > 1.0 && uStorm.y != 0.0) nowL = mix(nowL, mix(aPrev, aNow, uPoint.x + uPoint.z * uStorm.y * afloat), min(uPoint.w - 1.0, 1.0));`)
+    expect(path).toBeGreaterThan(0)
+    expect(middle).toBeGreaterThan(path)
+    expect(VERT_MAIN.split('nowL = ').length - 1).toBe(2)
+    // a sample at the share t of the shutter is drawn at the step's share m + span * (t - 0.5), and the draw hands the shader 0.5 - t: the place asked for is the one of the middle, m, whatever the sample
+    for (const [m, span] of [[0.5, 0.5], [0.2, 0.3], [0.9, 0.18]] as const) for (const t of [0, 0.125, 0.5, 0.77, 1]) expect(m + span * (t - 0.5) + span * (0.5 - t)).toBeCloseTo(m, 12)
+    // and the light is summer's alone: no kind of another season has its shape
+    for (const season of config.seasons) for (const kind of particleKinds(season)) expect(lookOf(kind.kind).shape === SHAPE.light, kind.kind).toBe(season === 'summer' && kind.kind === 'firefly')
+
+    // reckoned as the shader does. `w` is the picture's height over the hd picture's, `tight` the storm's share of the light
+    const slimV = (vc: number, w: number): number => vc * Math.pow(1 + Math.pow(vc / (cap * cap * w * w), capPower), -1 / capPower)
+    const bell = (d2: number, vc: number, w: number, tight: number, app = false): number => {
+      const plain = Math.exp((-0.5 * d2) / vc)
+      if (!(w > 1 && !app && tight > 0)) return plain
+      return plain + (Math.exp(-0.5 * Math.pow(d2 / slimV(vc, w), bellPower)) - plain) * tight * Math.min(w - 1, 1)
+    }
+    const held = (w: number): number => (w > 1 ? 1 - Math.min(w - 1, 1) : 1)
+    for (const vc of [0.05, 0.2, 0.5, 1, 2.5, 8]) {
+      for (const d2 of [0, 0.3, 1, 4]) {
+        const was = Math.exp((-0.5 * d2) / vc)
+        // where a pixel is a pixel of the hd picture: the bell as it was, in the storm too
+        expect(bell(d2, vc, 1, 1)).toBe(was)
+        // at rest: as it was at any size
+        expect(bell(d2, vc, 2, 0)).toBe(was)
+        // in the app: as it was at any size, in the storm too
+        expect(bell(d2, vc, 2, 1, true)).toBe(was)
+        // nowhere is a light brighter at a place across than its own bell or the capped steep one allows, and its sides are never wider than its own were from one core's width out
+        if (d2 >= vc) expect(bell(d2, vc, 2, 1)).toBeLessThanOrEqual(was + 1e-12)
+      }
+      // the light at its middle line is as it was: no light is fainter at its brightest
+      expect(bell(0, vc, 2, 1)).toBe(1)
+      // never softer than the light's own core, never softer than the cap
+      expect(slimV(vc, 2)).toBeLessThanOrEqual(vc)
+      expect(slimV(vc, 2)).toBeLessThanOrEqual(cap * cap * 4)
+    }
+    // a light whose own core is far finer than the cap keeps it; one far softer has the cap
+    expect(slimV(0.05, 2) / 0.05).toBeGreaterThan(0.99)
+    expect(slimV(50, 2) / (cap * cap * 4)).toBeGreaterThan(0.99)
+    // across, a capped light at 3840 is at half its light a little over one pixel from its middle line: 2 to 2.6 px in all, before the lens and the film's curve widen it to about 3
+    const across = 2 * cap * 2 * Math.pow(2 * Math.LN2, 1 / (2 * bellPower))
+    expect(across).toBeGreaterThan(2)
+    expect(across).toBeLessThan(2.6)
+    // the hold: whole at hd, none from twice its height on, by degrees between
+    expect(held(1)).toBe(1)
+    expect(held(1.5)).toBeCloseTo(0.5, 12)
+    expect(held(2)).toBe(0)
+    expect(held(3)).toBe(0)
+  })
+
   it("a head afloat in the calm is a clock the card draws hair by hair: two rings of hairs round a small bright hub on a stalk that hangs, in three classes by depth, with no hair finer than a pixel, and none of it at the storm's full level", () => {
     const clock = CARD.clock
     // a fine head has thirty to forty hairs in its two rings, a stout one no fewer strong ones, and each ring's hairs have their own whole numbers among the 64 of a head, whose last is the head's own

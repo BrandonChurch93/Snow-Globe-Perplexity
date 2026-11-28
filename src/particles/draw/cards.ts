@@ -413,6 +413,8 @@ export const CARD_VERT = `
     vec2 holdC = vec2(0.0);
     // the down and the lights of the storm are drawn near where they are at the middle of the exposure: carried along its whole path from one moment of the shutter to the next, a short stroke is a row of dashes, a head a long smear and a light a faint thread
     if (storming && (${at(SHAPE.seed)} || ${at(SHAPE.light)})) holdC = -stC * uStorm.y * (uPoint.z / max(shut, 1e-6) - (1.0 - uStorm.x)) * (${at(SHAPE.light)} ? ${n(CARD.glow.stormHold)} : (whole > 0.5 ? ${n(CARD.hair.stormHold)} : ${n(CARD.line.stormHold)}));
+    // above the pixels of the hd picture a light of the storm stands at its place of the middle of the exposure in every sample already (shader.ts, VERT_MAIN), so there is nothing of its own path to hold it back from
+    if (storming && ${at(SHAPE.light)} && uPoint.w > 1.0) holdC *= 1.0 - min(uPoint.w - 1.0, 1.0);
     if (storming && ${at(SHAPE.light)} && uMidHold.x > 0.0) {
       // In a frame of the film the ball travels a little inside the shutter while it is set down and while it rocks after the landing, and each sample draws the ball where it stands at its own moment. A light's one streak, carried with the ball from sample to sample, was a band of lines side by side. So a light is held against the ball's travel as it is held against its own path: it is drawn at its place in the ball as the ball stands at the middle of the exposure, through the glass as the glass stands there, by the share that stands (points.ts, lightRide)
       // the moments of a travelling frame's samples are moved a little from their shares of the shutter, and the hold above reads the share: the light is put back by that much of its own path
@@ -733,6 +735,7 @@ export const CARD_FRAG_PARS = `${REST_LIGHT}
 /** The down of the seeds' heads: every form at every lean, drawn once at start (down.ts). */
 uniform sampler2D uDown;
 uniform vec4 uPoint;
+uniform float uWhole;
 uniform float uStormLanding;
 uniform mat4 projectionMatrix;
 ${CLOCK_HASH}/** One ring of a clock's hairs (looks.ts, CARD.clock): the three hairs about the pixel's own angle, each a line that fades toward its tip and ends in a tuft, or the mean of them all where they stand closer than a hair is wide. The share told of the ring's light stands as hairs that are told apart and the rest as the mean. */
@@ -1305,7 +1308,13 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     bareGain *= mix(1.0, ${n(CARD.spark.restPaleDim)}, paleS);
     bareGain = mix(bareGain, min(bareGain, ${n(CARD.spark.restPaleMost)} / max(vCore.w * rc * rc / vc, 1e-4)), paleS);
     vcBare = max(vc / bareTight, spark ? (1.0 - paleS) * (1.0 - glowS) * (1.0 - disc) * (1.0 - vL2.w) * ${n(CARD.spark.restWarmPx * CARD.spark.restWarmPx)} * uPoint.w * uPoint.w : 0.0);
-    core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * exp(-0.5 * d2 / vcBare) * fade * bareGain;
+    float bell = exp(-0.5 * d2 / vcBare);
+    // above the pixels of the hd picture (the film at 3840) a light of the storm is slim (looks.ts, CARD.glow, stormSlim): across, its core is no softer than so many pixels of the hd picture, and it falls off at its sides more steeply than a bell does, so that it is a whole bright line at its middle with no wide soft flank for the film's curve to lift into a slab. Its length, its ends, its place and the light at its middle are as they were. Where a pixel is a pixel of the hd picture none of this is read, and none of it in the app at any size (uWhole)
+    if (!spark && uPoint.w > 1.0 && uWhole < 0.5 && tightL > 0.0) {
+      float slimV = vcBare * pow(1.0 + pow(vcBare / (${n(CARD.glow.stormSlim[0] * CARD.glow.stormSlim[0])} * uPoint.w * uPoint.w), ${n(CARD.glow.stormSlim[1])}), ${n(-1 / CARD.glow.stormSlim[1])});
+      bell = mix(bell, exp(-0.5 * pow(d2 / slimV, ${n(CARD.glow.stormSlim[2])})), tightL * min(uPoint.w - 1.0, 1.0));
+    }
+    core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * bell * fade * bareGain;
     float lid = 0.0;
     if (disc > 0.0) {
       float rd = ${n(CARD.glow.discWide)} * sg;
