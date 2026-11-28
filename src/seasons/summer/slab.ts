@@ -724,6 +724,48 @@ float sandWisp(vec2 p) {
 }
 `
 
+// How the heap comes with a landing. It is fed by the sand that jumps and falls, so it is not there at once: the fall
+// pours and the heap grows under it for `seconds`. What stands of it is cut as in the leaving, the other way round
+// (`feedCap`): sand that will stand h high stands cap * (1 - exp(-h / cap)) high, and the cap goes up from nothing to far
+// above the peak, quickly at first and slowly at the end. So a low fan lies over the heap's ground first, the flanks
+// are whole next and the peak last, and from `seconds` on no cut is left: the heap is the heap of the still pictures to
+// the last place. Its normals lean with the cut and its shadow is cut with it, as in the leaving. The single grains on
+// it (arrival.ts) lie as high as the heap stands under them, and a grain in the air comes down on it where it stands.
+// The spill off the ledge is plainly denser at the landing (`spill`): for `hold` seconds every thread of the fall
+// carries `long` more of its length in sand and is `wide` thicker, and that goes down to the standing fall by `over`.
+// All of it is a function of the time since the foot came down, so any frame can be drawn alone.
+export const FEED = { seconds: 2, capMm: 2.5, flat: 1000, spill: { hold: 0.35, over: 2, long: 1.2, wide: 0.8 } } as const
+
+/** The height in mm the growing heap is cut to, `seconds` after the foot came down: nothing at the landing, no cut from `FEED.seconds` on, at rest and before the landing. */
+export function feedCap(seconds: number): number {
+  if (!(seconds >= 0) || !(seconds < FEED.seconds)) return Infinity
+  const left = (1 - seconds / FEED.seconds) ** 2
+  return (FEED.capMm * (1 - left)) / left
+}
+
+/** How much more than the standing fall the spill carries, 0 to 1, `seconds` after the foot came down. */
+export function feedSurge(seconds: number): number {
+  if (!(seconds >= 0) || !(seconds < FEED.spill.over)) return 0
+  return 1 - step(FEED.spill.hold, FEED.spill.over, seconds)
+}
+
+/** `uSandFeed`: x one over the height the growing heap is cut to (0 for no cut), y the surge of the spill. The other two are 0. */
+export const sandFed = { value: new THREE.Vector4(0, 0, 0, 0) }
+
+/** What `uSandFeed` holds `seconds` after the foot came down. */
+export function sandFeed(seconds: number): { flat: number; surge: number } {
+  const cap = feedCap(seconds)
+  return { flat: cap === Infinity ? 0 : cap > 0 ? Math.min(1 / cap, FEED.flat) : FEED.flat, surge: feedSurge(seconds) }
+}
+
+// For a vertex shader: what stands of sand `tall` high while the heap grows.
+export const SAND_FED = `
+uniform vec4 uSandFeed;
+float sandFed(float tall) {
+  return uSandFeed.x > 0.0 ? (1.0 - exp(-tall * uSandFeed.x)) / uSandFeed.x : tall;
+}
+`
+
 const SLAB_PARS = `
 varying vec3 vSlab;
 uniform vec4 uSlabLens;
@@ -866,6 +908,7 @@ float slabStood = uSandLift < 0.0 ? 0.0 : 1.0 - smoothstep(${f(SLUMP.from)}, ${f
 float slabCut = ${f(SLUMP.steep)} * slabStood * slabStood * slabStood * max(${f(SLAB.footMm)} - length(position.xz), 0.0);
 float slabTall = max(position.y - ${f(SLAB.liftMm)} - slabCut, 0.0);
 if (uSandGust.x > 0.0) slabTall = sandSlump(slabTall);
+if (uSandFeed.x > 0.0) slabTall = sandFed(slabTall);
 transformed.y = ${f(SLAB.liftMm)} + slabTall;
 float slabGrown = clamp((slabTall - ${f(HEAP.cover[0]!)}) / ${f(HEAP.cover[1]! - HEAP.cover[0]!)}, 0.0, 1.0);
 vSlab = vec3(mix(slabGrown * slabGrown * (3.0 - 2.0 * slabGrown), aSlab.x * sandCome(position.xz, 0.5, uSandGrow), step(slabCut, 0.0)), aSlab.yz);
@@ -876,6 +919,10 @@ const SLAB_LEAN = `
 if (uSandGust.x > 0.0) {
   float slabFlat = exp(-max(position.y - ${f(SLAB.liftMm)}, 0.0) * uSandGust.y);
   objectNormal = normalize(vec3(objectNormal.x * slabFlat, max(objectNormal.y, 1e-4), objectNormal.z * slabFlat));
+}
+if (uSandFeed.x > 0.0) {
+  float slabLow = exp(-max(position.y - ${f(SLAB.liftMm)}, 0.0) * uSandFeed.x);
+  objectNormal = normalize(vec3(objectNormal.x * slabLow, max(objectNormal.y, 1e-4), objectNormal.z * slabLow));
 }
 `
 
@@ -901,8 +948,9 @@ function slabSand(): THREE.Material {
     shader.uniforms.uSandLift = arrivalPart.sandLift
     shader.uniforms.uSandFoot = arrivalPart.sandFoot
     shader.uniforms.uSandGust = sandGust
+    shader.uniforms.uSandFeed = sandFed
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', `#include <common>\nattribute vec3 aSlab;\nvarying vec3 vSlab;\nuniform float uSandGrow;\nuniform float uSandLift;${SAND_BORN}${SAND_GONE}`)
+      .replace('#include <common>', `#include <common>\nattribute vec3 aSlab;\nvarying vec3 vSlab;\nuniform float uSandGrow;\nuniform float uSandLift;${SAND_BORN}${SAND_GONE}${SAND_FED}`)
       .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>\n${SLAB_LEAN}`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>\n${SLAB_RISE}`)
     shader.fragmentShader = shader.fragmentShader
@@ -917,9 +965,10 @@ function slabShadow(): THREE.Material {
   const m = new THREE.MeshDepthMaterial()
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uSandGust = sandGust
+    shader.uniforms.uSandFeed = sandFed
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', `#include <common>\n${SAND_BORN}${SAND_GONE}`)
-      .replace('#include <begin_vertex>', `#include <begin_vertex>\nif (uSandGust.x > 0.0) transformed.y = ${f(SLAB.liftMm)} + sandSlump(max(position.y - ${f(SLAB.liftMm)}, 0.0));`)
+      .replace('#include <common>', `#include <common>\n${SAND_BORN}${SAND_GONE}${SAND_FED}`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\nif (uSandGust.x > 0.0) transformed.y = ${f(SLAB.liftMm)} + sandSlump(max(position.y - ${f(SLAB.liftMm)}, 0.0));\nif (uSandFeed.x > 0.0) transformed.y = ${f(SLAB.liftMm)} + sandFed(max(position.y - ${f(SLAB.liftMm)}, 0.0));`)
   }
   return m
 }
@@ -969,7 +1018,7 @@ function onPicture(f: KitMoment['frame'], x: number, z: number): [number, number
 }
 
 export function update(moment: KitMoment): void {
-  const grown = arrivalPart.sandGrown(moment)
+  const come = arrivalPart.sandGrown(moment)
   const f = moment.frame
   // The leaving (`LEAVE`): the sand stays where it lies, and `uSandGust` says how much of its leaving has passed in this
   // sample. A millimetre of the heap's way out on the picture, in pixels, is taken where the heap's top is.
@@ -978,8 +1027,12 @@ export function update(moment: KitMoment): void {
   const go = sandLeaving(f.from !== f.to && f.from.season === 'summer', f.change, f.sample, Math.hypot(next[0] - here[0], next[1] - here[1]))
   sandGust.value.set(go.run, go.flat, go.stepPx, 0)
   slabOut.value.w = sandStream(go.run)
+  // The growing (`FEED`): while the heap is fed it stands as high as its cut lets it, and is not scaled as one piece.
+  const fed = sandFeed(arrivalPart.sinceDown(moment))
+  sandFed.value.set(fed.flat, fed.surge, 0, 0)
+  const grown = fed.flat > 0 && come > 0 ? 1 : come
   for (const heap of heaps) {
-    heap.visible = grown > 0 && go.run < 1
+    heap.visible = come > 0 && go.run < 1
     heap.scale.y = Math.max(grown, 1e-3)
     heap.position.set(0, SLAB.liftMm * (1 - grown), 0)
     if (go.run > 0) setPresence(heap.material as THREE.Material, MODE.always, 1)

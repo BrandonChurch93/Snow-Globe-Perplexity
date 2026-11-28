@@ -9,7 +9,7 @@ import { ROW, inSteps } from '../../scene/steps'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
 import { SAND_COLOUR, sinceLoose } from './base'
-import { LEAVE, SAND_BORN, SAND_GLSL, SAND_GONE, SAND_LIT, SLAB, SPRINKLE, sandDeep, sandGust, sandHeight, sandLitAt, sandProud, sandSprinkle, sandSprinkleAt, sandSprinkleRun, sandStrewn } from './slab'
+import { FEED, LEAVE, SAND_BORN, SAND_FED, SAND_GLSL, SAND_GONE, SAND_LIT, SLAB, SPRINKLE, sandDeep, sandFed, sandGust, sandHeight, sandLitAt, sandProud, sandSprinkle, sandSprinkleAt, sandSprinkleRun, sandStrewn } from './slab'
 
 const PART = 'arrival-summer'
 const RAD = Math.PI / 180
@@ -83,6 +83,7 @@ const grainUniforms = {
   uSandLift: { value: -1 },
   uSandFoot: { value: new THREE.Vector2(0, 0) },
   uSandGust: sandGust,
+  uSandFeed: sandFed,
 }
 
 const VERT_PARS = `
@@ -115,6 +116,13 @@ varying float vGrainRun;
 ${SAND_GLSL}
 ${SAND_BORN}
 ${SAND_GONE}
+${SAND_FED}
+// While the heap is fed (slab.ts, FEED) sand falls on to the heap as it stands, not on to the heap it will be: how far
+// under its place at rest the sand lies that would rest at this height.
+float fedUnder(float y) {
+  float tall = max(y - ${SLAB.liftMm.toFixed(2)}, 0.0);
+  return tall - sandFed(tall);
+}
 vec3 fallRoll() {
   float G = ${LOOK.fall.gravity.toFixed(1)};
   float T = aFlight.y;
@@ -148,7 +156,9 @@ vec3 grainPath(float tau) {
     float lead = ${LOOK.fall.downMmS[0].toFixed(1)};
     float run = (sqrt(lead * lead - 2.0 * GRAVITY * vy * tau) - lead) / GRAVITY;
     float whole = (sqrt(lead * lead - 2.0 * GRAVITY * vy * T) - lead) / GRAVITY;
-    return vec3(mix(aFrom.xz, to.xz, run / max(whole, 1e-5)), aFrom.y + vy * tau).xzy;
+    vec3 loose = vec3(mix(aFrom.xz, to.xz, run / max(whole, 1e-5)), aFrom.y + vy * tau).xzy;
+    if (uSandFeed.x > 0.0) loose.y -= fedUnder(to.y) * clamp(tau / max(T, 1e-5), 0.0, 1.0);
+    return loose;
   }
   vec2 touch = to.xz - dir * skid;
   vec3 fly = vec3(mix(aFrom.xz, touch, tau / T), aFrom.y + vy * tau - 0.5 * GRAVITY * tau * tau).xzy;
@@ -158,13 +168,21 @@ vec3 grainPath(float tau) {
     float hop = skid * 0.45 * abs(sin(after * 38.0)) * exp(-after * 16.0);
     return vec3(to.xz - dir * skid * exp(-after * 13.0), to.y + hop).xzy;
   }
-  if (skid <= 0.0) return fly;
+  if (skid <= 0.0) {
+    if (uSandFeed.x > 0.0) fly.y -= fedUnder(to.y) * clamp(tau / max(T, 1e-5), 0.0, 1.0);
+    return fly;
+  }
   float touchY = aFrom.y + vy * T - 0.5 * GRAVITY * T * T;
   vec3 roll = fallRoll();
   float after = min(tau - T, roll.x);
   float s = min((roll.y * after + ${(0.5 * LOOK.slope.roll * LOOK.fall.gravity).toFixed(1)} * after * after) / max(roll.z, 1e-4), 1.0);
   float off = sin(3.14159 * s) * (${LOOK.slope.bulge.toFixed(4)} * roll.z * roll.z + mix(${LOOK.slope.offMm[0].toFixed(2)}, ${LOOK.slope.offMm[1].toFixed(2)}, 0.5 - 0.5 * cos(s * 7.0 + floor(aSeed.x * ${LOOKS.toFixed(1)}) * 2.5)));
   vec3 run = vec3(mix(touch, to.xz, s) + dir * off, mix(touchY, to.y, s)).xzy;
+  // A thread's sand comes down on the fed heap and runs down it: the fall is drawn out to where the heap stands now.
+  if (uSandFeed.x > 0.0) {
+    fly.y -= fedUnder(touchY) * clamp(tau / max(T, 1e-5), 0.0, 1.0);
+    run.y -= fedUnder(run.y);
+  }
   return mix(fly, run, smoothstep(T - ${LOOK.fall.kink.toFixed(4)}, T + ${LOOK.fall.kink.toFixed(4)}, tau));
 }
 `
@@ -206,6 +224,8 @@ if (aSeed.y < -0.5) {
     float travel = fallLife * abs(aFlight.x) * ${(LOOK.fall.fold / FPS).toFixed(6)};
     float span = fract(chance * 631.7);
     open = max(mix(mix(travel * ${LOOK.fall.long[0].toFixed(2)}, ${LOOK.fall.deep.dashS[0].toFixed(5)}, back), mix(travel * ${LOOK.fall.long[1].toFixed(2)}, ${LOOK.fall.deep.dashS[1].toFixed(5)}, back), mix(span * span, span, back)), 1e-5);
+    // The spill at a landing (slab.ts, FEED): a thread carries more of its length in sand.
+    if (uSandFeed.y > 0.0) open *= 1.0 + ${FEED.spill.long.toFixed(2)} * uSandFeed.y;
     middle = fract(uGrainLoop.x * turns / ${LOOK.fall.fold.toFixed(1)} + aSeed.z) * fallLife;
   }
   past = max(middle - 0.5 * open, 0.0);
@@ -229,7 +249,8 @@ float lies = aSeed.y > 1.5 ? 1.0 : 0.0;
 vec3 nowAt = grainPath(tau);
 vec3 thenAt = grainPath(falls > 0.5 ? past : max(tau - uGrain.w, 0.0));
 if (lies > 0.5) {
-  nowAt.y = mix(${SLAB.liftMm.toFixed(2)} + (nowAt.y - ${SLAB.liftMm.toFixed(2)}) * uSandGrow, nowAt.y, step(1.0, uSandGrow));
+  // While the heap is fed (slab.ts, FEED) a grain lies as high as the heap stands under it.
+  nowAt.y = uSandFeed.x > 0.0 ? ${SLAB.liftMm.toFixed(2)} + sandFed(max(nowAt.y - ${SLAB.liftMm.toFixed(2)}, 0.0)) : mix(${SLAB.liftMm.toFixed(2)} + (nowAt.y - ${SLAB.liftMm.toFixed(2)}) * uSandGrow, nowAt.y, step(1.0, uSandGrow));
   // A few of the grains that lay against the foot are taken up a little way as it leaves, and fall back.
   float taken = 1.0 - smoothstep(${LOOK.lift.nearMm[0]!.toFixed(1)}, ${LOOK.lift.nearMm[1]!.toFixed(1)}, length(position.xz));
   if (uSandLift >= 0.0 && fract(aSeed.x * 57.3 + aSeed.z * 31.7) < ${LOOK.lift.share.toFixed(2)} * taken) {
@@ -241,7 +262,7 @@ if (lies > 0.5) {
   }
   thenAt = nowAt;
 } else if (falls < 0.5) {
-  float low = (1.0 - uSandGrow) * (position.y - ${SLAB.liftMm.toFixed(2)}) * (aSeed.y < -0.5 ? 1.0 : clamp(tau / max(aFlight.y, 1e-4), 0.0, 1.0));
+  float low = (uSandFeed.x > 0.0 ? max(position.y - ${SLAB.liftMm.toFixed(2)}, 0.0) - sandFed(max(position.y - ${SLAB.liftMm.toFixed(2)}, 0.0)) : (1.0 - uSandGrow) * (position.y - ${SLAB.liftMm.toFixed(2)})) * (aSeed.y < -0.5 ? 1.0 : clamp(tau / max(aFlight.y, 1e-4), 0.0, 1.0));
   nowAt.y -= low;
   thenAt.y -= low;
 }
@@ -294,9 +315,11 @@ if (falls > 0.5) {
   vec2 side = vec2(-way.y, way.x);
   float unit = max(-nowV.z, 1.0) / uGrainPx;
   float shorter = min(uGrainLens.x, uGrainLens.y);
-  float drawn = max(clamp(aFlight.w, mix(${LOOK.fall.wide[0].toFixed(5)}, ${LOOK.fall.deep.wide[0].toFixed(5)}, back) * shorter * unit, mix(${LOOK.fall.wide[1].toFixed(5)}, ${LOOK.fall.deep.wide[1].toFixed(5)}, back) * shorter * unit), uGrainFine * unit);
+  // The spill at a landing (slab.ts, FEED): a thread is that much thicker, and its least and its most width with it.
+  float fat = uSandFeed.y > 0.0 ? 1.0 + ${FEED.spill.wide.toFixed(2)} * uSandFeed.y : 1.0;
+  float drawn = max(clamp(aFlight.w * fat, mix(${LOOK.fall.wide[0].toFixed(5)}, ${LOOK.fall.deep.wide[0].toFixed(5)}, back) * fat * shorter * unit, mix(${LOOK.fall.wide[1].toFixed(5)}, ${LOOK.fall.deep.wide[1].toFixed(5)}, back) * fat * shorter * unit), uGrainFine * unit);
   size = drawn;
-  thinner = min(aFlight.w / drawn, 1.0);
+  thinner = min(aFlight.w * fat / drawn, 1.0);
   vec2 sag = midV.xy - thenV.xy;
   float amid = reach > 1e-5 ? clamp(dot(sag, way) / reach, 0.26, 0.74) : 0.5;
   float bow = reach > 1e-5 ? clamp(dot(sag, side) / drawn, -${LOOK.fall.bow.toFixed(1)}, ${LOOK.fall.bow.toFixed(1)}) : 0.0;
@@ -1011,7 +1034,7 @@ export function arrival(): THREE.Object3D {
   return new THREE.Group()
 }
 
-const sinceDown = (moment: KitMoment): number => {
+export const sinceDown = (moment: KitMoment): number => {
   const t = sinceLoose(moment)
   const fps = (config.film as { fps: number }).fps
   const open = moment.frame.sample === null ? moment.time : Math.floor(moment.time * fps + 0.25) / fps
