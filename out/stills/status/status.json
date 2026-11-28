@@ -1,45 +1,44 @@
 {
-  "number": 284,
-  "time": "2026-11-28 20:01 UTC",
+  "number": 285,
+  "time": "2026-11-28 20:24 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 284 · 2026-11-28 20:01 UTC · Phase 6",
-    "Status 284, 1:01 PM MT Nov 28. One thing asked of you: Preview 13 is attached, the prompt opening alone with sound, 14.3 seconds. Does the typing sound and read right now.",
-    "Heard from your message of 12:54 PM: the film is ready once the prompt part is fixed, and no more sound credits. Taken so (decision 332). Nothing more is generated, not even a test. Sound credits stand at 7,420 of 10,000: music 4,851, sound effects 2,569.",
-    "Typing speed: 14.0 characters a second before, evenly spaced. Now 19.2 a second in a hand's uneven rhythm, 84 presses in 4.3 seconds where it was 5.9. The opening is 12.8 seconds where it was 14.45. Each press plays one of Halation v2's ten key sounds, never the same one twice in a row, so the same set fits a prompt of any length. Measured from the schedule and from the preview's own frames and sound. How it sounds is unknown here until you listen. Send keeps its own sound.",
-    "Still open with you, unchanged: the two what-ifs of Preview 12 (the sand mound leaving, fall's faces going out) and the level line's mend. They stay off the film until you say yes.",
-    "Phases 0 to 5 are complete. Phase 6, the films, in four steps. One: the opening change goes to the main branch after a fresh reviewer has read it, its builder's whole report is due 2:15 PM. Two: the render handoff for your PC passed its hosted proof, 10 of 10 jobs, at 12:52 PM; after a last reading it goes to the main branch as one file to follow. Three: the 4K render runs on your PC when you start it. Four: you receive With Prompt, Without Prompt, Portfolio Looping Video and Portfolio Screenshot.",
-    "Also since 12:29 PM: the trial for the first load's lost picture on hosted Macs ended green, its answer is due 1:30 PM. Summer's air what-if is drawn at 4K and not judged yet. The lost drawing's mend has until 2:30 PM.",
-    "On the four tracks blending: an answer went to Partner. The joins can be smoothed at no credit; one song cannot be made from four tunes without new music. Nothing is built for it unless you ask. Your note that the film reads short and repetitive is logged; nothing in the picture changes without your word.",
-    "Not verified: the sound as heard, a real desktop graphics card, a phone, Safari, Firefox.",
-    "phase 6: 65.20 h used of its 12.00 h box",
-    "allowance (after the review): 65.20 h used of 12.00 h allowed",
+    "Status 285 · 2026-11-28 20:24 UTC · Phase 6",
+    "Status 285, 1:25 PM MT Nov 28. Nothing is asked of you right now. The next thing to listen to is Preview 14, the opening alone with the three sound changes below, due by 2:05 PM.",
+    "Heard from your messages of 1:11 and 1:15 PM through Partner (decision 335). The opening's picture and speed stand. The keys are not changed: the copy you heard had been raised 10 dB by Partner, and measured here from the two delivered files the typing sits at -30.1 LUFS in this opening and -30.1 in Halation v2's film, with the music after it at -14.0 and -14.6. Three things are ordered, at no credit and with nothing generated. One: Halation's soft tick on both presses of the usage change. Two: Halation's Send sound in place of this build's own, at a level that can be heard. Three: the first sound within 0.9 seconds and the first key within 2.0 seconds, where there were 2.5 seconds of silence. How any of it sounds is unknown here until you listen.",
+    "Sound credits stand at 7,420 of 10,000 and stay there: music 4,851, sound effects 2,569.",
+    "Since 1:01 PM. The first load's lost picture on Macs (open item 295, decision 334): on hosted Macs the page as it is lost its live picture in 17 of 32 loads, and with the canvas held at a hair of opacity instead of none it lost 0 of 20, measured by the item's finder. That one value is ordered as a mend with a paired proof, due 2:30 PM, then a fresh reviewer. Real Apple machines are unknown. Two what-ifs came back and are recorded, not offered (decision 336); their pictures are attached. Summer's and winter's air kept misty through the storm's gap closes the gap and costs the plainest sight of the tree. The sand sprinkle's loose head loses its bright point and brings eight grains that hop for a few frames. No further what-if is ordered.",
+    "Phases 0 to 5 are complete. Phase 6, the films, in four steps. One: the opening's sound and timing change goes to the main branch after a fresh reviewer has read it; its builder's whole report is due 3:00 PM. Two: the render handoff for your PC passed its hosted proof, 10 of 10 jobs; its last reading is under way, answer due 2:20 PM, then it goes to the main branch as one file to follow. Three: the 4K render runs on your PC when you start it. Four: you receive With Prompt, Without Prompt, Portfolio Looping Video and Portfolio Screenshot.",
+    "Still open with you, unchanged: the two what-ifs of Preview 12 (the sand mound leaving, fall's faces going out) and the level line's mend stay off the film until you say yes.",
+    "Not verified: the sound as heard, a real desktop graphics card, a phone, Safari, Firefox, a real Apple chip for item 295.",
+    "phase 6: 65.57 h used of its 12.00 h box",
+    "allowance (after the review): 65.57 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-284-1.jpg",
-      "caption": "Preview 13 in eight frames, the prompt opening at the new typing speed",
-      "w": 1200,
-      "h": 375
+      "file": "out/stills/status/status-285-1.jpg",
+      "caption": "The storm's gap at 4K at own size, film frames 632 above and 2072 below, the main branch left and the veil's floor right, a what-if, recorded and not offered",
+      "w": 837,
+      "h": 1200
     },
     {
-      "file": "out/stills/status/status-284-2.jpg",
-      "caption": "Preview 13's sound as a picture, typing, Send, the riser and the music's first second",
+      "file": "out/stills/status/status-285-2.jpg",
+      "caption": "Summer's left sprinkle of sand at film frame 2072, the main branch, the first what-if and the loose head, recorded and not offered",
       "w": 1200,
-      "h": 413
+      "h": 464
     },
     {
-      "file": "out/stills/status/status-284-3.jpg",
-      "caption": "Still: fall landed hero, hd, draft",
+      "file": "out/stills/status/status-285-3.jpg",
+      "caption": "Still: summer landed hero, hd, draft",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-284-4.jpg",
-      "caption": "Still: fall rest hero, hd, draft",
+      "file": "out/stills/status/status-285-4.jpg",
+      "caption": "Still: summer rest hero, hd, draft",
       "w": 1200,
       "h": 675
     }
