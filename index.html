@@ -410,6 +410,10 @@
           window.firstStill = first
           window.addEventListener('resize', resized)
           place(null, true)
+          // It stands sharp the moment it can be painted. A fade keeps the time of the page's frames and the soft picture goes
+          // by the wall: where frames are few it would go from under a still that had hardly come.
+          var top = layers[layers.length - 1]
+          if (top) top.over.style.transition = 'none'
         }
         window.firstStill = first
         window.addEventListener('resize', resized)

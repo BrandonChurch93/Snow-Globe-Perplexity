@@ -614,6 +614,7 @@ describe('the still of a season, for a page that lost its picture', () => {
         const stills = stillsIn(box)
         expect(stills.length, f.id).toBeGreaterThan(0)
         for (const img of stills) expect(img.src, f.id).toMatch(new RegExp(`^first/${season}-`))
+        for (const img of stills) expect([img.style.opacity, img.style.transition], f.id).toEqual(['0', 'none'])
         // The page holds pictures and nothing else: the still of one season, with no copy of another left under it.
         const kinds = new Set<string>()
         const walk = (el: El): void => el.children.forEach((c) => (kinds.add(c.tag), walk(c)))
@@ -650,6 +651,23 @@ describe('the still of a season, for a page that lost its picture', () => {
     win.stillOf!('winter')
     expect(stillsIn(box).every((s) => s.src.startsWith('first/winter-'))).toBe(true)
     expect(softIn(box)).toHaveLength(1)
+  })
+
+  // The soft picture goes 400 ms after the file can be painted, by the wall. A fade of the file keeps the time of the page's
+  // frames: on a page that has few, the soft picture went from under a still at half its light, and the page stood dim.
+  it('shows the file whole the moment it can be painted, with no fade, and drops the soft picture after it', () => {
+    const { box, win } = open(config.formats.phone.width, config.formats.phone.height)
+    win.firstStill!.end()
+    win.stillOf!('winter')
+    const still = stillsIn(box)[0]!
+    expect([still.style.opacity, still.style.transition]).toEqual(['0', 'none'])
+    expect(softIn(box)).toHaveLength(1)
+    still.fire('load')
+    expect([still.style.opacity, still.style.transition]).toEqual(['1', 'none'])
+    expect(softIn(box)).toHaveLength(1)
+    win.later()
+    expect(softIn(box)).toHaveLength(0)
+    expect(stillsIn(box)).toEqual([still])
   })
 
   it('keeps the season it has when it is asked for one the page does not know', () => {
