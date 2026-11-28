@@ -12,6 +12,7 @@ import * as L from './handoff.mjs'
 import * as X from './handoff-machine.mjs'
 import { PROFILE_ENV, profileRoot } from './handoff-processes.mjs'
 import { BUNDLE_RECORDS, addBundleFile, discardBundle, fileMatches, startBundle, unexpectedEntries } from './handoff-owned-files.mjs'
+import { compareLoopScreenshot, decodeScreenshot, validScreenshotSpec } from './handoff-screenshot.mjs'
 
 export const STAMP_DIR = rel('render')
 export const STAMP_FILE = rel('render', 'STAMP.json')
@@ -1451,8 +1452,9 @@ function runBytes(file, args) {
   })
 }
 
-async function decodeWhole(file) {
-  const r = await runBytes('ffmpeg', ['-v', 'error', '-nostdin', '-i', file, '-f', 'null', '-'])
+async function decodeWhole(file, screenshot = null) {
+  if (screenshot) return decodeScreenshot(file, screenshot)
+  const r = await runBytes('ffmpeg', ['-v', 'error', '-xerror', '-nostdin', '-i', file, '-f', 'null', '-'])
   const said = r.err.trim()
   return { ok: r.code === 0 && !said, said: said.split(/\r?\n/).slice(0, 3).join(' / ') }
 }
@@ -1478,12 +1480,15 @@ async function seamSteps(file) {
   return { frames: n, seam: step(n - 1, 0), median: sorted[Math.floor(sorted.length / 2)], most: sorted[sorted.length - 1], beside: L.besideSeam(steps) }
 }
 
-export async function check(ctx) {
+export async function check(ctx, { stamp = readStamp(), plan = readOr(PLAN_FILE) } = {}) {
+  const png = stamp?.screenshot
+  if (!validScreenshotSpec(png, stamp?.format) || !validScreenshotSpec(plan?.screenshot, stamp?.format) ||
+      Object.entries(plan.screenshot).some(([key, value]) => png[key] !== value)) {
+    return { pass: false, why: 'the stamp is older than the plan and must be made again by the remote team' }
+  }
   const { cfg } = await import('./page.mjs')
   const { probeStreams, probe } = await import('./encode.mjs')
-  const sharp = (await import('sharp')).default
   X.readTools()
-  const stamp = readStamp()
   const mode = modeOf(ctx, cfg)
   const files = finalFiles(mode)
   const rows = []
@@ -1536,12 +1541,13 @@ export async function check(ctx) {
   if (!fs.existsSync(still)) row('screenshot: the file', 'not there', short(still), false)
   else {
     const sha = L.sha256File(still)
-    const meta = await sharp(still).metadata()
     out.files.still = { file: still, name: L.deliveryName('still', mode.format.width, mode.format.height), bytes: fs.statSync(still).size, sha256: sha }
-    row('screenshot: size', `${meta.width} x ${meta.height}, ${meta.format}`, `${mode.format.width} x ${mode.format.height}, png`, meta.width === mode.format.width && meta.height === mode.format.height && meta.format === 'png')
+    const expected = mode.small ? { ...png, width: mode.format.width, height: mode.format.height } : png
+    const decoded = await decodeWhole(still, expected)
+    row('screenshot: whole decode, size and bit depth', decoded.said, `STATED: ${expected.width} x ${expected.height}, ${expected.bitDepth}-bit PNG with every pixel decoded`, decoded.ok && expected.width === mode.format.width && expected.height === mode.format.height)
     row('screenshot: is frame 0 of the loop', sha === loopFirst?.still?.sha256 ? `the PNG the loop's first chunk names (${sha.slice(0, 12)})` : `sha256 ${sha.slice(0, 12)}, the chunk names ${String(loopFirst?.still?.sha256).slice(0, 12)}`, "the very PNG of the loop's frame 0", sha === loopFirst?.still?.sha256)
-    const direct = records.loop?.psnr?.seam?.firstAgainstItsPng
-    row("screenshot: against the loop film's first frame", typeof direct === 'number' ? `${direct.toFixed(2)} dB in luma` : 'not measured', 'noted', null)
+    const comparison = decoded.ok ? await compareLoopScreenshot({ file: files.loop, png: still, fps: mode.fps, pixFmt: V.pixFmt, floorDb: mode.small ? null : png.floorDb }) : null
+    if (comparison) rows.push(comparison)
   }
   // film B inside film A is made of the same chunks as film B itself
   const ofA = (records['film-a']?.chunks ?? []).filter((c) => c.what === 'film-b').map((c) => c.sha256)

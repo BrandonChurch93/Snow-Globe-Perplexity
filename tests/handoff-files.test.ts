@@ -4,10 +4,13 @@ import path from 'node:path'
 import { once } from 'node:events'
 import { spawn } from 'node:child_process'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import sharp from 'sharp'
 import * as L from '../tools/lib/handoff.mjs'
 import * as X from '../tools/lib/handoff-machine.mjs'
 import * as Work from '../tools/lib/handoff-work.mjs'
 import { PROFILE_ENV, profileRoot, rememberBrowser, stopVerifiedProcess } from '../tools/lib/handoff-processes.mjs'
+import { compareLoopScreenshot, decodeScreenshot, LOOP_SCREENSHOT_MEASURE, validScreenshotSpec } from '../tools/lib/handoff-screenshot.mjs'
+import { encodeMasterChunk, haveFfmpeg } from '../tools/lib/encode.mjs'
 
 const roots: string[] = []
 const temporary = () => {
@@ -180,5 +183,54 @@ describe('Desktop ownership', () => {
     check(sealed.sha256)
     expect(zip).not.toHaveBeenCalled()
     expect(fs.existsSync(path.join(ctx.H, 'render-state.json'))).toBe(true)
+  })
+})
+
+describe('screenshot proof', () => {
+  const pngSpec = { width: 64, height: 64, bitDepth: 8, measure: LOOP_SCREENSHOT_MEASURE, measuredDb: 45, marginDb: 3, floorDb: 42, from: 'a test fixture' }
+  const image = (color: string) => sharp({ create: { width: pngSpec.width, height: pngSpec.height, channels: 3, background: color } }).png()
+
+  it('refuses an older stamp or a changed floor before it checks any release file', async () => {
+    const plan = { screenshot: pngSpec }
+    const format = { width: pngSpec.width, height: pngSpec.height }
+    const expected = { pass: false, why: 'the stamp is older than the plan and must be made again by the remote team' }
+    expect(await Work.check({}, { stamp: { format }, plan })).toEqual(expected)
+    expect(await Work.check({}, { stamp: { format, screenshot: { ...pngSpec, measuredDb: 44, floorDb: 41 } }, plan })).toEqual(expected)
+    expect(validScreenshotSpec(pngSpec, format)).toBe(true)
+    expect(validScreenshotSpec({ ...pngSpec, floorDb: 41 }, format)).toBe(false)
+    expect(validScreenshotSpec(pngSpec, { ...format, width: 32 })).toBe(false)
+  })
+
+  it('rejects a PNG with a readable header but incomplete pixels, and checks the original bit depth', async () => {
+    const root = temporary()
+    const good = path.join(root, 'good.png')
+    const bad = path.join(root, 'bad.png')
+    const data = await image('#336699').toBuffer()
+    fs.writeFileSync(good, data)
+    fs.writeFileSync(bad, data.subarray(0, data.indexOf(Buffer.from('IDAT')) + 13))
+    expect(await sharp(bad).metadata()).toMatchObject({ width: 64, height: 64, format: 'png' })
+    expect(await decodeScreenshot(good, pngSpec)).toMatchObject({ ok: true, said: expect.stringContaining('every pixel decoded') })
+    expect(await decodeScreenshot(good, { ...pngSpec, bitDepth: 16 })).toMatchObject({ ok: false })
+    expect(await decodeScreenshot(good, { ...pngSpec, width: 32 })).toMatchObject({ ok: false })
+    expect(await decodeScreenshot(bad, pngSpec)).toMatchObject({ ok: false })
+  })
+
+  it.skipIf(!haveFfmpeg())('measures the decoded first loop frame and fails below the stated floor', async () => {
+    const root = temporary()
+    const png = path.join(root, 'screen.png')
+    const other = path.join(root, 'another.png')
+    const bad = path.join(root, 'wrong first frame.mp4')
+    const good = path.join(root, 'right first frame.mp4')
+    await image('#445566').toFile(png)
+    await image('#ddcccc').toFile(other)
+    const { video: settings, intermediate } = Work.loadCfg().deliver.master
+    const video = { ...settings, ...intermediate }
+    const fps = Work.loadCfg().film.fps
+    await encodeMasterChunk({ files: [other, png], video, fps, gop: 2, out: bad })
+    await encodeMasterChunk({ files: [png, other], video, fps, gop: 2, out: good })
+    const proof = (file: string) => compareLoopScreenshot({ file, png, fps, pixFmt: video.pixFmt, floorDb: pngSpec.floorDb })
+    expect(await proof(bad)).toMatchObject({ pass: false, found: expect.stringContaining('MEASURED') })
+    expect(await proof(good)).toMatchObject({ pass: true, found: expect.stringContaining('MEASURED') })
+    expect(await proof(path.join(root, 'not there.mp4'))).toMatchObject({ pass: false })
   })
 })

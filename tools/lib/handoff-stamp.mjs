@@ -9,6 +9,7 @@ import { rel, readJson, writeJson, parseArgs } from './paths.mjs'
 import { engineHash } from './hashes.mjs'
 import * as L from './handoff.mjs'
 import { PACK_DIR, PLAN_FILE, REFS_DIR, STAMP_FILE, runTool, readRenderer, readOr, short, mb } from './handoff-work.mjs'
+import { validScreenshotSpec } from './handoff-screenshot.mjs'
 
 export const REFS_MOST_BYTES = 40e6
 export const FILE_MOST_BYTES = 45e6
@@ -39,6 +40,7 @@ export function planProblems(plan, format) {
   }
   if (!(plan.frames ?? []).length) p.push('the plan names no frame')
   for (const k of ['psnrWhole', 'coarseWhole', 'psnrCut', 'coarseCut', 'glassLuma', 'glassWhite']) if (!(plan.floors?.[k] > 0)) p.push(`the plan holds no floor ${k}`)
+  if (!validScreenshotSpec(plan.screenshot, format)) p.push('the plan does not name a valid screenshot shape and measured loop floor')
   for (const k of ['film-a', 'film-b']) if (!/^[0-9a-f]{64}$/.test(plan.sound?.[k] ?? '')) p.push(`the plan holds no sha256 for the sound of ${k}`)
   if (!/^[0-9a-f]{40}$/.test(plan.opening?.commit ?? '') || !plan.opening?.path) p.push('the plan does not name the commit and the folder of the opening pack')
   if (!(plan.test?.stretch?.last > plan.test?.stretch?.first)) p.push('the plan names no stretch for the short test')
@@ -248,6 +250,7 @@ export async function stamp(argv, say = console.log) {
     measures: { half: L.HALF_FILTER, coarse: L.COARSE_MEASURE, glass: L.GLASS_MEASURE, files: 'lossless WebP, each decoded again and compared when it was written' },
     floors: plan.floors,
     floorsFrom: plan.floorsFrom ?? '',
+    screenshot: plan.screenshot,
     references,
     test: plan.test,
     opening: { branch: plan.opening.branch, commit: plan.opening.commit, path: plan.opening.path, folder: short(PACK_DIR), frames: pack.frameCount, files: packFiles },
