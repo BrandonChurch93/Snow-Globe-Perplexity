@@ -91,6 +91,10 @@ $env:HANDOFF_TEST = $env:PROOF_SWITCHES
 Note "the switches of the tool's own tests from here on: $($env:PROOF_SWITCHES)"
 Line 'doctor' '0' 'doctor'
 
+# A browser that is not the handoff's own outlives the handoff's sweep (other-browser.mjs says how it is proven).
+# The clone of this flow lies in a folder with a space in its path.
+Note ((node (Join-Path $Help 'other-browser.mjs') . (Join-Path $env:PROOF_OUT 'other-browser.txt')) -join ' ')
+
 function Read-GuideGuard([string]$Selector) {
   $found = node (Join-Path $Help 'guide-lines.mjs') has $script:ProofGuide $Selector
   if ($LASTEXITCODE -ne 0) {

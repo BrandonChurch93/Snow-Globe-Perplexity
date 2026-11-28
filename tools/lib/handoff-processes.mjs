@@ -11,10 +11,13 @@ const validPid = (pid) => Number.isSafeInteger(pid) && pid > 1
 const normalPath = (file) => process.platform === 'win32' ? path.resolve(file).toLowerCase() : path.resolve(file)
 const samePath = (a, b) => normalPath(a) === normalPath(b)
 
+// A machine that draws with all it has starts PowerShell slowly. A browser that could not be read in time cannot be
+// started at all (rememberBrowser), so the reading is given half a minute; a reading that fails ends nothing.
+export const WINDOWS_PROCESS_MS = 30000
 function windowsProcess(script) {
   const exe = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
   const encoded = Buffer.from(script, 'utf16le').toString('base64')
-  const r = spawnSync(exe, ['-NoProfile', '-NonInteractive', '-EncodedCommand', encoded], { encoding: 'utf8', timeout: 5000, windowsHide: true })
+  const r = spawnSync(exe, ['-NoProfile', '-NonInteractive', '-EncodedCommand', encoded], { encoding: 'utf8', timeout: WINDOWS_PROCESS_MS, windowsHide: true })
   return r.status === 0 ? r.stdout.trim() : ''
 }
 

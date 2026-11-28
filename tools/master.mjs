@@ -8,6 +8,7 @@ import { Session, cfg, currentSeasonHashes, formatById, renderBusy, renderStill,
 import { engineHash, fileSha, sha256 } from './lib/hashes.mjs'
 import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './lib/browser.mjs'
 import { serve } from './lib/server.mjs'
+import { flatFrameHint, goOnHint } from './lib/lost-context.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
 import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, headerRefFrames, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
 import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, firstPlace, heldLine, heldRanges, hours, intermediateVideo, joinPlan, markedHolder, notNumberFrames, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, parseTake, procsGainLine, SHORT_FLAG, memoryAvailable, memoryStart, watchFrame, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, sampleRule, pieceCounts, countFacts, countsLine, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
@@ -367,7 +368,7 @@ async function doChunk(ctx, src, c, progress) {
     const seconds = (Date.now() - t0) / 1000
     if (!fs.existsSync(factsFile)) writeJson(factsFile, src.facts())
     const seen = pictureLevels(rgb)
-    if (seen.flat && ctx.engine) throw new Error(`${stoppedLine(c, index, 'the frame came back as one flat value over the whole picture. Nothing was written for it. Look at dmesg for a killed chrome process.')} ${stays}`)
+    if (seen.flat && ctx.engine) throw new Error(`${stoppedLine(c, index, `the frame came back as one flat value over the whole picture. Nothing was written for it. ${flatFrameHint()}`)} ${stays}`)
     const side = { index, seconds: Math.round(seconds * 1000) / 1000, ...(samples === undefined ? {} : { samples }), sha256: sha256(rgb), mean: Math.round(seen.mean * 1000) / 1000, flat: seen.flat, ...(notNumber === null ? {} : { notNumber, sanityMs, ...(first ? { notNumberFirst: first } : {}) }) }
     writeJson(file.replace(/\.png$/, '.json'), side)
     fs.writeFileSync(`${file}.tmp`, png)
@@ -579,7 +580,7 @@ async function withWorkers(ctx, shipper, count) {
 
 function goOn(ctx, stops) {
   const lost = stops.some((s) => /context was lost|flat value/.test(s.why))
-  return `Nothing drawn is lost: every finished frame is a PNG under ${short(ctx.work)}, every finished chunk is in ${short(ctx.out)}, and neither is drawn again.${lost ? ` A lost context is most often a browser killed for memory (dmesg says so): if it was, go on with a smaller --procs${ctx.procs > 1 ? ` than ${ctx.procs}` : ''}.` : ''}\nTo go on from there: ${COMMAND}`
+  return `Nothing drawn is lost: every finished frame is a PNG under ${short(ctx.work)}, every finished chunk is in ${short(ctx.out)}, and neither is drawn again.${lost ? goOnHint(ctx.procs > 1 ? ` than ${ctx.procs}` : '') : ''}\nTo go on from there: ${COMMAND}`
 }
 
 async function render() {

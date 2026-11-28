@@ -102,6 +102,11 @@ finds the work gone says so with this `FAIL:`, and the same line run again carri
 as often as its row allows, the `FAIL:` ends with `Do not run the line again: stop and give Brandon the report`.
 That sentence rules. `status` then names no next line.
 
+When a line finds stopped work, it first ends what that work left behind, and says so in a line that begins
+`MEASURED: ended` and ends `left by the handoff`. When the tool clears stopped work, it only ends a tool it
+started itself and a browser it recorded with this clone's own profile, each known by its process number and
+the time it was started. Do not close another Chrome window or process yourself.
+
 Every start of the tool ends with one last line, `RUNNING:`, `PASS:` or `FAIL:`, inside ten minutes. Work that
 died without a last word of its own leaves a `FAIL:` too, and the line `THE REPORT` beside it names a report that
 holds the last lines the work wrote. A word that does its work inside the line itself (doctor, approve, deliver,
@@ -118,7 +123,7 @@ is a stop: give Brandon its report.
 | `check` | `node tools/handoff.mjs check` | once more | it is stopped a second time, or it ends in any other `FAIL:` |
 | `deliver` | `node tools/handoff.mjs deliver` | once more, and once more after Brandon has closed a player (2.4) | any other `FAIL:` |
 | `upload` | `node tools/handoff.mjs upload`. It sends only what is missing | up to two more times | it fails three times in a row, or a row of 2.5 says stop |
-| `clean` | `node tools/handoff.mjs clean` | once more | any `FAIL:` |
+| `clean` | `node tools/handoff.mjs clean` | once more, and once more after the delivery line when a row of 2.6 says so | any `FAIL:` that has no row in 2.6 |
 | `status` | `node tools/handoff.mjs status`. It only reads, and may be run at any time | as often as needed | it answers `Cannot find module` inside the folder `Snow-Globe-Perplexity` |
 
 Two answers are no stop:
@@ -394,6 +399,8 @@ How the frames are compared, and why so:
   there. If it prints another, this clone holds a newer build, which was drawn and compared on Linux only and
   ran on no Windows and no macOS test machine. The remote team has said that it runs the test machines once more
   on the final build before it releases the full render.
+  A green run there means only that the machines ran. The verdicts named here are read from the table of the
+  run or from the reports of its jobs, never from its colour.
 - What was added after that run. The two approve lines (2.2, 2.5), the record of Brandon's yes, the reading of
   the card's driver, the `LOOK` lines for a restart that Windows waits for and for a Desktop inside OneDrive,
   and the rule that a finished chunk counts only as the build of the approved test: all of these were run on
@@ -458,6 +465,12 @@ path says which of the two it is. The report says the same in its block `TO SEND
 the numbers of the test (`test.json`) and, when the test got as far as drawing, the sheet of pictures and what
 this machine drew. If the tool printed no line `THE FOLDER TO SEND`, no folder could be written: give Brandon
 the report alone.
+
+In that folder the tool replaces only the files it wrote there itself, each known by its sha256. If the named
+folder already holds other files or a file has changed, the tool leaves it alone, says
+`left ... alone: it has other or changed files: ...` with their names, and puts the new report into the folder
+`out/work/handoff/test-failed` inside the clone. The line `THE FOLDER TO SEND` then names that folder. Give
+Brandon the path the test printed. Do not remove or rename the old folder.
 
 Give Brandon the whole text of the report (its path is the line `THE REPORT`) as one block. Then say to him,
 word for word, with the printed path in the place of the three dots: "The short test failed. No full render was
@@ -628,7 +641,7 @@ Bad, each with the one thing to do:
 | a final mix is missing or is not the one the stamp names | stop and tell Brandon that the remote team has not put the sound mixes into the repository yet, or that the file in the clone is not the one the stamp names. Do not ask him for the files |
 | `"render" was stopped before it ended` (sleep, a restart, a closed window) | run the same line again. It carries on from the last finished frames. If it is stopped a second time with no more frames done in between, the sentence ends with `Do not run the line again`: stop and report |
 | `the render stopped at ...` with `browser has been closed`, `the browser went away` or `the page crashed or closed` (a Chrome window was closed or Chrome ended) | run the same line again, once. It carries on from the last finished frames, and what was drawn is kept. If it stops a second time with no more frames done in between, stop and report. Change no setting (rule 8) |
-| `the WebGL context was lost` (the driver reset the card, or the card ran out of memory) | run the same line again, once. It carries on. If it is lost a second time with no more frames done in between, stop and report. Change no setting (rule 8) |
+| `the render stopped at ...` with `the WebGL context was lost ... (the graphics card dropped the drawing: close other programs that use the card and run the same line again, it carries on where it stopped; if it happens twice in a row, stop and give Brandon the report)` | the card dropped the drawing and the tool refused that frame, which is right. Tell Brandon in the chat that other programs that use the card are best closed; close none yourself and do not wait for his answer. Run the same line again, once. It carries on where it stopped. If it happens twice in a row, stop and give Brandon the report. Change no setting (rule 8) |
 | `Chrome is now version ...: the browser was updated` | Chrome updated itself in the middle. Run `node tools/handoff.mjs test` once, give Brandon its report as in 1.6, and stop. The render starts again only on a new yes (the first half of 2.2). It then draws again what the older Chrome drew, because one film is drawn by one tested browser, and the test keeps the calibration picture (1.5) for it |
 | the page draws in software, or on another card | stop and report. Nothing drawn is lost |
 | too little free disk (`only ... GB of disk is free ...`) | stop and report. Nothing drawn is lost. When Brandon says he has made room, run the same line again |
@@ -645,9 +658,29 @@ say.
 node tools/handoff.mjs check
 ```
 
+The check reads the whole screenshot, makes sure it has the size and bit depth the stamp names, and compares it
+against the first frame in the encoded loop.
+
 Good: `PASS: the two films, the loop and the screenshot pass every check ...`.
 
-Bad: `FAIL:` with the checks that failed. Stop and report. Do not render again by yourself.
+Bad, each with the one thing to do:
+
+| the FAIL says | do this |
+| --- | --- |
+| `the stamp is older than the plan and must be made again by the remote team` | stop and tell Brandon, word for word: "The remote team needs to remake the stamp for the screenshot check. Nothing was delivered." Do not make a stamp yourself |
+| the checks that fail name `screenshot: against the loop film's first frame is MEASURED: ... dB in luma (brightness)` | stop. Give Brandon the report of the check (its path is the line `THE REPORT`) and say to him, word for word: "The check stopped at one measure. The screenshot and the first frame of the loop film are less alike than the floor in the stamp asks. That floor comes from one measure on a Linux test machine, so this does not say that the render is bad. Everything that was drawn is kept. Please bring the report of the check into the build thread, where the floor is ruled on." Do not run the clean line, delete nothing and do not render again |
+| `"check" was stopped before it ended`, or your command was cut off | run the same line once more. If it is stopped a second time, stop and report |
+| `"<word>" is still at work in the background` | no stop: run the line that sentence names until it ends, then the check line |
+| any other `FAIL:` with the checks that failed | stop and report. Do not render again by yourself |
+
+What the screenshot row measures. The screenshot is the first frame of the loop as this machine drew it, a PNG.
+The loop film holds the same frame after it was encoded twice by the FFmpeg of this computer. The check decodes
+both and measures how alike they are in brightness (PSNR in dB, higher is closer). The floor is 44.74 dB. It was
+set from one measure of 47.74 dB, on a Linux test machine that draws in software, on a loop of four frames
+encoded by FFmpeg 8.0.1, less a margin of 3 dB that was chosen and not measured. On this computer the whole loop
+is encoded, by another build of FFmpeg, from frames that carry this card's own fine noise. A pair that falls
+under the floor here may therefore have nothing wrong in what was drawn. A `FAIL:` of this row is a question for
+the remote team and no verdict on the render.
 
 ### 2.4 Deliver to the Desktop
 
@@ -664,7 +697,11 @@ Bad, each with the one thing to do:
 | --- | --- |
 | a file on the Desktop `could not be written, because another program holds it open` | tell Brandon, word for word: "A film from an earlier run is open in a player on your Desktop. Please close the player and tell me." When he has, run the same line again, once |
 | `the drive of the Desktop ... has ... free, and the four files and their report need ...` | stop and report. Nothing was copied. When Brandon says he has made room on that drive, run the same line again |
+| `left the Desktop folder alone at ... It contains other or changed files: ...` | stop and give Brandon the full folder path and the files the tool named. Do not delete, rename, or replace them |
 | anything else | stop and report |
+
+The tool writes into the folder `Snow Globe Seasons` only when every file in it is one it delivered there
+itself, known by its sha256. A file of the same name that is not the checked copy is never replaced.
 
 What the files weigh: each film at most 500 MB, the loop under 2,000 MB (2.3 checks it), the screenshot some tens
 of MB. They stay in that folder. 2.5 sends copies of them, and only if Brandon says yes.
@@ -672,9 +709,11 @@ of MB. They stay in that folder. 2.5 sends copies of them, and only if Brandon s
 ### 2.5 Send the files to the remote team, only when Brandon says yes
 
 The upload writes to Brandon's repo on GitHub. Before anything is run, ask Brandon, word for word: "The files are
-on your Desktop. May I send copies to the remote team now, as a draft release of the repo? A draft is not
-public. Everyone with write access to the repository can see the draft and its files." If he says no, go on
-with 2.6.
+on your Desktop. May I send the two films, the loop, the screenshot, the file sums, and the render records as a
+draft release in this private repository? Everyone with write access to the repository can see the draft. Its
+name and description use the platform and the graphics card when known, not the computer name. The records can
+still name the computer, card, driver, browser and folders outside your home. Your home folder is written as ~
+in the records text, and the local approval records are left out." If he says no, go on with 2.6.
 
 Only when he has written yes in the chat, copy what he wrote into the line below, in the place of `<his words>`.
 Copy his own words and change none. Leave out every sign that is no letter, no digit and no space. You never
@@ -685,9 +724,12 @@ node tools/handoff.mjs approve upload <his words>
 ```
 
 The line sends nothing. It asks GitHub whether the repo is private and prints a block that begins
-`WHAT THIS YES COVERS`: the repository by owner and name, that it is private, and the four files with their
-sizes and sha256. It writes a record of that, and the upload line refuses without a record that names this
-repository and these very files. It refuses too before 2.4 has passed. Give Brandon the printed block as it is.
+`WHAT THIS YES COVERS`: the repository by owner and name, that it is private, who can see the draft, the four
+files with their sizes and sha256, and what goes with them: a file of sums and one zip of the records. The block
+says what the draft is named by and what the records can still name. It writes a record of that, and the upload
+line refuses without a record that names this repository and these very files. It refuses too before 2.4 has
+passed. Give Brandon the printed block as it is. The record of his yes stays on this computer: it is in no file
+that is sent.
 
 Good: `PASS: the upload is approved on this machine, by Brandon's words "..." ...`. Then:
 
@@ -695,14 +737,17 @@ Good: `PASS: the upload is approved on this machine, by Brandon's words "..." ..
 node tools/handoff.mjs upload
 ```
 
-It makes a draft release in the repo, named for the day, the engine hash and this machine. Into it go the two
-films, the loop, the screenshot, a file of sums (sha256, bytes, frames, seconds and size in pixels of each) and
-the records of the render as one zip. A draft is published to no one and makes no tag. The line answers
-`RUNNING:` while it sends; run the same line again each time. After the last file it reads the release back from
-GitHub and compares every name, size and sum.
+It makes a draft release in the repo, named for the day, the engine hash, the platform and the graphics card
+when it is known. The name of the computer is not in it. Into it go the two films, the loop, the screenshot, a
+file of sums (sha256, bytes, frames, seconds and size in pixels of each) and the records of the render as one
+zip. A draft is published to no one and makes no tag. The line answers `RUNNING:` while it sends; run the same
+line again each time.
 
-Good: `PASS: the draft release "..." holds the 6 files, each read back by its name, its bytes and its sum: ...`
-with the address of the release. Give Brandon that address.
+The upload downloads each file from the draft and checks its SHA-256 against what was sent. If any file cannot
+be verified, it says FAIL.
+
+Good: `PASS: the draft release "..." holds the files`. The same line says how many files were downloaded and
+that their SHA-256 sums matched, and it ends with the address of the draft. Give Brandon the draft address.
 
 Bad, each with the one thing to do. The table holds for the approve line and for the upload line; "the same
 line" is the one that gave the answer. The approve line begins these sentences with
@@ -722,6 +767,8 @@ line" is the one that gave the answer. The approve line begins these sentences w
 | `the check has not passed` or a file `is not the file that was checked` | run the line of 2.3 again, then the upload line. If it says the same again, stop and report |
 | a file `did not go through`, or GitHub `could not be asked` (the connection dropped) | run the same line again. It sends only what is missing or short. If it fails three times in a row, stop and report |
 | a file is 2,000 MB or more | stop and report. The remote team names another way |
+| `the release read back is not what was sent (...)` | stop. Give Brandon the upload report and the draft address if there is one (it ends that sentence). Do not publish it or remove it, and do not run the upload line again |
+| `the earlier draft has an old or changed name or description. It is left alone and nothing is sent ...` | stop and give Brandon the upload report and the draft address if it was printed. Do not change or delete the draft. Ask the remote team to review it |
 | anything else | stop and report |
 
 ```
@@ -749,7 +796,16 @@ from nothing by itself: it refuses, and the approve line of 2.2 first prints tha
 delivered and cleaned here already, as a `LOOK` line for Brandon. Do not render a second time unless Brandon
 asks for it in the chat.
 
-Bad: `FAIL:`. Stop and report. Delete nothing by hand.
+Before it deletes render work, the tool reads the copies on the Desktop again and checks their SHA-256. If a
+copy does not match the delivery, the work stays.
+
+Bad, each with the one thing to do:
+
+| the FAIL says | do this |
+| --- | --- |
+| a file `does not match the last delivery by SHA-256, so the work files stay. Run the delivery again`, or `the last delivery does not name all the checked files` | run the delivery line once more (`node tools/handoff.mjs deliver`), then the clean line. If the tool leaves the folder alone or the delivery still fails, stop and give Brandon the report. Do not remove or replace files yourself |
+| `nothing is deleted before the delivery has passed` | run the line of 2.4, then the clean line |
+| any other `FAIL:` | stop and report. Delete nothing by hand |
 
 ### 2.7 Report
 

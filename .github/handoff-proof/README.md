@@ -17,6 +17,8 @@ The words for a push further down belong to that time.
 | `still.sh` | in the job of the shader list, draws the guard still of fall at rest in the same clone through Direct3D and keeps the picture and its record in the artifact (folder `looks`), with the walk's two pictures of fall. A step of its own with its own time limit |
 | `failed-test.mjs` | after a short test that was made to fail, looks for the one folder it leaves on the Desktop for the build thread and says what it holds; after the test that passes next, makes sure the folder is gone |
 | `held-file.mjs` | on Windows, proves that the tool's rename waits for a file another program holds, where a plain rename fails |
+| `other-browser.mjs` | starts a second browser with a profile outside the clone, runs the tool's sweep before and after the handoff's own browser is started and recorded, and says whether the other one kept its start token and still answers. Both flows run it after the doctor, in a clone whose path holds a space |
+| `verdicts.mjs` | in the last job, reads the verdict of every job and writes the one table of the run |
 | `upload-test.ps1` | the upload's own test in the job `windows-upload-test`: stand-in files to a draft release, read back, the draft removed by its id |
 | `other-head.txt` | one line, a branch and a full commit: the head the job `windows-shaders` lists instead of this branch. Comments only means this branch |
 
@@ -29,6 +31,12 @@ The switches of the tool's own tests are set here through one variable. The hand
 A word in the message of a push chooses the jobs. `[proof small]` leaves the 3840 jobs out, `[proof 3840]` leaves
 the others out, `[proof shaders]` runs only the list of shader messages, `[proof upload]` runs only the upload's
 own test, and `[skip ci]` starts no run. A job that is left out still starts, does nothing and ends green.
+
+Every job ends green whatever happens, because a red run sends a mail. A green run means only that the machines
+ran. The verdict of a job, PASS or FAIL with its first failing line, is in its log, in the file `verdict.txt` of
+its artifact and in the summary of the job. The last job, `the verdicts`, needs every other job and puts one
+table into the summary of the run (and into the artifact `verdicts`): one row a job, PASS, FAIL or NOT RUN. A job
+that wrote no verdict is a row NOT RUN, never a PASS. A line that is made to fail and did fail is a passing line.
 
 Hosted macOS machines update Chrome while a job runs. When that stops a render line, `flow.sh` does what the row
 of step 2.2 of the handoff file says, as the agent would: the short test again, then the render line again, three

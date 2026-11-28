@@ -123,6 +123,10 @@ export HANDOFF_TEST="$PROOF_SWITCHES"
 note "the switches of the tool's own tests from here on: $PROOF_SWITCHES"
 line doctor 0 doctor
 
+# A browser that is not the handoff's own outlives the handoff's sweep (other-browser.mjs says how it is proven).
+# The clone of this flow lies in a folder with a space in its path.
+note "$(node "$HELP/other-browser.mjs" . "$PROOF_OUT/other-browser.txt")"
+
 if [ "$PROOF_MODE" = small ]; then
   # A short test that fails comes first, its failure made up by a switch of the tool's own tests: the row of step
   # 1.5 for a FAIL. One folder on the Desktop holds what the build thread needs, and the report names it.

@@ -111,6 +111,8 @@ if (notes.length) {
   say('')
 }
 for (const n of notes) if (/^PROBLEM: /.test(n)) problems.push(n.slice(9))
+// the flows of a small run and of the 3840 frames start a browser that is not the handoff's own and sweep beside it
+if (['small', 'uhd'].includes(mode) && !notes.some((n) => /^the other browser: PASS /.test(n))) problems.push("the other browser: no note says that a browser that is not the handoff's own outlived the sweep")
 say(problems.length ? `VERDICT: FAIL, MEASURED ${problems.length} ${problems.length === 1 ? 'problem' : 'problems'}:` : `VERDICT: PASS, MEASURED ${rows.length} lines ran as wanted${pictureOnly ? ' (picture only; render not ready)' : ''}`)
 for (const p of problems) say(`  - ${p}`)
 say(`===== END OF VERDICT of ${job} =====`)
@@ -119,7 +121,9 @@ console.log(text)
 fs.writeFileSync(path.join(out, 'verdict.txt'), text)
 if (process.env.GITHUB_STEP_SUMMARY) {
   try {
-    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### ${job}\n\n\`\`\`\n${text}\`\`\`\n`)
+    // the summary of the job: PASS or FAIL with the first failing line, then the whole verdict
+    const head = problems.length ? `FAIL. The first failing line: ${String(problems[0]).replace(/\s+/g, ' ').slice(0, 400)}` : 'PASS'
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### ${job}: ${head}\n\nA green job means only that the machine ran. The verdict is this.\n\n\`\`\`\n${text}\`\`\`\n`)
   } catch {}
 }
 process.exitCode = problems.length ? 1 : 0

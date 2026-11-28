@@ -454,7 +454,7 @@ async function foreground(cmd, T) {
       console.log(`the last "${job.cmd}" gave no sign of life for ${Math.round(age / 60)} min; it is ended here`)
       // a process is ended only when it is known to be the tool's own: its start time is held against the record.
       // A live process that cannot be told for sure is a stop, and nothing is started beside it.
-      const gone = X.processStart ? killTree({ pid: job.pid, started: job.processStart ?? null }) : killTree(job.pid)
+      const gone = killTree({ pid: job.pid, started: job.processStart ?? null })
       if (gone === false) {
         const why = `the last "${job.cmd}" gave no sign of life for ${Math.round(age / 60)} min, and the process under its number could not be told for sure to be the tool's own, so it is not ended and nothing is started beside it. Stop and report`
         end('FAIL', why, await deathReport(cmd, why, { died: false }))

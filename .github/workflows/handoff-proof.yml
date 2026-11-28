@@ -3,10 +3,14 @@
 # It starts by hand (workflow_dispatch). While the handoff was being proven it also started on every push to
 # agent/p6-handoff: that is the one line under "on" that names the branch, and the last commit of that branch takes
 # it out, so that in what reaches main the workflow starts by hand only. It has no timer and never starts on main.
-# Every job ends green whatever happens: a red run sends a mail. The verdict of each job is the last step of its log
-# and the file verdict.txt of its artifact. It uses no secret. One job, windows-upload-test, is given the token of
-# the run itself with leave to write, for the upload's own test; that job alone can end red, and only when its last
-# step had to remove a draft the test left behind.
+# Every job ends green whatever happens, the last one too: a red run sends a mail. So a green run means only that
+# the machines ran. The verdict of each job, PASS or FAIL with its first failing line, is written by a step that
+# always runs, to three places: the log, the file verdict.txt of the job's artifact, and the summary of the job.
+# The last job, the verdicts, needs every other job and gathers their verdicts into one table in the summary of the
+# run: one row a job, PASS, FAIL or NOT RUN. A job whose verdict is missing is a row NOT RUN, never a PASS.
+# A line that is made to fail (the expect list names it) and did fail is a passing line of its verdict.
+# It uses no secret. One job, windows-upload-test, is given the token of the run itself with leave to write, for
+# the upload's own test. When its last step had to remove a draft the test left, that is a PROBLEM of its verdict.
 name: handoff proof
 
 on:
@@ -174,6 +178,7 @@ jobs:
         shell: bash
         run: bash "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/still.sh"
 
+      # always runs; writes the verdict to the log, to verdict.txt and to the summary of the job; cannot end the job red
       - name: the verdict
         if: always() && env.PROOF_LEFT_OUT != 'true'
         continue-on-error: true
@@ -190,6 +195,17 @@ jobs:
           name: ${{ matrix.id }}
           path: ${{ runner.temp }}/proof-out
           if-no-files-found: warn
+          retention-days: 14
+
+      # the verdict alone, small, for the table of the last job
+      - name: the verdict for the table
+        if: always() && env.PROOF_LEFT_OUT != 'true'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdict-${{ matrix.id }}
+          path: ${{ runner.temp }}/proof-out/verdict.txt
+          if-no-files-found: ignore
           retention-days: 14
 
   # The upload's own test: stand-in files of a few bytes go to a draft release, a cut connection is played, the
@@ -226,9 +242,11 @@ jobs:
         run: '& "$env:RUNNER_TEMP\render proof\Snow-Globe-Perplexity\.github\handoff-proof\upload-test.ps1"'
 
       # Runs even after a failure. A draft with the test's mark is removed by its id when this run made it, or when
-      # it is older than 30 minutes (a test at work on another machine is left alone). The job fails when it had to.
+      # it is older than 30 minutes (a test at work on another machine is left alone). When it had to, that is a
+      # PROBLEM in the notes, and so a FAIL of the verdict; the job stays green as every job does.
       - name: no draft of the test is left
         if: always()
+        continue-on-error: true
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -272,6 +290,7 @@ jobs:
           [ "$had" = 0 ] && echo "the last step found no draft with the test's mark that had to be removed" | tee -a "$OUT/notes.txt"
           exit $had
 
+      # always runs; writes the verdict to the log, to verdict.txt and to the summary of the job; cannot end the job red
       - name: the verdict
         if: always()
         continue-on-error: true
@@ -285,5 +304,61 @@ jobs:
         with:
           name: windows-upload-test
           path: ${{ runner.temp }}/proof-out
+          if-no-files-found: warn
+          retention-days: 14
+
+      # the verdict alone, small, for the table of the last job
+      - name: the verdict for the table
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdict-windows-upload-test
+          path: ${{ runner.temp }}/proof-out/verdict.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # The last job. It needs every other job and runs whatever came of them. It reads the verdict each job wrote and
+  # puts one table into the summary of the run: one row a job, PASS, FAIL or NOT RUN. A job that wrote no verdict
+  # is a row NOT RUN, never a PASS. It ends green too: a green run means only that the machines ran.
+  verdicts:
+    name: the verdicts
+    needs: [proof, upload-test]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROOF_JOBS: windows-powershell-small,windows-gitbash-small,windows-newest-lts-small,windows-winget-lines,windows-3840,windows-3840-direct3d11,macos-small,macos-3840,windows-shaders,windows-upload-test
+    steps:
+      - name: the helpers of the proof
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          path: _proof
+          persist-credentials: false
+          sparse-checkout: |
+            .github
+
+      - name: the verdicts of the jobs
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: verdict-*
+          path: ${{ runner.temp }}/verdicts
+
+      # always runs; writes the table to the log, to verdicts.md and to the summary of the run; cannot end the job red
+      - name: the verdict of the run, one table
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: node "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/verdicts.mjs" "$RUNNER_TEMP/verdicts" "$PROOF_JOBS" "$RUNNER_TEMP/verdicts/verdicts.md"
+
+      - name: the table
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdicts
+          path: ${{ runner.temp }}/verdicts/verdicts.md
           if-no-files-found: warn
           retention-days: 14

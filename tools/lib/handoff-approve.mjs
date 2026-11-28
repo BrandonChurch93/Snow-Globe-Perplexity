@@ -194,6 +194,9 @@ export function uploadApproval(o) {
     `  the files, ${o.files.length}:`,
     ...o.files.flatMap((f) => [`    ${f.name}`, `      ${f.bytes} bytes, sha256 ${f.sha256}`]),
     '  with them go a file of sums and one zip of the reports, logs and records of this machine',
+    '  the draft is named by the day, the engine, the platform and the graphics card when it is known, not by the name of this computer',
+    '  the records can still name the computer, the card, its driver, the browser and folders outside the home folder',
+    "  in the records the home folder is written as ~, and the records of Brandon's yes stay on this machine and are not sent",
   ]
   return { record, lines }
 }

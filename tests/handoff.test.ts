@@ -2341,3 +2341,300 @@ describe("order 312, the guards: Brandon's yes, the build of the test, and the c
     expect(mac.indexOf('node tools/handoff.mjs approve upload <his words>')).toBeLessThan(mac.indexOf('node tools/handoff.mjs upload\n'))
   })
 })
+
+describe('order 312, the join: the two parts on one head, and a run that nobody can read as a pass by its colour', () => {
+  const md = fs.readFileSync(rel('RENDER-ON-YOUR-PC.md'), 'utf8')
+  const text = md.replace(/\s+/g, ' ')
+  const tool = fs.readFileSync(rel('tools', 'handoff.mjs'), 'utf8')
+  const yml = fs.readFileSync(rel('.github', 'workflows', 'handoff-proof.yml'), 'utf8')
+  const help = (f: string) => rel('.github', 'handoff-proof', f)
+  const src = (...p: string[]) => fs.readFileSync(rel(...p), 'utf8')
+
+  // what stands in the way of "every job ends green, and each carries a verdict that always runs"
+  const greenProblems = (workflow: string): string[] => {
+    const problems: string[] = []
+    const code = workflow.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n')
+    const jobsAt = code.indexOf('\njobs:\n')
+    const parts = code.slice(jobsAt + 7).split(/\n(?=  [a-z][a-z-]*:\n)/)
+    const jobs = parts.map((p) => ({ id: p.match(/^\s*([a-z][a-z-]*):/)![1], body: p }))
+    if (jobs.length < 3) problems.push('fewer than three jobs were read')
+    const stepsOf = (body: string) => body.slice(body.indexOf('\n    steps:\n')).split(/\n(?=      - name: )/).slice(1)
+    for (const j of jobs) {
+      const steps = stepsOf(j.body)
+      if (!steps.length) problems.push(`${j.id}: no steps were read`)
+      // a step that can end its job red: one without continue-on-error: true
+      for (const st of steps) if (!/\n        continue-on-error: true\n/.test(st + '\n')) problems.push(`${j.id}: the step "${st.match(/- name: (.*)/)![1]}" can end its job red`)
+      const verdict = steps.filter((st) => /^      - name: the verdict\b/.test(st) && /verdicts?\.mjs/.test(st))
+      if (verdict.length !== 1) problems.push(`${j.id}: ${verdict.length} verdict steps`)
+      for (const v of verdict) if (!/\n        if: always\(\)/.test(v)) problems.push(`${j.id}: its verdict step does not always run`)
+      if (/fail-fast: true/.test(j.body)) problems.push(`${j.id}: one job can cancel the others`)
+    }
+    const last = jobs.at(-1)!
+    const needs = (last.body.match(/\n    needs: \[([^\]]*)\]/)?.[1] ?? '').split(',').map((s) => s.trim()).filter(Boolean).sort()
+    const others = jobs.slice(0, -1).map((j) => j.id).sort()
+    if (JSON.stringify(needs) !== JSON.stringify(others)) problems.push(`the last job needs [${needs}] and the other jobs are [${others}]`)
+    if (!/\n    if: always\(\)\n/.test(last.body)) problems.push('the last job does not always run')
+    if (!/verdicts\.mjs/.test(last.body)) problems.push('the last job does not gather the verdicts')
+    // the table names every job that writes a verdict: the ids of the matrix and the job of the upload's own test
+    const ids = [...code.matchAll(/\n          - id: ([a-z0-9-]+)/g)].map((m) => m[1])
+    const named = [...code.matchAll(/\n    name: ([a-z0-9-]+)\n/g)].map((m) => m[1])
+    const listed = (last.body.match(/\n      PROOF_JOBS: (.*)/)?.[1] ?? '').split(',').map((s) => s.trim())
+    if (JSON.stringify(listed) !== JSON.stringify([...ids, ...named])) problems.push(`the table lists [${listed}] and the jobs are [${[...ids, ...named]}]`)
+    if (!/fail-fast: false/.test(code)) problems.push('fail-fast is not false')
+    return problems
+  }
+
+  it('keeps every job of the proof green, gives each a verdict step that always runs, and lets the last job need all the others', () => {
+    expect(greenProblems(yml)).toEqual([])
+    // the same reading fails on a workflow without the mend, in each of the three ways the ruling names
+    const noAlways = yml.replace("      - name: the verdict\n        if: always()\n", '      - name: the verdict\n')
+    expect(noAlways).not.toBe(yml)
+    expect(greenProblems(noAlways).join(' | ')).toContain('upload-test: its verdict step does not always run')
+    const noVerdict = yml.replace('verdict.mjs" "$RUNNER_TEMP/proof-out" windows-upload-test upload-test', 'after.mjs" "$RUNNER_TEMP/proof-out" last')
+    expect(greenProblems(noVerdict).join(' | ')).toContain('upload-test: 0 verdict steps')
+    const needsOne = yml.replace('needs: [proof, upload-test]', 'needs: [proof]')
+    expect(greenProblems(needsOne).join(' | ')).toContain('the last job needs [proof] and the other jobs are [proof,upload-test]')
+    const red = yml.replace("        if: always() && env.PROOF_LEFT_OUT != 'true'\n        continue-on-error: true\n        shell: bash\n        run: |\n          node \"$GITHUB_WORKSPACE/_proof/.github/handoff-proof/after.mjs\"", "        if: always() && env.PROOF_LEFT_OUT != 'true'\n        shell: bash\n        run: |\n          node \"$GITHUB_WORKSPACE/_proof/.github/handoff-proof/after.mjs\"")
+    expect(red).not.toBe(yml)
+    expect(greenProblems(red).join(' | ')).toContain('proof: the step "the verdict" can end its job red')
+    const oneLess = yml.replace('PROOF_JOBS: windows-powershell-small,', 'PROOF_JOBS: ')
+    expect(greenProblems(oneLess).join(' | ')).toContain('the table lists')
+    // the words above the jobs say what a green run means
+    expect(yml).toContain('# Every job ends green whatever happens, the last one too: a red run sends a mail. So a green run means only that')
+    expect(yml).not.toMatch(/job ends red|decides the job/)
+  })
+
+  it('gathers the verdicts into one table: a missing or broken verdict is a row NOT RUN, never a PASS', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'handoff verdicts '))
+    try {
+      const put = (job: string, body: string) => {
+        fs.mkdirSync(path.join(dir, `verdict-${job}`))
+        fs.writeFileSync(path.join(dir, `verdict-${job}`, 'verdict.txt'), body)
+      }
+      put('one', '===== VERDICT of one =====\n\nVERDICT: PASS, MEASURED 24 lines ran as wanted\n===== END OF VERDICT of one =====\n')
+      put('two', '===== VERDICT of two =====\n\nVERDICT: FAIL, MEASURED 2 problems:\n  - test: exit code 1, wanted 0 | and a bar\n  - a second one\n===== END OF VERDICT of two =====\n')
+      // cut off before its end, and the verdict of another job under this job's name
+      put('four', '===== VERDICT of four =====\n\nVERDICT: PASS, MEASURED 3 lines ran as wanted\n')
+      put('five', '===== VERDICT of one =====\n\nVERDICT: PASS, MEASURED 24 lines ran as wanted\n===== END OF VERDICT of one =====\n')
+      const table = path.join(dir, 'out', 'verdicts.md')
+      const summary = path.join(dir, 'summary.md')
+      const r = spawnSync(process.execPath, [help('verdicts.mjs'), dir, 'one,two,three,four,five', table], { encoding: 'utf8', env: { ...process.env, GITHUB_STEP_SUMMARY: summary } })
+      expect(r.status).toBe(0)
+      const out = r.stdout.split('\n')
+      expect(out[0]).toBe('A green run means only that the machines ran. The verdict is this table.')
+      expect(out).toContain('MEASURED by the verdict of each job: 1 PASS, 1 FAIL, 3 NOT RUN, of 5 jobs.')
+      expect(out).toContain('| one | PASS | MEASURED 24 lines ran as wanted |')
+      expect(out).toContain('| two | FAIL | test: exit code 1, wanted 0 / and a bar |')
+      expect(out).toContain('| three | NOT RUN | no verdict was written |')
+      expect(out).toContain('| four | NOT RUN | its verdict is not whole or is of another job |')
+      expect(out).toContain('| five | NOT RUN | its verdict is not whole or is of another job |')
+      // the same table is in the file for the artifact and in the summary of the run
+      for (const f of [table, summary]) expect(fs.readFileSync(f, 'utf8'), f).toContain('| two | FAIL | test: exit code 1, wanted 0 / and a bar |')
+      // with no verdict at all every row is NOT RUN and the program still ends with 0
+      const none = spawnSync(process.execPath, [help('verdicts.mjs'), path.join(dir, 'nothing here'), 'one,two'], { encoding: 'utf8', env: { ...process.env, GITHUB_STEP_SUMMARY: '' } })
+      expect(none.status).toBe(0)
+      expect(none.stdout).toContain('0 PASS, 0 FAIL, 2 NOT RUN, of 2 jobs.')
+      expect(none.stdout).not.toMatch(/\| PASS \|/)
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('writes PASS or FAIL with the first failing line into the summary of the job, and wants the note of the other browser', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'handoff verdict '))
+    try {
+      const run = (mode: string, notes = '') => {
+        const out = fs.mkdtempSync(path.join(dir, 'job '))
+        if (notes) fs.writeFileSync(path.join(out, 'notes.txt'), notes)
+        const r = spawnSync(process.execPath, [help('verdict.mjs'), out, 'job-x', ''], { encoding: 'utf8', env: { ...process.env, PROOF_MODE: mode, GITHUB_STEP_SUMMARY: path.join(out, 'summary.md') } })
+        return { status: r.status, summary: fs.readFileSync(path.join(out, 'summary.md'), 'utf8'), verdict: fs.readFileSync(path.join(out, 'verdict.txt'), 'utf8'), log: r.stdout }
+      }
+      const small = run('small')
+      expect(small.summary.split('\n')[0]).toMatch(/^### job-x: FAIL\. The first failing line: \S/)
+      expect(small.summary).toContain('A green job means only that the machine ran. The verdict is this.')
+      expect(small.summary).toContain('===== END OF VERDICT of job-x =====')
+      expect(small.log).toContain('VERDICT: FAIL')
+      const want = "the other browser: no note says that a browser that is not the handoff's own outlived the sweep"
+      for (const mode of ['small', 'uhd']) expect(run(mode).verdict, mode).toContain(want)
+      // the note of a pass takes that problem away, a note of a problem is a problem of its own
+      expect(run('small', 'the other browser: PASS on win32. MEASURED: made up for this test\n').verdict).not.toContain(want)
+      expect(run('small', 'PROBLEM: the other browser: the other browser does not answer any more\n').verdict).toContain('  - the other browser: the other browser does not answer any more')
+      // the installs, the shader list and the upload's own test start no browser of the film
+      for (const mode of ['installs', 'shaders', 'upload']) expect(run(mode).verdict, mode).not.toContain('the other browser')
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('runs the check of the other browser in both flows after the doctor, in the clone whose path holds a space', () => {
+    const sh = src('.github', 'handoff-proof', 'flow.sh')
+    const ps = src('.github', 'handoff-proof', 'flow.ps1')
+    expect(sh).toContain('line doctor 0 doctor\n\n# A browser that is not the handoff\'s own outlives the handoff\'s sweep')
+    expect(sh).toContain('note "$(node "$HELP/other-browser.mjs" . "$PROOF_OUT/other-browser.txt")"')
+    expect(ps.replace(/\r\n/g, '\n')).toContain("Line 'doctor' '0' 'doctor'\n\n# A browser that is not the handoff's own outlives the handoff's sweep")
+    expect(ps).toContain("Note ((node (Join-Path $Help 'other-browser.mjs') . (Join-Path $env:PROOF_OUT 'other-browser.txt')) -join ' ')")
+    for (const f of [sh, ps]) expect(f.indexOf('other-browser.mjs')).toBeLessThan(f.indexOf('test-fails'))
+    // the clone of the proof lies in a folder with a space, and the check says whether its path holds one
+    expect(sh).toMatch(/render proof/)
+    expect(ps).toMatch(/render proof/)
+    const check = src('.github', 'handoff-proof', 'other-browser.mjs')
+    // the sweep runs before the handoff's own browser is started, and after it is started and recorded
+    expect(check.match(/X\.stopLeftBrowsers\(work\)/g)!.length).toBeGreaterThanOrEqual(3)
+    expect(check.indexOf('X.stopLeftBrowsers(work)')).toBeLessThan(check.indexOf("// 3. the handoff's own browser"))
+    expect(check).toContain('the other browser has the same start token after that sweep')
+    expect(check).toContain("the other browser's profile lies outside the clone's own profile root")
+    expect(check).toMatch(/the clone's path holds (a|no) space|its path holds/)
+    expect(check).toContain('PROBLEM: the other browser: ')
+  })
+
+  it('ends what a stopped word left only by a record with a start token, never by a bare process number', async () => {
+    const P = await import('../tools/lib/handoff-processes.mjs')
+    // the worker's restart call, the short word's watchdog and the sweep all pass a record
+    expect(tool).not.toMatch(/killTree\(job\.pid\)/)
+    const calls = [...tool.matchAll(/killTree\(([^)]*)\)/g)].map((m) => m[1]).filter((a) => a !== 'record')
+    expect(calls.sort()).toEqual(['child', 'child', '{ pid: job.pid, started: job.processStart ?? null }'])
+    expect(tool).toContain('const gone = killTree({ pid: job.pid, started: job.processStart ?? null })')
+    const watchdog = tool.slice(tool.indexOf('if (!LONG.includes(cmd)) {'), tool.indexOf('}, limit * 1000).unref()'))
+    expect(watchdog).toContain("const kids = readOr(file('children.json'), [])")
+    expect(watchdog).toContain('for (const child of kids) killTree(child)')
+    expect(watchdog).toContain('X.stopLeftBrowsers(H)')
+    // a live process of this test: a bare number and a wrong start token end nothing; its own token ends it
+    const child = spawnSync(process.execPath, ['-e', 'const c = require("child_process").spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { detached: true, stdio: "ignore" }); c.unref(); console.log(c.pid)'], { encoding: 'utf8' })
+    const pid = Number(child.stdout.trim())
+    const lives = () => {
+      try {
+        process.kill(pid, 0)
+        return true
+      } catch {
+        return false
+      }
+    }
+    try {
+      expect(pid).toBeGreaterThan(0)
+      expect(lives()).toBe(true)
+      expect(P.stopVerifiedProcess(pid as never)).toBe(false)
+      expect(P.stopVerifiedProcess({ pid })).toBe(false)
+      expect(P.stopVerifiedProcess({ pid, started: 'another start' })).toBe(false)
+      expect(lives()).toBe(true)
+      const started = P.processStart(pid)
+      expect(typeof started).toBe('string')
+      expect(P.stopVerifiedProcess({ pid, started })).toBe(true)
+    } finally {
+      try {
+        process.kill(pid, 'SIGKILL')
+      } catch {}
+    }
+  })
+
+  it('gives PowerShell half a minute to read a process on a machine that draws with all it has', async () => {
+    const P = await import('../tools/lib/handoff-processes.mjs')
+    expect(P.WINDOWS_PROCESS_MS).toBe(30000)
+    const code = src('tools', 'lib', 'handoff-processes.mjs')
+    const at = code.indexOf('function windowsProcess(script) {')
+    expect(code.slice(at, at + 600)).toContain('timeout: WINDOWS_PROCESS_MS')
+    expect(code.slice(at, at + 600)).not.toMatch(/timeout: \d/)
+  })
+
+  it("says in the block of the upload yes what the draft is named by and what the records can still name, and sends no record of Brandon's yes", async () => {
+    const R = await import('../tools/lib/handoff-record-privacy.mjs')
+    const block = A.uploadApproval({ words: 'yes send them', time: '2026-11-28T10:00:00.000Z', repo: { owner: 'o', name: 'n', slug: 'o/n' }, isPrivate: true, files: [{ kind: 'film-a', name: 'a.mp4', bytes: 10, sha256: SHA('a') }], deliverTime: '2026-11-28T09:00:00.000Z' }).lines
+    expect(block).toContain('  the draft is named by the day, the engine, the platform and the graphics card when it is known, not by the name of this computer')
+    expect(block).toContain('  the records can still name the computer, the card, its driver, the browser and folders outside the home folder')
+    expect(block).toContain("  in the records the home folder is written as ~, and the records of Brandon's yes stay on this machine and are not sent")
+    // the records of his yes, and the report and the job of the approve word, are in no zip that is sent
+    for (const name of [A.APPROVAL_FILES.render, A.APPROVAL_FILES.upload, A.APPROVAL_FILES.asked, 'job-approve.json', 'report-approve.txt', `handoff/${A.APPROVAL_FILES.upload}`]) expect(R.privateRecord(name), name).toBe(true)
+    for (const name of ['report-test.txt', 'report-render.txt', 'upload.json', A.APPROVAL_FILES.ledger]) expect(R.privateRecord(name), name).toBe(false)
+    // the name of the draft holds the platform and the card, never the name of the computer
+    expect(R.releaseMachine({ platform: 'win32', cards: [{ name: 'NVIDIA GeForce RTX 5080' }], renderer: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 Direct3D11 vs_5_0 ps_5_0, D3D11)' })).toBe('Windows NVIDIA GeForce RTX 5080')
+    expect(R.releaseMachine({ platform: 'win32', cards: [{ name: 'NVIDIA GeForce RTX 5080' }], renderer: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 Direct3D11 vs_5_0 ps_5_0, D3D11)' })).not.toContain(os.hostname() || 'no name')
+    // the file asks Brandon with the same facts, and says that his yes is in no file that is sent
+    expect(text).toContain('Its name and description use the platform and the graphics card when known, not the computer name.')
+    expect(text).toContain('The records can still name the computer, card, driver, browser and folders outside your home.')
+    expect(text).toContain('The record of his yes stays on this computer: it is in no file that is sent.')
+  })
+
+  it("holds the second builder's passages in the file with the tool's own lines, letter for letter", () => {
+    const work = src('tools', 'lib', 'handoff-work.mjs')
+    const up = src('tools', 'lib', 'handoff-upload.mjs')
+    const owned = src('tools', 'lib', 'handoff-owned-files.mjs')
+    const shot = src('tools', 'lib', 'handoff-screenshot.mjs')
+    // a sentence the file quotes is one the tool can say: each is in the file and in the source that prints it
+    for (const [said, source] of [
+      ['left by the handoff', tool],
+      ['alone: it has other or changed files', owned],
+      ['It contains other or changed files', work],
+      ['the release read back is not what was sent (', up],
+      ['the earlier draft has an old or changed name or description. It is left alone and nothing is sent', up],
+      ['does not match the last delivery by SHA-256, so the work files stay. Run the delivery again', work],
+      ['the last delivery does not name all the checked files', work],
+      ['nothing is deleted before the delivery has passed', work],
+      ['the stamp is older than the plan and must be made again by the remote team', work],
+      ["screenshot: against the loop film's first frame", shot],
+      ['dB in luma (brightness)', shot],
+    ] as const) {
+      expect(text, said).toContain(said)
+      expect(source, said).toContain(said)
+    }
+    // the PASS of the upload: the file quotes its beginning, and the tool's line goes on with what was measured
+    expect(text).toContain('Good: `PASS: the draft release "..." holds the files`.')
+    expect(up).toContain('holds the files. MEASURED: all ${wanted.length} were downloaded and their SHA-256 sums matched: ${release.html_url}')
+    expect(text).not.toContain('named for the day, the engine hash and this machine')
+    expect(text).not.toContain('each read back by its name, its bytes and its sum')
+    // the row of the screenshot keeps the drawn work and does not call the render bad
+    const check = md.slice(md.indexOf('### 2.3 Check the four files'), md.indexOf('### 2.4 '))
+    const row = check.split('\n').find((l) => l.startsWith('| ') && l.includes("`screenshot: against the loop film's first frame is MEASURED: ... dB in luma (brightness)`"))!
+    expect(row).toBeTruthy()
+    expect(row).toContain('this does not say that the render is bad')
+    expect(row).toContain('Everything that was drawn is kept.')
+    expect(row).toContain('Do not run the clean line, delete nothing and do not render again')
+    expect(row).toContain('Give Brandon the report of the check')
+    expect(check.replace(/\s+/g, ' ')).toContain('What the screenshot row measures')
+    // every row of the tables of 2.3, 2.4 and 2.6 ends in an act
+    for (const [from, to] of [['### 2.3 Check the four files', '### 2.4 '], ['### 2.4 ', '### 2.5 Send the files'], ['### 2.6 Clean up', '### 2.7 Report']] as const) {
+      const part = md.slice(md.indexOf(from), md.indexOf(to))
+      const rows = part.split('\n').filter((l) => l.startsWith('| ') && !l.startsWith('| ---') && !l.startsWith('| the FAIL says') && !l.startsWith('| the last line'))
+      expect(rows.length, from).toBeGreaterThan(2)
+      for (const r of rows) expect(r.split(' | ').at(-1)!.replace(/\|\s*$/, '').trim().length, r).toBeGreaterThan(12)
+    }
+    // the agent closes no browser that is not the handoff's own
+    expect(text).toContain('Do not close another Chrome window or process yourself')
+    // the stamp of this head carries the floor of the screenshot: measured less the stated margin
+    const stamp = readJson(rel('render', 'STAMP.json')) as { screenshot: { measuredDb: number; marginDb: number; floorDb: number; width: number; height: number } }
+    const plan = readJson(rel('render', 'PLAN.json')) as { screenshot: { measuredDb: number; marginDb: number; floorDb: number } }
+    expect(stamp.screenshot.floorDb).toBe(44.74)
+    expect(stamp.screenshot.floorDb).toBeCloseTo(stamp.screenshot.measuredDb - stamp.screenshot.marginDb, 6)
+    expect([stamp.screenshot.measuredDb, stamp.screenshot.marginDb, stamp.screenshot.floorDb]).toEqual([plan.screenshot.measuredDb, plan.screenshot.marginDb, plan.screenshot.floorDb])
+    expect([stamp.screenshot.width, stamp.screenshot.height]).toEqual([3840, 2160])
+  })
+
+  it('says beside a lost drawing what holds on the machine it happened on: dmesg on Linux only', async () => {
+    const Lost = await import('../tools/lib/lost-context.mjs')
+    // Linux keeps its words, letter for letter
+    expect(Lost.lostHint('linux')).toBe('the graphics process may have been killed for memory: look at dmesg')
+    expect(Lost.goneHint('linux')).toBe('the machine may be out of memory: look at dmesg')
+    expect(Lost.flatHint('linux')).toBe('The graphics process may have been killed for memory: look at dmesg.')
+    expect(Lost.flatFrameHint('linux')).toBe('Look at dmesg for a killed chrome process.')
+    expect(Lost.goOnHint(' than 3', 'linux')).toBe(' A lost context is most often a browser killed for memory (dmesg says so): if it was, go on with a smaller --procs than 3.')
+    // his machines are told what holds there: no dmesg, and the four things to do
+    for (const platform of ['win32', 'darwin'] as const) {
+      for (const said of [Lost.lostHint(platform), Lost.goneHint(platform), Lost.flatHint(platform), Lost.flatFrameHint(platform), Lost.goOnHint(' than 3', platform)]) {
+        expect(said, platform).not.toMatch(/dmesg|--procs/)
+        expect(said, platform).toContain('close other programs that use the card and run the same line again, it carries on where it stopped; if it happens twice in a row, stop and give Brandon the report')
+      }
+      expect(Lost.lostHint(platform)).toMatch(/^the graphics card dropped the drawing: /)
+    }
+    // no tool that draws says dmesg by itself any more
+    for (const f of [['tools', 'lib', 'page.mjs'], ['tools', 'master.mjs']]) expect(src(...f), f.join('/')).not.toContain('dmesg')
+    expect(src('tools', 'lib', 'page.mjs').match(/\$\{lostHint\(\)\}/g)).toHaveLength(3)
+    // the row of the file quotes the words his machine prints, and names one act
+    const row = md.split('\n').find((l) => l.includes('the WebGL context was lost'))!
+    expect(row).toContain(`(${Lost.lostHint('win32')})`)
+    expect(row).toContain('Run the same line again, once. It carries on where it stopped. If it happens twice in a row, stop and give Brandon the report.')
+    expect(row).toContain('close none yourself')
+    expect(md).not.toContain('dmesg')
+  })
+
+  it('names the hosted run by its verdicts, read from the table or the artifacts and never from the colour', () => {
+    expect(text).toContain('A green run there means only that the machines ran. The verdicts named here are read from the table of the run or from the reports of its jobs, never from its colour.')
+  })
+})
