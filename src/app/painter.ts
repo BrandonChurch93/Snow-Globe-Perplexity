@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { liveSamples } from '../core/accumulator'
 import type { Gfx } from '../core/gl'
+import { off } from '../core/off295'
 import type { Moment, Stage } from '../core/stage'
 import { Post } from '../post/post'
 import type { Pose } from '../scene/cameras'
@@ -33,7 +34,7 @@ export class Painter {
       stencilBuffer: false,
       minFilter: THREE.NearestFilter,
       magFilter: THREE.NearestFilter,
-      samples: liveSamples(this.gfx.caps.maxSamples),
+      samples: off('msaa') ? 0 : liveSamples(this.gfx.caps.maxSamples),
     })
     this.stage.resize(w, h)
     return true
@@ -43,6 +44,6 @@ export class Painter {
     if (!this.target) return
     this.stage.drawSample(this.target, pose, null, moment, true)
     this.post.seed = (moment.seed * 0.37) % 1
-    this.post.resolve(this.target.texture, this.flat)
+    this.post.resolve(this.target.texture, this.flat || off('post'))
   }
 }

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { off } from '../core/off295'
 import type { Backdrop } from './backdrop'
 import type { StageFrame } from './frame'
 import { surfaceUniforms } from './surface'
@@ -67,7 +68,7 @@ export function drawPasses(c: PassContext, o: PassOptions, frame: StageFrame): v
   c.floor.visible = false
   lights.visible = false
   c.orient(1)
-  renderer.shadowMap.needsUpdate = o.shadows && !o.sliceOnly
+  renderer.shadowMap.needsUpdate = o.shadows && !o.sliceOnly && !off('shadow')
   renderer.render(c.scene, c.camera)
   renderer.shadowMap.needsUpdate = false
   if (o.sliceOnly) return

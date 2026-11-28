@@ -5,6 +5,7 @@ import type { Assets } from '../core/assets'
 import { updateCover } from '../core/chunks/cover'
 import { updateVeil } from '../core/chunks/veil'
 import type { Gfx } from '../core/gl'
+import { off } from '../core/off295'
 import { MODE, passCount, passStep, setPresence, stageShader, stageUniforms, type Rgb } from '../core/materials'
 import type { Sample } from '../core/sampler'
 import type { Emitter, Moment, ParticleSource, SdfGrid, Stage, StageQuality } from '../core/stage'
@@ -174,12 +175,14 @@ export class GlobeStage implements Stage {
     const { scene, world, floor, globe, inside } = this
     this.lighting = new Lighting(this.quality.shadowMapPx)
     scene.add(world, floor)
-    world.add(globe, this.backdrop.group, this.lighting.rig)
-    floor.add(this.slab)
+    world.add(globe, this.lighting.rig)
+    if (!off('backdrop')) world.add(this.backdrop.group)
+    if (!off('table')) floor.add(this.slab)
     inside.position.y = centreHeightMm
     globe.add(inside)
     globe.add(this.lighting.glow)
-    inside.add(this.shell.through, this.shell.shell, this.shell.bubble, this.shell.stamp, this.draw.points)
+    if (!off('glass')) inside.add(this.shell.through, this.shell.shell, this.shell.bubble, this.shell.stamp)
+    inside.add(this.draw.points)
 
     this.slice = new THREE.Mesh(
       new THREE.CircleGeometry(innerRadiusMm, 96),
@@ -270,7 +273,7 @@ export class GlobeStage implements Stage {
    * (src/app/app.ts), and a hand begun at the first worked before that one on a page that draws slowly.
    */
   private shows(season: string, s: SeasonSet): void {
-    if (this.live && s.shown && this.early.delete(season)) this.hands.made(hiddenOf(season), false)
+    if (this.live && s.shown && this.early.delete(season) && !off('hidden')) this.hands.made(hiddenOf(season), false)
     s.shown = true
   }
 
@@ -321,6 +324,7 @@ export class GlobeStage implements Stage {
    * frame while the picture rests.
    */
   private async hand(name: string): Promise<void> {
+    if (off('hands')) return
     const s = this.sets.get(name)
     if (!s) return this.handHidden(name)
     if (!this.live) return
@@ -333,7 +337,7 @@ export class GlobeStage implements Stage {
       await this.give(name, meshes, pictures, () => !s.shown && this.live !== null, () => true)
     }
     // It made what it drew, and nothing of what the season hid then.
-    if (s.shown) this.hands.made(hiddenOf(name), false)
+    if (s.shown && !off('hidden')) this.hands.made(hiddenOf(name), false)
   }
 
   /**
@@ -352,7 +356,7 @@ export class GlobeStage implements Stage {
       if (owed(d)) meshes.push(d)
     }
     for (const s of this.sets.values()) if (s.shown) for (const root of s.objects) drawnUnder(root, take(root))
-    for (const part of [this.shell.through, this.shell.shell, this.shell.bubble, this.shell.stamp]) drawnUnder(part, take(null))
+    if (!off('glass')) for (const part of [this.shell.through, this.shell.shell, this.shell.bubble, this.shell.stamp]) drawnUnder(part, take(null))
     if (meshes.length) await this.give(name, meshes, [], () => this.live !== null, owed)
   }
 
@@ -434,7 +438,7 @@ export class GlobeStage implements Stage {
         d.onAfterRender = NOTHING
         camera.layers.set(HAND_LAYER)
         // The shadow pass has programs and buffers of its own. It leaves the map with this one mesh in it.
-        renderer.shadowMap.needsUpdate = cast
+        renderer.shadowMap.needsUpdate = cast && !off('shadow')
         if (cast) this.stale = true
         try {
           renderer.render(this.scene, camera)
@@ -508,8 +512,14 @@ export class GlobeStage implements Stage {
         inPieces(() => m.steps, kit.dressing, (part) => void (own = part)),
         () => void (grid = bakeGrid(kit.innerLights, this.collider(season))),
         () => {
-          const dressing = own.surface
-          const glass = [own.glass]
+          // Item 295's probe: a part that is off is made as on main and left out of the scene and of the set.
+          const none = (): THREE.Object3D => new THREE.Group()
+          if (off('base')) base = none()
+          if (off('miniature')) miniature = none()
+          if (off('arrival')) arrival = none()
+          if (off('lamps')) lights = none()
+          const dressing = off('dressing') ? none() : own.surface
+          const glass = [off('frost') ? none() : own.glass]
           this.globe.add(base)
           this.inside.add(miniature, arrival, lights, ...glass)
           this.floor.add(dressing)
@@ -702,6 +712,8 @@ export class GlobeStage implements Stage {
       })
     }
     if (!this.air) this.airOut(single ? [a] : [a, b])
+    if (off('flakes')) this.draw.points.visible = false
+    if (off('veil')) clearVeil()
     this.slab.visible = !sliceOnly
     this.slice.visible = sliceOnly
 
@@ -740,7 +752,7 @@ export class GlobeStage implements Stage {
     } else {
       applyPose(this.camera, pose, w, h, sample)
       this.seat(sample, f.focalPx, w, h)
-      drawPasses(this.pass, { shadows: cast, mirror: view === '' && f.planar, sliceOnly, emitters: beauty }, f)
+      drawPasses(this.pass, { shadows: cast, mirror: view === '' && f.planar && !off('mirror'), sliceOnly, emitters: beauty }, f)
       const fill = view === '' && pose.apertureMm > 0 ? lensFillOf(target) : undefined
       if (fill?.wants(sample)) this.drawBlur(fill, target, pose, f, single ? [a] : [a, b])
     }

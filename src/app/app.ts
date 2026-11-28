@@ -2,6 +2,7 @@ import { config, formatById } from '../config'
 import type { Assets } from '../core/assets'
 import type { AppBridge, AppState, SoundEngine } from '../core/bridge'
 import type { Gfx } from '../core/gl'
+import { off } from '../core/off295'
 import type { Params } from '../core/params'
 import { loadDetail } from '../core/textures'
 import { Governor, levels, stageQuality } from '../core/quality'
@@ -102,11 +103,13 @@ export function startApp(d: AppDeps): AppBridge {
   // and the `.first.` file of every large one. The whole pictures follow as soon as it is drawn, then the other seasons, one at a
   // time, with their whole pictures at once. A season the visitor asks for before its turn starts at once, from its first files.
   const progressive = d.assets.firstOnly
-  const detail = (): Promise<void> => loadDetail(d.assets).catch(() => undefined)
+  const detail = (): Promise<void> => (off('detail') ? Promise.resolve() : loadDetail(d.assets).catch(() => undefined))
   const loader = new SeasonLoader(
     params.season,
     (season, asked) =>
       d.ready.then(() => {
+        // Item 295's probe: a season nobody asked for is not made.
+        if (!asked && off('next')) return undefined
         d.assets.firstOnly = progressive && asked
         return d.stage.prepare?.(season) ?? d.assets.loadGroup(season)
       }),
@@ -572,11 +575,11 @@ export function startApp(d: AppDeps): AppBridge {
           }),
         )
       }
-    } else if (controls && ui) {
+    } else if (controls && ui && !off('interface')) {
       controls.mountInterface(ui, bridge)
       mounted = true
     }
-    if (!audioShips || probing) return
+    if (!audioShips || probing || off('sound')) return
     const audio = await loadAudio()
     if (!audio) {
       soundAvailable = false

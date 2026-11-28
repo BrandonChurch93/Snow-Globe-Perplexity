@@ -8,6 +8,7 @@ import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { MIRROR_GLSL, MIRROR_MAX, mirrorUniforms } from '../../../miniature/mirror'
+import { off } from '../../../core/off295'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { hangPoints, lampFlame, lampFoot, pitch, ridgeY, roofLength, shrubDistance, slopeLength } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, surfacing, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
@@ -240,7 +241,7 @@ function iceMaterial(): THREE.MeshStandardMaterial {
     change: 'miniature',
     key: 'village-ice',
     hook: (shader) => {
-      Object.assign(shader.uniforms, { uGlowGain: gain }, mirrorUniforms(sources))
+      Object.assign(shader.uniforms, { uGlowGain: gain }, mirrorUniforms(off('pond') ? [] : sources))
       shader.vertexShader = shader.vertexShader.replace('#include <uv_pars_vertex>', `#include <uv_pars_vertex>\n${SURFACE_VERT_PARS}`).replace('#include <uv_vertex>', `#include <uv_vertex>\n${SURFACE_VERT_MAIN}`)
       shader.fragmentShader = shader.fragmentShader
         .replace(

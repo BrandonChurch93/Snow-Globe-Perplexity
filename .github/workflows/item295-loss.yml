@@ -29,13 +29,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { arm: q2-commands, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '4:', stay: 25, after: 4, spindump: 0, flags: '--enable-gpu-command-logging,--enable-gpu-debugging', more: '' }
-          - { arm: q2-no-watchdog, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:', stay: 30, after: 5, spindump: 0, flags: '--disable-gpu-watchdog', more: '' }
-          - { arm: q5-plain-flags, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:', stay: 30, after: 5, spindump: 0, flags: '', more: '--plain-flags' }
-          - { arm: q4-2bbd1b9e, os: macos-latest, page: 2bbd1b9e2d9346657ed3a48ba5f98825356917e1, loads: '12:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
-          - { arm: q4-c755fcba, os: macos-latest, page: c755fcba26832cb706a6ca803d679609e17b82e0, loads: '12:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
-          - { arm: q4-976e271e, os: macos-latest, page: 976e271eddb698792f587f0edd9fa8b1cb72e9bb, loads: '12:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
-          - { arm: q4-9f4d94ae, os: macos-latest, page: 9f4d94aebada702e061a8651eca141722a097074, loads: '12:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q3-parts-a, os: macos-latest, page: '', loads: '6:|5:off=flakes|5:off=veil|5:off=glass|5:off=frost|5:off=dressing|5:off=flakes,veil,glass,frost', stay: 18, after: 3, spindump: 0, flags: '', more: '' }
+          - { arm: q3-parts-b, os: macos-latest, page: '', loads: '5:off=base|5:off=miniature|5:off=arrival|5:off=lamps|5:off=pond|5:off=backdrop|5:off=table', stay: 18, after: 3, spindump: 0, flags: '', more: '' }
+          - { arm: q3-passes, os: macos-latest, page: '', loads: '5:off=mirror|5:off=shadow|5:off=post|5:off=msaa|5:quality=low|5:quality=medium|5:noext=KHR_parallel_shader_compile', stay: 18, after: 3, spindump: 0, flags: '', more: '' }
+          - { arm: q3-after, os: macos-latest, page: '', loads: '5:off=detail|5:off=next|5:off=hidden|5:off=hands|5:off=interface|5:off=sound|5:off=detail,next,hidden,hands,interface,sound', stay: 18, after: 3, spindump: 0, flags: '', more: '' }
+          - { arm: q3-size-small, os: macos-latest, page: '', loads: '6:', stay: 18, after: 3, spindump: 0, flags: '', more: '--viewport 640x360' }
+          - { arm: q3-size-scale2, os: macos-latest, page: '', loads: '6:', stay: 18, after: 3, spindump: 0, flags: '', more: '--scale 2' }
+          - { arm: q3-spring-commands, os: macos-latest, page: '', loads: '2:season=spring', stay: 25, after: 4, spindump: 0, flags: '--enable-gpu-command-logging,--enable-gpu-debugging', more: '' }
     steps:
       - name: the tools of this branch
         continue-on-error: true
