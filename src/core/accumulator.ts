@@ -17,6 +17,24 @@ void main() {
 }`
 
 /**
+ * The tally of broken numbers, kept apart from the mean. The mean's step leaves a broken sample out, so the mean alone
+ * cannot say that a sample broke. After each sample has joined the mean, this small pass reads the same sample and nothing
+ * else. A pixel whose four values are whole is thrown away and nothing is written for it. For a pixel with a broken value
+ * a mark is written for each of its values: 1 what is not a number, 2 plus infinite, 3 minus infinite, 0 a whole one. The
+ * sign is read by a shift and compared with nothing. The marks are bytes in one target of their own, cleared once a
+ * picture, and the card keeps the greater of the mark written and the mark that stands there (see `add`). The mean's
+ * text, the mean's targets and the lens fill are as they were.
+ */
+const TALLY = `uniform sampler2D uSample;
+out vec4 o;
+float tallyOf(float v) { return numberNan(v) ? 1.0 : (numberInf(v) ? 2.0 + float(floatBitsToUint(v) >> 31) : 0.0); }
+void main() {
+  vec4 s = texelFetch(uSample, ivec2(gl_FragCoord.xy), 0);
+  if (!numberBroken(s)) discard;
+  o = vec4(tallyOf(s.r), tallyOf(s.g), tallyOf(s.b), tallyOf(s.a)) / 255.0;
+}`
+
+/**
  * What the spread of one sample needs: the camera of the sample's moment without its place in the pixel or on the lens,
  * the ball there, and the ball and the camera half a sample spacing before and after.
  */
@@ -431,6 +449,8 @@ const CHANNELS = ['red', 'green', 'blue', 'alpha'] as const
 
 const halfKind = (v: number): OddKind => ((v & 0x3ff) !== 0 ? 'no number' : (v & 0x8000) !== 0 ? 'minus infinite' : 'plus infinite')
 const floatKind = (v: number): OddKind => (Number.isNaN(v) ? 'no number' : v < 0 ? 'minus infinite' : 'plus infinite')
+/** What a mark of the tally stands for (see `TALLY`). */
+const markKind = (m: number): OddKind => (m === 2 ? 'plus infinite' : m === 3 ? 'minus infinite' : 'no number')
 
 /** The number a half float's 16 bits stand for. */
 export function halfValue(v: number): number {
@@ -448,6 +468,8 @@ export class Accumulator {
   readonly sample: THREE.WebGLRenderTarget
   private readonly mean: [THREE.WebGLRenderTarget, THREE.WebGLRenderTarget]
   private readonly pass: Pass
+  /** The tally of broken samples (see `TALLY`): its one target, a byte a value, and its pass. None where the samples are bytes. */
+  private readonly tally: { marks: THREE.WebGLRenderTarget; pass: Pass } | null
   private flip = 0
   count = 0
   readonly precision: 'float32' | 'half' | 'byte'
@@ -487,6 +509,18 @@ export class Accumulator {
       })
     this.mean = [mk(), mk()]
     this.pass = new Pass(MEAN, { uMean: { value: null }, uSample: { value: null }, uWeight: { value: 1 } })
+    // The tally's target holds a byte for each of a pixel's four values, so that the card keeps the greater mark of each value by itself.
+    const marks = (): THREE.WebGLRenderTarget =>
+      new THREE.WebGLRenderTarget(width, height, {
+        type: THREE.UnsignedByteType,
+        format: THREE.RGBAFormat,
+        minFilter: THREE.NearestFilter,
+        magFilter: THREE.NearestFilter,
+        depthBuffer: false,
+        stencilBuffer: false,
+        generateMipmaps: false,
+      })
+    this.tally = this.precision === 'byte' ? null : { marks: marks(), pass: new Pass(TALLY, { uSample: { value: null } }) }
     this.fill = caps.half ? new LensFill(gfx, width, height) : null
     if (this.fill) fills.set(this.sample, this.fill)
   }
@@ -518,6 +552,26 @@ export class Accumulator {
     u.uSample.value = spread && spread.reach > 0 && this.precision !== 'byte' ? this.spreadOut(spread) : this.sample.texture
     u.uWeight.value = 1 / (this.count + 1)
     this.pass.render(this.gfx.renderer, to)
+    const tally = this.tally
+    if (tally) {
+      // The same sample the mean's step has just read. The marks are wiped at a picture's first sample, and never by the
+      // renderer before the draw. For this one draw the card keeps the greater of what is written and what stands there:
+      // that rule reads no factor, so none is touched. Then blending is off again and its rule is the sum, which is all
+      // that any material of this build asks for, and the renderer is on the mean's target: all as the mean's step left it.
+      const { renderer, gl } = this.gfx
+      tally.pass.material.uniforms.uSample.value = u.uSample.value
+      renderer.setRenderTarget(tally.marks)
+      if (this.count === 0) gl.clearBufferfv(gl.COLOR, 0, [0, 0, 0, 0])
+      const auto = renderer.autoClear
+      renderer.autoClear = false
+      gl.enable(gl.BLEND)
+      gl.blendEquation(gl.MAX)
+      tally.pass.render(renderer, tally.marks)
+      gl.blendEquation(gl.FUNC_ADD)
+      gl.disable(gl.BLEND)
+      renderer.autoClear = auto
+      renderer.setRenderTarget(to)
+    }
     this.flip = 1 - this.flip
     this.count++
     this.filled = false
@@ -615,16 +669,23 @@ export class Accumulator {
     const rows = 64
     const half = this.precision === 'half'
     const buf = half ? new Uint16Array(w * rows * 4) : new Float32Array(w * rows * 4)
+    // The tally's marks of this picture: a sample that broke and was left out of the mean is counted from them.
+    const marks = this.tally && this.count > 0 ? this.tally.marks : null
+    const seen = marks ? new Uint8Array(w * rows * 4) : null
     for (let y = 0; y < h; y += rows) {
       const n = Math.min(rows, h - y)
       this.gfx.renderer.readRenderTargetPixels(t, 0, y, w, n, buf)
+      if (marks && seen) this.gfx.renderer.readRenderTargetPixels(marks, 0, y, w, n, seen)
       const len = w * n * 4
       for (let i = 0; i < len; i++) {
         const v = buf[i]!
-        if (half ? (v & 0x7c00) !== 0x7c00 : Number.isFinite(v)) continue
+        const whole = half ? (v & 0x7c00) !== 0x7c00 : Number.isFinite(v)
+        const mark = seen ? seen[i]! : 0
+        if (whole && mark === 0) continue
         invalid++
         // The rows are read from the bottom up, so the first place by rows from the top is the last one met in the highest row.
-        const place = placeOf(y * w * 4 + i, w, h, half ? halfKind(v) : floatKind(v))
+        // The kind named is the greatest mark met in the picture's samples; without a mark, what the mean holds.
+        const place = placeOf(y * w * 4 + i, w, h, mark !== 0 ? markKind(mark) : half ? halfKind(v) : floatKind(v))
         if (!first || place.y < first.y || (place.y === first.y && place.x < first.x)) first = place
       }
     }
@@ -636,6 +697,8 @@ export class Accumulator {
     this.mean[0].dispose()
     this.mean[1].dispose()
     this.pass.dispose()
+    this.tally?.marks.dispose()
+    this.tally?.pass.dispose()
     this.fill?.dispose()
     this.spread?.target.dispose()
     this.spread?.pass.dispose()
