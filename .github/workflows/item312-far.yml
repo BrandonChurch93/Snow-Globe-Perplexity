@@ -1,0 +1,132 @@
+# Decision 312, T6: why spring's far picture (spring/slab-far.srgb.w2048.png) holds the thread for 3 to 4 s on the hosted
+# macOS card when a page opens in spring, and which way of handing it over takes that away.
+# Every job builds two pages on one hosted machine: origin main at 6befeeb0, untouched, and this branch, whose page takes
+# the trials from its address (far=bytes, webp, step, wait, twin; see src/core/far312.ts). It then opens them in the
+# installed Chrome and reads, for each load: the hand-over of the far picture and how long the thread was in it, every
+# call of the card of 5 ms and more, the first picture, when the card had really done all it was given for it, the mark
+# "ready", and the sha256 of the far picture's bytes read back from the card, level by level.
+#   cold        each load in a browser begun for it, as a first visit is; the pages as visitors get them; 4 rounds, the
+#               trials one after another within a round
+#   cold-named  the same with the pages' names kept and the browser's own profile of the thread
+#   warm        each trial three loads in one browser, the trials in one order and then in the other
+#   winter      main alone, opened in winter, at low and at the plain address, left at rest and pressed 5 s after the
+#               first picture: where the far picture's hand-over falls for the visitor at the plain address
+# The reading is done by tools/item312/measure.mjs, which changes nothing of a page.
+# It starts on a push to agent/p6-far-312-trials alone: the branch is for these trials and is never merged. It has no
+# timer and never starts on main. Every job ends green whatever happens: a red run sends a mail. What a job read is the
+# step "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
+name: item 312 far picture
+
+on:
+  push:
+    branches: [agent/p6-far-312-trials]
+
+permissions:
+  contents: read
+
+jobs:
+  trials:
+    name: ${{ matrix.kind }}
+    runs-on: macos-latest
+    timeout-minutes: 80
+    strategy:
+      fail-fast: false
+      matrix:
+        kind: [cold, cold-named, warm, winter]
+    steps:
+      - name: the trials of this push
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          path: trials
+          persist-credentials: false
+
+      - name: main, untouched
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: 6befeeb0fdaf873fd1fe53c7b5e24530f421caf7
+          path: main
+          persist-credentials: false
+
+      - name: install and build both
+        continue-on-error: true
+        timeout-minutes: 20
+        shell: bash
+        run: |
+          mkdir -p trials/out/work/item312
+          note=trials/out/work/item312/tree.txt
+          echo "kind ${{ matrix.kind }}, main $(git -C main rev-parse HEAD), trials $(git -C trials rev-parse HEAD), machine ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)" | tee "$note"
+          ( cd main && npm ci --no-audit --no-fund )
+          # One install serves both: the trials change no package file.
+          ln -s ../main/node_modules trials/node_modules
+          ( cd trials && node tools/item312/webp.mjs ) | tee -a "$note"
+          for tree in main trials; do
+            (
+              cd "$tree"
+              npm run build
+              if [ "${{ matrix.kind }}" = cold-named ] || [ "${{ matrix.kind }}" = winter ]; then npx vite build --minify false; fi
+            )
+            echo "$tree built: $(cat "$tree/dist/build.json")" | tee -a "$note"
+          done
+
+      - name: the loads
+        continue-on-error: true
+        timeout-minutes: 55
+        shell: bash
+        working-directory: trials
+        run: |
+          png=$(wc -c < public/assets/spring/slab-far.srgb.w2048.png | tr -d ' ')
+          webp=$(wc -c < public/trial312/slab-far.webp | tr -d ' ')
+          back="file of ${png} bytes|file of ${webp} bytes|Uint8Array"
+          # name, built page, the trial or main or plain, the seasons of its loads, then whatever else the tool is to take
+          go() {
+            local name=$1 dist=$2 trial=$3 seasons=$4
+            shift 4
+            local more=()
+            if [ "$trial" != main ] && [ "$trial" != plain ]; then more=(--more "far=$trial"); fi
+            node tools/item312/measure.mjs --dist "$dist" --name "$name" --local --seasons "$seasons" --qualities low --presses none --limit 240 --pieces --fence --readback "$back" "${more[@]}" "$@" || true
+          }
+          page() { if [ "$1" = main ]; then echo ../main/dist; else echo dist; fi; }
+          case "${{ matrix.kind }}" in
+            cold | cold-named)
+              profile=()
+              if [ "${{ matrix.kind }}" = cold-named ]; then profile=(--profile); fi
+              go "${{ matrix.kind }}-r0-main" ../main/dist main spring "${profile[@]}"
+              for r in 1 2 3 4; do
+                for trial in main plain bytes webp step wait twin; do
+                  go "${{ matrix.kind }}-r$r-$trial" "$(page $trial)" $trial spring "${profile[@]}"
+                done
+              done
+              ;;
+            warm)
+              for trial in main plain bytes webp step wait twin; do
+                go "warm-a-$trial" "$(page $trial)" $trial spring,spring,spring
+              done
+              for trial in twin wait step webp bytes plain main; do
+                go "warm-b-$trial" "$(page $trial)" $trial spring,spring,spring
+              done
+              ;;
+            winter)
+              for r in 1 2 3 4; do
+                node tools/item312/measure.mjs --dist ../main/dist --name "winter-r$r" --local --seasons winter --qualities low,plain --presses none,5 --limit 300 --pieces --fence --profile --readback "$back" || true
+              done
+              ;;
+          esac
+
+      - name: what was read
+        if: always()
+        continue-on-error: true
+        shell: bash
+        working-directory: trials
+        run: cat out/work/item312/*.txt
+
+      - name: the files
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.kind }}
+          path: trials/out/work/item312
+          if-no-files-found: warn
+          retention-days: 14

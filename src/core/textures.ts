@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import type { AssetFile, Assets } from './assets'
+import { FAR, far, farBytes, farSource, farStep } from './far312'
+import type { Pixels } from './png'
 
 interface Entry {
   texture: THREE.Texture
@@ -47,8 +49,8 @@ async function decodeFirst(data: ArrayBuffer): Promise<ImageBitmap> {
   }
 }
 
-function add(name: string, bitmap: ImageBitmap, group: string): void {
-  const t = new THREE.Texture(bitmap)
+function add(name: string, bitmap: ImageBitmap | Pixels, group: string): THREE.Texture {
+  const t = 'data' in bitmap ? new THREE.DataTexture(bitmap.data, bitmap.width, bitmap.height, THREE.RGBAFormat, THREE.UnsignedByteType) : new THREE.Texture(bitmap)
   const colour = /\.srgb\./i.test(name)
   const tile = /\.tile\./i.test(name)
   t.colorSpace = colour ? THREE.SRGBColorSpace : THREE.NoColorSpace
@@ -62,6 +64,18 @@ function add(name: string, bitmap: ImageBitmap, group: string): void {
   t.name = name
   t.needsUpdate = true
   textures.set(name, { texture: t, bytes: Math.round(bitmap.width * bitmap.height * 4 * MIP_SHARE), group })
+  return t
+}
+
+async function addFar(name: string, data: ArrayBuffer, group: string): Promise<void> {
+  let image: ImageBitmap | Pixels | null = null
+  if (far.bytes) image = await farBytes(data.slice(0))
+  else if (far.webp) image = await decode(await (await fetch(new URL('trial312/slab-far.webp', document.baseURI))).arrayBuffer())
+  image ??= await decode(data)
+  const t = add(name, image, group)
+  farSource('data' in image ? image.data : image)
+  const stepped = far.step ? ((await farStep(t)) ? ' step' : ' step asked, no renderer yet') : ''
+  document.documentElement.dataset.far312 = `${'data' in image ? 'bytes' : 'bitmap'}${far.webp ? ' webp' : ''}${stepped}${far.wait ? ' wait' : ''}${far.twin ? ' twin' : ''}`
 }
 
 export function prepareGroup(assets: Assets, group: string): Promise<void> {
@@ -76,7 +90,8 @@ export function prepareGroup(assets: Assets, group: string): Promise<void> {
           return
         }
         const first = file !== e.file
-        add(e.name, first ? await decodeFirst(data) : await decode(data), group)
+        if (far.any && e.name === FAR) await addFar(e.name, data, group)
+        else add(e.name, first ? await decodeFirst(data) : await decode(data), group)
         assets.release(file.path)
         if (first) owed.push({ name: e.name, group, file: e.file })
       }),

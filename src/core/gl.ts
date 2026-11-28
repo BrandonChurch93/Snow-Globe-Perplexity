@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { farRenderer } from './far312'
 
 export interface Caps {
   float32: boolean
@@ -62,6 +63,7 @@ export function createGfx(canvas: HTMLCanvasElement, opts: { deny: string[]; pre
   renderer.autoClear = true
   renderer.setPixelRatio(1)
   renderer.info.autoReset = false
+  farRenderer(renderer)
   const caps: Caps = {
     float32,
     half,
