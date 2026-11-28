@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 282 · 2026-11-28 19:12 UTC
+Status 283 · 2026-11-28 19:27 UTC
 
-- `out/stills/status/status-282-1.jpg`: The prompt opening as it stands, 5.5 s into Preview 11, typed at 14 characters a second, being changed
-- `out/stills/status/status-282-2.jpg`: The prompt opening as it stands, 9.2 s into Preview 11, the prompt whole and the pointer on Send
-- `out/stills/status/status-282-3.jpg`: Still: spring landed hero, hd, draft
-- `out/stills/status/status-282-4.jpg`: Still: spring rest hero, hd, draft
+- `out/stills/status/status-283-1.jpg`: The typing's timing, each key press as a tick, 14.0 a second before above and 19.2 a second now below, a diagram from the build's schedule
+- `out/stills/status/status-283-2.jpg`: Open item 295 on hosted virtual Macs, ten loads of the page as it is above with five live pictures lost, ten with the live picture held back below with none lost, a stand-in, not a mend
+- `out/stills/status/status-283-3.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-283-4.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-28 19:12 UTC
-clock: phase 6, tick of 35.8 minutes
-phase 6: 64.38 h used of its 12.00 h box
-allowance (after the review): 64.38 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 64.38 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-28 19:27 UTC
+clock: phase 6, tick of 15.2 minutes
+phase 6: 64.63 h used of its 12.00 h box
+allowance (after the review): 64.63 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 64.63 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
@@ -3236,3 +3236,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 18:51 UTC. Item 294 part B: its builder's limit moves a second time, from 19:35 to 20:10 UTC, by its own 18:45 line (the proof tool is mended and its four failed cases pass on its machine; left are the reds on 01929331, two whole runs of 14 cases of about 20 minutes each, the floors on the final head and the report). Accepted; no merge before a second fresh reviewer's yes with no MUST and equal guard stills. The hosted proof of the render instructions (run 46173757954) stood at 6 of 10 jobs done, all 6 success, at 18:50 UTC (MEASURED). A dry merge of agent/p6-handoff 7c769ac5 onto main 670de820 has no conflict and the branch changes no path under src (MEASURED by git merge-tree and git diff).
 
 - 19:11 UTC. DECISION 330 (Brandon's words, relayed by Partner at 11:50 AM Mountain Time on Nov 28 after he watched Previews 11 and 12, saved in `out/work/notes/reports/partner/mail-partner-typing-sounds-speed.txt`: "The typing sounds that we use for this one aren't great at all. Can we reuse the ones that we did from Halaton v2 they sound much better. Also, the typing is a bit slow. I want it fast enough where it doesn't feel like it's taking forever, but the user can still read what's happening."). Two changes to the prompt opening of film A and nothing else. (a) Sounds: the key presses and the space bar become the ten files Halation v2 made for its own opening (private repo Space-Shooter-Game-v2 at `1dfa9d88`, `assets-src/sound/film/key-0.wav` to `key-7.wav`, `space-0.wav`, `space-1.wav`; made 2026-11-24, already paid for there; no call here, credits stay 7,420 of 10,000), laid as Halation lays them: one sound on the sample where its character appears, eight keys and two space bars drawn by a fixed seed, never one file twice in a row, one gain, at Halation's finished level (the typing's loudest three seconds at -30 LUFS short term within 1.5, no key over -14 dBTP, in the finished film A sound). The presses of decision 141 (cut from take 21, high cut at 2.5 kHz) leave the film. (b) Speed: before, 14 characters a second evenly spaced (`intro.charsPerSecond`, 83 gaps in 5.93 s; MEASURED from `config/showcase.json` and `src/film/opening.ts` at `670de820`). Now Halation's rhythm in film frames at 60 a second: the second letter of a word 3 frames after its first, later letters 2 or 3, the space bar 2 or 3 after the word, the next word 5 to 7 after the space bar, one breath of 10 to 12 after the full stop in the middle; about 19 gaps a second, about 4.3 s for the 84 characters (COMPUTED from the rule; the builder reports the measured figure). The prompt stands whole for the same 0.8 s before Send. The opening gets shorter by what the typing saves, about 1.6 s (COMPUTED); no other pause, step, hold or picture style changes, and film B is untouched. (c) Not changed: Send keeps its own sound, because the picture shows the pointer pressing the Send button, a click and not a key (Halation's heavier Enter key comes with the set and is not laid); no step ticks are added (not asked); the riser stays. Either is one word from Brandon. If Send's peak would fall under the loudest key's, its gain is raised just enough to stand 1.5 dB over it, Halation's own relation, and both gains are said. (d) The ten files are not committed while the repo is public, like every other take here; names, bytes, sha256 and source are recorded. (e) Ordered to a fresh builder `typing_builder` in its own machine (`out/work/orders/p6/typing-330.txt`, branch `agent/p6-typing` from `670de820`), limits: first line 19:45 UTC, the preview 20:30 UTC, the whole report 21:15 UTC. A fresh reader of another family reads the branch before it merges as a chain. Preview 13 (the opening alone with sound, 960x540) goes to Brandon once its frames are looked at; how it sounds is UNKNOWN until he listens. (f) What follows from it: film A's sound and length change (a new `audio/final/film-a.wav`; the sha256 recorded for the old one no longer applies after the merge), the engine's hash moves because `src` and `config` feed it (the eight guard stills and four film B frames must stay equal), and the opening's pack and the opening's master on the handoff branches are drawn again after the merge. Nothing here starts or hands over a 4K render.
+
+- 19:24 UTC. Decision 331 (item 295, the drawing lost on hosted Macs). The finder's second report (558 lines, read whole) is taken as the diagnosis. MEASURED by it on hosted virtual Macs only, nothing on a real Apple chip: the hosted card stands still for 4 to 22.5 s soon after the first paints in every load; since commit c2afb6bb of Nov 26 winter's page in Chrome loses its drawing in 17 of 32 loads when three things meet (the canvas first comes into sight at the first picture, the controls' blur is in the page at that moment, the standstill follows); with the canvas in sight from the page's first moment 0 of 10 were lost, with the canvas brought in after the standstill 0 of 30. Whether a real Apple machine ever does this is UNKNOWN. The mend named A in the form "ask the card" is NOT ordered: its signal is unknown at three points and a rule of frames at pace would cost every visitor over a second. Ordered instead (ruling 331 to the finder): one hosted run of four arms with a tool beside the page and nothing built, asking whether a canvas kept in sight from the page's first moment at an opacity no eye can see (0.004, 0.02, or opacity 0 with will-change) keeps the card with the page's own fade as it is. If yes, the mend is one value in index.html, with no delay on any machine and the build hash unchanged; it then gets its own branch and hosted proof. If no, item 295 closes as diagnosed and item 294's answer to a loss carries it. Limit of the run's line 20:30 UTC. No look changes by this decision.

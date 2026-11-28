@@ -1,25 +1,25 @@
-# Status 282
+# Status 283
 
-2026-11-28 19:12 UTC
+2026-11-28 19:27 UTC
 
 - Waiting for your word, Brandon, three things as before. One: your word on the film as a whole (Preview 11); the 4K render on your PC starts only on it. Two: the two what-ifs in Preview 12, the sand mound leaving and fall's faces going out, yes or no. Three: the level line's mend, yes or no.
-- Your two changes to the prompt opening are being built since 12:10 PM (decision 330). Sounds: the key presses and the space bar become Halation v2's ten sounds, laid the way Halation lays them and at its finished level. Speed: before, 14 characters a second, evenly spaced; now Halation's rhythm, about 19 a second in bursts (computed from the rule, the measured figure comes with the preview), so the 84 characters take about 4.3 seconds, not 5.9, and the opening gets about 1.6 seconds shorter. Send keeps its click, because the picture shows the pointer pressing the Send button, and no step ticks are added; either is one word from you. Nothing new is generated.
-- You receive Preview 13, the opening alone with sound at 960x540, when its builder's preview is in and its frames are looked at; its limit is 1:30 PM. How it sounds is unknown until you listen.
+- Your two changes to the prompt opening: the builder's first measured figures came at 12:20 PM and I checked them from its file. Typing speed before: 14.0 characters a second, evenly spaced, 5.93 seconds from the first key to the last. Now: 19.2 characters a second in Halation's rhythm, 4.32 seconds, quick inside a word with a short breath at a space and after the first sentence. The whole opening goes from 14.45 to 12.83 seconds. All ten of Halation's key and space bar sounds are used and none sounds twice in a row. The first picture attached shows every key press as a tick, before and now. Preview 13, the opening alone with sound at 960x540, is due from its builder by 1:30 PM. How it sounds is unknown until you listen.
 - Phases 0 to 5 are complete. Phase 6 is open, and these are its remaining parts.
 - The opening's change: Preview 13 for you, then it merges after a fresh reader.
 - The what-ifs still in work, each shown to you as a before and after or dropped: the sand sprinkle's tip (mail about 1:15 PM), summer's air (report 1:45 PM), summer's lights, second candidate (report 2:15 PM).
-- The render handoff for your PC: one file in the repo that Claude Code can follow alone. Its proof on hosted Windows and Mac machines: 7 of 10 jobs ended by 12:08 PM, the six verdicts read so far all pass, three small Windows jobs still run. You receive the path, the commit and the one line for Claude Code. No 4K render starts without your word.
-- The page's mends for a lost drawing (items 294 and 295): part B's limit is 1:10 PM; the cause report's second version is in and is being read.
+- The render handoff for your PC: one file in the repo that Claude Code can follow alone. Its proof on hosted Windows and Mac machines stands at 7 of 10 jobs passed at 12:22 PM, three small Windows jobs still run. You receive the path, the commit and the one line for Claude Code. No 4K render starts without your word.
+- The live picture lost on hosted Macs (item 295, decision 331): the cause report is read whole, 558 lines. Measured by its finder on hosted virtual Macs only: in Chrome there, winter's page loses its live picture in 17 of 32 first loads. The hosted graphics card stands still for about 4 to 22 seconds right after the first picture, and the loss comes only when the live picture first comes into sight at that same moment under the blurred controls; with the live picture brought in only after that standstill, 0 of 30 loads were lost. Whether any real Mac does this is unknown, nothing was measured on one. I did not order the larger mend, because its signal is unproven and its fallback would cost every visitor over a second. One more hosted run, ordered at 12:23 PM, asks whether a one value change that costs no visitor any time keeps the card; its answer is due 1:30 PM. The second picture attached shows ten loads of the page as it is and ten with the live picture held back; I read both counts from the run's own files.
+- The page's answer when a drawing is lost all the same (item 294, part B): its limit moved from 1:10 PM to 1:30 PM, because its own proof tool misread one frame and was mended.
 - The finals after your word: with prompt and without prompt at 3840x2160 and 60 FPS, the portfolio looping video and the portfolio screenshot.
-- Landed since 11:37 AM: the opening's builder started at 12:10 PM. The lights' builder sent its plan at 12:10 PM, its machine's calibration and the eight guard stills equal. The sand sprinkle's first whole run held every floor on its builder's machine; it runs again after mended comments. The handoff builder's machine lost its GitHub sign in after its session was resumed; it holds six verdict files, and the rest are fetched here when the run ends, so nothing waits on it.
+- Landed since 12:12 PM: the opening's schedule and its figures. Decision 331 on the lost live picture. Summer's air: its builder chose its strength and found a cost, a light mist left on one side in the first throw of the shake; I kept the plain form as ordered, and it shows that cost side by side in its report.
 - Open: the three things above, the opening's change, the what-ifs in work, the handoff's last three proof jobs, items 294 and 295, and the finals.
-- Sound: 7,420 of 10,000 credits used, measured from the ledger at 11:33 AM, no call since Nov 26. The opening's change needs none.
-- phase 6: 64.38 h used of its 12.00 h box
-- allowance (after the review): 64.38 h used of 12.00 h allowed
+- Sound: 7,420 of 10,000 credits used, measured from the ledger at 12:26 PM, no call since Nov 26. The opening's change needs none.
+- phase 6: 64.63 h used of its 12.00 h box
+- allowance (after the review): 64.63 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-282-1.jpg`: The prompt opening as it stands, 5.5 s into Preview 11, typed at 14 characters a second, being changed
-- `out/stills/status/status-282-2.jpg`: The prompt opening as it stands, 9.2 s into Preview 11, the prompt whole and the pointer on Send
-- `out/stills/status/status-282-3.jpg`: Still: spring landed hero, hd, draft
-- `out/stills/status/status-282-4.jpg`: Still: spring rest hero, hd, draft
+- `out/stills/status/status-283-1.jpg`: The typing's timing, each key press as a tick, 14.0 a second before above and 19.2 a second now below, a diagram from the build's schedule
+- `out/stills/status/status-283-2.jpg`: Open item 295 on hosted virtual Macs, ten loads of the page as it is above with five live pictures lost, ten with the live picture held back below with none lost, a stand-in, not a mend
+- `out/stills/status/status-283-3.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-283-4.jpg`: Still: winter rest hero, hd, draft
