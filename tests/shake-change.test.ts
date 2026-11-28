@@ -358,6 +358,95 @@ describe('the change number', () => {
     expect(light).toContain('0.45) * own);')
   })
 
+  it("ends the foot's image in winter's frost on the line it had while the foot stands and the frost lies: with the foot up or the frost on its way that end is spread over the depth the foot hid", () => {
+    const text = readFileSync('src/seasons/winter/frost.ts', 'utf8')
+    const open = '\nconst SHEET = `\n'
+    const from = text.indexOf(open)
+    expect(from).toBeGreaterThanOrEqual(0)
+    const sheet = text.slice(from + open.length, text.indexOf('`\n', from + open.length))
+    // One number ends the zone at the foot's axis. At rest it is the step it was and nothing new is read. It is spread when
+    // the frost is on its way out, when the foot is lifted or when it leans: the last two are how the table's shade knows
+    // that the foot is off the table (`slabShade`, surface.ts).
+    expect(sheet).toContain('  float imageHalf = sqrt(max(uFoot.z * uFoot.z - xz.x * xz.x, 0.0));\n  float imageAhead = xz.y - imageHalf;\n')
+    expect(sheet).toContain(
+      '  float imageFront = step(0.0, xz.y);\n' +
+        '  if (uGone.x > 0.0 || uFoot.w > 0.0 || dot(uLean.zw, uLean.zw) > 0.0) {\n' +
+        '    float imageSpread = max(imageHalf, min(uGone.x, ${IMAGE_LEAVE_MM.toFixed(1)}));\n' +
+        '    if (imageSpread > 0.0) imageFront = smoothstep(-imageSpread, imageSpread, xz.y);\n' +
+        '  }\n',
+    )
+    expect(sheet).toContain('smoothstep(uFoot.z + 3.0, uFoot.z - 3.0, abs(xz.x)) * imageFront;\n')
+    expect(sheet.split('step(0.0, xz.y)').length).toBe(2)
+    expect(sheet.split('imageFront').length).toBe(4)
+    expect(sheet.split('imageSpread').length).toBe(5)
+    expect(readFileSync('src/scene/surface.ts', 'utf8')).toContain('  if (uFoot.w > 0.0 || dot(uLean.zw, uLean.zw) > 0.0) {\n')
+    const least = Number(/\nconst IMAGE_LEAVE_MM = (\d+(?:\.\d+)?)\n/.exec(text)?.[1])
+    expect(least).toBeGreaterThan(0)
+
+    // The same rule in numbers, at places across the foot (x) and along the way the camera looks (z), in mm from the axis.
+    const radius = config.globe.baseDiameterMm / 2
+    const smooth = (a: number, b: number, v: number): number => {
+      const t = Math.min(1, Math.max(0, (v - a) / (b - a)))
+      return t * t * (3 - 2 * t)
+    }
+    const hid = (x: number): number => Math.sqrt(Math.max(radius * radius - x * x, 0))
+    const step = (z: number): number => (z >= 0 ? 1 : 0)
+    const front = (x: number, z: number, out: number, up: boolean): number => {
+      const spread = out > 0 || up ? Math.max(hid(x), Math.min(out, least)) : 0
+      return spread > 0 ? smooth(-spread, spread, z) : step(z)
+    }
+    // Well inside a spread, clear of the rounding at its two ends.
+    const within = (z: number, spread: number): boolean => Math.abs(z) < spread - 1e-4
+    const DZ = 0.86
+    const across = [-radius - 4, -radius, -radius + 0.05, -0.9 * radius, -0.5 * radius, -7, 0, 3, 0.31 * radius, 0.8 * radius, radius - 0.4, radius, radius + 1.5]
+    for (const x of across) {
+      const h = hid(x)
+      for (let i = -80; i < 80; i++) {
+        const z = (i + 0.5) * DZ
+        // At rest the end is the step it was.
+        expect(front(x, z, 0, false)).toBe(step(z))
+        const up = front(x, z, 0, true)
+        if (Math.abs(z) >= h) {
+          // A place that is seen while the foot stands is read as it was, the foot up or down.
+          expect(up).toBe(step(z))
+        } else if (within(z, h)) {
+          // What the foot hid: no line. The end rises from the back of the foot to its front, half way at the axis, and from
+          // one place to the next by no more than its width allows.
+          const back = front(x, z - DZ, 0, true)
+          expect(up).toBeGreaterThan(0)
+          expect(up).toBeLessThan(1)
+          expect(up).toBeGreaterThanOrEqual(back)
+          expect(up - back).toBeLessThanOrEqual((0.75 * DZ) / h + 1e-12)
+          expect(up + front(x, -z, 0, true)).toBeCloseTo(1, 12)
+        }
+        // The leaving begins from what stood there: its first moment moves the end by nothing under a foot that is up, and
+        // by nothing beside the foot whether it is up or down.
+        expect(front(x, z, 1e-6, true)).toBe(up)
+        if (h === 0) expect(front(x, z, 1e-6, false)).toBe(step(z))
+        // In the leaving the end is spread by what the foot hid or by how far the frost is out, whichever is more, the
+        // second up to `least` and no further. The spread never narrows as the frost goes, and the foot's lift adds nothing.
+        let wide = h
+        for (const out of [0.2, 1, 0.5 * least, least, 2 * least, 60, 170]) {
+          const spread = Math.max(h, Math.min(out, least))
+          expect(spread).toBeGreaterThanOrEqual(wide)
+          wide = spread
+          const gone = front(x, z, out, false)
+          expect(gone).toBe(front(x, z, out, true))
+          if (Math.abs(z) >= spread) expect(gone).toBe(step(z))
+          else if (within(z, spread)) {
+            expect(gone).toBeGreaterThan(0)
+            expect(gone).toBeLessThan(1)
+          }
+        }
+        expect(wide).toBe(Math.max(h, least))
+      }
+    }
+    // Along its axis the standing foot hides its whole radius either way, and at its two ends and beside it nothing.
+    expect(hid(0)).toBe(radius)
+    expect(hid(radius)).toBe(0)
+    expect(hid(-radius - 4)).toBe(0)
+  })
+
   it('raises a cover that comes up fast, is whole across the span and dies away as a tail past the end of the window', () => {
     const span = changeSpan('base')
     const cover = CHANGE_COVER
