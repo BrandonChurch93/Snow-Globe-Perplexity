@@ -440,18 +440,19 @@ vec3 glassSeen(vec3 o, vec3 d, float soft, int k, float own) {
       vec3 keyLocal = uKeyDir * uTurn;
       vec3 lit = uSky * (0.2 + 0.8 * open) + uKeyCol * max(keyLocal.y, 0.0) * open * (0.35 + 0.65 * smoothstep(-0.4, 0.5, dot(dot(q.xz, q.xz) > 0.0 ? normalize(q.xz) : vec2(1.0, 0.0), normalize(keyLocal.xz + 1e-4))));
       float wear = 0.75 + 0.5 * glassNoise(vec3(q.xz * 0.35, 1.0));
-      return uBase * lit * wear * 0.3183 + uPool * uBase * 0.2 * (1.0 - open);
-    }
-    vec3 ow = uTurn * (o + vec3(0.0, CENTRE_Y, 0.0)) + uGlobeAt;
-    if (dw.y < -0.003 && ow.y > 0.0) {
-      vec3 s = ow + dw * (-ow.y / dw.y);
-      float dist = length(s.xz - uGlobeAt.xz);
-      float contact = 0.8 * (1.0 - smoothstep(BASE_R * 0.85, BASE_R * 1.5, dist));
-      float lit = exp(-dist * dist / (2.0 * 650.0 * 650.0));
-      vec3 slab = uRoomFloor * (1.0 - 0.6 * contact) + uSlab * uKeyCol * max(uKeyDir.y, 0.0) * (1.0 - contact) * lit;
-      slab += uSlab * uPool * 3.0 * exp(-dist * dist / (2.0 * 110.0 * 110.0)) * (1.0 - 0.6 * contact);
-      float away = smoothstep(1400.0, 2900.0, length(s.xz));
-      return mix(slab * ${num(glassLook.floor)}, c, away);
+      c = uBase * lit * wear * 0.3183 + uPool * uBase * 0.2 * (1.0 - open);
+    } else {
+      vec3 ow = uTurn * (o + vec3(0.0, CENTRE_Y, 0.0)) + uGlobeAt;
+      if (dw.y < -0.003 && ow.y > 0.0) {
+        vec3 s = ow + dw * (-ow.y / dw.y);
+        float dist = length(s.xz - uGlobeAt.xz);
+        float contact = 0.8 * (1.0 - smoothstep(BASE_R * 0.85, BASE_R * 1.5, dist));
+        float lit = exp(-dist * dist / (2.0 * 650.0 * 650.0));
+        vec3 slab = uRoomFloor * (1.0 - 0.6 * contact) + uSlab * uKeyCol * max(uKeyDir.y, 0.0) * (1.0 - contact) * lit;
+        slab += uSlab * uPool * 3.0 * exp(-dist * dist / (2.0 * 110.0 * 110.0)) * (1.0 - 0.6 * contact);
+        float away = smoothstep(1400.0, 2900.0, length(s.xz));
+        c = mix(slab * ${num(glassLook.floor)}, c, away);
+      }
     }
   }
   return c;

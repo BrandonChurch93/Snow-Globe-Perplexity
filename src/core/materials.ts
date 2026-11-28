@@ -555,26 +555,27 @@ float stageStill(ivec2 at) {
   return (floor(texelFetch(uStill, at & ${STILL_SIDE - 1}, 0).r * 255.0 + 0.5) + 0.5) / 256.0;
 }
 bool stageGoneStill(float c) {
+  bool gone = false;
   if (uState.w > 0.5) {
     float h = stageStill(ivec2(gl_FragCoord.xy));
     if (!(uState.z < -${(BASE_CODE - 1).toFixed(1)}) && stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * ${OUTSIDE_FRONT.feather.toFixed(2)}, 0.001, 0.999);
-    if (uState.w > 1.5 ? h < c : h >= c) return true;
+    gone = uState.w > 1.5 ? h < c : h >= c;
   }
-  return uFlags.w < 1.0 && stageStill(ivec2(gl_FragCoord.yx) + 29) >= uFlags.w;
+  return gone || (uFlags.w < 1.0 && stageStill(ivec2(gl_FragCoord.yx) + 29) >= uFlags.w);
 }
 bool stageGone(float c) {
-  if (uPass.w < 0.5) return stageGoneStill(c);
-  if (uState.w > 0.5) {
+  bool still = uPass.w < 0.5;
+  bool gone = still && stageGoneStill(c);
+  if (!still && uState.w > 0.5) {
     float h = stageHash(vec3(gl_FragCoord.xy, uSeed));
     if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) {
       h = stageHash(vec3(gl_FragCoord.xy, uPass.x));
       if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w;
       h = fract(h + uPass.y);
     } else if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * ${OUTSIDE_FRONT.feather.toFixed(2)}, 0.001, 0.999);
-    if (uState.w > 1.5 ? h < c : h >= c) return true;
+    gone = uState.w > 1.5 ? h < c : h >= c;
   }
-  if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;
-  return false;
+  return gone || (!still && uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w);
 }
 ${VEIL_FRAG_PARS}
 float stageBlur() {
