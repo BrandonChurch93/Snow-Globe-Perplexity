@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 262 · 2026-11-28 11:52 UTC
+Status 263 · 2026-11-28 12:18 UTC
 
-- `out/stills/status/status-262-1.jpg`: The level line in spring's storm at the live page's low quality, enlarged three times, the main branch left and the second candidate right, its builder's sheet, a what-if, waits for your word
-- `out/stills/status/status-262-2.jpg`: The level line's candidates at 4K at three times, spring at rest at both rims, the main branch, the first candidate and the second, the second reads as the main branch
-- `out/stills/status/status-262-3.jpg`: Summer's sand mound leaving at 4K at full size, film frames 2108 and 2109, one smear on the main branch left and bristles in the what-if right, it fails and is being reworked
-- `out/stills/status/status-262-4.jpg`: Fall's leaves at the landing at 4K at three times, film frame 2162, the main branch left and the what-if right, ribs on the lifted leaves, being reworked
+- `out/stills/status/status-263-1.jpg`: Fall into winter at film frame 2836 at 4K at its own size, the main branch above with winter's base carrying fall's three burning faces and the what-if below with none burning, waits for your word
+- `out/stills/status/status-263-2.jpg`: The what-if at 4K, film frames 2782, 2794, 2804 and 2806, fall's faces going out one after another, not on main
+- `out/stills/status/status-263-3.jpg`: Film frame 2782 at 4K at its own size, the main branch above and the what-if below, the right face going out, ladders of level bars on the roots in both, open item 291
+- `out/stills/status/status-263-4.jpg`: Still: fall rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-28 11:52 UTC
-clock: phase 6, tick of 38.4 minutes
-phase 6: 57.05 h used of its 12.00 h box
-allowance (after the review): 57.05 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 57.05 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-28 12:18 UTC
+clock: phase 6, tick of 25.3 minutes
+phase 6: 57.47 h used of its 12.00 h box
+allowance (after the review): 57.47 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 57.47 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
