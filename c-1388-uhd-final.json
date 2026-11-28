@@ -1,0 +1,35 @@
+{
+  "engineHash": "530b5d1ac19d93c3",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "c5bc5c38fdabce09",
+    "summer": "e54346370f9c451d",
+    "fall": "762ec02dc7ee1a90"
+  },
+  "format": "uhd",
+  "tier": "final",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "renderer": "lavapipe",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-28T02:11:59.146Z",
+  "diag": "",
+  "spec": {
+    "source": "film",
+    "index": 1388
+  },
+  "frameSeconds": 23.133333333333333,
+  "shot": "shake-2",
+  "season": "spring",
+  "seconds": 954.123,
+  "timings": {
+    "simMs": 39834.2999997735,
+    "drawMs": 911299.1000000834,
+    "samples": 76,
+    "steps": 9010
+  },
+  "precision": "float32",
+  "errors": []
+}
