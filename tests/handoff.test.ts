@@ -1155,6 +1155,67 @@ describe('Windows: a file that another program holds', () => {
   })
 })
 
+describe('a file on the Desktop that a player holds open', () => {
+  it('knows the errors of a held file and no other', () => {
+    for (const code of ['EBUSY', 'EPERM', 'EACCES']) expect(L.heldOpen(Object.assign(new Error(code), { code }))).toBe(true)
+    expect(L.heldOpen(Object.assign(new Error('gone'), { code: 'ENOENT' }))).toBe(false)
+    expect(L.heldOpen(new Error('no code'))).toBe(false)
+    expect(L.heldOpen(null)).toBe(false)
+  })
+  it('names the second copy beside the first, with the same ending', () => {
+    expect(L.besideName('Snow Globe Seasons - Test - 3840x2160.mp4')).toBe('Snow Globe Seasons - Test - 3840x2160 (new).mp4')
+    expect(L.besideName('Snow Globe Seasons - Test - Contact Sheet.jpg')).toBe('Snow Globe Seasons - Test - Contact Sheet (new).jpg')
+    expect(L.besideName('a.b.mp4')).toBe('a.b (new).mp4')
+    expect(L.besideName('plain')).toBe('plain (new)')
+  })
+  it('says in one sentence who must do what', () => {
+    const said = L.heldSentence('Snow Globe Seasons - With Prompt - 3840x2160.mp4')
+    expect(said).toContain('another program holds it open')
+    expect(said).toContain('Brandon closes that program, then the same line is run again')
+    expect(said).not.toMatch(/[—!]/)
+  })
+})
+
+describe('a browser that updated itself between the test and the render, as the tool makes it up for its own test', () => {
+  it('does nothing without the switch', () => {
+    expect(L.browserMovedPretend({ on: false, seen: null, testTime: '2026-11-28T02:00:00Z' })).toEqual({ pretend: false, mark: false })
+    expect(L.testSwitches('small').browserMoved).toBe(false)
+    expect(L.testSwitches('small,browser-moved').browserMoved).toBe(true)
+    expect(() => L.testSwitches('browser-moved=1')).toThrow(/no switch/)
+  })
+  it('stops the first render that looks, and keeps the time of that look', () => {
+    expect(L.browserMovedPretend({ on: true, seen: null, testTime: '2026-11-28T02:00:00Z' })).toEqual({ pretend: true, mark: true })
+  })
+  it('goes on stopping until a short test has been started after that look', () => {
+    const seen = '2026-11-28T02:10:00.000Z'
+    expect(L.browserMovedPretend({ on: true, seen, testTime: '2026-11-28T02:00:00.000Z' })).toEqual({ pretend: true, mark: false })
+    expect(L.browserMovedPretend({ on: true, seen, testTime: seen })).toEqual({ pretend: true, mark: false })
+    expect(L.browserMovedPretend({ on: true, seen, testTime: undefined })).toEqual({ pretend: true, mark: false })
+    expect(L.browserMovedPretend({ on: true, seen, testTime: '2026-11-28T02:10:00.001Z' })).toEqual({ pretend: false, mark: false })
+  })
+  it('marks the made up version in plain words, so that no report reads as a real update', () => {
+    expect(L.MADE_UP_UPDATE).toContain("the tool's own test made up")
+  })
+})
+
+describe('the browser versions a render drew with', () => {
+  it('names one version plainly', () => {
+    expect(L.browsersUsed([{ browser: '158.0.8127.37' }, { browser: '158.0.8127.37' }], '158.0.8127.37')).toEqual(['158.0.8127.37'])
+    expect(L.browsersLine([{ browser: '158.0.8127.37' }], '158.0.8127.37')).toBe('Google Chrome 158.0.8127.37')
+  })
+  it('names both versions in the order of the starts when the browser was updated on the way', () => {
+    const sessions = [{ browser: '158.0.8127.37' }, { browser: '158.0.8127.37' }, { browser: '158.0.8127.38' }]
+    expect(L.browsersUsed(sessions, '158.0.8127.38')).toEqual(['158.0.8127.37', '158.0.8127.38'])
+    const line = L.browsersLine(sessions, '158.0.8127.38')
+    expect(line).toContain('158.0.8127.37, then 158.0.8127.38')
+    expect(line).toContain('each version passed the short test before it drew a frame')
+  })
+  it('falls back to the newest short test for a render whose starts kept no version, and says so when nothing is known', () => {
+    expect(L.browsersUsed([{}, { browser: null }], '158.0.8127.38')).toEqual(['158.0.8127.38'])
+    expect(L.browsersLine(undefined, undefined)).toBe('Google Chrome, version not recorded')
+  })
+})
+
 describe('the tool on the command line', () => {
   const tool = rel('tools', 'handoff.mjs')
   const run = (args: string[], env: Record<string, string> = {}) => spawnSync(process.execPath, [tool, ...args], { cwd: rel(), encoding: 'utf8', env: { ...process.env, HANDOFF_TEST: '', ...env } })

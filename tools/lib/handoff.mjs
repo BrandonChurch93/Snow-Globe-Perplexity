@@ -24,21 +24,61 @@ export const deliveryFolder = (small = false) => (small ? `${TITLE} (tool test)`
 // The switches of the tool's own tests. They come in one variable of the environment that RENDER-ON-YOUR-PC.md never
 // names, so that no line an agent is given can turn one on.
 export const TEST_VARIABLE = 'HANDOFF_TEST'
-const TEST_WORDS = ['software', 'small', 'tones', 'linux', 'inline', 'fast-watch']
+const TEST_WORDS = ['software', 'small', 'tones', 'linux', 'inline', 'fast-watch', 'browser-moved']
 export function testSwitches(text = '') {
-  const out = { software: false, small: false, tones: false, linux: false, inline: false, fastWatch: false, angle: '', refs: '', stretch: '', stop: 0 }
+  const out = { software: false, small: false, tones: false, linux: false, inline: false, fastWatch: false, browserMoved: false, angle: '', refs: '', stretch: '', stop: 0 }
   for (const word of String(text).split(',').map((w) => w.trim()).filter(Boolean)) {
     const [key, value = ''] = word.split('=')
     if (key === 'angle' && /^[a-z0-9]+$/.test(value)) out.angle = value
     else if (key === 'refs' && value) out.refs = value
     else if (key === 'stretch' && /^\d+-\d+(\/\d+)?$/.test(value)) out.stretch = value
-    else if (key === 'fast-watch') out.fastWatch = true
+    else if (key === 'fast-watch' && !value) out.fastWatch = true
+    else if (key === 'browser-moved' && !value) out.browserMoved = true
     else if (TEST_WORDS.includes(key) && !value) out[key] = true
     else throw new Error(`${TEST_VARIABLE} holds ${word}, which is no switch of the tool's tests`)
   }
   return out
 }
 export const anyTestSwitch = (t) => t.software || t.small || t.tones || t.linux || !!t.angle || !!t.refs || !!t.stretch
+
+/**
+ * The tool's own test of a browser that updated itself between the short test and the render. With the switch on,
+ * the render is told that the test passed on another version than the one it sees, from the first time it looks
+ * until a short test has been started after that. `seen` is when the render first looked (null: never), `testTime`
+ * when the last short test started. `mark` says that this look is the first and its time is to be kept.
+ */
+export function browserMovedPretend({ on, seen, testTime }) {
+  if (!on) return { pretend: false, mark: false }
+  if (!seen) return { pretend: true, mark: true }
+  const t = Date.parse(testTime ?? '')
+  return { pretend: !(Number.isFinite(t) && t > Date.parse(seen)), mark: false }
+}
+export const MADE_UP_UPDATE = "of before an update that the tool's own test made up"
+
+/**
+ * The versions of the browser a render drew with, in the order of its starts. Each start keeps the version its short
+ * test passed on; `last` is the version of the newest short test, for a render whose starts kept none.
+ */
+export function browsersUsed(sessions, last) {
+  const out = []
+  for (const v of (sessions ?? []).map((s) => s?.browser)) if (v && !out.includes(v)) out.push(v)
+  if (!out.length && last) out.push(last)
+  return out
+}
+/** The line of the render report that names them. */
+export function browsersLine(sessions, last) {
+  const used = browsersUsed(sessions, last)
+  if (!used.length) return 'Google Chrome, version not recorded'
+  if (used.length === 1) return `Google Chrome ${used[0]}`
+  return `Google Chrome ${used.join(', then ')}: the browser was updated on the way, and each version passed the short test before it drew a frame`
+}
+
+/** What a copy to the Desktop does when the file there is held open by another program (a player, a viewer). */
+export const HELD_CODES = ['EBUSY', 'EPERM', 'EACCES']
+export const heldOpen = (e) => HELD_CODES.includes(e?.code)
+export const heldSentence = (name) => `"${name}" on the Desktop could not be written, because another program holds it open (a player or a viewer, most likely). Brandon closes that program, then the same line is run again`
+/** The name a second copy gets beside a file that is held open: "a.mp4" becomes "a (new).mp4". */
+export const besideName = (name) => name.replace(/(\.[^.]+)?$/, (ext) => ` (new)${ext}`)
 
 // ---------------------------------------------------------------------------------------------------------------------
 // What draws.

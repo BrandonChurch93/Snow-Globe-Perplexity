@@ -26,8 +26,10 @@ card. That is why step 1 draws a little, compares it, reports and stops.
 2. Do not commit and do not push. One line of this file writes to GitHub: the upload of 2.5. Run it only after
    Brandon has said yes to it.
 3. Run only the commands written in this file, exactly as written, one line at a time. Use no other switches,
-   set no variables, and do not join lines with `&&` or `;`.
-4. Ask Brandon only for a password, a sign in, or a system prompt that asks for his leave.
+   set no variables, and do not join lines with `&&` or `;`. Beyond these lines you do one thing only: you may
+   open a report file this file names with your own file reader, to give its text to Brandon.
+4. Ask Brandon only for a password, a sign in, or a system prompt that asks for his leave, and for what this file
+   tells you, word for word, to ask him. Ask him nothing else and decide nothing for him.
 5. When anything fails, stop. Give Brandon the report file the failing command names, whole, and wait. Do not try
    another way.
 6. Do step 1, then stop. Do step 2 only when Brandon says so in his own words, after step 1 has passed.
@@ -57,7 +59,8 @@ card. That is why step 1 draws a little, compares it, reports and stops.
   `===== REPORT: ... =====` and `===== END OF REPORT =====`.
 - Every `node tools/handoff.mjs` line is run inside the clone's folder `Snow-Globe-Perplexity`. If node answers
   `Cannot find module` with a path that ends in `tools\handoff.mjs`, you are in the wrong folder: run
-  `cd Snow-Globe-Perplexity` once and run the line again.
+  `cd Snow-Globe-Perplexity` once and run the line again. If your shell forgets the folder between two commands,
+  name the clone's folder as the working folder of each command in your own tool. Do not join lines to get there.
 - The tool writes its reports itself, as plain UTF-8 text. Do not send a command's output into a file of your own.
 - If you are started again in the middle of the work (the agent or the computer was restarted): in step 1, begin
   again at 1.3. In step 2, run the line of 2.2 again; it carries on from the last finished frames. If a line then
@@ -117,6 +120,11 @@ cd Snow-Globe-Perplexity
 
 Good: the clone ends without the word `fatal`. It takes a minute or two.
 
+Run the clone in the folder you were started in. A folder with spaces in its name is fine. Everything the render
+writes goes into the clone, so the clone must lie on a drive with room: the doctor of 1.4 says how much is needed
+and how much is free there. If it is too little, that is for Brandon: he starts you again in a folder on a larger
+drive, and you begin at 1.2 there.
+
 The sign in. The repo may be private by the time you read this. Then git needs Brandon's GitHub account once:
 
 - Git for Windows opens a small window by itself that says `Connect to GitHub`. Tell Brandon, word for word:
@@ -140,6 +148,8 @@ node tools/handoff.mjs setup
 ```
 
 Good: `PASS: the packages are installed and the build is made, engine <16 signs>, the stamp's`. A few minutes.
+The 16 signs are the engine hash: a sum over everything that draws the film. `the stamp's` says it is the same
+hash that `render/STAMP.json` in the clone records, so this clone draws the film the references were made from.
 
 Bad: `FAIL:` with the reason. Stop and report.
 
@@ -197,8 +207,8 @@ node tools/handoff.mjs test
 It draws a few single frames and about two seconds of the film at 3840 x 2160, at the quality of the final
 render and through the same code. It compares the frames with reference pictures, joins the two seconds into a
 short film, and measures how long the whole render will take here. Before it draws it prints how long the test
-itself is expected to take. Chrome windows open and close by themselves. Do not touch them, and do not let the
-computer sleep.
+itself is expected to take. Chrome windows open and close by themselves. Do not touch them. The tool keeps the
+computer awake by itself while it draws; you change no power setting.
 
 It answers `RUNNING:` every few minutes: run the same line again each time.
 
@@ -242,6 +252,10 @@ Bad: `FAIL:` with the reason. Stop and report.
 Give Brandon the whole text of `out/work/handoff/report-test.txt` as one block, with its `TO LOOK AT` block if it
 has one. Say where the test film and the sheet of pictures are, and ask him to open both and look.
 
+If the report holds a line that begins `MORE THAN 10 HOURS`, say that line to Brandon first, before the block.
+The test has passed all the same. Whether a render that long is started on this machine is for the remote team
+to decide, not for you.
+
 STOP here. Do not go on to step 2 by yourself, whatever the report says.
 
 ## Step 2 on Windows: the full render, only on Brandon's word
@@ -258,10 +272,17 @@ node tools/handoff.mjs doctor
 node tools/handoff.mjs test
 ```
 
-Good: the pull ends with `Already up to date.` or `Fast-forward`, and the three lines each end with `PASS:`.
+Good: the pull says `Already up to date.` or `Fast-forward`, and the three lines each end with `PASS:`.
 
 Bad: the pull says anything with `fatal` or `error`, or asks to merge: stop and report. Do not merge, stash or reset.
 git asks for a sign in: that is for Brandon.
+
+If the test film of step 1 is still open in a player, this test writes its film beside it with `(new)` in the
+name and says so in a `LOOK` line. That is no failure.
+
+If the test of this step says that its film is silent, the two final sound mixes are not in the clone, and the
+render of 2.2 refuses without them. Do not run 2.2 then. Tell Brandon what the second row of the table in 2.2
+says, and wait. When he says the two files are there, run the test line again and go on.
 
 ### 2.2 The render
 
@@ -289,9 +310,9 @@ Bad, each with the one thing to do:
 | a final mix is missing or is not the one the stamp names | stop and tell Brandon: the two files `audio/final/film-a.wav` and `audio/final/film-b.wav` must be put into the clone by him |
 | it was stopped before it ended (sleep, restart, a closed window) | run the same line again. It carries on from the last finished frames. If it stops a second time at the same place, stop and report |
 | `the WebGL context was lost` (the driver reset the card, or the card ran out of memory) | run the same line again, once. It carries on. If it is lost a second time at the same place, stop and report. Change no setting (rule 8) |
-| the page draws in software, or on another card, or Chrome changed its version | stop and report. Nothing drawn is lost |
+| `Chrome is now version ...: the browser was updated` | Chrome updated itself in the middle. Run `node tools/handoff.mjs test` again. When it ends with `PASS:`, run the render line again: it carries on from the last finished frames, and the report names both versions of Chrome. When the test ends with `FAIL:`, do not run the render line: nothing more is drawn with a browser the test did not pass on (the tool refuses it too). Stop and give Brandon `out/work/handoff/report-test.txt` |
+| the page draws in software, or on another card | stop and report. Nothing drawn is lost |
 | too little free disk | stop and report. Nothing drawn is lost |
-| the render would take longer than about ten hours | stop and report. The remote team decides |
 | anything else | stop and report |
 
 ### 2.3 Check the four files
@@ -311,6 +332,10 @@ node tools/handoff.mjs deliver
 ```
 
 Good: `PASS: the four files and the report are in ...` with the folder `Snow Globe Seasons` on the Desktop.
+
+If the FAIL says that a file on the Desktop `could not be written, because another program holds it open`, tell
+Brandon, word for word: "A film from an earlier run is open in a player on your Desktop. Please close the player
+and tell me." Then run the same line again.
 
 What the files weigh: each film at most 500 MB, the loop under 2,000 MB (2.3 checks it), the screenshot some tens
 of MB. They stay in that folder. 2.5 sends copies of them, and only if Brandon says yes.

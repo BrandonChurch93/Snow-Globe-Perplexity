@@ -841,7 +841,16 @@ export async function shortTest(ctx) {
   try {
     fs.mkdirSync(doc.machine.desktop, { recursive: true })
     onDesktop = path.join(doc.machine.desktop, testName)
-    fs.copyFileSync(made, onDesktop)
+    try {
+      fs.copyFileSync(made, onDesktop)
+    } catch (e) {
+      // the test film of an earlier test is open in a player: the new one goes beside it, and the test goes on
+      if (!L.heldOpen(e)) throw e
+      const beside = path.join(doc.machine.desktop, L.besideName(testName))
+      fs.copyFileSync(made, beside)
+      look.push(`the test film of an earlier test, "${testName}" on the Desktop, is held open by another program and was left as it is. The film of this test is beside it as "${path.basename(beside)}"`)
+      onDesktop = beside
+    }
     row('test film: on the Desktop', onDesktop, 'copied there', L.sha256File(onDesktop) === madeRecord.sha256)
   } catch (e) {
     row('test film: on the Desktop', `not copied (${e.message})`, 'copied there', false)
@@ -893,11 +902,21 @@ export async function shortTest(ctx) {
     const made2 = await contactSheet(sheet, file, `${L.TITLE}: the short test on ${doc.renderer}`)
     result.sheet = { file, bytes: made2.bytes }
     ctx.say(`contact sheet: ${file} (${mb(made2.bytes)})`)
+    const sheetName = `${L.TITLE} - Test - Contact Sheet.jpg`
     try {
-      const to = path.join(doc.machine.desktop, `${L.TITLE} - Test - Contact Sheet.jpg`)
+      const to = path.join(doc.machine.desktop, sheetName)
       fs.copyFileSync(file, to)
       result.sheet.onDesktop = to
-    } catch {}
+    } catch (e) {
+      // the sheet of an earlier test is open in a viewer: the new one goes beside it
+      try {
+        if (!L.heldOpen(e)) throw e
+        const beside = path.join(doc.machine.desktop, L.besideName(sheetName))
+        fs.copyFileSync(file, beside)
+        result.sheet.onDesktop = beside
+        look.push(`the sheet of pictures of an earlier test, "${sheetName}" on the Desktop, is held open by another program and was left as it is. The sheet of this test is beside it as "${path.basename(beside)}"`)
+      } catch {}
+    }
   }
   ctx.say(`test film: ${onDesktop || kept} (${mb(fs.statSync(made).size)}, ${frames} frames)`)
 
@@ -1016,7 +1035,7 @@ export async function fullRender(ctx) {
   const state = readOr(path.join(ctx.H, 'render-state.json'), { sessions: [] })
   const open = state.sessions.filter((s) => !s.end)
   for (const s of open) Object.assign(s, { end: s.last ?? s.start, how: 'stopped before it ended' })
-  const session = { start: new Date().toISOString(), last: new Date().toISOString(), framesAtStart: sum(planNow.map((p) => p.framesDone)) }
+  const session = { start: new Date().toISOString(), last: new Date().toISOString(), framesAtStart: sum(planNow.map((p) => p.framesDone)), browser: test?.browser ?? null }
   state.sessions.push(session)
   const saveState = () => writeJson(path.join(ctx.H, 'render-state.json'), state)
   saveState()
@@ -1071,6 +1090,11 @@ export async function fullRender(ctx) {
     if (!cal.ok) return end(fail(cal.why))
   }
   const expected = { renderer: test?.renderer ?? doc.renderer, browser: test?.browser ?? doc.page.browser }
+  // the tool's own test of a browser that updated itself: see browserMovedPretend
+  const movedFile = path.join(ctx.H, 'browser-moved.json')
+  const moved = L.browserMovedPretend({ on: ctx.T.browserMoved === true, seen: readOr(movedFile)?.seen ?? null, testTime: test?.time })
+  if (moved.mark) writeJson(movedFile, { seen: new Date().toISOString() })
+  if (moved.pretend) expected.browser = `${expected.browser} ${L.MADE_UP_UPDATE}`
   const guard = async () => {
     const free = X.freeBytes(rel())
     const floor = need.spare + need.inFlight
@@ -1319,14 +1343,24 @@ export async function deliver(ctx, reportText) {
     if (!f || !fs.existsSync(f.file) || fs.statSync(f.file).size !== f.bytes) return { pass: false, why: `${kind} is not the file that was checked any more (${f ? short(f.file) : 'not named'}). Run the check again` }
     const to = path.join(folder, L.deliveryName(kind, mode.format.width, mode.format.height))
     ctx.say(`copying ${path.basename(to)} (${mb(f.bytes)})`)
-    fs.copyFileSync(f.file, to)
+    try {
+      fs.copyFileSync(f.file, to)
+    } catch (e) {
+      if (L.heldOpen(e)) return { pass: false, why: L.heldSentence(path.basename(to)) }
+      throw e
+    }
     const sha = L.sha256File(to)
     rows.push({ check: path.basename(to), found: `${mb(f.bytes)}, sha256 ${sha}`, wanted: 'the checked file, byte for byte', pass: sha === f.sha256 })
     files.push({ kind, file: to, bytes: f.bytes, sha256: sha })
   }
   const pass = rows.every((r) => r.pass)
   const report = path.join(folder, `${L.TITLE} - Render Report.txt`)
-  fs.writeFileSync(report, reportText({ machine, mode, checked, files, rows, folder }))
+  try {
+    fs.writeFileSync(report, reportText({ machine, mode, checked, files, rows, folder }))
+  } catch (e) {
+    if (L.heldOpen(e)) return { pass: false, why: L.heldSentence(path.basename(report)) }
+    throw e
+  }
   return { pass, why: pass ? `the four files and the report are in ${folder}. Next, only if Brandon says yes to sending them to the remote team: node tools/handoff.mjs upload. Then: node tools/handoff.mjs clean` : 'a copy on the Desktop is not the file that was checked', rows, folder, files, report, small: mode.small }
 }
 

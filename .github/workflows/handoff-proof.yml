@@ -38,15 +38,16 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
-          # the same in Git Bash
+            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,doctor-again,test-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+          # the same in Git Bash. Here the test film is held open while the test runs again, and a browser that
+          # updated itself between the test and the render is made up once: the render stops, the test runs again
           - id: windows-gitbash-small
             os: windows-latest
             shell: bash
             mode: small
-            switches: software,small,tones,fast-watch
+            switches: software,small,tones,fast-watch,browser-moved
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,doctor-again,test-again,render-stops-for-browser,test-after-update,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
           # the same on the newest LTS of Node
           - id: windows-newest-lts-small
             os: windows-latest
@@ -55,7 +56,7 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,doctor-again,test-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
           # the winget lines of the file, then setup and the doctor with what they installed
           - id: windows-winget-lines
             os: windows-latest
@@ -89,7 +90,7 @@ jobs:
             mode: small
             switches: small,tones,fast-watch
             refusal: 'no'
-            expect: clone,setup,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+            expect: clone,setup,doctor,test,pull,setup-again,doctor-again,test-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
           - id: macos-3840
             os: macos-latest
             shell: bash

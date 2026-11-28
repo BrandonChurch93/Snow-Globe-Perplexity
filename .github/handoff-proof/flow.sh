@@ -64,9 +64,35 @@ line doctor 0 'node tools/handoff.mjs doctor'
 
 if [ "$PROOF_MODE" = small ]; then
   line test 0 'node tools/handoff.mjs test'
-  # step 2 begins with these two lines
+  # step 2 begins with these four lines
   line pull 0 'git pull --ff-only' 'Already up to date'
   line setup-again 0 'node tools/handoff.mjs setup'
+  line doctor-again 0 'node tools/handoff.mjs doctor'
+  # on Windows the test film of the first test is held open meanwhile, as a player holds a film somebody looks at
+  HOLDER=''
+  SAYS=''
+  if [ "$WIN" = yes ]; then
+    export HELD_FILM="$(node -p "require('./out/work/handoff/test.json').testFilm.file")"
+    powershell.exe -NoProfile -Command '$f = [System.IO.File]::Open($env:HELD_FILM, "Open", "Read", "None"); Start-Sleep -Seconds 3600' &
+    HOLDER=$!
+    sleep 8
+    note "held open with no sharing while the test runs again, by process $HOLDER: $HELD_FILM"
+    SAYS='is held open by another program'
+  fi
+  line test-again 0 'node tools/handoff.mjs test' "$SAYS"
+  if [ -n "$HOLDER" ]; then
+    WINPID="$(cat "/proc/$HOLDER/winpid" 2> /dev/null)"
+    kill "$HOLDER" 2> /dev/null
+    [ -n "$WINPID" ] && MSYS_NO_PATHCONV=1 taskkill /PID "$WINPID" /F > /dev/null 2>&1
+    note "the program that held the test film is ended"
+  fi
+  # a browser that updated itself between the test and the render (made up by a switch of the tool's own tests):
+  # the render stops, the test is run again as the file says, and the render then starts
+  case ",$PROOF_SWITCHES," in *,browser-moved,*)
+    line render-stops-for-browser 1 'node tools/handoff.mjs render' 'the browser was updated'
+    line test-after-update 0 'node tools/handoff.mjs test'
+    ;;
+  esac
   ONCE=1 line render-first-call 3 'node tools/handoff.mjs render'
   # wait for the first finished chunk, then end the process that renders, and it alone
   if [ "$LAST_CODE" = 3 ]; then
