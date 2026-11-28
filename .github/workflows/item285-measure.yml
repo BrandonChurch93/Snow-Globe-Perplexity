@@ -1,0 +1,88 @@
+# Item 285: how long the live page stands when it is shaken early, read where a graphics card may draw.
+# Each job builds the page at one commit on a hosted machine, opens it in the installed Chrome and reads, for a page
+# that begins in one season, at low, medium and plain: the renderer the browser reports, the first picture, the mark
+# "ready" and every stand of 200 ms and more, for a press 5 s and 30 s after the first picture and one after "ready".
+# The reading is done by tools/item285b/measure.mjs, which changes nothing of the page.
+# It starts by hand, and on a push to agent/p6-steps-285b that changes this file or the tool. It has no timer and
+# never starts on main. Every job ends green whatever happens: a red run sends a mail. What a job read is the step
+# "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
+name: item 285 measure
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [agent/p6-steps-285b]
+    paths: ['.github/workflows/item285-measure.yml', 'tools/item285b/measure.mjs']
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    name: ${{ matrix.tree.name }} ${{ matrix.season }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+        season: [winter, spring]
+        # A tree with no head named is the head of the push itself.
+        tree:
+          - { name: before, head: 3db81e01a3084140ff7c322a15adaf2c60d33880 }
+    steps:
+      - name: the tool of this push
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          path: _measure
+          persist-credentials: false
+          sparse-checkout: |
+            tools/item285b
+
+      - name: the page at the commit to be measured
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.tree.head || github.sha }}
+          path: page
+          persist-credentials: false
+
+      - name: install and build
+        continue-on-error: true
+        timeout-minutes: 20
+        shell: bash
+        working-directory: page
+        run: |
+          mkdir -p out/work/item285b
+          echo "tree ${{ matrix.tree.name }}, commit $(git rev-parse HEAD), machine ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)" | tee out/work/item285b/tree.txt
+          npm ci --no-audit --no-fund
+          npm run build
+          echo "built: $(cat dist/build.json)" | tee -a out/work/item285b/tree.txt
+
+      - name: the measure
+        continue-on-error: true
+        timeout-minutes: 85
+        shell: bash
+        working-directory: page
+        run: |
+          mkdir -p tools/item285b
+          cp ../_measure/tools/item285b/measure.mjs tools/item285b/measure.mjs
+          node tools/item285b/measure.mjs --dist dist --name "${{ matrix.tree.name }}-${{ matrix.season }}-${{ runner.os }}" --local --seasons ${{ matrix.season }} --qualities low,medium,plain --presses 5,30,ready --limit 420
+
+      - name: what was read
+        if: always()
+        continue-on-error: true
+        shell: bash
+        working-directory: page
+        run: cat out/work/item285b/*.txt
+
+      - name: the files
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.tree.name }}-${{ matrix.season }}-${{ runner.os }}
+          path: page/out/work/item285b
+          if-no-files-found: warn
+          retention-days: 14
