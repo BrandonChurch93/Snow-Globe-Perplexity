@@ -48,6 +48,34 @@ const LIGHT = {
 }
 const CANDLE: Rgb = [1, 0.36, 0.045]
 
+// The going out. A globe that is taken up is a draught for its candles: each flame gutters and goes out, by the shake's
+// beat and nothing else. A face keeps its whole light until `beats` before its own `outBeat`, shudders `dips` times on the
+// way down, each dip deeper (to `deep` of what is left at the last), and is dark from its `outBeat` on, until the next
+// landing lights it. The three a viewer faces go out one after another and not in the order they stand: the right one,
+// then the left, and the middle one, the tallest flame, last. The last of all seven is dark before the window of the
+// change opens (`config.shake.swapWindow.fromBeat`), so no part of the season that comes is ever drawn beside a lit face.
+export const GUTTER = {
+  outBeat: [1.62, 1.95, 1.3, 1.15, 1.75, 1.45, 1.85],
+  beats: 1,
+  dips: 2.5,
+  deep: 0.5,
+}
+
+/** Of a face's light, the share that is left at `beat` of a shake: 1 until its guttering begins, 0 from its `outBeat` on. */
+export function faceLeft(index: number, beat: number): number {
+  const out = GUTTER.outBeat[index] ?? 1
+  const u = (beat - (out - GUTTER.beats)) / GUTTER.beats
+  if (!(u > 0)) return 1
+  if (!(u < 1)) return 0
+  // The fall: none at first, steep at the last, as a wick that is starved gives up.
+  const held = 1 - u * u * u
+  // The shudders: none as the guttering begins, so no frame jumps into it, then deeper, each face in its own time.
+  const grows = Math.min(1, u / 0.25)
+  const depth = GUTTER.deep * grows * grows * (3 - 2 * grows)
+  const dip = 0.65 * (0.5 - 0.5 * Math.cos(2 * Math.PI * GUTTER.dips * u)) + 0.35 * (0.5 - 0.5 * Math.cos(2 * Math.PI * (GUTTER.dips * 1.7 * u + 0.37 * index)))
+  return held * (1 - depth * dip)
+}
+
 export const faceUniforms = {
   uFaceAt: { value: [] as THREE.Vector3[] },
   uFaceOut: { value: [] as THREE.Vector4[] },
@@ -718,6 +746,11 @@ export function update(moment: KitMoment): void {
   baseUniforms.uBaseFloor.value.setRGB(f.keyCol.r * down + card.r * lift, f.keyCol.g * down + card.g * lift, f.keyCol.b * down + card.b * lift).multiplyScalar(hold)
 }
 
+/** How lit a face is in a moment: by the landing it answers (`seconds` since it), and inside a shake by the draught too. */
+export function faceLit(index: number, seconds: number, beat: number | null): number {
+  return faceLevel(index, seconds) * (beat === null ? 1 : faceLeft(index, beat))
+}
+
 /** The candles on this frame: `seconds` since the landing they answer (0 and under: none lit yet; Infinity: all lit). */
 export function setCandles(moment: KitMoment, seconds: number): void {
   const glow = faceUniforms.uFaceGlow.value
@@ -726,6 +759,6 @@ export function setCandles(moment: KitMoment, seconds: number): void {
     const k = flicker[i]!
     const candle = 1 + 0.1 * Math.sin(turn * 5 + k.a * 6.283) + 0.07 * Math.sin(turn * 11 + k.b * 6.283) + 0.05 * Math.sin(turn * 23 + k.c * 6.283) + 0.03 * Math.sin(turn * 37 + k.a * 17)
     // No two candles are the same height: each face has its own share of light.
-    glow[i] = faceLevel(i, seconds) * candle * (0.74 + 0.36 * k.c)
+    glow[i] = faceLit(i, seconds, moment.beat) * candle * (0.74 + 0.36 * k.c)
   }
 }

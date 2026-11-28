@@ -8,7 +8,8 @@ import { setSkitter } from './slab'
 // Part `arrival-fall`: what the landing sets off. The dry leaves on the slab skitter out from the foot (slab.ts moves
 // them) and the faces on the base take light one after another (base.ts lights them). Both are read from the time since
 // the landing and nothing else. While the globe is in the air on its way into fall the candles are out and the leaves
-// lie where they lay before the thump; a fall that is leaving, or at rest, has every face lit and every leaf at rest.
+// lie where they lay before the thump; a fall at rest has every face lit and every leaf at rest. A fall that is taken up
+// keeps its leaves at rest and loses its candles to the draught, one after another, before the change (base.ts, `GUTTER`).
 const REST = 1e3
 
 export function seconds(moment: KitMoment): number {
@@ -29,7 +30,8 @@ export function update(moment: KitMoment): void {
   setCandles(moment, t)
   // Under the cover of a change the candles keep their light through the fall of the exposure, as the base they stand in
   // keeps the room's (materials.ts, `baseRoom`): on the faces, on the wood beside them, in their pools on the table and in
-  // the faces' mirror image there. With no cover the hold is 1 and nothing is touched.
+  // the faces' mirror image there. With no cover the hold is 1 and nothing is touched. A fall that is taken up has lost
+  // its candles before the cover rises (base.ts, `GUTTER`), so in a change out of fall there is no light left to hold.
   const hold = baseRoom.hold
   if (hold !== 1) {
     const glow = faceGlow()
