@@ -2,8 +2,11 @@
 # Each job builds the page at one commit on a hosted machine, opens it in the installed Chrome and reads, for a page
 # that begins in one season, at low, medium and plain: the renderer the browser reports, the first picture, the mark
 # "ready" and every stand of 200 ms and more, for a press 5 s and 30 s after the first picture and one after "ready".
+# Twice: origin main as it was when the round began (the before) and the head of the push (the after).
+# Then the page is built once more with its names kept and loaded twice at low with every long call of the card
+# named and the browser's own profile of the thread, so that a stand can be called by what it is.
 # The reading is done by tools/item285b/measure.mjs, which changes nothing of the page.
-# It starts by hand, and on a push to agent/p6-steps-285b that changes this file or the tool. It has no timer and
+# It starts by hand, and on every push to agent/p6-steps-285b: the branch is for this measure. It has no timer and
 # never starts on main. Every job ends green whatever happens: a red run sends a mail. What a job read is the step
 # "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
 name: item 285 measure
@@ -12,7 +15,6 @@ on:
   workflow_dispatch:
   push:
     branches: [agent/p6-steps-285b]
-    paths: ['.github/workflows/item285-measure.yml', 'tools/item285b/measure.mjs']
 
 permissions:
   contents: read
@@ -30,6 +32,7 @@ jobs:
         # A tree with no head named is the head of the push itself.
         tree:
           - { name: before, head: 3db81e01a3084140ff7c322a15adaf2c60d33880 }
+          - { name: after, head: '' }
     steps:
       - name: the tool of this push
         continue-on-error: true
@@ -69,6 +72,15 @@ jobs:
           mkdir -p tools/item285b
           cp ../_measure/tools/item285b/measure.mjs tools/item285b/measure.mjs
           node tools/item285b/measure.mjs --dist dist --name "${{ matrix.tree.name }}-${{ matrix.season }}-${{ runner.os }}" --local --seasons ${{ matrix.season }} --qualities low,medium,plain --presses 5,30,ready --limit 420
+
+      - name: the pieces by name
+        continue-on-error: true
+        timeout-minutes: 25
+        shell: bash
+        working-directory: page
+        run: |
+          npx vite build --minify false --outDir out/work/item285b-plain --emptyOutDir
+          node tools/item285b/measure.mjs --dist out/work/item285b-plain --name "pieces-${{ matrix.tree.name }}-${{ matrix.season }}-${{ runner.os }}" --local --seasons ${{ matrix.season }} --qualities low --presses 5,ready --limit 420 --pieces --profile
 
       - name: what was read
         if: always()
