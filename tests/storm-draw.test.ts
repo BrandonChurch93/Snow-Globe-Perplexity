@@ -4,7 +4,7 @@ import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { CARD_FRAG_PARS, CARD_VERT, CARD_VERT_PARS } from '../src/particles/draw/cards'
 import { CARD, LENS_LOOK, PIXEL_SIGMA2, SEED_NEAR, SEED_RESTS, SHAPE, STORM_FLOOD, STORM_LANDING, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC, SUMMER_EDGE, lookOf } from '../src/particles/draw/looks'
-import { lightRide, rideMatrix, seatsOn } from '../src/particles/draw/points'
+import { lightPath, lightRide, lightTravelPx, rideMatrix, seatsOn } from '../src/particles/draw/points'
 import { VERT_MAIN } from '../src/particles/draw/shader'
 import { centreHeightMm, gridOf } from '../src/scene/layout'
 import { config, particleKinds } from '../src/config'
@@ -508,7 +508,8 @@ describe('how the storm is drawn', () => {
     expect(CARD_VERT).toContain(`if (storming && (shape > ${(SHAPE.light - 0.5).toFixed(1)} && shape < ${(SHAPE.light + 0.5).toFixed(1)}) && uMidHold.x > 0.0) {`)
     expect(CARD_VERT).toContain('holdC += stC * (uPoint.z / max(shut, 1e-6)) * (uMidHold.y * uMidHold.x);')
     expect(CARD_VERT).toContain('vec4 midP = lensPlace((modelMatrix * (uMidPose * vec4(nowL, 1.0))).xyz - rideC, eye - rideC);')
-    expect(CARD_VERT.split('uMidHold').length - 1).toBe(4)
+    // what-if W6, candidate 2: two more read it, a lying light's share of its path and what a held light's card says to its core (4 before)
+    expect(CARD_VERT.split('uMidHold').length - 1).toBe(6)
     expect(CARD_VERT.split('uMidPose').length - 1).toBe(2)
     // and the light is summer's alone: no kind of another season has its shape
     for (const season of config.seasons) for (const kind of particleKinds(season)) expect(lookOf(kind.kind).shape === SHAPE.light, kind.kind).toBe(season === 'summer' && kind.kind === 'firefly')
@@ -745,6 +746,236 @@ describe('how the storm is drawn', () => {
     for (let k = 0; k < 16; k++) expect(none.elements[k]!).toBeCloseTo(k % 5 === 0 ? 1 : 0, 12)
   })
 
+  it('what-if W6, candidate 2 (decision 329): in a sample of the film a held light afloat is one streak along its true path on the picture where the ball travels far, and a light that lies a dash along the ball\'s travel, each by a smooth step over the travel; the page, a still, the loop, a view and a picture in one sample read none of it', () => {
+    const { pathPx, pathLiePx, pathEnds, pathLevel, pathBell, pathFlood, stormStreakPx, stormTail, stormEnds } = CARD.glow
+    // a light afloat: under the first number the least stroke of every light (8 px of the hd picture and more) is longer than the ball's travel and stands along the swirl
+    expect(pathPx[0]).toBeGreaterThanOrEqual(4)
+    expect(pathPx[0]).toBeLessThan(stormStreakPx[0])
+    expect(pathPx[1]).toBeGreaterThanOrEqual(pathPx[0] + 3)
+    expect(pathPx[1]).toBeLessThanOrEqual(10)
+    // a light that lies has no stroke: its path stands from the first pixel
+    expect(pathLiePx[0]).toBeGreaterThan(0)
+    expect(pathLiePx[1]).toBeLessThanOrEqual(1)
+    expect(pathLiePx[1]).toBeGreaterThan(pathLiePx[0])
+    expect(pathEnds[0]).toBeGreaterThan(0)
+    expect(pathEnds[0]).toBeLessThanOrEqual(0.5)
+    expect(pathEnds[1]).toBeGreaterThan(0)
+    expect(pathEnds[1]).toBeLessThanOrEqual(0.6)
+    // the streak has half its light where the path ends, so it reads as long as the path is
+    expect((pathEnds[0] + 1 + pathEnds[1]) / 2).toBeCloseTo(1, 12)
+    // the level streak carries the light the stroke carried at the same length: the stroke's light along its length (its head whole from 0.4 of its half length, its tail down to stormTail, its two soft ends) over the spindle's, each counted in steps of a thousandth of the half length
+    const smooth = (a: number, b: number, x: number): number => {
+      const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
+      return t * t * (3 - 2 * t)
+    }
+    let stroke = 0
+    let spindle = 0
+    for (let i = -2000; i < 2000; i++) {
+      const t = (i + 0.5) / 1000
+      if (t >= -1) stroke += (stormTail + (1 - stormTail) * smooth(-1, 0.4, t)) * smooth(-1, stormEnds[0] - 1, t) * (1 - smooth(1, 1 + stormEnds[1], t))
+      spindle += 1 - smooth(pathEnds[0], 1 + pathEnds[1], Math.abs(t))
+    }
+    expect(spindle / 1000).toBeCloseTo(2, 3)
+    expect(stroke / 1000).toBeCloseTo(1.494, 3)
+    expect(pathLevel).toBeCloseTo(stroke / spindle, 3)
+    expect(pathLevel).toBeLessThan(1)
+    expect(pathBell).toBeGreaterThan(0)
+    expect(pathBell).toBeLessThanOrEqual(1)
+    expect(pathFlood).toBeGreaterThan(0)
+    expect(pathFlood).toBeLessThanOrEqual(0.5)
+
+    // the card. All of it stands inside the hold, which only a sample of the film's frames opens (uMidHold); the path is read between the hold and the stroke, and takes the stroke's place as a vector
+    const light = `(shape > ${(SHAPE.light - 0.5).toFixed(1)} && shape < ${(SHAPE.light + 0.5).toFixed(1)})`
+    const order = [
+      `if (storming && ${light} && uMidHold.x > 0.0) {`,
+      'pathW = afloat > 0.5 ? uPathHold.x : uPathHold.y;',
+      'if (pathW > 0.0) {',
+      'vec3 flyS = (aNow - aPrev) * (0.5 * uPoint.z * afloat);',
+      'vec4 openP = lensPlace((modelMatrix * (uOpenPose * vec4(nowL - flyS, 1.0))).xyz - rideO, eye - rideO);',
+      'vec4 closeP = lensPlace((modelMatrix * (uClosePose * vec4(nowL + flyS, 1.0))).xyz - rideK, eye - rideK);',
+      'pathS *= uLimit.x / max(uLimit.x - length(pathS), 0.25 * uLimit.x);',
+      'stC = easeC < 1.0 ? mix(stC, swW, easeC) : swW;',
+      'float wasW = length(stC);',
+      'stC = mix(stC, pathS, pathW);',
+      'if (afloat > 0.5) pathThinC = 1.0 - min(wasW * (uLimit.x + length(stC)) / max(length(stC) * (uLimit.x + wasW), 1e-3), 1.0);',
+      'float limC = uLimit.x / (uLimit.x + length(stC));',
+      'if (pathW > 0.0) arcC *= 1.0 - pathW;',
+      `if (pathW > 0.0) endC = mix(endC, ${Math.max(CARD.glow.stormEnds[1], pathEnds[1])}, pathW);`,
+      `if (${light} && uMidHold.x > 0.0) vL4.xyz = vec3(uMidHold.x * smoothstep(0.0, ${pathFlood}, flooded), pathW, pathThinC);`,
+    ]
+    let at = -1
+    for (const line of order) {
+      const next = CARD_VERT.indexOf(line, at + 1)
+      expect(next, line).toBeGreaterThan(at)
+      at = next
+    }
+    expect(CARD_VERT).toContain('float pathW = 0.0;')
+    expect(CARD_VERT).toContain('float pathThinC = 0.0;')
+    expect(CARD_VERT.split('pathThinC = ').length - 1).toBe(2)
+    expect(CARD_VERT.split('pathW = ').length - 1).toBe(2)
+    expect(CARD_VERT.split('uPathHold').length - 1).toBe(2)
+    expect(CARD_VERT_PARS).toContain('uniform vec2 uPathHold;')
+    expect(CARD_VERT_PARS).toContain('uniform mat4 uOpenPose;')
+    expect(CARD_VERT_PARS).toContain('uniform mat4 uClosePose;')
+    // outside the hold a light's card says nought in those two places: a light has no bends, which only a bat, a petal and a leaf have
+    expect(CARD_VERT).toContain('vec3 bends = vec3(0.0);')
+    expect(CARD_VERT.split('bends = ').length - 1).toBe(4)
+    expect(CARD_VERT).toContain('vL4 = vec4(bends, rC);')
+    // the fragment reads the card's three numbers and no uniform of the path: each of its lines is shut where its number is nought, as it is on the page
+    expect(CARD_FRAG_PARS).not.toContain('uPathHold')
+    expect(CARD_FRAG_PARS).not.toContain('uMidHold')
+    const frag = [
+      'if (!spark && vL2.w > 0.0) {',
+      'if (vL4.y > 0.0) {',
+      `float tF = clamp(dot(p, vStreak.xy), -vStreak.z * (1.0 + ${pathEnds[1]} * endsE), vStreak.z * (1.0 + ${pathEnds[1]} * endsE));`,
+      'd2 = mix(d2, dot(dF, dF), vL4.y);',
+      `fade = mix(fade, ${pathLevel} * mix(1.0, 1.0 - smoothstep(${pathEnds[0]}, ${1 + pathEnds[1]}, abs(tF) / max(vStreak.z, 1e-3)), endsE), vL4.y);`,
+      'float bell = exp(-0.5 * d2 / vcBare);',
+      'float slimV = vcBare * pow(',
+      `if (vL4.y > 0.0) bell = mix(bell, exp(-0.5 * d2 / slimV), ${pathBell.toFixed(1)} * vL4.y * tightL * min(uPoint.w - 1.0, 1.0));`,
+      'core = rc * rc / vc',
+      'if (!spark && vL4.z > 0.0) {',
+      'float ownF = vStreak.z * (1.0 - vL4.z) / sqrt(vc);',
+      `float keepF = 0.8 * mix(1.0, ${CARD.glow.stormThin}, vL2.w);`,
+      'core *= (1.0 + keepF * allF) * (1.0 + 0.8 * ownF) / ((1.0 + keepF * ownF) * (1.0 + 0.8 * allF));',
+      'cover = min(spark ?',
+      'if (!spark && vL4.x > 0.0) cover *= 1.0 - vL4.x;',
+    ]
+    at = -1
+    for (const line of frag) {
+      const next = CARD_FRAG_PARS.indexOf(line, at + 1)
+      expect(next, line).toBeGreaterThan(at)
+      at = next
+    }
+    expect(CARD_FRAG_PARS.split('vL4.y > 0.0').length - 1).toBe(2)
+    expect(CARD_FRAG_PARS.split('vL4.x > 0.0').length - 1).toBe(1)
+
+    // the film: where the gate stands, with the film's own camera
+    const cut = filmCut()
+    const film = filmTimeline(cut)
+    const fps = config.film.fps
+    const shutter = config.film.shutterDegrees / 360 / fps
+    const summer = { veil: summerVeil }
+    const other = { veil: {} }
+    const kit = (season: string): { veil: unknown } => (season === 'summer' ? summer : other)
+    const eyeOf = (i: number) => {
+      const pose = filmPose(cut, i / fps + 0.5 * shutter)
+      return { pose, focalPx: 1080 / (2 * Math.tan((pose.fovDeg * Math.PI) / 360)), height: 1080 }
+    }
+    const frame = (i: number, u: number) => {
+      const moment = timelineMoment(film, prerollSeconds + i / fps + u * shutter, 1, 1)
+      return { sample: { index: 0, px: 0, py: 0, lu: 0, lv: 0, t: u } as { index: number; px: number; py: number; lu: number; lv: number; t: number } | null, view: '', live: false, moment, globe: moment.globe, from: kit(moment.from), to: kit(moment.to), ...eyeOf(i) }
+    }
+    const shake = film.events.find((e) => e.from === 'spring' && e.to === 'summer')!
+    const beat = eventSeconds(shake) / config.film.beatsPerBar
+    const frameOf = (b: number): number => Math.round((shake.startSec + b * beat - prerollSeconds) * fps)
+    const first = frameOf(0)
+    const takeEnd = frameOf(TAKE_END_BEAT)
+    const landing = frameOf(LANDING_BEAT)
+    const leave = film.events.find((e) => e.from === 'summer' && e.to === 'fall')!
+    const out = Math.round((leave.startSec - prerollSeconds) * fps)
+    const summerIn = (f: { moment: { from: string; to: string } }): boolean => f.moment.from === 'summer' || f.moment.to === 'summer'
+    let comes = -1
+    for (let i = first; i <= landing && comes < 0; i++) if (summerIn(frame(i, 1))) comes = i
+    let goes = -1
+    for (let i = out; i <= out + (landing - first); i++) if (summerIn(frame(i, 0))) goes = i
+    const gate = (i: number): { path: number; lie: number } => {
+      const ride = lightRide(film, frame(i, 0.3), 1)
+      return ride ? { path: ride.path, lie: ride.lie } : { path: 0, lie: 0 }
+    }
+    const travel = (i: number): number => {
+      const eye = eyeOf(i)
+      return lightTravelPx(film, prerollSeconds + i / fps, eye.pose, eye.focalPx)
+    }
+    // the take over, from the first frame with summer in it to four frames before its end: the ball travels far (seven pixels of the hd picture and more in every frame, nine and more in the mean) and the path is the whole streak
+    for (let i = comes; i <= takeEnd - 4; i++) expect(gate(i), `frame ${i}`).toEqual({ path: 1, lie: 1 })
+    // in the take over's last frames the ball is set down and its travel falls to a quarter in two frames: the path is half the streak in the third frame before the end, under four tenths in the six after it, and from the fourth frame after the end to the rest the streak afloat is the stroke along the swirl, as on main
+    expect(gate(takeEnd - 3).path).toBeGreaterThan(0.3)
+    expect(gate(takeEnd - 3).path).toBeLessThan(0.7)
+    for (let i = takeEnd - 2; i <= takeEnd + 3; i++) expect(gate(i).path, `frame ${i}`).toBeLessThan(0.4)
+    for (let i = takeEnd + 4; i <= landing + 180; i++) expect(gate(i).path, `frame ${i}`).toBe(0)
+    // a light that lies is a dash wherever the ball travels a pixel of the hd picture inside the shutter, and nothing is answered where the ball stands
+    let dashes = 0
+    let stands = 0
+    for (let i = comes; i <= landing + 180; i++) {
+      const g = gate(i)
+      let mean = 0
+      for (let k = -2; k <= 2; k++) mean += travel(i + k) / 5
+      if (mean >= pathLiePx[1]) {
+        expect(g.lie, `frame ${i}`).toBe(1)
+        dashes++
+      }
+      if (mean === 0) {
+        expect(lightRide(film, frame(i, 0.3), 1), `frame ${i}`).toBeNull()
+        stands++
+      }
+      expect(g.lie).toBeGreaterThanOrEqual(g.path)
+    }
+    expect(dashes).toBeGreaterThan(landing - comes)
+    expect(stands).toBeGreaterThan(120)
+    // the shake out of summer: in the slow lift the ball travels under six pixels of the hd picture and the stroke stands along the swirl (the path has under a twentieth of it); the fast shake begins with a jerk, the ball's travel going from under one pixel to eleven in two frames, and the path comes in those two; from there to the last frame with summer in it the path is the whole streak, through every turn of the shake
+    for (let i = out + 5; i <= out + 31; i++) expect(gate(i).path, `frame ${i}`).toBeLessThan(0.05)
+    expect(gate(out + 31).path).toBe(0)
+    expect(gate(out + 32).path).toBeGreaterThan(0.1)
+    expect(gate(out + 32).path).toBeLessThan(0.5)
+    for (let i = out + 33; i <= goes; i++) expect(gate(i), `frame ${i}`).toEqual({ path: 1, lie: 1 })
+    let least = Infinity
+    for (let i = out + 33; i <= goes; i++) least = Math.min(least, travel(i))
+    // a turn of the shake: the ball's way from the shutter's opening to its closing is short in that one frame, shorter than the upper number, and the mean over five frames keeps the path whole
+    expect(least).toBeLessThan(pathPx[1])
+    expect(least).toBeGreaterThan(pathLiePx[1])
+
+    // the share of the hold is in it: with the storm low the path is low by as much, and with no storm nothing is answered
+    const on = frame(out + 56, 0.3)
+    expect(lightRide(film, on, 1)!.path).toBe(1)
+    const low = lightRide(film, on, 0.4 * CARD.hair.stormEase)!
+    expect(low.share).toBeGreaterThan(0)
+    expect(low.share).toBeLessThan(1)
+    expect(low.path).toBe(low.share)
+    expect(low.lie).toBe(low.share)
+    expect(lightRide(film, on, 0)).toBeNull()
+    // a sample at the middle of the exposure: where the ball travels it is answered as the other samples of its frame are, or it alone would draw another streak; where the ball stands it is left as it was
+    const midway = frame(landing - 3, 0.5)
+    expect(lightRide(film, midway, 1)).not.toBeNull()
+    expect(lightRide(film, midway, 1)!.lie).toBe(1)
+    expect(lightRide(film, { ...midway, pose: undefined }, 1)).toBeNull()
+    expect(lightRide(film, frame(landing + 120, 0.5), 1)).toBeNull()
+    // the poses of the path are the ball's own when the shutter opens and when it closes
+    const ride = lightRide(film, on, 1)!
+    expect(ride.open).toEqual(globePoseAt(film, prerollSeconds + (out + 56) / fps))
+    expect(ride.close).toEqual(globePoseAt(film, prerollSeconds + (out + 56) / fps + shutter))
+    expect(lightPath(film, prerollSeconds + (out + 56) / fps, on.pose, on.focalPx)).toEqual([1, 1])
+
+    // R1: with the camera in hand as the stage hands it, the page (live, one sample), a picture in one sample, a view, the loop and a still get nothing at any frame of the film, whatever the storm
+    const final = film.events[film.events.length - 1]!
+    const frames = Math.round((final.startSec + eventSeconds(final) - prerollSeconds) * fps) + 240
+    let answered = 0
+    for (let i = 0; i < frames; i++) {
+      const f = frame(i, 0.1)
+      for (const level of [1, 0.01]) {
+        expect(lightRide(film, { ...f, live: true }, level), `the page at frame ${i}`).toBeNull()
+        expect(lightRide(film, { ...f, live: true, sample: null }, level), `the page at frame ${i}`).toBeNull()
+        expect(lightRide(film, { ...f, sample: null }, level), `one sample at frame ${i}`).toBeNull()
+        expect(lightRide(film, { ...f, view: 'cover' }, level), `a view at frame ${i}`).toBeNull()
+        expect(lightRide(film, { ...f, moment: { ...f.moment, period: 12 } }, level), `a loop at frame ${i}`).toBeNull()
+      }
+      const got = lightRide(film, f, 1)
+      if (!summerIn(f)) expect(got, `frame ${i}`).toBeNull()
+      if (got) answered++
+    }
+    expect(answered).toBeGreaterThan(takeEnd - comes + goes - out)
+    const eye = eyeOf(landing)
+    for (const t of [0, 1.7, 3.2, 5, 9]) {
+      const moment = loopMoment('summer', t, 1)
+      expect(lightRide(film, { sample: { t: 0.4 }, view: '', live: false, moment, globe: moment.globe, from: summer, to: summer, ...eye }, 1), `the loop at ${t}`).toBeNull()
+    }
+    const still = stillTimeline('summer')
+    for (const state of ['landed', 'rest', 'settled']) for (const u of [0, 0.5, 1]) {
+      const moment = timelineMoment(still, stateSeconds(state) + u * shutter, 1, 1)
+      expect(lightRide(film, { sample: { t: u }, view: '', live: false, moment, globe: moment.globe, from: summer, to: summer, ...eye }, 1), `the still ${state}`).toBeNull()
+    }
+  })
+
   it('decision 255 point 3, the width at 3840: above the pixels of the hd picture, in the film alone, a light of the storm is slim across and stands in every sample where it is at the middle of the exposure; at hd, at rest and in the app none of it is read', () => {
     const [cap, capPower, bellPower] = CARD.glow.stormSlim
     // the cap is said in pixels of the hd picture and is about half of one; the knee between a light's own core and the cap is sharp, and the sides fall more steeply than a bell's
@@ -773,11 +1004,12 @@ describe('how the storm is drawn', () => {
       expect(next, line).toBeGreaterThan(at)
       at = next
     }
-    expect(CARD_FRAG_PARS.split('slimV').length - 1).toBe(2)
+    // what-if W6, candidate 2: a held light that is its path reads the slim core once more, for a bell's own fall from it (it was 2)
+    expect(CARD_FRAG_PARS.split('slimV').length - 1).toBe(3)
     expect(CARD_FRAG_PARS).toContain('uniform float uWhole;')
     expect(CARD_FRAG_PARS.split('uWhole < 0.5').length - 1).toBe(1)
-    // the bell as it was is still the one the core reads where the slim one is not: it is written once and nothing else sets it
-    expect(CARD_FRAG_PARS.split('bell = ').length - 1).toBe(2)
+    // the bell as it was is still the one the core reads where the slim one is not: it is written once, and nothing else sets it but the slim one and, by a held light's own share of its path, the plain one again (what-if W6, candidate 2: 2 before)
+    expect(CARD_FRAG_PARS.split('bell = ').length - 1).toBe(3)
 
     // the card: above hd the light is not put back along its path, since it does not travel it. The line stands after the hold as it was and before the ride, and is read by the light alone
     const hold = CARD_VERT.indexOf('holdC = -stC * uStorm.y * (uPoint.z / max(shut, 1e-6) - (1.0 - uStorm.x))')

@@ -59,7 +59,7 @@ const samePose = (a: GlobePose, b: GlobePose): boolean => a.x === b.x && a.y ===
  * timeline's own at that time) while summer is one of the moment's two seasons, the light being summer's alone: never for
  * the app, a still, the loop, a view or a picture drawn in one sample.
  */
-export function lightRide(film: Timeline, f: { sample: { t: number } | null; view: string; live: boolean; moment: { time: number; period: number | null }; globe: GlobePose; from: { veil: unknown }; to: { veil: unknown } }, storm: number): { share: number; mid: GlobePose; move: number } | null {
+export function lightRide(film: Timeline, f: { sample: { t: number } | null; view: string; live: boolean; moment: { time: number; period: number | null }; globe: GlobePose; from: { veil: unknown }; to: { veil: unknown }; pose?: LightEye; focalPx?: number; height?: number }, storm: number): { share: number; mid: GlobePose; move: number; open: GlobePose; close: GlobePose; path: number; lie: number } | null {
   const time = f.moment.time
   if (f.sample === null || f.view !== '' || f.live || f.moment.period !== null || !(time >= prerollSeconds)) return null
   if (f.from.veil !== summerVeil && f.to.veil !== summerVeil) return null
@@ -68,9 +68,91 @@ export function lightRide(film: Timeline, f: { sample: { t: number } | null; vie
   if (!(share > 0) || !samePose(globePoseAt(film, time), f.globe)) return null
   const open = prerollSeconds + Math.floor((time - prerollSeconds) * config.film.fps + 1e-6) / config.film.fps
   const mid = globePoseAt(film, open + 0.5 * SHUTTER_SEC)
-  if (samePose(mid, f.globe)) return null
+  // what-if W6, candidate 2: how much of a light's streak is its true path on the screen, for a light afloat and for one that lies (see lightPath below). A sample that stands at the middle of the exposure has nothing to be held against, and was left as it was; where the path is in the streak it is answered as every other sample of its frame is, or one sample of the frame would draw another streak than the rest
+  const [afloat, lying] = f.pose && f.focalPx && f.height ? lightPath(film, open, f.pose, f.focalPx / (f.height / LENS_LOOK.referenceHeightPx)) : [0, 0]
+  const path = share * afloat
+  const lie = share * lying
+  if (samePose(mid, f.globe) && !(path > 0) && !(lie > 0)) return null
   const move = (time - open) / SHUTTER_SEC - f.sample.t
-  return { share, mid, move: Math.abs(move) < 1e-6 ? 0 : move }
+  return { share, mid, move: Math.abs(move) < 1e-6 ? 0 : move, open: globePoseAt(film, open), close: globePoseAt(film, open + SHUTTER_SEC), path, lie }
+}
+
+/** Where the film's camera stands and what it looks at: all of a pose that the ball's travel on the picture is read with. */
+type LightEye = { position: { x: number; y: number; z: number }; aim: { x: number; y: number; z: number } }
+
+const EYE_BACK = new THREE.Vector3()
+const EYE_RIGHT = new THREE.Vector3()
+const EYE_UP = new THREE.Vector3()
+const MARK_AT = new THREE.Vector3()
+const MARK_POSE = new THREE.Matrix4()
+/** The marks of the ball whose travel is read for a light's streak: its centre, its top, and two places on the glass at the centre's height, so that a tilt about the foot and a twist are both told. */
+const PATH_MARKS: readonly (readonly [number, number, number])[] = [
+  [0, CENTRE_Y, 0],
+  [0, CENTRE_Y + config.globe.sphereDiameterMm / 2, 0],
+  [config.globe.sphereDiameterMm / 2, CENTRE_Y, 0],
+  [0, CENTRE_Y, config.globe.sphereDiameterMm / 2],
+]
+
+/**
+ * How far the ball travels on the picture inside the shutter that opens at `open`, in pixels of the hd picture, as the
+ * camera `eye` sees it with the focal length `focalHdPx`: the largest way of the ball's marks from the opening pose to
+ * the closing one. The camera is the sample's own, as it is where a held light is drawn.
+ */
+export function lightTravelPx(film: Timeline, open: number, eye: LightEye, focalHdPx: number): number {
+  EYE_BACK.set(eye.position.x - eye.aim.x, eye.position.y - eye.aim.y, eye.position.z - eye.aim.z).normalize()
+  EYE_RIGHT.set(0, 1, 0).cross(EYE_BACK).normalize()
+  EYE_UP.copy(EYE_BACK).cross(EYE_RIGHT)
+  const a = globePoseAt(film, open)
+  const b = globePoseAt(film, open + SHUTTER_SEC)
+  if (samePose(a, b)) return 0
+  let most = 0
+  for (const m of PATH_MARKS) {
+    let x0 = 0
+    let y0 = 0
+    for (let k = 0; k < 2; k++) {
+      MARK_AT.set(m[0], m[1], m[2]).applyMatrix4(ballMatrix(k === 0 ? a : b, MARK_POSE))
+      MARK_AT.set(MARK_AT.x - eye.position.x, MARK_AT.y - eye.position.y, MARK_AT.z - eye.position.z)
+      const deep = Math.max(-MARK_AT.dot(EYE_BACK), 1e-3)
+      const x = (focalHdPx * MARK_AT.dot(EYE_RIGHT)) / deep
+      const y = (focalHdPx * MARK_AT.dot(EYE_UP)) / deep
+      if (k === 0) {
+        x0 = x
+        y0 = y
+      } else most = Math.max(most, Math.hypot(x - x0, y - y0))
+    }
+  }
+  return most
+}
+
+/**
+ * What-if W6, candidate 2 (decision 329). How much of a held light's streak is its true path on the screen inside the
+ * shutter, the light's own flight and the ball's travel together (cards.ts, uPathHold): the first number for a light
+ * afloat, the second for one that lies. Each is nothing where the ball travels little, all where it travels far, and in
+ * between a smooth step over the ball's travel on the picture, in pixels of the hd picture (looks.ts, CARD.glow.pathPx
+ * and pathLiePx).
+ *
+ * A light afloat, why the ball's travel and not each light's own stroke: a light's least stroke is 8 to 40 px of the hd
+ * picture, and in the fast part of a shake the ball travels 10 to 37 px inside the shutter, so by the stroke a third to
+ * three quarters of the lights would stay sticks along the swirl in the very frames in which they read as laid on the
+ * lens. Under the lower number every light's least stroke is longer than the travel and stands as it stood, along the
+ * swirl; in the slow lift a stroke carries on from frame to frame as it is. Over the upper number the path is the streak
+ * for every light.
+ *
+ * A light that lies has no stroke of its own, so its path stands from the first pixel of travel: held it was a dot on a
+ * lawn that the ball's travel draws out. Under its lower number the ball as good as stands and nothing is answered.
+ *
+ * The travel is a mean over five frames, this one in the middle: the ball's travel changes by half between two frames
+ * where a shake turns, and a step over that would jerk the streaks from the swirl to the path and back. It is nothing
+ * where the ball stands in all five.
+ */
+export function lightPath(film: Timeline, open: number, eye: LightEye, focalHdPx: number): [number, number] {
+  let sum = 0
+  for (let k = -2; k <= 2; k++) sum += lightTravelPx(film, open + k / config.film.fps, eye, focalHdPx)
+  const step = ([from, to]: readonly [number, number]): number => {
+    const t = Math.min(1, Math.max(0, (sum / 5 - from) / (to - from)))
+    return t * t * (3 - 2 * t)
+  }
+  return [step(CARD.glow.pathPx), step(CARD.glow.pathLiePx)]
 }
 
 const POSE_NOW = new THREE.Matrix4()
@@ -213,6 +295,9 @@ export class ParticleDraw {
       uStormLanding: { value: 0 },
       uMidPose: { value: new THREE.Matrix4() },
       uMidHold: { value: new THREE.Vector2() },
+      uOpenPose: { value: new THREE.Matrix4() },
+      uClosePose: { value: new THREE.Matrix4() },
+      uPathHold: { value: new THREE.Vector2() },
       uAperture: { value: new THREE.Vector4(0, 0, 0, 0) },
       uEyeShift: { value: new THREE.Vector3() },
       uWhole: { value: 0 },
@@ -539,10 +624,15 @@ export class ParticleDraw {
     const ride = f.sample !== null && f.view === '' && !f.live && f.moment.period === null && f.moment.time >= prerollSeconds ? lightRide((this.film ??= filmTimeline(filmCut())), f, this.storm) : null
     if (!ride) {
       hold.set(0, 0)
+      ;(u.uPathHold!.value as THREE.Vector2).set(0, 0)
       return
     }
     hold.set(ride.share, ride.move)
     rideMatrix(f.globe, ride.mid, u.uMidPose!.value as THREE.Matrix4)
+    // what-if W6, candidate 2: the ball as it stands when the shutter opens and when it closes, for the light's true path on the screen
+    ;(u.uPathHold!.value as THREE.Vector2).set(ride.path, ride.lie)
+    rideMatrix(f.globe, ride.open, u.uOpenPose!.value as THREE.Matrix4)
+    rideMatrix(f.globe, ride.close, u.uClosePose!.value as THREE.Matrix4)
   }
 
   private lights(f: StageFrame): void {

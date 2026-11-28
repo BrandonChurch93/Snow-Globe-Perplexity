@@ -53,6 +53,10 @@ uniform float uStormLanding;
 /** How a light of the storm rides with the ball through one exposure of the film (points.ts, lightRide). uMidPose takes a point of the liquid to where it is as the ball stands at the middle of the exposure, said in the liquid's own space as the ball stands now. uMidHold is the share of that hold that stands, and how far this sample's moment was moved from its share of the shutter. Both are nothing but in a sample of the film's frames. */
 uniform mat4 uMidPose;
 uniform vec2 uMidHold;
+/** What-if W6, candidate 2 (points.ts, lightPath). uPathHold is how much of a held light's streak is its true path on the screen inside the shutter, for a light afloat and for one that lies; uOpenPose and uClosePose are uMidPose for the ball as it stands when the shutter opens and when it closes. All nothing but in a sample of the film's frames. */
+uniform mat4 uOpenPose;
+uniform mat4 uClosePose;
+uniform vec2 uPathHold;
 /** The engine's own hash (hash2 in src/core/rng.ts): the same number that gives a particle its way of falling there. */
 uint cardHash2(uint a, uint b) {
   uint v = ((a ^ 0x9e3779b9u) * 0x85ebca6bu) ^ ((b + 0x7f4a7c15u) * 0xc2b2ae35u);
@@ -411,6 +415,9 @@ export const CARD_VERT = `
     }
     vec2 stC = (toView * ((aNow - aPrev) * shut)).xy * (uPoint.y * mag / zImg) * afloat;
     vec2 holdC = vec2(0.0);
+    vec2 pathS = vec2(0.0);
+    float pathW = 0.0;
+    float pathThinC = 0.0;
     // the down and the lights of the storm are drawn near where they are at the middle of the exposure: carried along its whole path from one moment of the shutter to the next, a short stroke is a row of dashes, a head a long smear and a light a faint thread
     if (storming && (${at(SHAPE.seed)} || ${at(SHAPE.light)})) holdC = -stC * uStorm.y * (uPoint.z / max(shut, 1e-6) - (1.0 - uStorm.x)) * (${at(SHAPE.light)} ? ${n(CARD.glow.stormHold)} : (whole > 0.5 ? ${n(CARD.hair.stormHold)} : ${n(CARD.line.stormHold)}));
     // above the pixels of the hd picture a light of the storm stands at its place of the middle of the exposure in every sample already (shader.ts, VERT_MAIN), so there is nothing of its own path to hold it back from
@@ -423,6 +430,21 @@ export const CARD_VERT = `
       vec4 midP = lensPlace((modelMatrix * (uMidPose * vec4(nowL, 1.0))).xyz - rideC, eye - rideC);
       vec4 midV = viewMatrix * vec4(midP.xyz + rideC, 1.0);
       holdC -= ((midV.xy + uAperture.xy * (lensC * (1.0 + uAperture.z * midV.z))) / -midV.z - (view.xy + uAperture.xy * (lensC * uAperture.z * view.z)) / -view.z) * (uPoint.y * uMidHold.x);
+      // What-if W6, candidate 2: how much of this light's streak is its true path on the picture. A light afloat has a stroke of its own along the swirl, and the path takes its place by the ball's travel (points.ts, lightPath). A light that lies has none: held it was a dot on a lawn that the ball's travel draws out, so its path stands from the first pixel of travel
+      pathW = afloat > 0.5 ? uPathHold.x : uPathHold.y;
+      if (pathW > 0.0) {
+        // A held light is one streak, and a streak laid along the swirl stood on the lens while the glass and the miniature under it were drawn out by the ball's travel: it did not point at the light's place in the next frame. So the light's true path on the picture is found: where it is seen through the glass when the shutter closes, having flown to the end of the whole shutter in the ball as the ball stands then, less where it is seen when the shutter opens. A light that lies has no flight, so its path is the ball's travel alone
+        vec3 flyS = (aNow - aPrev) * (0.5 * uPoint.z * afloat);
+        vec3 rideO = mat3(modelMatrix) * uOpenPose[3].xyz;
+        vec4 openP = lensPlace((modelMatrix * (uOpenPose * vec4(nowL - flyS, 1.0))).xyz - rideO, eye - rideO);
+        vec4 openV = viewMatrix * vec4(openP.xyz + rideO, 1.0);
+        vec3 rideK = mat3(modelMatrix) * uClosePose[3].xyz;
+        vec4 closeP = lensPlace((modelMatrix * (uClosePose * vec4(nowL + flyS, 1.0))).xyz - rideK, eye - rideK);
+        vec4 closeV = viewMatrix * vec4(closeP.xyz + rideK, 1.0);
+        pathS = ((closeV.xy + uAperture.xy * (lensC * (1.0 + uAperture.z * closeV.z))) / -closeV.z - (openV.xy + uAperture.xy * (lensC * (1.0 + uAperture.z * openV.z))) / -openV.z) * uPoint.y;
+        // the soft limit below shortens every stroke a little: the path is made longer by as much first, so the streak has the path's own length
+        pathS *= uLimit.x / max(uLimit.x - length(pathS), 0.25 * uLimit.x);
+      }
     }
     vec3 pathC = (aNow - aPrev) * shut;
     if (storming && ${at(SHAPE.light)}) {
@@ -433,6 +455,13 @@ export const CARD_VERT = `
       float tnW = (2.0 * fract(own * 317.0) - 1.0) * ${n(CARD.glow.stormStray)};
       vec2 swW = mat2(cos(tnW), sin(tnW), -sin(tnW), cos(tnW)) * tanW * max(length(stC), uPoint.w * mix(${n(CARD.glow.stormStreakPx[0])}, ${n(CARD.glow.stormStreakPx[1])}, pow(fract(own * 613.0), ${n(CARD.glow.stormStreakSkew)})) * gustC);
       stC = easeC < 1.0 ? mix(stC, swW, easeC) : swW;
+      // What-if W6, candidate 2: the streak is the swirl's stroke and the true path as two vectors, mixed by how much of the path stands: no step between them and no flip of its own. A light that lies has no stroke of the swirl, so it is a dash along the ball's travel and not a dot
+      if (pathW > 0.0) {
+        float wasW = length(stC);
+        stC = mix(stC, pathS, pathW);
+        // a streak that is longer than the light's own stroke was carries no more light than the stroke did (cardGlow): this is the share of its length that is more than the stroke's, both as the soft limit below leaves them. A light that lies is thinned by its whole length already
+        if (afloat > 0.5) pathThinC = 1.0 - min(wasW * (uLimit.x + length(stC)) / max(length(stC) * (uLimit.x + wasW), 1e-3), 1.0);
+      }
     }
     if (${at(SHAPE.spark)} && !storming) {
       holdC = stC * uStorm.y * (1.0 - mix(${n(CARD.spark.calmStreak)}, 1.0, gustC));
@@ -510,6 +539,8 @@ export const CARD_VERT = `
     if (storming && afloat > 0.5 && hlC > 1e-3 && shape < ${n(SHAPE.bat - 0.5)}) {
       // the trail of a thing that goes round with the liquid is an arc: the same arc for a leaf, a petal, a seed, a light and a spark
       arcC = clamp(dot((toView * pointSag(nowL, pathC)).xy, vec2(-alC.y, alC.x)) * (uPoint.y * mag / zImg) * limC * limC / hlC, ${n(-STREAK_ARC.most)}, ${n(STREAK_ARC.most)});
+      // What-if W6, candidate 2: the arc is that of the light's own path in the ball, read across its stroke along the swirl; the true path on the picture inside the shutter is straight to less than a pixel, so the arc goes as the path comes
+      if (pathW > 0.0) arcC *= 1.0 - pathW;
       if (lineC > 0.5) {
         bowC = -arcC;
         // a seed's stroke goes round the whirl in a plain curve: the path's own arc and no less than the stroke's own bow, to the same side
@@ -607,6 +638,8 @@ export const CARD_VERT = `
     }
     // a light of the storm is drawn out past its head's end by stormEnds[1] of its half length, along its arc (cardGlow): its card holds that too
     float endC = storming && ${at(SHAPE.light)} ? ${n(CARD.glow.stormEnds[1])} : 0.0;
+    // What-if W6, candidate 2: a streak that is the light's true path goes out past both its ends by pathEnds[1] of its half length (cardGlow), and its card holds that
+    if (pathW > 0.0) endC = mix(endC, ${n(Math.max(CARD.glow.stormEnds[1], CARD.glow.pathEnds[1]))}, pathW);
     vec2 extC = min(vec2(reachC + (0.67 + endC * (2.0 + endC)) * abs(arcC) * hlC) + (1.05 + endC) * hlC * abs(alC), vec2(uLimit.y));
     // a head that lies is a pale tuft on what it lies on, each seen by its own share: none is a white point on the dark roof
     if (laidB) keepC = (1.0 - smoothstep(${n(SEED_RESTS.fade[0])}, ${n(SEED_RESTS.fade[1])}, uStorm.x)) * mix(${n(SEED_RESTS.seen[0])}, ${n(SEED_RESTS.seen[1])}, fract(own * 71.0));
@@ -656,6 +689,8 @@ export const CARD_VERT = `
     else if (${at(SHAPE.spark)}) vL4.xy = vec2(paleC, skirtC);
     // a seed's card has no bends: under the storm's full level it says instead how far its stalk is hidden before the miniature, how much of a clock it is, and whether it is a whole head afloat
     else if (${at(SHAPE.seed)} && uStorm.x < 0.99) vL4.xyz = vec3(stalkOutC, clockC, whole * afloat);
+    // What-if W6, candidate 2: a light's card has no bends either. A held light says here how much of its core's hiding gives way, how much of its streak is its true path, and by how much that streak is longer than the light's own stroke was. In the white flood of a shake what is behind a light is brighter than the light, and a core that hides it takes more off than it puts on, a dull scratch in the white (cardGlow)
+    if (${at(SHAPE.light)} && uMidHold.x > 0.0) vL4.xyz = vec3(uMidHold.x * smoothstep(0.0, ${n(CARD.glow.pathFlood)}, flooded), pathW, pathThinC);
     vStreak = vec4(alC, hlC, s2C);
     vKind = vec4(aData.y, 2.0 * lying + 0.5 + arcC, float(pid & 4095u) + 0.01 + 0.98 * gustC, whole);
     if (glowB) {
@@ -1304,6 +1339,14 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
       d2 = dot(dE, dE);
       float alongE = tE / max(vStreak.z, 1e-3);
       fade *= mix(1.0, smoothstep(-1.0, ${n(CARD.glow.stormEnds[0] - 1)}, alongE) * (1.0 - smoothstep(1.0, ${n(1 + CARD.glow.stormEnds[1])}, alongE)), endsE);
+      if (vL4.y > 0.0) {
+        // What-if W6, candidate 2 (vL4.y: how much of this light's streak is its true path, nothing but in a sample of the film's frames). A streak that is the light's true path through the shutter has no head and no tail: the light spent as long on every place of it. So it is one level along its middle and goes out to nothing by the same soft step past both its ends (looks.ts, CARD.glow.pathEnds), a spindle and not a cut stick, by how much of the path stands. The level is that at which it carries the light the stroke carried at the same length (pathLevel): the strength is not raised
+        float tF = clamp(dot(p, vStreak.xy), -vStreak.z * (1.0 + ${n(CARD.glow.pathEnds[1])} * endsE), vStreak.z * (1.0 + ${n(CARD.glow.pathEnds[1])} * endsE));
+        vec2 dF = p - vStreak.xy * tF;
+        if (run) dF -= vec2(-vStreak.y, vStreak.x) * (pointBend * (tF * tF / max(vStreak.z, 1e-3) - 0.333 * vStreak.z));
+        d2 = mix(d2, dot(dF, dF), vL4.y);
+        fade = mix(fade, ${n(CARD.glow.pathLevel)} * mix(1.0, 1.0 - smoothstep(${n(CARD.glow.pathEnds[0])}, ${n(1 + CARD.glow.pathEnds[1])}, abs(tF) / max(vStreak.z, 1e-3)), endsE), vL4.y);
+      }
     }
     bareGain *= mix(1.0, ${n(CARD.spark.restPaleDim)}, paleS);
     bareGain = mix(bareGain, min(bareGain, ${n(CARD.spark.restPaleMost)} / max(vCore.w * rc * rc / vc, 1e-4)), paleS);
@@ -1314,8 +1357,17 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
       // no base of a power is below nought here (a variance over a square, one and a power, a squared distance over a variance): the guards say so to a graphics card that has no answer for one that is, and change no value
       float slimV = vcBare * pow(max(1.0 + pow(max(vcBare / (${n(CARD.glow.stormSlim[0] * CARD.glow.stormSlim[0])} * uPoint.w * uPoint.w), 0.0), ${n(CARD.glow.stormSlim[1])}), 1.0), ${n(-1 / CARD.glow.stormSlim[1])});
       bell = mix(bell, exp(-0.5 * pow(max(d2 / slimV, 0.0), ${n(CARD.glow.stormSlim[2])})), tightL * min(uPoint.w - 1.0, 1.0));
+      // What-if W6, candidate 2: the steep sides kept a light's many strokes side by side from summing to a slab. A held light that is its path is one streak, and with steep sides it is a cut stick: it keeps the slim core and falls off from it as a bell does, by how much of the path stands (looks.ts, CARD.glow.pathBell)
+      if (vL4.y > 0.0) bell = mix(bell, exp(-0.5 * d2 / slimV), ${n(CARD.glow.pathBell)} * vL4.y * tightL * min(uPoint.w - 1.0, 1.0));
     }
     core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * bell * fade * bareGain;
+    // What-if W6, candidate 2 (vL4.z: the share of a held light's streak that is longer than its own stroke was, nothing but in a sample of the film's frames). A light of the storm keeps most of its light at its middle however long its stroke (stormThin), which the stroke's own length was chosen with. A true path can be many times as long: over the length that is more than the stroke's the light is spread as a shutter spreads it, so the streak carries the stroke's light and no more, and a longer streak thins the light by itself
+    if (!spark && vL4.z > 0.0) {
+      float ownF = vStreak.z * (1.0 - vL4.z) / sqrt(vc);
+      float allF = vStreak.z / sqrt(vc);
+      float keepF = 0.8 * mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w);
+      core *= (1.0 + keepF * allF) * (1.0 + 0.8 * ownF) / ((1.0 + keepF * ownF) * (1.0 + 0.8 * allF));
+    }
     float lid = 0.0;
     if (disc > 0.0) {
       float rd = ${n(CARD.glow.discWide)} * sg;
@@ -1335,6 +1387,8 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     lum = vCore.w * (core + halo + wide) * (spark ? mix(${n(CARD.spark.restGain)}, ${n(CARD.spark.gain)}, vL2.w) : ${n(CARD.glow.gain)} * (1.0 + ${n(CARD.glow.stormGain - 1)} * vL2.w));
     // a light of the storm flies before the white of the down: its core hides what is behind it, or its colour is lost in the white
     cover = min(spark ? vCore.w * (core * ${n(CARD.glow.hide)} * (1.0 - disc) + lid) : vCore.w * core * mix(${n(CARD.glow.lightHide)}, ${n(CARD.glow.stormHide)}, vL2.w) * (1.0 - disc), 1.0);
+    // What-if W6, candidate 2: in a shake's white flood a held light hides nothing of what is behind it and only adds (cards.ts, the vertex part, vL4.x; looks.ts, CARD.glow.pathFlood)
+    if (!spark && vL4.x > 0.0) cover *= 1.0 - vL4.x;
   }
   // at rest a light is a bright heart in a soft glow of its own colour, with no edge, no ring and no disc (cardRestLight): the heart fine and hot, the glow faint and tight round most and wide and soft round the few large. The light at the heart is less for the finest
   float solid = core;
