@@ -295,3 +295,15 @@ Item 275: the app's jump from winter to summer at hd, quality high, one sample a
 
 96-item275-app-jump-122-123-124-hd-high-the-place-4x-before-left-after-right.jpg
 Item 275: the app's jump, frames 122, 123 (both ends of the leaving frost) and 124 (both ends), at four times. Left origin main 1a758bc0, right the commit bfbf6ac6. The tick marks rows 809/810. Before: a level edge on the tick (26 px by 32.2 levels at 122, 38 px by 23.8 at 123, 55 px by 19.7 and 33 px by 19.4 at 124). After: none. The bright fleck at x 1390 to 1411 in 123 is in both pictures and is not the mend's.
+
+97-item275-film-604-620-667-668-whole-at-400-before-left-after-right.jpg
+Item 275: film frames 604, 620, 667 and 668 whole, hd, final tier, each made smaller to 400 px wide as a phone's feed shows it. Left origin main 1a758bc0, right the commit bfbf6ac6. At this size I can tell no before from its after.
+
+98-item275-app-jump-117-120-122-124-whole-at-400-before-left-after-right.jpg
+Item 275: the app's jump, frames 117, 120, 122 and 124 whole at hd, quality high, each made smaller to 400 px wide. Left origin main 1a758bc0, right the commit bfbf6ac6. At this size I can tell no before from its after.
+
+99-item275-phone-shake-119-120-122-123-low-the-place-5x-before-left-after-right.jpg
+Item 275 on a phone: the app's shake from winter to spring at 390 by 844, quality low, frames 119, 120, 122 and 123, the place at five times. Left origin main 1a758bc0, right the commit bfbf6ac6. The tick marks rows 523/524. Before: a dark wedge with a flat top at the tick in 119 and 120 and a level line in 122 and 123. After: the end is fingered and soft. Read at the left edge of frame 123, over x 6 to 46 (outside this cut), the step on the line is 16.4 levels before and 3.6 after.
+
+100-item275-judged-stills-loop-120-132-film-666-hd-final-the-place-4x-before-left-after-right.jpg
+Item 275 in the judged stills the mend changes: the card loop's frames 120 (loop-strokes) and 132, and film frame 666 (the swap of the first shake), hd, final tier, the place at four times. Left origin main 1a758bc0, right the commit bfbf6ac6. The tick marks the row of the before's level edge in that cut (921 and 926 in the loop, whose camera is not the film's; 956 in the film). Before: a level edge at the tick in each (loop 132: 29 px by 49.5 levels; film 666: 32 px by 45.2). After: a frayed, fingered end.

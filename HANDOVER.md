@@ -2,7 +2,7 @@
 
 ## Newest: item 275 (DECISION 245). The level edge in winter's frost where the foot stood is mended in one commit, bfbf6ac6, pushed and not merged yet; nothing was seen at 3840 or in motion
 
-Written 2026-11-28 at 05:47 UTC by the clock. This part is newer than everything below it. Where the two differ, this part holds. The whole report as it went to `/root` at 05:19 UTC is `report-275.txt` beside this file: every frame's numbers are there, and this part gives the state and the way in. Of the ten pictures of this part (93 to 102), 93 to 96 are on the branch with this push; the other six follow in the next two pushes, four pictures a push.
+Written 2026-11-28 at 05:48 UTC by the clock. This part is newer than everything below it. Where the two differ, this part holds. The whole report as it went to `/root` at 05:19 UTC is `report-275.txt` beside this file: every frame's numbers are there, and this part gives the state and the way in. Of the ten pictures of this part (93 to 102), 93 to 100 are on the branch with this push; 101 and 102 follow with the next.
 
 Head of the code branch `agent/p6-change`: bfbf6ac685add6542f41559b8f39cc73b770f64b (engine 3c899f56a7f2cd5f), pushed at 05:20 UTC on 28 November as a fast forward from 361814f3. It is one commit, "Winter's frost: the end of the foot's image is spread once the foot is up or the frost leaves (item 275)", over `origin/main` 1a758bc0 (engine dc59c0d7c2daa6ab, chain 42). Two files: `src/seasons/winter/frost.ts` (17 lines in, 3 out, the image zone of the foot in the sheet; that line is this unit's "for this mend alone" by DECISION 245) and `tests/shake-change.test.ts` (one test, 89 lines).
 
