@@ -839,7 +839,7 @@ describe('the handoff file and the tools it names', () => {
   const commands = lines.filter((l) => /^(node|git|winget|brew|cd) /.test(l))
   it('holds commands, and each is one of the few kinds the order allows', () => {
     expect(commands.length).toBeGreaterThan(10)
-    for (const c of commands) expect(c, c).toMatch(/^(node tools\/handoff\.mjs (setup|doctor|test|render|check|deliver|upload|clean)|winget install --id (Git\.Git|OpenJS\.NodeJS\.LTS|Gyan\.FFmpeg|Google\.Chrome|GitHub\.cli) -e --source winget --accept-package-agreements --accept-source-agreements|brew install (git|node|ffmpeg)|brew install --cask google-chrome|git clone --filter=blob:none --single-branch --branch \S+ https:\/\/github\.com\/BrandonChurch93\/Snow-Globe-Perplexity\.git Snow-Globe-Perplexity|cd Snow-Globe-Perplexity|git pull --ff-only|node --version|git --version)$/)
+    for (const c of commands) expect(c, c).toMatch(/^(node tools\/handoff\.mjs (setup|doctor|test|render|check|deliver|upload|clean|status)|winget install --id (Git\.Git|OpenJS\.NodeJS\.LTS|Gyan\.FFmpeg|Google\.Chrome|GitHub\.cli) -e --source winget --accept-package-agreements --accept-source-agreements|brew install (git|node|ffmpeg)|brew install --cask google-chrome|git clone --filter=blob:none --single-branch --branch \S+ https:\/\/github\.com\/BrandonChurch93\/Snow-Globe-Perplexity\.git Snow-Globe-Perplexity|cd Snow-Globe-Perplexity|git pull --ff-only|node --version|git --version|brew --version)$/)
   })
   it('names the floors of the plan, and the plan says what they were measured on', () => {
     const plan = readJson(rel('render', 'PLAN.json')) as { floors: Record<string, number>; floorsFrom: string }
@@ -848,7 +848,7 @@ describe('the handoff file and the tools it names', () => {
     expect(text).toContain(`${f.psnrWhole} dB for the whole picture and ${f.coarseWhole} dB for it in blocks, ${f.psnrCut} dB for a cut and ${f.coarseCut} dB for it in blocks`)
     expect(text).toContain(`may lie ${f.glassLuma} from its reference in brightness`)
     expect(f.glassWhite).toBe(0.005)
-    expect(text).toContain('may hold half a point more of near white')
+    expect(text).toContain('may hold half a percentage point more of near white (of every 1,000 pixels of the region, 5 more than in the reference)')
     // the floors lie under every right picture measured and over the wrong one, as floorsFrom tells it
     const right = { psnrWhole: 40.51, coarseWhole: 43.17, psnrCut: 43.13, coarseCut: 47.96 }
     const wrong = { psnrWhole: 36.83, coarseWhole: 38.44, psnrCut: 38.42, coarseCut: 40.68 }
@@ -886,8 +886,12 @@ describe('the handoff file and the tools it names', () => {
     const drawn = (readJson(rel('render', 'PLAN.json')) as { frames: { what: string }[] }).frames.filter((x) => x.what !== 'opening')
     expect(drawn.length).toBe(10)
     expect(text).toContain('so no NVIDIA card was measured')
-    expect(text).toContain('Of the ten single frames this test draws, three were measured there')
-    expect(text).toContain('The other seven were compared on Linux alone')
+    // no count of frames is written by hand in the file: the test prints them from the stamp, and the file says so
+    expect(text).not.toMatch(/Of the ten single frames|The other seven were compared/)
+    expect(text).toContain('begin `references kept:` and `what a pass of this test rests on:`')
+    expect(text).toContain('Put no number of your own in their place')
+    expect(text).toContain('film B frame 120, film B frame 720, and the first frame of the loop on macOS alone')
+    expect(text).toContain('No real graphics card has drawn a reference of this film yet')
     expect(plan.floorsFrom).toContain('Not measured: any real graphics card, and the other seven frames of film B in the plan on any renderer but Linux')
   })
   it('gives the same winget lines the doctor prints', () => {
@@ -1413,7 +1417,8 @@ describe('a short test that failed: the one folder for the build thread', () => 
   it('says in the report what to send, where it lies and where it is ruled on', () => {
     expect(L.toSendLines(null)).toEqual([])
     const lines = L.toSendLines({ folder: 'C:\\Users\\b\\Desktop\\Snow Globe Seasons - Test - Failed', files: 7, bytes: 2.9e6, pictures: 3 })
-    expect(lines[0]).toBe('TO SEND. The short test failed. Nothing is rendered and no floor is changed on this machine.')
+    // the test did draw frames, so it does not say that nothing is rendered: it says what was not started
+    expect(lines[0]).toBe('TO SEND. The short test failed. No full render was started and no floor is changed on this machine.')
     expect(lines[1]).toBe('  folder   C:\\Users\\b\\Desktop\\Snow Globe Seasons - Test - Failed')
     expect(lines[2]).toBe('  holds    this report, the numbers (test.json), the sheet of pictures and what this machine drew (3 picture files): 8 files, 2.9 MB')
     expect(lines[3]).toBe('  Brandon brings that folder into the build thread. The floors are ruled on there.')
@@ -1456,8 +1461,11 @@ describe('a short test that failed: the one folder for the build thread', () => 
     const md = fs.readFileSync(rel('RENDER-ON-YOUR-PC.md'), 'utf8').replace(/\s+/g, ' ')
     expect(L.failedTestName()).toBe('Snow Globe Seasons - Test - Failed')
     expect(md).toContain(`one folder on the Desktop, \`${L.failedTestName()}\``)
-    expect(md).toContain(`Please bring the folder ${L.failedTestName()} from your Desktop into the build thread.`)
-    expect(md).toContain('Render nothing. Change no floor and no file.')
+    // the folder is given to Brandon by the whole path the tool printed, never by a name he has to look for
+    expect(md).toContain('printed its whole path in the line `THE FOLDER TO SEND`')
+    expect(md).toContain('"The short test failed. No full render was started. Please bring this folder into the build thread: ...')
+    expect(md).toContain('Change no floor and no file. Do not run the test again to see whether it passes.')
+    expect(md).not.toContain('Render nothing.')
     expect(md).toContain('block `TO SEND`')
     expect(md).toContain('`out/work/handoff/test-failed`')
   })
@@ -1553,5 +1561,254 @@ describe('the root .gitattributes', () => {
     const r = spawnSync('git', ['check-attr', 'text', '--', 'src/main.ts', 'config/showcase.json', 'package-lock.json'], { cwd: rel(), encoding: 'utf8' })
     if (r.status !== 0) return
     for (const l of r.stdout.trim().split('\n')) expect(l).toMatch(/: text: unset$/)
+  })
+})
+
+describe('order 312: where the files are, what a pass rests on, and where the work stands', () => {
+  const md = fs.readFileSync(rel('RENDER-ON-YOUR-PC.md'), 'utf8')
+  const text = md.replace(/\s+/g, ' ')
+  const stamp = readJson(rel('render', 'STAMP.json')) as { references: { what: string; frame: number; pack?: unknown }[]; stillToDraw: string[]; releasedForFinalRender: boolean; sound: Record<string, string> }
+  const work = fs.readFileSync(rel('tools', 'lib', 'handoff-work.mjs'), 'utf8')
+  const tool = fs.readFileSync(rel('tools', 'handoff.mjs'), 'utf8')
+
+  it('prints the whole path of every file the reader is to open or to send, label and path on one line', () => {
+    const lines = L.whereLines([{ label: 'THE REPORT', path: 'C:\\clone\\out\\work\\handoff\\report-test.txt' }, { label: 'THE SHEET OF PICTURES', path: 'C:\\Users\\b\\Desktop\\sheet (new).jpg' }, { label: 'NOT THERE', path: '' }, null])
+    expect(lines).toEqual(['THE REPORT              C:\\clone\\out\\work\\handoff\\report-test.txt', 'THE SHEET OF PICTURES   C:\\Users\\b\\Desktop\\sheet (new).jpg'])
+    expect(L.whereLines()).toEqual([])
+    // the tool prints them above its last line and writes them into the report, and the test names film and sheet
+    expect(tool).toContain("label: 'THE REPORT'")
+    expect(tool).toContain("label: 'THE FOLDER TO SEND'")
+    expect(tool).toContain("label: 'THE DELIVERED FILES'")
+    expect(work).toContain("label: 'THE TEST FILM'")
+    expect(work).toContain("label: 'THE SHEET OF PICTURES'")
+    for (const label of ['THE REPORT', 'THE TEST FILM', 'THE SHEET OF PICTURES', 'THE FOLDER TO SEND']) expect(md).toContain(`\`${label}\``)
+    expect(text).toContain('give him the path as it was printed. Never give a name or a folder you assume')
+  })
+  it('fails the test when the sheet of pictures could not be put on the Desktop, and says which', () => {
+    expect(work).toMatch(/row\('sheet of pictures: on the Desktop'/)
+    expect(text).toContain('If the test could not put the test film or the sheet of pictures where it names them, it ends in `FAIL:` and says which one')
+  })
+  it('counts the references from the stamp: kept, still to be drawn, and what a pass rests on', () => {
+    const [first, second] = L.referencesLines(stamp)
+    const kept = stamp.references.length
+    const still = stamp.stillToDraw.length
+    expect(first.startsWith(`references kept: ${kept} of ${kept + still} (`)).toBe(true)
+    for (const r of stamp.references) expect(first).toContain(L.frameWords(r.what, r.frame))
+    expect(first).toContain(`still to be drawn: ${still}`)
+    for (const k of stamp.stillToDraw) expect(first).toContain(L.frameWords(...(k.split(':') as [string, string])))
+    expect(second.startsWith('what a pass of this test rests on: ')).toBe(true)
+    if (still) expect(second).toContain(`The other ${still} `)
+    // a stamp that lacks nothing says so, and one reference is one reference
+    const whole = L.referencesLines({ references: stamp.references, stillToDraw: [] })
+    expect(whole[0]).toContain('still to be drawn: 0')
+    expect(whole[1]).toBe(`what a pass of this test rests on: all ${kept} references and the stretch of film B`)
+    expect(L.referencesLines({ references: [{ what: 'loop', frame: 0 }], stillToDraw: ['film-b:5'] })).toEqual([
+      'references kept: 1 of 2 (the loop frame 0); still to be drawn: 1 (film B frame 5)',
+      'what a pass of this test rests on: the 1 kept reference and the stretch of film B. The other 1 frame was compared nowhere yet, and the full render is refused until the remote team has drawn it',
+    ])
+    expect(L.referencesLines(null)[0]).toBe('references kept: 0 of 0 (none); still to be drawn: 0')
+    // the test prints both lines, and the file sends the reader to them
+    expect(work).toContain('L.referencesLines(stamp)')
+    expect(text).toContain('begin `references kept:` and `what a pass of this test rests on:`')
+  })
+  it('holds the words of the file against the stamp: no count of references in its prose, and the frames it names are kept ones', () => {
+    expect(text).not.toMatch(/\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven) (of the )?(references|reference pictures|single frames)\b/i)
+    const kept = stamp.references.map((r) => `${r.what}:${r.frame}`)
+    // the frames the file says were measured on the test machines
+    for (const k of ['film-b:120', 'film-b:720', 'loop:0']) expect(kept).toContain(k)
+    expect(text).toContain('film B frame 120, film B frame 720, and the first frame of the loop on macOS alone')
+    // while the stamp is not released or lacks references, the file says which answer of the test to expect
+    expect(text).toContain('Before the remote team has released the film this is the answer to expect')
+    expect(stamp.releasedForFinalRender).toBe(false)
+  })
+  it('names the run, the commit and the engine the test machines last ran, and ties what that proves to the hash setup prints', () => {
+    const m = /What was run where\. The Windows and macOS test machines last ran the commands of this file in run (\d{8,}) of the workflow `handoff-proof`, at commit ([0-9a-f]{8}) of the repo, whose engine hash is ([0-9a-f]{16})\./.exec(text)
+    expect(m, 'the bullet What was run where').not.toBeNull()
+    expect(text).toContain('If it prints that same hash, this very build ran there. If it prints another, this clone holds a newer build, which was drawn and compared on Linux only and ran on no Windows and no macOS test machine')
+  })
+  it('opens the report of a test with three plain lines: passed or failed, what it means, what Brandon does next', () => {
+    const where = [{ label: 'THE TEST FILM', path: 'D:\\Desk\\film.mp4' }, { label: 'THE SHEET OF PICTURES', path: 'D:\\Desk\\sheet.jpg' }]
+    const pass = L.inShortLines({ pass: true, renderer: 'a card', where })
+    expect(pass).toHaveLength(3)
+    expect(pass[0]).toBe('IN SHORT   The short test PASSED on a card. No full render was started.')
+    expect(pass[1].startsWith('IT MEANS   ')).toBe(true)
+    expect(pass[2]).toContain('D:\\Desk\\film.mp4')
+    expect(pass[2]).toContain('D:\\Desk\\sheet.jpg')
+    expect(pass[2]).toContain('only when you say so in your own words')
+    const notReady = L.inShortLines({ pass: true, renderer: 'a card', notReady: ['the film is not released for its final render yet'], where })
+    expect(notReady[1]).toContain('The full render cannot start yet: the film is not released for its final render yet.')
+    const fail = L.inShortLines({ pass: false, firstFail: 'film B frame 720, whole picture is 37 dB, wanted 38 dB', toSend: 'D:\\Desk\\Snow Globe Seasons - Test - Failed' })
+    expect(fail[0]).toBe('IN SHORT   The short test FAILED: film B frame 720, whole picture is 37 dB, wanted 38 dB. No full render was started.')
+    expect(fail[2]).toBe('NEXT       Bring this folder into the build thread: D:\\Desk\\Snow Globe Seasons - Test - Failed')
+    expect(L.inShortLines({ pass: false })[2]).toBe('NEXT       Bring this report into the build thread.')
+    for (const l of [...pass, ...notReady, ...fail]) expect(l).not.toMatch(/nothing (is|was) rendered/i)
+    expect(tool).toContain('L.inShortLines(')
+    expect(text).toContain('Its first three lines say in plain words whether the test passed, what that means and what he does next')
+  })
+  it('says after a test whose picture passed why the render is not ready: no plain pass while a mix is missing or the film is not released', () => {
+    const ok = [{ which: 'film-a', ok: true, why: '' }, { which: 'film-b', ok: true, why: '' }]
+    const missing = [L.soundVerdict('film-a', 'audio/final/film-a.wav', '', SHA('a')), L.soundVerdict('film-b', 'audio/final/film-b.wav', SHA('c'), SHA('b'))]
+    expect(L.notReadyReasons({ stamp: { releasedForFinalRender: true, stillToDraw: [] }, sound: ok })).toEqual([])
+    const all = L.notReadyReasons({ stamp: { releasedForFinalRender: false, stillToDraw: ['film-b:5', 'film-b:9'] }, sound: missing })
+    expect(all).toHaveLength(4)
+    expect(all[0]).toBe('the film is not released for its final render yet')
+    expect(all[1]).toBe('2 references are still to be drawn by the remote team')
+    expect(all[2]).toContain('audio/final/film-a.wav is missing')
+    expect(all[3]).toContain('is not the final mix the stamp names')
+    expect(L.notReadyReasons({ stamp: { releasedForFinalRender: true, stillToDraw: [] }, sound: missing })).toHaveLength(2)
+    // the made up sound of the tool's own tests asks for no mix, and a small run is no film
+    expect(L.notReadyReasons({ stamp: { releasedForFinalRender: false, stillToDraw: ['x:1'] }, sound: missing, tones: true })).toEqual([])
+    expect(L.notReadyReasons({ stamp: { releasedForFinalRender: false, stillToDraw: ['x:1'] }, sound: missing, small: true })).toEqual([])
+    // nobody is asked to put a mix into the clone by hand: the remote team brings them with the repository
+    expect(missing[0].why).not.toMatch(/by hand/)
+    expect(missing[0].why).toContain('the remote team puts them into the repository when it releases the film')
+    expect(work).toContain("notReady.length ? 'the picture passed' : 'the short test passed'")
+    expect(work).toContain('and the render is not ready: ')
+    expect(work).toMatch(/row\(`the final mix of \$\{name\}`/)
+    expect(text).toContain('`PASS: the picture passed on <the graphics card>: ... and the render is not ready: ...`')
+    expect(text).toContain('You never ask Brandon to put a file into the clone, and you put none there yourself')
+    expect(text).not.toMatch(/put (them|both|the two (final )?mixes) into the clone by/)
+  })
+  it('gives each term of the report a plain meaning, once, above the tables', () => {
+    const lines = L.plainWordsLines()
+    expect(lines[0]).toBe('THE WORDS OF THIS REPORT, in plain words:')
+    const said = lines.join('\n')
+    for (const term of ['PSNR', 'blocks', 'mean luma', 'near white', 'ANGLE', 'X4000', 'maths probe', 'engine hash', "the stamp's", 'calibration picture', 'chunk', 'sample', 'time estimate', 'worker', 'h264', 'yuv420p', 'kbps', 'LOOK', 'noted']) expect(said, term).toContain(term)
+    expect(new Set(L.PLAIN_WORDS.map(([w]: string[]) => w)).size).toBe(L.PLAIN_WORDS.length)
+    expect(tool).toContain('L.plainWordsLines()')
+    // the words the readers named are gone from what the tool prints
+    for (const gone of ['uses --procs', 'with --procs', 'by the fit', '(the fit:', 'what drew the chunks']) {
+      expect(work).not.toContain(gone)
+      expect(tool).not.toContain(gone)
+    }
+    expect(work).toContain('the picture encoder libx264')
+    expect(work).toContain('the sound encoder aac')
+    expect(L.hashCause()).not.toContain('git status')
+    expect(L.hashCause()).toContain('stop and report')
+  })
+  it('says where in the tree a shader function is written, in both lists the tool writes', () => {
+    const calls = work.match(/S\.shaderList\([^\n]*/g) ?? []
+    expect(calls).toHaveLength(2)
+    for (const c of calls) expect(c).toContain("{ srcDir: rel('src') }")
+  })
+
+  const E = 'aaaaaaaaaaaaaaaa'
+  const at = (state: string, minute: number, engineHash = E, more = {}) => ({ state, why: 'made up', time: `2026-11-28T10:${String(minute).padStart(2, '0')}:00.000Z`, engineHash, ...more })
+  const base = { packages: true, engineHere: E, engineBuilt: E }
+  it('finds the stage that was reached from the records, and names the one line that carries on', () => {
+    expect(L.statusPlan({ packages: false, engineHere: E, engineBuilt: '' })).toMatchObject({ stage: 'setup', next: 'node tools/handoff.mjs setup' })
+    expect(L.statusPlan({ packages: true, engineHere: E, engineBuilt: 'bbbbbbbbbbbbbbbb' })).toMatchObject({ stage: 'setup', next: 'node tools/handoff.mjs setup' })
+    expect(L.statusPlan({ ...base, ended: { setup: at('PASS', 1) } })).toMatchObject({ stage: 'doctor', next: 'node tools/handoff.mjs doctor' })
+    expect(L.statusPlan({ ...base, ended: { setup: at('PASS', 1), doctor: at('PASS', 2) } })).toMatchObject({ stage: 'test', next: 'node tools/handoff.mjs test' })
+    // a word that passed for another build has not passed for this one
+    expect(L.statusPlan({ ...base, ended: { setup: at('PASS', 1), doctor: at('PASS', 2, 'cccccccccccccccc') } }).next).toBe('node tools/handoff.mjs doctor')
+    const step1 = { setup: at('PASS', 1), doctor: at('PASS', 2), test: at('PASS', 3) }
+    const done = { ...step1, render: at('PASS', 10) }
+    expect(L.statusPlan({ ...base, ended: done })).toMatchObject({ stage: 'check', next: 'node tools/handoff.mjs check' })
+    expect(L.statusPlan({ ...base, ended: { ...done, check: at('PASS', 11) } })).toMatchObject({ stage: 'deliver', next: 'node tools/handoff.mjs deliver' })
+    expect(L.statusPlan({ ...base, ended: { ...done, check: at('PASS', 11), deliver: at('PASS', 12) } })).toMatchObject({ stage: 'clean', next: 'node tools/handoff.mjs clean' })
+    expect(L.statusPlan({ ...base, ended: { ...done, check: at('PASS', 11), deliver: at('PASS', 12), clean: at('PASS', 13) } })).toMatchObject({ stage: 'all is done', next: '' })
+    // a check that passed before the last render is no check of this render
+    expect(L.statusPlan({ ...base, ended: { ...done, check: at('PASS', 5) } }).next).toBe('node tools/handoff.mjs check')
+  })
+  it('never names the render or the setup by default: after step 1 it names no line, and a failed test is not run again', () => {
+    const step1 = { setup: at('PASS', 1), doctor: at('PASS', 2), test: at('PASS', 3) }
+    const after = L.statusPlan({ ...base, ended: step1 })
+    expect(after).toMatchObject({ stage: 'step 1 is done', next: '' })
+    expect(after.why).toContain('only on his word')
+    const failed = L.statusPlan({ ...base, ended: { ...step1, test: at('FAIL', 3) } })
+    expect(failed).toMatchObject({ stage: 'test', next: '' })
+    expect(failed.why).toContain('It is not run a second time')
+    expect(L.statusPlan({ ...base, ended: { ...step1, setup: at('FAIL', 4) } })).toMatchObject({ stage: 'setup', next: '' })
+    // a render that was refused drew nothing, and its line is not named
+    const refused = L.statusPlan({ ...base, ended: { ...step1, render: at('FAIL', 9, E, { refused: true }) } })
+    expect(refused).toMatchObject({ stage: 'render', next: '' })
+    expect(refused.why).toContain('was refused and drew nothing')
+    // the render line is named only when the records say that a render was begun here
+    expect(L.statusPlan({ ...base, ended: step1, renderBegun: true })).toMatchObject({ stage: 'render', next: 'node tools/handoff.mjs render' })
+    // every case in which nothing was begun: the next line is never the render's
+    for (const ended of [{}, { setup: at('PASS', 1) }, { setup: at('PASS', 1), doctor: at('PASS', 2) }, step1, { ...step1, test: at('FAIL', 3) }]) {
+      expect(L.statusPlan({ ...base, ended }).next).not.toBe('node tools/handoff.mjs render')
+    }
+  })
+  it('follows work that runs, and carries on a word that was stopped, before anything else', () => {
+    const step1 = { setup: at('PASS', 1), doctor: at('PASS', 2), test: at('PASS', 3) }
+    expect(L.statusPlan({ ...base, ended: step1, job: { cmd: 'render', state: 'running', alive: true } })).toMatchObject({ stage: 'render', next: 'node tools/handoff.mjs render' })
+    expect(L.statusPlan({ ...base, ended: {}, job: { cmd: 'setup', state: 'starting', alive: false } })).toMatchObject({ stage: 'setup', next: 'node tools/handoff.mjs setup' })
+    const stopped = L.statusPlan({ ...base, ended: step1, job: { cmd: 'render', state: 'running', alive: false }, renderBegun: true })
+    expect(stopped).toMatchObject({ stage: 'render', next: 'node tools/handoff.mjs render' })
+    expect(stopped.why).toContain('was stopped before it ended')
+    expect(L.statusPlan({ ...base, ended: { setup: at('PASS', 1), doctor: at('PASS', 2) }, job: { cmd: 'test', state: 'stopped', alive: false } })).toMatchObject({ stage: 'test', next: 'node tools/handoff.mjs test' })
+    // a word that has passed since it was stopped is not carried on
+    expect(L.statusPlan({ ...base, ended: step1, job: { cmd: 'test', state: 'stopped', alive: false } })).toMatchObject({ stage: 'step 1 is done', next: '' })
+  })
+  it('prints how each word last ended, the stage and the next line', () => {
+    const plan = { stage: 'test', next: 'node tools/handoff.mjs test', why: '"test" has not been run in this clone yet' }
+    const lines = L.statusLines({ clone: '/c', engineHere: E, engineBuilt: E, engineStamp: E, released: false, ended: { setup: at('PASS', 1), doctor: at('PASS', 2, 'cccccccccccccccc') }, job: null, plan })
+    expect(lines[0]).toBe('the clone   /c')
+    expect(lines.find((l: string) => l.startsWith('the film'))).toContain('not released for its final render yet: step 1 only')
+    expect(lines.find((l: string) => l.trim().startsWith('doctor'))).toContain('on another build (engine cccccccccccccccc)')
+    expect(lines.find((l: string) => l.trim().startsWith('render'))).toContain('not run in this clone yet')
+    expect(lines.at(-2)).toBe('WHERE THE WORK STANDS: test. "test" has not been run in this clone yet')
+    expect(lines.at(-1)).toBe('NEXT LINE: node tools/handoff.mjs test')
+    expect(L.statusLines({ clone: '/c', engineHere: E, engineBuilt: '', engineStamp: '', released: true, plan: { stage: 'x', next: '', why: 'y' } }).at(-1)).toBe('NEXT LINE: none')
+  })
+  it('takes status as a word that reads only, alone on its line, and answers in the clone with PASS and the folder', () => {
+    expect(L.COMMANDS).toContain('status')
+    expect(L.argProblem(['status'])).toBe('')
+    expect(L.argProblem(['status', '--worker'])).not.toBe('')
+    const r = spawnSync(process.execPath, [rel('tools', 'handoff.mjs'), 'status'], { encoding: 'utf8', cwd: rel() })
+    const last = r.stdout.trim().split(/\r?\n/).at(-1) ?? ''
+    expect(r.status).toBe(0)
+    expect(last.startsWith(`PASS: this is the clone of the film, at ${rel()}. `)).toBe(true)
+    expect(r.stdout).toMatch(/^NEXT LINE: /m)
+    expect(r.stdout).toMatch(/^THE REPORT\s+\S.*report-status\.txt$/m)
+  })
+  it('keeps how each word last ended in one record that the clean word does not take away', () => {
+    expect(tool).toContain("const endedBefore = readOr(file('ended.json'), {})")
+    expect(tool).toMatch(/writeJson\(file\('ended\.json'\), \{ \.\.\.endedBefore, \[cmd\]: \{ state, why:/)
+  })
+  it('has in the file one table of stop and recovery with a row for every word, and one line for a new agent', () => {
+    const table = md.slice(md.indexOf('### Stop and recovery, one rule'), md.indexOf('## If you are started in the middle'))
+    expect(table.length).toBeGreaterThan(800)
+    for (const w of L.COMMANDS) expect(table, w).toContain(`| \`${w}\` | \`node tools/handoff.mjs ${w}\``)
+    expect(table).toContain('| word | the one line that carries on | how often | stop and report when |')
+    const line = 'Read the file RENDER-ON-YOUR-PC.md in this folder. Do what its part If you are started in the middle says, and nothing else.'
+    expect(text.split(line).length - 1).toBe(2)
+    const middle = md.slice(md.indexOf('## If you are started in the middle'), md.indexOf('## Step 1 on Windows'))
+    expect(middle).toContain('node tools/handoff.mjs status')
+    expect(middle).toContain('Start nothing by a guess: not the render, not the setup')
+    // the one sentence that is a FAIL and no stop is the same in the tool and in every table of the file
+    expect(tool.split('is still at work in the background').length - 1).toBeGreaterThanOrEqual(3)
+    expect(tool).not.toMatch(/" is at work in the background and holds/)
+    expect(md.split('`"<word>" is still at work in the background`').length - 1).toBeGreaterThanOrEqual(2)
+  })
+  it('judges the clone by its exit code and by the tool standing in the folder, and says what to do with a folder that is not whole', () => {
+    const clone = md.slice(md.indexOf('### 1.2 The clone'), md.indexOf('### 1.3 Setup'))
+    const said = clone.replace(/\s+/g, ' ')
+    expect(clone).toContain('git clone --filter=blob:none --single-branch --branch main https://github.com/BrandonChurch93/Snow-Globe-Perplexity.git Snow-Globe-Perplexity')
+    expect(said).toContain('the clone line ends with exit code 0')
+    expect(said).toContain('the status line ends with `PASS: this is the clone of the film, at ...`')
+    expect(said).toContain('The clone is not judged by the words git prints')
+    expect(said).toContain('Stop and report. Delete nothing and do not clone again')
+    expect(said).toContain('You delete nothing; a broken folder is for Brandon to remove')
+    expect(md.split('--branch main').length - 1).toBe(2)
+  })
+  it('opens the Mac part with what a prepared Mac has, each with its check and its install line, and what of Windows does not hold', () => {
+    const mac = md.slice(md.indexOf('## macOS: the fallback'))
+    const said = mac.replace(/\s+/g, ' ')
+    for (const thing of ['the Command Line Tools of macOS', 'Homebrew', 'Node', 'ffmpeg with the picture encoder libx264 and the sound encoder aac', 'Google Chrome']) expect(said, thing).toContain(thing)
+    for (const line of ['git --version', 'brew --version', 'node --version', 'brew install node', 'brew install ffmpeg', 'brew install --cask google-chrome', 'brew install git']) expect(mac, line).toContain(line)
+    for (const t of ['git', 'node', 'ffmpeg', 'chrome'] as const) expect(mac).toContain(L.installLine(t, 'darwin'))
+    expect(said).toContain('That is a system prompt, and it is for Brandon')
+    expect(said).toContain("Installing it is Brandon's own act, with his password, and you do not run its install line")
+    expect(said).toContain('https://brew.sh')
+    expect(said).toContain('Close this Terminal window, open a new one, start the agent again')
+    expect(said).toContain('an older copy on this Mac comes first')
+    expect(mac).toContain('### What of the Windows part does not hold on the Mac')
+    for (const not of ['the winget lines', '`Connect to GitHub`', 'the rows for WSL and for a Windows graphics setting', '`nvidia-smi`', 'Windows updates', '`brew install gh`']) expect(said, not).toContain(not)
+    // no line of the file runs Homebrew's installer: it is given to Brandon in words alone
+    expect(md).not.toMatch(/^\/bin\/bash/m)
+    expect(md).not.toContain('install.sh')
   })
 })

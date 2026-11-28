@@ -38,7 +38,7 @@ export function toSendLines(kept) {
   if (!kept) return []
   const pictures = kept.pictures ? `the sheet of pictures and what this machine drew (${kept.pictures} picture ${kept.pictures === 1 ? 'file' : 'files'})` : 'no picture, since the test drew none'
   return [
-    'TO SEND. The short test failed. Nothing is rendered and no floor is changed on this machine.',
+    'TO SEND. The short test failed. No full render was started and no floor is changed on this machine.',
     `  folder   ${kept.folder}`,
     `  holds    this report, the numbers (test.json), ${pictures}: ${kept.files + 1} files, ${(kept.bytes / 1e6).toFixed(1)} MB`,
     '  Brandon brings that folder into the build thread. The floors are ruled on there.',
@@ -430,13 +430,83 @@ export function renderRefusals({ stamp, engineHash, doctor, test, sound, freeGb,
   return out
 }
 
-export const hashCause = () => 'either the clone is not at the commit the stamp names (somebody pulled, or a file was edited), or git changed the line endings on the way in (the repo carries a .gitattributes against that, so look first for an edited file with: git status)'
+export const hashCause = () => 'either the clone is not at the commit the stamp names (somebody pulled, or a file was edited), or git changed the line endings on the way in (the repo carries a .gitattributes against that). This is for the remote team to look into, which looks first for an edited file. On this machine nothing is pulled, reset or edited for it: stop and report'
 
 /** One of the two final mixes against the stamp. */
 export function soundVerdict(which, file, sha, wanted) {
-  if (!sha) return { which, ok: false, why: `the sound of ${which} is not here: ${file} is missing. The two final mixes are not in the public repo; they are put there by hand before the full render` }
+  if (!sha) return { which, ok: false, why: `the sound of ${which} is not here: ${file} is missing. The two final mixes are not in the public repo: the remote team puts them into the repository when it releases the film, and a pull brings them` }
   if (sha !== wanted) return { which, ok: false, why: `${file} is not the final mix the stamp names (its sha256 starts ${sha.slice(0, 12)}, the stamp says ${String(wanted).slice(0, 12)})` }
   return { which, ok: true, why: `${file} is the final mix the stamp names` }
+}
+
+/**
+ * Why the full render could not start after a short test whose picture passed: the stamp is not released, references
+ * are still to be drawn, a final mix is missing or is not the one the stamp names. An empty list is a plain pass.
+ * With the made up sound of the tool's own tests the mixes are not asked for, and a small run is no film at all.
+ * @param {{ stamp: any, sound?: { ok: boolean, why: string }[], tones?: boolean, small?: boolean }} o
+ */
+export function notReadyReasons({ stamp, sound = [], tones = false, small = false }) {
+  if (small || tones) return []
+  const out = []
+  if (stamp?.releasedForFinalRender !== true) out.push('the film is not released for its final render yet')
+  const still = stamp?.stillToDraw ?? []
+  if (still.length) out.push(`${still.length} ${still.length === 1 ? 'reference is' : 'references are'} still to be drawn by the remote team`)
+  for (const s of sound) if (!s.ok) out.push(s.why)
+  return out
+}
+
+/**
+ * The terms of the test's report, each with its plain meaning, printed once above the tables. The report is read by
+ * Brandon and by the remote team: the numbers stay as they are measured, and this says what each of them is.
+ */
+export const PLAIN_WORDS = [
+  ['PSNR, dB', 'how close two pictures are, pixel by pixel. Higher is closer; 40 dB and more looks the same to the eye'],
+  ['whole picture, half size', 'the frame as a whole, shrunk to half its size, against its reference'],
+  ['blocks', 'the same comparison made on the means of 8 x 8 pixel blocks, which a shift of one pixel hardly moves'],
+  ['cut', 'a piece of 960 x 540 pixels taken out of the frame at full size'],
+  ['how far apart', 'the largest and the mean difference in levels (0 to 255) and where in the picture it lies. Noted, it fails nothing'],
+  ['glass, mean luma', 'the brightness of a region of the glass, as its mean on a scale of 0 to 1'],
+  ['glass, near white', 'the share of that region that is almost white. A glass that came out white fails here'],
+  ['floor', 'the least a measure must reach to pass. The floors are written in render/STAMP.json'],
+  ['reference', 'a picture of the same frame that the remote team drew and keeps in the repository'],
+  ['engine hash', 'a sum of 16 signs over everything that draws the film. Two clones with one hash draw the same film'],
+  ["the stamp's", 'equal to what render/STAMP.json records: the file in which the remote team wrote what this film must be'],
+  ['WebGL renderer, ANGLE (...)', "the name Chrome gives for what draws the page: the graphics card, its driver's interface (Direct3D 11 on Windows, Metal on macOS)"],
+  ['shader, X4000 and the like', 'a shader is a small program the graphics card runs for every pixel. A line with a code such as X4000 is a warning of the compiler of this machine: noted for the remote team, it fails nothing'],
+  ['maths probe', 'small sums the graphics card is asked to work out, so that the remote team sees how this card rounds. Noted, it fails nothing'],
+  ['calibration picture', 'one still picture this machine draws once for a build and keeps. Every piece of the film names it, so that all pieces fit together'],
+  ['chunk', 'a finished piece of the film: some dozens of frames in one file on disk'],
+  ['sample', 'one drawing of a frame. Each frame is drawn many times a little apart in time and the drawings are blended, which gives the motion blur'],
+  ['time estimate', 'seconds a frame and seconds a sample, worked out from the frames this test drew, from which the hours of the full render are projected'],
+  ['worker', 'one drawing process. Two workers draw side by side when that pays and the memory holds them'],
+  ['h264, High, yuv420p, kbps', 'the kind of film file: the picture encoding and its profile, the colour layout, and how many thousand bits a second the sound or the picture takes'],
+  ['LOOK', 'a thing for Brandon or the remote team to look at. It is no failure'],
+  ['noted', 'a number that is written down and fails nothing'],
+]
+export function plainWordsLines() {
+  const width = Math.max(...PLAIN_WORDS.map(([w]) => w.length))
+  return ['THE WORDS OF THIS REPORT, in plain words:', ...PLAIN_WORDS.map(([w, m]) => `  ${w.padEnd(width)}  ${m}`)]
+}
+
+/**
+ * The three plain lines a test report opens with: passed or failed, what that means, what Brandon does next.
+ * @param {{ pass: boolean, renderer?: string, notReady?: string[], firstFail?: string, where?: { label: string, path: string }[], toSend?: string }} o
+ */
+export function inShortLines({ pass, renderer = '', notReady = [], firstFail = '', where = [], toSend = '' }) {
+  const film = where.find((w) => w.label === 'THE TEST FILM')?.path
+  const sheet = where.find((w) => w.label === 'THE SHEET OF PICTURES')?.path
+  if (pass) {
+    return [
+      `IN SHORT   The short test PASSED on ${renderer || 'this machine'}. No full render was started.`,
+      `IT MEANS   This computer draws the film's pictures as the reference pictures show them, within the allowed distance.${notReady.length ? ` The full render cannot start yet: ${notReady.join('; ')}.` : ''}`,
+      `NEXT       Open the test film${film ? ` (${film})` : ''} and the sheet of pictures${sheet ? ` (${sheet})` : ''} and look at both. The full render starts only when you say so in your own words.`,
+    ]
+  }
+  return [
+    `IN SHORT   The short test FAILED${firstFail ? `: ${firstFail}` : ''}. No full render was started.`,
+    'IT MEANS   Either a picture this computer drew is too far from its reference, or the test could not be carried out. Which of the two, and whether the picture or the floor is at fault, is ruled on by the remote team.',
+    `NEXT       ${toSend ? `Bring this folder into the build thread: ${toSend}` : 'Bring this report into the build thread.'}`,
+  ]
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -990,8 +1060,111 @@ export function secondsLeft(counts, done, cost, gain = 1) {
   return s / Math.max(1, gain)
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Where the work stands, and the one line that carries on.
+
+/** A frame in plain words: "film B frame 120", "the loop frame 0", "the opening frame 450". */
+export function frameWords(what, frame) {
+  const name = { 'film-b': 'film B', 'film-a': 'film A', loop: 'the loop', opening: 'the opening' }[what] ?? what
+  return `${name} frame ${frame}`
+}
+
+/**
+ * Two lines for the test's report: the references this stamp holds, those it still lacks, and what a pass rests on.
+ * Every number in them is counted from the stamp, so no sentence written by hand can grow untrue.
+ */
+export function referencesLines(stamp) {
+  const kept = (stamp?.references ?? []).map((r) => `${frameWords(r.what, r.frame)}${r.pack ? ', read from the opening pack' : ''}`)
+  const still = (stamp?.stillToDraw ?? []).map((k) => frameWords(...String(k).split(':')))
+  const all = kept.length + still.length
+  const first = `references kept: ${kept.length} of ${all} (${kept.join('; ') || 'none'}); still to be drawn: ${still.length}${still.length ? ` (${still.join('; ')})` : ''}`
+  const second = still.length
+    ? `what a pass of this test rests on: the ${kept.length} kept ${kept.length === 1 ? 'reference' : 'references'} and the stretch of film B. The other ${still.length} ${still.length === 1 ? 'frame was' : 'frames were'} compared nowhere yet, and the full render is refused until the remote team has drawn ${still.length === 1 ? 'it' : 'them'}`
+    : `what a pass of this test rests on: all ${all} references and the stretch of film B`
+  return [first, second]
+}
+
+const LINE = (word) => `node tools/handoff.mjs ${word}`
+/** The words in the order the handoff file runs them. */
+export const STAGES = ['setup', 'doctor', 'test', 'render', 'check', 'deliver', 'clean']
+
+/**
+ * Where the work stands in this clone, read from the records alone, and the one line that carries on.
+ * `ended` holds how each word last ended here ({ state, why, time, engineHash }), `job` the work in the background
+ * ({ cmd, state, alive }), `renderBegun` whether a full render was ever started for this engine. Nothing is started
+ * by this: it never names the render or the setup unless the records say that this is the stage that was reached.
+ * @param {{ packages: boolean, engineHere: string, engineBuilt: string, ended?: Record<string, any>, job?: { cmd: string, state: string, alive: boolean } | null, renderBegun?: boolean }} o
+ */
+export function statusPlan({ packages, engineHere, engineBuilt, ended = {}, job = null, renderBegun = false }) {
+  const last = (w) => ended[w] ?? null
+  const ok = (w) => last(w)?.state === 'PASS' && last(w).engineHash === engineHere
+  const failed = (w) => last(w)?.state === 'FAIL' && last(w).engineHash === engineHere
+  const none = (stage, why) => ({ stage, next: '', why })
+  const run = (stage, word, why) => ({ stage, next: LINE(word), why })
+  if (job?.state === 'running' && job.alive) return run(job.cmd, job.cmd, `"${job.cmd}" is at work in the background now. The line follows it and starts nothing new`)
+  if (job?.state === 'starting') return run(job.cmd, job.cmd, `"${job.cmd}" is being started in the background now. The line follows it`)
+  const stopped = job && (job.state === 'stopped' || (job.state === 'running' && !job.alive)) ? job.cmd : ''
+  if (stopped && STAGES.concat('upload').includes(stopped) && !ok(stopped)) {
+    return run(stopped, stopped, `"${stopped}" was stopped before it ended (sleep, a restart, a closed window). Run its line once more: it carries on and nothing finished is lost. If it stops a second time at the same place, stop and report`)
+  }
+  if (!packages || engineBuilt !== engineHere) {
+    if (failed('setup')) return none('setup', `the setup ended in FAIL on this build: ${last('setup').why}. Stop and give Brandon the report`)
+    return run('setup', 'setup', !packages ? 'the packages are not installed in this clone yet' : `the build in this clone ${engineBuilt ? `was made for engine ${engineBuilt}` : 'is not made'}, and the source is engine ${engineHere}`)
+  }
+  if (failed('setup')) return none('setup', `the setup ended in FAIL on this build: ${last('setup').why}. Stop and give Brandon the report`)
+  for (const w of ['doctor', 'test']) {
+    if (ok(w)) continue
+    if (failed(w)) return none(w, w === 'test' ? `the short test ended in FAIL on this build: ${last(w).why}. It is not run a second time to see whether it passes. Stop and give Brandon the report` : `the doctor ended in FAIL on this build: ${last(w).why}. Do the one thing the table of 1.4 names for that sentence. If it names none, stop and give Brandon the report`)
+    return run(w, w, last(w) ? `"${w}" last passed for another build (engine ${last(w).engineHash}), and this clone is engine ${engineHere}` : `"${w}" has not been run in this clone yet`)
+  }
+  if (!ok('render')) {
+    if (!renderBegun && !last('render')) return none('step 1 is done', 'the short test passed on this build. Step 1 ends here: give Brandon its report and stop (1.6). The full render is never started from here: step 2 begins at 2.1, and only on his word')
+    if (failed('render') && last('render').refused) return none('render', `the render line was refused and drew nothing: ${last('render').why}. Do the one thing the table of 2.2 names for that sentence. If it names none, stop and give Brandon the report`)
+    if (failed('render')) return none('render', `the render ended in FAIL: ${last('render').why}. Do the one thing the table of 2.2 names for that sentence. If it names none, stop and give Brandon the report`)
+    return run('render', 'render', 'the full render was begun here and has not ended. Its line carries on from the last finished frames')
+  }
+  for (const w of ['check', 'deliver']) {
+    if (ok(w) && Date.parse(last(w).time) >= Date.parse(last('render').time)) continue
+    if (failed(w) && Date.parse(last(w).time) >= Date.parse(last('render').time)) return none(w, `"${w}" ended in FAIL: ${last(w).why}. Stop and give Brandon the report`)
+    return run(w, w, `the step before it passed, and "${w}" has not passed since`)
+  }
+  if (ok('clean') && Date.parse(last('clean').time) >= Date.parse(last('deliver').time)) return none('all is done', 'the four files are on the Desktop and the work files are deleted. What is left is the report of 2.7')
+  return run('clean', 'clean', 'the four files are delivered to the Desktop. The upload of 2.5 comes before this line, and only if Brandon said yes to it')
+}
+
+/**
+ * What `status` prints: one row for each word, the stage and the next line.
+ * @param {{ clone: string, engineHere: string, engineBuilt: string, engineStamp: string, released: boolean, ended?: Record<string, any>, job?: { cmd: string, state: string, alive: boolean } | null, plan: { stage: string, next: string, why: string } }} o
+ */
+export function statusLines({ clone, engineHere, engineBuilt, engineStamp, released, ended = {}, job = null, plan }) {
+  const said = (w) => {
+    const e = ended[w]
+    return e ? `${e.state} at ${e.time}${e.engineHash && e.engineHash !== engineHere ? `, on another build (engine ${e.engineHash})` : ''}: ${String(e.why).replace(/\s+/g, ' ').slice(0, 200)}` : 'not run in this clone yet'
+  }
+  return [
+    `the clone   ${clone}`,
+    `the engine  ${engineHere} is the source here; the build is ${engineBuilt ? `made for ${engineBuilt}` : 'not made'}; the stamp names ${engineStamp || 'none'}`,
+    `the film    ${released ? 'is released for its final render by the remote team' : 'is not released for its final render yet: step 1 only'}`,
+    `at work     ${job?.state === 'running' && job.alive ? `"${job.cmd}", in the background` : 'nothing'}`,
+    'how each word last ended here:',
+    ...COMMANDS.filter((w) => w !== 'status').map((w) => `  ${w.padEnd(8)} ${said(w)}`),
+    `WHERE THE WORK STANDS: ${plan.stage}. ${plan.why}`,
+    `NEXT LINE: ${plan.next || 'none'}`,
+  ]
+}
+
+/**
+ * The lines a word prints last, above its verdict: the whole path of every file the reader is to open or to send.
+ * @param {({ label: string, path: string } | null)[]} [paths]
+ */
+export function whereLines(paths = []) {
+  const rows = paths.filter((p) => p && p.path)
+  const width = Math.max(0, ...rows.map((p) => p.label.length))
+  return rows.map((p) => `${p.label.padEnd(width)}   ${p.path}`)
+}
+
 /** The arguments this tool takes. Anything else is refused, so that no line can carry a switch the handoff file does not hold. */
-export const COMMANDS = ['setup', 'doctor', 'test', 'render', 'check', 'deliver', 'upload', 'clean']
+export const COMMANDS = ['setup', 'doctor', 'test', 'render', 'check', 'deliver', 'upload', 'clean', 'status']
 /** A word of the tool's own tests, which the handoff file never names: it sends stand-in files and takes no argument at all. */
 export const UPLOAD_TEST_WORD = 'upload-test'
 /**
@@ -1019,7 +1192,7 @@ export function stampArgProblem(rest) {
 export function argProblem(argv) {
   const words = [...COMMANDS, UPLOAD_TEST_WORD]
   if (argv.length === 1 && words.includes(argv[0])) return ''
-  if (argv.length === 2 && words.includes(argv[0]) && argv[1] === '--worker') return ''
+  if (argv.length === 2 && words.includes(argv[0]) && argv[0] !== 'status' && argv[1] === '--worker') return ''
   if (argv[0] === 'stamp') return stampArgProblem(argv.slice(1))
   return `this tool takes one word and nothing else: ${COMMANDS.join(', ')}. It was given "${argv.join(' ')}"`
 }
