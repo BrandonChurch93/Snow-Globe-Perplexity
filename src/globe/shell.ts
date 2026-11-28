@@ -486,7 +486,7 @@ float glassHair(vec3 n) {
 
 // Whatever a graphics card answers where GLSL leaves the answer open, the glass does not paint it: a pixel of the
 // glass that came out as no number adds no light and keeps all of what is behind it, which is clear glass.
-const NUMBER_GUARD = '  if (any(isnan(gl_FragColor)) || any(isinf(gl_FragColor))) gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);'
+const NUMBER_GUARD = '  if (numberBroken(gl_FragColor)) gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);'
 
 const THROUGH = `
 ${GLASS_GLSL}
@@ -729,7 +729,7 @@ void main() {
       float uj = clamp((sj - ${num(glassLook.bend.from)}) / ${num(1 - glassLook.bend.from)}, 0.0, 1.0);
       float to = sj - ${num(glassLook.bend.shift)} * pow(abs(uj), ${num(glassLook.bend.power)});
       vec3 tap = textureLod(uBehind, (gl_FragCoord.xy + outward * ((to - s) / bendPer)) / uBehindSize, 0.0).rgb;
-      if (any(isnan(tap)) || any(isinf(tap))) tap = vec3(0.0);
+      if (numberBroken(tap)) tap = vec3(0.0);
       bent += max(tap, 0.0);
     }
     float bendOn = uRingAmt.z * smoothstep(0.0, ${num(glassLook.bend.soft)}, bendAt) * limb * (1.0 - smoothstep(${num(Math.cos(glassLook.bend.bubbleDeg[1] * RAD))}, ${num(Math.cos(glassLook.bend.bubbleDeg[0] * RAD))}, dot(n, uBubbleAt)));
@@ -743,7 +743,7 @@ void main() {
     for (int i = 0; i < ${glassLook.seat.mirrorTaps}; i++) {
       float uj = clamp(footU - ((float(i) + 0.5) / ${num(glassLook.seat.mirrorTaps)} - 0.5) * footPer / ${num(glassLook.seat.mirrorMm)}, 0.0, 1.0);
       vec3 tap = textureLod(uBehind, (gl_FragCoord.xy + footSlope * ((${num(glassLook.seat.mirrorSpanMm)} * uj + ${num(glassLook.seat.mirrorMm)} * footU) / (footPer * footPer))) / uBehindSize, 0.0).rgb;
-      if (any(isnan(tap)) || any(isinf(tap))) tap = vec3(0.0);
+      if (numberBroken(tap)) tap = vec3(0.0);
       foot += max(tap, 0.0);
     }
     lit += min(foot / ${num(glassLook.seat.mirrorTaps)}, vec3(${num(glassLook.seat.mirrorCap)})) * (${num(glassLook.seat.mirror)} * 6.75 * footU * (1.0 - footU) * (1.0 - footU) * footLimb * limb * (1.0 - ${num(glassLook.seat.lineDepth)} * line));

@@ -80,7 +80,7 @@ bool meets(vec3 from, vec3 dir, out vec3 at) {
   if (ball) { at = from - dir * b; return true; }
   return false;
 }
-bool sound(vec4 v) { return !(any(isnan(v)) || any(isinf(v))); }
+bool sound(vec4 v) { return !numberBroken(v); }
 void main() {
   ivec2 p = ivec2(gl_FragCoord.xy);
   vec4 own = texelFetch(uSample, p, 0);
@@ -219,7 +219,7 @@ void main() {
     float other = guide(q);
     w *= 1.0 - smoothstep(${LENS_FILL.guideStep[0]!.toFixed(3)}, ${LENS_FILL.guideStep[1]!.toFixed(3)}, abs(other - own) / (max(other, own) + ${LENS_FILL.guideFloor.toFixed(3)}));
     vec4 m = texelFetch(uMean, q, 0);
-    if (!(w > 0.0) || any(isnan(m)) || any(isinf(m))) continue;
+    if (!(w > 0.0) || numberBroken(m)) continue;
     sum += m * w;
     n += w;
   }

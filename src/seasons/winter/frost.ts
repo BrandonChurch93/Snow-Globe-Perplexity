@@ -154,7 +154,7 @@ varying vec3 vAxisZ;
 // the frost by the blur, so such a tap counts as black; the pixel itself stays as it is for the measure to find.
 vec3 frostTap(vec2 at) {
   vec3 c = textureLod(uBehind, at, 0.0).rgb;
-  return any(isnan(c)) || any(isinf(c)) ? vec3(0.0) : c;
+  return numberBroken(c) ? vec3(0.0) : c;
 }
 vec3 frostBehind(vec2 uv, float thickness, vec2 slope) {
   vec2 px = 1.0 / uBehindSize;

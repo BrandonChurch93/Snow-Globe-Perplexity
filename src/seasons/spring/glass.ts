@@ -265,7 +265,7 @@ vec3 dewTap(vec2 at, float span) {
   vec3 soft = textureLod(uSoft, uv, max(level - 1.0, 0.0)).rgb;
   if (level >= 1.0) return soft;
   vec3 c = textureLod(uBehind, uv, 0.0).rgb;
-  return mix(any(isnan(c)) || any(isinf(c)) ? vec3(0.0) : c, soft, level);
+  return mix(numberBroken(c) ? vec3(0.0) : c, soft, level);
 }
 // Whether this drop is still on the glass in the change, and how large: each drop shrinks away at its own moment.
 float dewKeep(float own) {
@@ -685,7 +685,7 @@ uniform ivec2 uFromSize;
 out vec4 o;
 vec3 tap(ivec2 q) {
   vec3 c = texelFetch(uFrom, min(q, uFromSize - 1), 0).rgb;
-  return any(isnan(c)) || any(isinf(c)) ? vec3(0.0) : clamp(c, 0.0, 30000.0);
+  return numberBroken(c) ? vec3(0.0) : clamp(c, 0.0, 30000.0);
 }
 void main() {
   ivec2 p = ivec2(gl_FragCoord.xy) * 2;

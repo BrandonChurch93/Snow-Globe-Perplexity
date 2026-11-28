@@ -307,10 +307,10 @@ const GUARD_INIT = () => {
   const state = (window.__guard = { found: 0 })
   P.shaderSource = function (shader, src) {
     let s = String(src)
-    const m = s.match(/if \(any\((\w+)\(gl_FragColor\)\) \|\| any\((\w+)\(gl_FragColor\)\)\) gl_FragColor = vec4\(0\.0, 0\.0, 0\.0, 1\.0\);/)
-    if (m) {
+    const guard = 'if (numberBroken(gl_FragColor)) gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);'
+    if (s.includes(guard)) {
       state.found++
-      s = s.replace(m[0], `if (any(${m[1]}(gl_FragColor))) gl_FragColor = vec4(4.0, 0.0, 0.0, 1.0); else if (any(${m[2]}(gl_FragColor))) gl_FragColor = vec4(0.0, 0.0, 4.0, 1.0);`)
+      s = s.replace(guard, 'if (numberBroken(gl_FragColor)) gl_FragColor = numberNan(gl_FragColor.r) || numberNan(gl_FragColor.g) || numberNan(gl_FragColor.b) || numberNan(gl_FragColor.a) ? vec4(4.0, 0.0, 0.0, 1.0) : vec4(0.0, 0.0, 4.0, 1.0);')
     }
     return orig.call(this, shader, s)
   }

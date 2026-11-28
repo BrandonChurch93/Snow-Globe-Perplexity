@@ -3,6 +3,7 @@ import { DEPTH_RANGE_MM, partBytes, viewCode } from '../diagnostics/views'
 import { LENS_GLSL, innerRadiusMm, lensIor, lensRadiusMm } from '../globe/lens'
 import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, SHUTTER_CHANGE, changeRamp } from '../shake/change'
 import { LIGHT_FRAG, LIGHT_FRAG_PARS, lightUniforms } from './chunks/light'
+import { NUMBER_GLSL } from './chunks/number'
 import { VEIL_FRAG, VEIL_FRAG_PARS, veilUniforms } from './chunks/veil'
 import type { Sample } from './sampler'
 import { flagStandIn } from './standins'
@@ -694,7 +695,7 @@ void main() {
   ${spec.vertexMain ?? ''}
 }`,
     fragmentShader: `#include <common>
-${STAGE_FRAG_PARS}
+${NUMBER_GLSL}${STAGE_FRAG_PARS}
 ${spec.fragment}`,
   })
   m.userData.stage = handle

@@ -1,3 +1,4 @@
+import { NUMBER_GLSL } from './chunks/number'
 import type { Gfx } from './gl'
 
 /**
@@ -24,6 +25,10 @@ const CASES: ReadonlyArray<readonly [string, string]> = [
   ['max(nan, 0)', 'max(uZero / uZero, uZero)'],
   ['clamp(nan, 0, 1)', 'clamp(uZero / uZero, uZero, uOne)'],
   ['isnan(nan)', 'isnan(uZero / uZero) ? 1.0 : 0.0'],
+  // The build's own test, which reads the bits (chunks/number.ts): 1 only where every form of it gives the same answer.
+  ['numberBroken(0 / 0)', 'numberBroken(uZero / uZero) && numberNan(uZero / uZero) && !numberInf(uZero / uZero) && numberBroken(vec3(uOne, uZero / uZero, uOne)) && numberBroken(vec4(uOne, uOne, uOne, uZero / uZero)) ? 1.0 : 0.0'],
+  ['numberBroken(1 / 0)', 'numberBroken(uOne / uZero) && numberInf(uOne / uZero) && !numberNan(uOne / uZero) && numberBroken(vec3(uOne / uZero, uOne, uOne)) && numberBroken(vec4(uOne, uOne / uZero, uOne, uOne)) ? 1.0 : 0.0'],
+  ['numberBroken(1)', 'numberBroken(uOne) || numberNan(uOne) || numberInf(uOne) || numberBroken(vec3(uOne)) || numberBroken(vec4(uOne)) ? 1.0 : 0.0'],
 ]
 
 const VERT = `#version 300 es
@@ -33,7 +38,7 @@ void main() {
 
 const FRAG = `#version 300 es
 precision highp float;
-uniform float uZero;
+${NUMBER_GLSL}uniform float uZero;
 uniform float uOne;
 uniform float uTwo;
 out vec4 o;
