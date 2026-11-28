@@ -26,6 +26,10 @@
 // by a cut. --fade-canvas frames|S: the tool holds the canvas and the page's still until the page's frames run again
 // (or until S s after the first picture) and then lets the page's own 0.5 s fade run. Named so, never counted with
 // the listening ones.
+// --canvas-opacity V: a style of the tool gives the canvas the opacity V from the page's first moment for as long as it
+// carries no data-live; at the first picture the page's own fade runs, from V to 1. --canvas-will-change: a style of the
+// tool sets will-change: opacity on the canvas from the page's first moment and nothing else. Both write down what the
+// canvas's computed style was. Named so, never counted with the listening ones.
 // --local opens the installed Chrome in a window with the machine's graphics card, with the flags of every tool of
 // this tree; without it the pinned browser draws with the software renderer.
 // It writes <out>/<name>.json, <name>.txt, and for each load <tag>.png, <tag>-chrome.log, <tag>-gpu.txt and what the
@@ -66,6 +70,15 @@ const noBlur = args['no-blur'] === true
 // into sight at the first picture by a cut and not by the page's 0.5 s fade. The page keeps it out of sight until then
 // by its own rule, and everything else is the page's. A tool beside the page.
 const cutCanvas = args['cut-canvas'] === true
+// --canvas-opacity V: a style of the tool gives the canvas the opacity V (0.004, 0.02) from the page's first moment for
+// as long as it carries no data-live, where the page's own rule gives it 0. Everything else is the page's: at the first
+// picture the page sets data-live and its own 0.5 s fade runs, from V to 1. --canvas-will-change: a style of the tool
+// sets will-change: opacity on the canvas from the page's first moment and nothing else; its opacity is the page's 0
+// until the first picture. Both write down the canvas's computed style frame by frame before the first picture, at the
+// moments of the fade and at the load's end, so that a load proves what it set. Tools beside the page.
+const canvasOpacity = str('canvas-opacity', '')
+if (canvasOpacity !== '' && !(Number(canvasOpacity) > 0 && Number(canvasOpacity) < 1)) throw new Error(`--canvas-opacity is ${canvasOpacity}. It is a number between 0 and 1.`)
+const canvasWillChange = args['canvas-will-change'] === true
 // --fade-canvas frames|S: the tool holds the canvas out of sight (opacity 0, no fade) and holds the page's still under
 // it (the page's own call that ends the still is kept back), then lets the page's own rule fade the canvas in over
 // 0.5 s and ends the still when that fade is over, as the page does. With "frames" it lets go when the page's frames
@@ -304,6 +317,95 @@ function cutIn() {
   requestAnimationFrame(tick)
 }
 
+// In the page, before any of its scripts: one rule of the tool for the canvas, put into the document the moment it has a
+// root, and what the canvas's computed style is: at every frame until the canvas carries data-live, at the first frame
+// that finds it there, at each event of its fade, and at the first frame that finds the fade ended by the page (its own
+// transition set to none). The computed style is read only in a frame or in an event of the fade, never between, so that
+// no reading of the tool begins the fade at another moment than the page's own. Everything is on the page's clock.
+function styleCanvas({ id, css }) {
+  const w = window.__listen
+  const s = (w.canvasStyle = { css, putAt: null, putBy: null, canvasThereAtPut: null, bodyThereAtPut: null, reads: 0, firstReadAt: null, lastReadAt: null, opacityFirst: null, opacityLast: null, opacityMin: null, opacityMax: null, willChange: null, transition: null, liveSetAt: null, liveAt: null, opacityAtLive: null, transitionAtLive: null, willChangeAtLive: null, events: [], fadeOverAt: null, fadeOverBy: null, opacityAfterFade: null, endedByPageAt: null, endedSeenAt: null, opacityWhenEnded: null, willChangeWhenEnded: null })
+  const now = () => Math.round(performance.now())
+  const put = (by) => {
+    if (document.getElementById(id) || !document.documentElement) return
+    const st = document.createElement('style')
+    st.id = id
+    st.textContent = css
+    document.documentElement.appendChild(st)
+    s.putAt = now()
+    s.putBy = by
+    s.canvasThereAtPut = document.querySelector('canvas') !== null
+    s.bodyThereAtPut = document.body !== null
+  }
+  put('at once')
+  if (s.putAt === null) {
+    const seen = new MutationObserver(() => {
+      put('when the document got its root')
+      if (s.putAt !== null) seen.disconnect()
+    })
+    seen.observe(document, { childList: true, subtree: true })
+    document.addEventListener('DOMContentLoaded', () => put('when the document was read'))
+  }
+  // The moments the page sets data-live on the canvas and ends its fade: the time only, no style is read here.
+  new MutationObserver((list) => {
+    for (const m of list) {
+      if (!(m.target instanceof HTMLCanvasElement)) continue
+      if (m.attributeName === 'data-live' && s.liveSetAt === null) s.liveSetAt = now()
+      if (m.attributeName === 'style' && s.endedByPageAt === null && m.target.style.transition === 'none') s.endedByPageAt = now()
+    }
+  }).observe(document, { attributes: true, subtree: true, attributeFilter: ['data-live', 'style'] })
+  const note = (e) => {
+    const canvas = document.querySelector('canvas')
+    if (!canvas || e.target !== canvas || e.propertyName !== 'opacity') return
+    const at = now()
+    const opacity = getComputedStyle(canvas).opacity
+    if (s.events.length < 12) s.events.push({ at, type: e.type, opacity, elapsed: e.elapsedTime })
+    if ((e.type === 'transitionend' || e.type === 'transitioncancel') && s.fadeOverAt === null) {
+      s.fadeOverAt = at
+      s.fadeOverBy = e.type
+      s.opacityAfterFade = opacity
+    }
+  }
+  for (const type of ['transitionrun', 'transitionstart', 'transitionend', 'transitioncancel']) document.addEventListener(type, note, true)
+  const tick = (t) => {
+    const canvas = document.querySelector('canvas')
+    if (canvas) {
+      if (!('live' in canvas.dataset)) {
+        const cs = getComputedStyle(canvas)
+        const o = Number(cs.opacity)
+        s.reads++
+        if (s.firstReadAt === null) {
+          s.firstReadAt = Math.round(t)
+          s.opacityFirst = cs.opacity
+        }
+        s.lastReadAt = Math.round(t)
+        s.opacityLast = cs.opacity
+        s.opacityMin = s.opacityMin === null ? o : Math.min(s.opacityMin, o)
+        s.opacityMax = s.opacityMax === null ? o : Math.max(s.opacityMax, o)
+        s.willChange = cs.willChange
+        s.transition = cs.transitionDuration
+      } else {
+        if (s.liveAt === null) {
+          const cs = getComputedStyle(canvas)
+          s.liveAt = Math.round(t)
+          s.opacityAtLive = cs.opacity
+          s.transitionAtLive = cs.transitionDuration
+          s.willChangeAtLive = cs.willChange
+        }
+        if (canvas.style.transition === 'none') {
+          const cs = getComputedStyle(canvas)
+          s.endedSeenAt = Math.round(t)
+          s.opacityWhenEnded = cs.opacity
+          s.willChangeWhenEnded = cs.willChange
+          return
+        }
+      }
+    }
+    requestAnimationFrame(tick)
+  }
+  requestAnimationFrame(tick)
+}
+
 function end() {
   const w = window.__listen
   const canvas = document.querySelector('canvas')
@@ -327,7 +429,7 @@ function end() {
   if (w.last !== null && now - w.last >= 250) w.gaps.push([Math.round(w.last), Math.round(now - w.last)])
   const html = document.documentElement
   const size = canvas ? { width: canvas.width, height: canvas.height, cssWidth: canvas.clientWidth, cssHeight: canvas.clientHeight } : null
-  return { marks: w.marks, lost: w.lost, back: w.back, refused: w.refused, gaps: w.gaps, perSecond: w.perSecond, frames: w.frames, endMs: Math.round(now), wall0: w.wall0, page0: w.page0, lostNow, cardByPage, made: html.dataset.made ?? null, detail: html.dataset.detail ?? null, canvasLive: canvas ? 'live' in canvas.dataset : null, canvas: size, ratio: window.devicePixelRatio, agent: navigator.userAgent, cores: navigator.hardwareConcurrency, memoryGb: navigator.deviceMemory ?? null, fade: w.fade ?? null, cut: w.cut ?? null }
+  return { marks: w.marks, lost: w.lost, back: w.back, refused: w.refused, gaps: w.gaps, perSecond: w.perSecond, frames: w.frames, endMs: Math.round(now), wall0: w.wall0, page0: w.page0, lostNow, cardByPage, made: html.dataset.made ?? null, detail: html.dataset.detail ?? null, canvasLive: canvas ? 'live' in canvas.dataset : null, canvas: size, ratio: window.devicePixelRatio, agent: navigator.userAgent, cores: navigator.hardwareConcurrency, memoryGb: navigator.deviceMemory ?? null, fade: w.fade ?? null, cut: w.cut ?? null, canvasStyle: w.canvasStyle ?? null, canvasAtEnd: canvas ? { opacity: getComputedStyle(canvas).opacity, willChange: getComputedStyle(canvas).willChange, inlineTransition: canvas.style.transition, stillThere: (document.getElementById('first')?.childElementCount ?? 0) > 0 } : null }
 }
 
 // The words of a page of the browser's own, through its shadow trees.
@@ -518,6 +620,14 @@ async function one(base, query, round) {
       await page.addInitScript(cutIn)
       notes.push('the tool takes the transition from the canvas for the whole load: it comes into sight at the first picture by a cut')
     }
+    if (canvasOpacity !== '') {
+      await page.addInitScript(styleCanvas, { id: '__listen_opacity', css: `canvas:not([data-live]){opacity:${Number(canvasOpacity)} !important}` })
+      notes.push(`the tool gives the canvas opacity ${Number(canvasOpacity)} from the page's first moment for as long as it carries no data-live; the fade at the first picture is the page's own`)
+    }
+    if (canvasWillChange) {
+      await page.addInitScript(styleCanvas, { id: '__listen_willchange', css: 'canvas{will-change:opacity !important}' })
+      notes.push("the tool sets will-change: opacity on the canvas from the page's first moment; its opacity and its fade are the page's own")
+    }
     if (fadeCanvas !== '') {
       const frames = fadeCanvas === 'frames'
       await page.addInitScript(holdAndFade, { mode: frames ? 'frames' : 'seconds', seconds: frames ? null : Number(fadeCanvas), afterMs: FADE_AFTER_MS, steadyMs: FADE_STEADY_MS })
@@ -586,6 +696,13 @@ async function one(base, query, round) {
     }
     await sample('the end of the stay').catch(() => undefined)
     const got = await page.evaluate(end).catch((error) => ({ failedAtEnd: String(error?.message ?? error).split('\n')[0], marks: [], lost: [], back: [], refused: [], gaps: [], perSecond: {}, frames: 0 }))
+    if (got.canvasStyle) {
+      const c = got.canvasStyle
+      const first = got.marks?.find((m) => m.mark === 'first-picture')?.at ?? null
+      const rel = (t) => (t === null || first === null ? `${t}` : `${t - first >= 0 ? '+' : ''}${t - first}`)
+      notes.push(`the canvas's style by the page's clock: the tool's rule (${c.css}) put ${c.putAt} ms of the page, ${c.putBy}, the canvas ${c.canvasThereAtPut ? 'already there' : 'not yet there'}, the body ${c.bodyThereAtPut ? 'already there' : 'not yet there'}; before data-live ${c.reads} frames read (${c.firstReadAt} to ${c.lastReadAt} ms of the page): opacity ${c.opacityFirst} first, ${c.opacityLast} last, ${c.opacityMin} to ${c.opacityMax}, will-change ${c.willChange}, transition ${c.transition}; data-live set ${rel(c.liveSetAt)} of the first picture; at the first frame with data-live (${rel(c.liveAt)}): opacity ${c.opacityAtLive}, transition ${c.transitionAtLive}, will-change ${c.willChangeAtLive}; the fade's events: ${c.events.map((e) => `${e.type} ${rel(e.at)} opacity ${e.opacity} elapsed ${e.elapsed}`).join(', ') || 'none'}; the fade ended by the page ${rel(c.endedByPageAt)}, seen in a frame ${rel(c.endedSeenAt)}: opacity ${c.opacityWhenEnded}, will-change ${c.willChangeWhenEnded}`)
+    }
+    if (got.canvasAtEnd) notes.push(`the canvas at the load's end: opacity ${got.canvasAtEnd.opacity}, will-change ${got.canvasAtEnd.willChange}, its own transition "${got.canvasAtEnd.inlineTransition}", the still ${got.canvasAtEnd.stillThere ? 'still there' : 'gone'}`)
     const shot = `${tag}.png`
     await page.screenshot({ path: path.join(out, shot), timeout: 20000 }).catch((error) => messages.push({ afterGotoMs: Date.now() - t0, text: `the tool's picture failed: ${String(error?.message ?? error).split('\n')[0]}` }))
     if (dump) await dump
