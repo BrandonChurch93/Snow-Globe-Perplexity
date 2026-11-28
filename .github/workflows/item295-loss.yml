@@ -1,0 +1,114 @@
+# Item 295: why main's page loses its WebGL context in winter on the hosted macOS card, and what that means for real
+# Apple machines. A diagnosis: nothing here mends anything, and nothing here is merged.
+# Every job builds one page on one hosted machine and opens it in the installed Chrome with tools/item295/listen.mjs,
+# which only listens: nothing of a tool is on the card. The page is main, untouched (a3320a30, the same src as the
+# 6befeeb0 the trials of item 285 opened), or an older commit of main, or the probe build of this branch, whose only
+# change to main's src is switches that turn a part off (src/core/off295.ts names them).
+# The matrix below names the arms of this push: the page, the addresses and how many browsers each gets, how long a
+# load is left, the browser's own switches, and whether the machine's sampler is begun (never in a listening arm).
+# It starts on a push to agent/p6-loss-295 that changes this file, and by hand. It has no timer and never starts on
+# main or on another builder's branch. Every job ends green whatever happens: a red run sends a mail. What a job read is
+# the step "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
+name: item 295 the lost card
+
+on:
+  push:
+    branches: [agent/p6-loss-295]
+    paths: ['.github/workflows/item295-loss.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  arm:
+    name: ${{ matrix.arm }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arm: q1-winter-plain, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '12:', stay: 150, after: 0, spindump: 0, flags: '' }
+          - { arm: q1-winter-low, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '12:quality=low&season=winter', stay: 150, after: 0, spindump: 0, flags: '' }
+          - { arm: q1-spring, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '12:season=spring', stay: 150, after: 0, spindump: 0, flags: '' }
+          - { arm: q2-winter-sampled, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '6:', stay: 60, after: 20, spindump: 14, flags: '' }
+    steps:
+      - name: the tools of this branch
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          path: tools-tree
+          persist-credentials: false
+
+      - name: the page
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.page }}
+          path: page
+          persist-credentials: false
+
+      - name: the machine
+        continue-on-error: true
+        shell: bash
+        run: |
+          mkdir -p tools-tree/out/work/item295
+          note="tools-tree/out/work/item295/${{ matrix.arm }}-machine.txt"
+          {
+            echo "arm ${{ matrix.arm }}, page $(git -C page rev-parse HEAD), tools $(git -C tools-tree rev-parse HEAD), image ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)"
+            sw_vers
+            sysctl -n machdep.cpu.brand_string hw.ncpu hw.memsize hw.model
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version
+            system_profiler SPHardwareDataType SPDisplaysDataType 2>/dev/null | grep -v -i -E "serial|uuid|udid"
+            echo "--- ioreg, the accelerators"
+            ioreg -r -c IOAccelerator -w 0 -d 3 2>/dev/null | head -120
+            echo "--- ioreg, lines that name the card"
+            ioreg -l -w 0 2>/dev/null | grep -i -E "paravirt|VRAM|gpu-core|MetalPlugin" | head -40
+          } > "$note" 2>&1 || true
+          head -60 "$note"
+
+      - name: install and build
+        continue-on-error: true
+        timeout-minutes: 20
+        shell: bash
+        run: |
+          ( cd page && npm ci --no-audit --no-fund && npm run build )
+          echo "page built: $(cat page/dist/build.json)" | tee -a "tools-tree/out/work/item295/${{ matrix.arm }}-machine.txt"
+          if cmp -s page/package-lock.json tools-tree/package-lock.json; then
+            ln -s ../page/node_modules tools-tree/node_modules
+          else
+            ( cd tools-tree && npm ci --no-audit --no-fund )
+          fi
+
+      - name: the loads
+        continue-on-error: true
+        timeout-minutes: 60
+        shell: bash
+        working-directory: tools-tree
+        run: |
+          flags="${{ matrix.flags }}"
+          more=()
+          if [ -n "$flags" ]; then more=(--flags "$flags"); fi
+          node tools/item295/listen.mjs --dist ../page/dist --name "${{ matrix.arm }}" --local --loads "${{ matrix.loads }}" --stay "${{ matrix.stay }}" --after-loss "${{ matrix.after }}" --spindump "${{ matrix.spindump }}" "${more[@]}" || true
+
+      - name: what was read
+        if: always()
+        continue-on-error: true
+        shell: bash
+        working-directory: tools-tree
+        run: |
+          cat "out/work/item295/${{ matrix.arm }}.txt"
+          for f in out/work/item295/*-spindump.txt; do [ -f "$f" ] && gzip -9 "$f"; done
+          rm -f out/work/item295/*-driver.log
+          du -sh out/work/item295
+
+      - name: the files
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.arm }}
+          path: tools-tree/out/work/item295
+          if-no-files-found: warn
+          retention-days: 14
