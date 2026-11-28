@@ -157,5 +157,6 @@ Written 23:40 UTC, 27 November 2026, the lines on frame 2121 added at 23:50 UTC,
 - Frames 682 and 681 (the petals arriving): main carries rows of copies and ribs across the smears; with the mend they are gone to a fine grain. Boxes of 200 x 60 px where a wave stands out over 2.0 times the middle wave: 84 on main and 53 with the mend in 682, 77 and 31 in 681.
 - The price there is plain: single pixels standing over their 5 x 5 by more than 8 levels on the flown parts are 4,978 on main and 6,707 with the mend in 682, 3,744 and 5,643 in 681. Edges that were smooth on main are sandy with the mend (682: the small petal at x 1647 to 1680, y 1908 to 1950; 681: x 3240 to 3500, y 1530 to 1660). That petal's edge is also softer, 3.627 px against 4.163 px from 10 to 90 percent of its step; three other flown edges are within two hundredths.
 - The thin scatter of single pink pixels beside the first petals is not taken away by the mend; outside the flown parts it is the same to the pixel, at the smears' edges a little more. Section 14, `streak-37` to `streak-42`, `streak-46`, `streak-47`.
-- Not seen: frame 2829; the frames played; anything above the table beyond a count.
+- Frame 2829: the leaves are all but gone. At true levels the two frames look alike; boxes where a wave stands out over 2.0 times: 14 on main, 3 with the mend; single pixels equal by count. `streak-48` to `streak-50`.
+- Not seen: the frames played; anything above the table beyond a count.
 

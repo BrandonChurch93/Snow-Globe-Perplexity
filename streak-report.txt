@@ -237,3 +237,21 @@ SEEN (pictures 41, 42, 46, 47):
 - THE FRINGE (the thin scatter of single pink pixels beside the first petals), 681 and 682: (c) does not take it away and makes it a little worse. Outside the flown parts it is the same to the pixel (the ring's counts are equal). At the smears' own edges main already has a hash where the front's feather cuts a petal (picture 47, both alike there), and with (c) the edges that were smooth on main turn sandy too (picture 46: x 3240 to 3500, y 1530 to 1660). At one to one it reads as a soft grain at the edge; from four times up as dots.
 BELOW THE BAR OF POINT 6, frame 681: the same as 682. More single pixels on the flown parts than on main (a half more over 8 levels; bright ones on dark ground twice as many), and sandy edges where main's were smooth, named above.
 NOT LOOKED AT, both frames: the globe and all above row 1296 beyond the count; the frames in motion (681 then 682 played); the lower fifth of the frame beyond the boxes named; any other tier or size.
+
+ADDED 03:15 UTC: FRAME 2829 (change 4, the frame after 2828). The pair came up at 03:12.
+Records. 77 samples each; main 656f308bb093a507 (813 s), (c) f7799e765d363efc (829 s).
+MEASURED, main then (c).
+- Whole frame: 372,555 px differ at all, 822 by more than 2, none by more than 6. Above row 1296: 8,299 px differ, 101 by more than 2, all of those at x 0 to 31, y 1234 to 1294 (a leaf close to the lens at the left edge).
+- Parts that differ by more than 2, grown by 2 px (6,292 px): spread of the fine part 1.367, 1.555; mean step 0.737, 1.115.
+- Footprint (655,341 px): spread of the fine part 0.623, 0.650; mean step 0.487, 0.533. Fine part over 6 levels: 559, 562 px; over 10: 181, 182; over 20: 16, 15.
+- Single pixels over the middle of their 5 x 5 by more than 8 levels: footprint 380, 378; ring of 40 px 767, 766. By more than 16: 139, 140; ring 277, 277.
+- 127 boxes of 200 x 60 px: strongest wave, mean 0.164, 0.143; standing out of the middle wave, mean 1.657, 1.398; boxes over 2.0 times: 14, 3; over 3.0: none on either. (c) over main by more than a tenth in no box (largest ratio 1.052). 420 boxes of 100 x 40: over 2.0 times 33, 8; (c) over main by more than a fifth in 5, none of them over 0.4 levels.
+- Where main's wave stood out on a leaf: x 3300 to 3400, y 1720 to 1760: 0.569 (3.13 times), 0.339 (1.81 times). x 550 to 650, y 1680 to 1720: 0.421 (3.13 times), 0.193 (1.29 times).
+- The places where both stand out alike (x 3500 to 3600, y 1900 to 1960: 0.437, 0.463; x 550 to 650, y 1920 to 1980: 0.478, 0.449) are bright specks lying on the table, alike in both frames, not flown parts.
+- The leaf at the left edge, x 0 to 40, y 1220 to 1300 (mean level 12 of 255): spread of the fine part 0.482, 0.886; mean step 0.590, 0.985.
+- Edges over the footprint (slope of the picture blurred by 2 px at its steepest twentieth): 1.320, 1.313 levels a px; ratio 0.995.
+SEEN (pictures 48, 49 at true levels, 50 with the levels times 4):
+- At one to one and at two times, true levels: the leaves are all but gone and very dark; the two frames look alike. No rib, no row of copies, no dotted edge, no new single pixels with (c).
+- With the levels times 4 (picture 50, x 3260 to 3500, y 1690 to 1790): main's leaf has faint streaks; with (c) a fine grain and no streak. At the left edge (x 0 to 40, y 1220 to 1300) with the levels times 4 the soft leaf is grainier with (c) and its edge a little sandy; at true levels I see neither frame's grain there.
+AGAINST POINT 6, frame 2829: nothing fails at full size by my eye or by the counts. Under gain: more grain at the left edge's leaf, named above.
+NOT LOOKED AT: the globe beyond the count; 2828 and 2829 played one after the other.
