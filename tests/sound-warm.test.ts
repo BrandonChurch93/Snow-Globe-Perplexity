@@ -77,7 +77,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('the browser is asked for its list of sound devices before a first press, so that its sound service is up', () => {
+describe('the browser is asked for its list of media devices before a first press, so that its sound service is up', () => {
   it('asks once, after the first picture and not before, and not again at the press', async () => {
     const enumerateDevices = vi.fn(async () => [])
     browser({ enumerateDevices })
@@ -103,7 +103,7 @@ describe('the browser is asked for its list of sound devices before a first pres
     expect(lost).toEqual([])
   })
 
-  it('is skipped where the browser has no navigator.mediaDevices, and the sound loads as before', async () => {
+  it('is skipped where the browser has no navigator.mediaDevices or no list to ask for, and the sound loads as before', async () => {
     browser()
     const engine = engineOf(INDEX)
     await settle()
@@ -111,7 +111,7 @@ describe('the browser is asked for its list of sound devices before a first pres
     expect(fetched).toEqual([FILE])
     expect(lost).toEqual([])
 
-    for (const none of [undefined, { mediaDevices: {} }]) {
+    for (const none of [undefined, { mediaDevices: {} }, { mediaDevices: { enumerateDevices: 'no' } }]) {
       vi.stubGlobal('navigator', none)
       fetched = []
       expect(engineOf(INDEX).available()).toBe(true)
@@ -121,7 +121,7 @@ describe('the browser is asked for its list of sound devices before a first pres
     }
   })
 
-  it('swallows a list that is refused, whether the call rejects or throws, and the sound loads as before', async () => {
+  it('swallows a list that is refused, whether the call rejects, the call throws or the browser throws at navigator.mediaDevices itself, and the sound loads as before', async () => {
     const rejects = vi.fn(() => Promise.reject(new Error('refused')))
     browser({ enumerateDevices: rejects })
     engineOf(INDEX)
@@ -138,6 +138,20 @@ describe('the browser is asked for its list of sound devices before a first pres
     engineOf(INDEX)
     await settle()
     expect(throws).toHaveBeenCalledTimes(1)
+    expect(fetched).toEqual([FILE])
+    expect(lost).toEqual([])
+
+    let asked = 0
+    vi.stubGlobal('navigator', {
+      get mediaDevices(): never {
+        asked++
+        throw new Error('refused')
+      },
+    })
+    fetched = []
+    engineOf(INDEX)
+    await settle()
+    expect(asked).toBe(1)
     expect(fetched).toEqual([FILE])
     expect(lost).toEqual([])
   })

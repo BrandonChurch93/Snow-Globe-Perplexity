@@ -138,15 +138,17 @@ function contextClass(): typeof AudioContext | null {
 }
 
 /**
- * Asks the browser for its list of sound devices and does nothing with the answer. The first sound context of a browser's
- * life waits, on the page's thread, until the browser's own sound service is up, and the page makes its context inside the
- * visitor's first press; the list starts that service ahead of the press. It needs no gesture and shows no prompt.
+ * Asks the browser for its list of media devices and drops the answer. The first sound context of a browser's life
+ * waits, on the page's thread, until the browser's own sound service is up, and the page makes its context inside the
+ * visitor's first press; the list starts that service ahead of the press. By the standard it needs no gesture and no
+ * permission. Whatever goes wrong in it is dropped too: the sound must load as before.
  */
 function wakeSound(): void {
-  const devices = typeof navigator === 'undefined' ? undefined : navigator.mediaDevices
-  if (typeof devices?.enumerateDevices !== 'function') return
   void Promise.resolve()
-    .then(() => devices.enumerateDevices())
+    .then(() => {
+      const devices = typeof navigator === 'undefined' ? undefined : navigator.mediaDevices
+      return typeof devices?.enumerateDevices === 'function' ? devices.enumerateDevices() : undefined
+    })
     .catch(() => undefined)
 }
 
