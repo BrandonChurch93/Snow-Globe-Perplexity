@@ -231,6 +231,9 @@ export async function doctor(ctx, { draw = true } = {}) {
   const row = (check, found, wanted, pass) => rows.push({ check, found, wanted, pass })
   const out = { pass: false, why: '', rows, time: new Date().toISOString() }
   const after = []
+  // what stops nothing and must still be looked at by the remote team
+  const look = []
+  out.look = look
   const done = (why) => {
     ctx.tables?.push({ title: 'the doctor', rows, after })
     out.pass = rows.every((r) => r.pass !== false)
@@ -263,6 +266,7 @@ export async function doctor(ctx, { draw = true } = {}) {
   ctx.say(`processor  ${machine.processor.name}, ${machine.processor.cores || '?'} cores, ${machine.processor.threads} threads`)
   ctx.say(`memory     ${L.gb(machine.memoryBytes).toFixed(1)} GB`)
   if (!machine.cards.length) ctx.say('video card  the system names none')
+  if (machine.cardsSaid) ctx.say(`            what it said when asked: ${machine.cardsSaid}`)
   for (const c of machine.cards) ctx.say(`video card ${c.name}${c.driverVersion ? `, driver ${c.driverVersion}` : ''}${c.driverDate ? ` of ${c.driverDate}` : ''}${c.memoryBytes ? `, ${L.gb(c.memoryBytes).toFixed(1)} GB (${c.memoryFrom})` : ''}`)
   ctx.say(`power      ${machine.power}`)
   ctx.say(`desktop    ${machine.desktop}`)
@@ -352,6 +356,12 @@ export async function doctor(ctx, { draw = true } = {}) {
   if (verdict.ok) row('what draws', gl?.renderer ?? '', wanted ? `the ${wanted.vendor} card (${wanted.name})` : 'a graphics card, not software', verdict.software ? null : true)
   else fail('what draws', gl?.renderer ?? 'nothing', wanted ? `the ${wanted.vendor} card (${wanted.name})` : 'a graphics card, not software', `${verdict.why}${verdict.software ? '' : `. Chrome was started with ${switches.join(' ')} and still drew on the other card. What is left is a setting of the system that this tool does not touch: on Windows, Settings > System > Display > Graphics, add Google Chrome and choose High performance; then run the doctor again`}`)
   if (verdict.ok && verdict.software) ctx.say(`NOTE       ${verdict.why}`)
+  if (verdict.ok && verdict.look) look.push(verdict.look)
+  // the one reader of a card's load this tool has comes with the NVIDIA driver
+  if (wanted?.vendor === 'NVIDIA') {
+    const smi = X.findSmi()
+    ctx.say(`card load  ${smi ? `nvidia-smi is at ${smi}: the short test reads the card's load with it while frames are drawn` : 'nvidia-smi was not found, so the short test cannot read the load of the card'}`)
+  }
   if (gl) {
     const side = Math.max(mode.master.width, mode.master.height)
     const fits = gl.maxTexture >= side && gl.maxRenderbuffer >= side && Math.min(...gl.maxViewport) >= Math.min(mode.master.width, mode.master.height)
@@ -398,7 +408,7 @@ export async function doctor(ctx, { draw = true } = {}) {
     else row('one picture', `film B frame 0 at ${mode.format.width} x ${mode.format.height}, 1 sample, drawn and read back in ${seen.picture.seconds.toFixed(1)} s (${mb(seen.picture.bytes)} as a PNG); the page loaded in ${seen.loadSeconds.toFixed(1)} s`, 'drawn, read back, not flat', true)
   }
   if (seen.lost) fail('graphics context', `lost ${seen.lost} ${seen.lost === 1 ? 'time' : 'times'}`, 'never lost', `the graphics context of the page was lost ${seen.lost} ${seen.lost === 1 ? 'time' : 'times'} while one picture was drawn. The card or its driver gave up`)
-  return done(`this machine can draw the film: ${gl?.renderer ?? ''}, Chrome ${seen.browser}, engine ${hash}, ${L.gb(free).toFixed(0)} GB free`)
+  return done(`this machine can draw the film: ${gl?.renderer ?? ''}, Chrome ${seen.browser}, engine ${hash}, ${L.gb(free).toFixed(0)} GB free${look.length ? `. ${look.length} ${look.length === 1 ? 'thing is' : 'things are'} marked LOOK in the report for the remote team` : ''}`)
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -568,13 +578,21 @@ export async function shortTest(ctx) {
   const rows = []
   const row = (check, found, wanted, pass) => rows.push({ check, found, wanted, pass })
   const result = { pass: false, why: '', rows, time: new Date().toISOString() }
+  let onFail = () => {}
   const fail = (why) => {
+    onFail()
     result.pass = false
     result.why = why
     return result
   }
   const doc = await doctor(ctx)
   if (!doc.pass) return fail(`the doctor does not pass, so nothing was drawn: ${doc.why}`)
+  const look = [...(doc.look ?? [])]
+  result.look = look
+  // the machine is kept awake for as long as this process lives; nothing of the system's settings is changed
+  const awake = await X.keepAwake(process.pid)
+  ctx.say(`awake: ${awake.how}${awake.pid ? ` (process ${awake.pid})` : ''}`)
+  result.awake = awake.how
   const stamp = readStamp()
   const { cfg } = await import('./page.mjs')
   const { machineId } = await import('./browser.mjs')
@@ -647,6 +665,26 @@ export async function shortTest(ctx) {
     if (walk.maths?.lines) after.push('the maths probe of the tree on this card (src/core/maths.ts):', `  ${walk.maths.lines.join('; ')}`)
   }
 
+  // the card's load is read from here until the last chunk of the stretch is drawn
+  const wantNvidia = L.wantedCard(doc.machine.cards)?.vendor === 'NVIDIA'
+  const cardWatch = X.watchCard()
+  let cardRead = false
+  const readCard = () => {
+    if (cardRead) return
+    cardRead = true
+    const load = cardWatch.stop()
+    const v = L.loadVerdict(load, { wantNvidia, found: load.found, why: load.why })
+    result.cardLoad = { ...load, text: v.text }
+    row('the card while frames were drawn', v.text, 'noted only: a card that draws is busy', null)
+    ctx.say(`card load  ${v.text}`)
+    if (v.look) look.push(v.look)
+  }
+  onFail = () => {
+    try {
+      cardWatch.stop()
+    } catch {}
+  }
+
   // (a) the reference frames
   const sheet = []
   const timed = []
@@ -712,10 +750,11 @@ export async function shortTest(ctx) {
   // one chunk of the opening from the pack, as the full render takes it
   let openingSeconds = null
   if (!mode.small) {
-    const o = await runTool(ctx, 'master.mjs', ['--what', 'opening', '--first', '0', '--last', String(mode.chunk - 1), '--chunk', String(mode.chunk), '--pack', PACK_DIR])
+    // cut as the stretch is cut: the encode of the test film reads every chunk of the test and holds them to one size
+    const o = await runTool(ctx, 'master.mjs', ['--what', 'opening', '--first', '0', '--last', String(size - 1), '--chunk', String(size), '--pack', PACK_DIR])
     if (o.code !== 0) return fail(`a chunk of the opening could not be made from the pack: ${whyOf(o)}`)
-    openingSeconds = o.seconds / mode.chunk
-    row('the opening pack', `frames 0 to ${mode.chunk - 1} made into a chunk in ${o.seconds.toFixed(1)} s`, 'read from the pack and encoded, never drawn', true)
+    openingSeconds = o.seconds / size
+    row('the opening pack', `${size === 1 ? 'frame 0' : `frames 0 to ${size - 1}`} made into a chunk in ${o.seconds.toFixed(1)} s`, 'read from the pack and encoded, never drawn', true)
   }
 
   // (b) the stretch across the landing, in chunks, through the master tool
@@ -736,10 +775,15 @@ export async function shortTest(ctx) {
     if (two.code !== 0) return fail(`the stretch could not be drawn with ${procs.length ? 'two processes' : 'one process'}: ${whyOf(two)}`)
     two.procs = procs.length ? 2 : 1
   }
+  readCard()
   const records = chunkRecords(rel('out', 'master', 'test'), 'film-b')
   if (records.length !== stretch.chunks.length) return fail(`the stretch should be ${stretch.chunks.length} chunks on disk and is ${records.length}`)
   const wrong = records.filter((r) => L.softwareName(r.graphics) && !ctx.T.software)
   if (wrong.length) return fail(`a chunk of the stretch was drawn in software ("${wrong[0].graphics}")`)
+  // what drew is read again from the record of every chunk: a test that drew nothing, or drew elsewhere, is no proof of the card
+  const drewOn = [...new Set(records.map((r) => String(r.graphics ?? '')))]
+  result.drewOn = drewOn
+  row('what drew the chunks, by their own records', drewOn.map((g) => g || 'a record names nothing').join(' | '), doc.renderer, drewOn.length === 1 && drewOn[0] === doc.renderer)
   row('the stretch', `${records.length} chunks of ${size} frames, frames ${stretch.first} to ${stretch.last}, every one verified against its PNGs (least ${Math.min(...records.map((r) => r.verify?.psnr?.least ?? 0))} dB)`, 'drawn in chunks, each verified', records.every((r) => r.verify?.ok === true))
   const flat = sum(records.map((r) => (r.flatFrames ?? []).length))
   const nan = sum(records.map((r) => r.notNumber?.total ?? 0))
@@ -861,7 +905,7 @@ export async function shortTest(ctx) {
   fs.renameSync(rel('out', 'master', 'test'), path.join(T, 'chunks'))
   fs.rmSync(rel('out', 'work', 'master', 'test'), { recursive: true, force: true })
   result.pass = rows.every((r) => r.pass !== false)
-  result.why = result.pass ? `the short test passed on ${doc.renderer}: ${refs.length} reference ${refs.length === 1 ? 'frame' : 'frames'} and ${frames} frames of film B${proj ? `, the full render is projected at ${L.hoursText(proj.seconds)} with --procs ${rule.procs}` : ''}. Stop here` : `the short test did not pass: ${rows.filter((r) => r.pass === false).map((r) => `${r.check} is ${r.found}, wanted ${r.wanted}`).slice(0, 4).join('; ')}`
+  result.why = result.pass ? `the short test passed on ${doc.renderer}: ${refs.length} reference ${refs.length === 1 ? 'frame' : 'frames'} and ${frames} frames of film B${proj ? `, the full render is projected at ${L.hoursText(proj.seconds)} with --procs ${rule.procs}` : ''}${look.length ? `. ${look.length} ${look.length === 1 ? 'thing is' : 'things are'} marked LOOK in the report for the remote team` : ''}. Stop here` : `the short test did not pass: ${rows.filter((r) => r.pass === false).map((r) => `${r.check} is ${r.found}, wanted ${r.wanted}`).slice(0, 4).join('; ')}`
   return result
 }
 
@@ -1217,7 +1261,8 @@ export async function check(ctx) {
     else row(`${which}: sound`, a ? `${a.codec_name}, ${a.sample_rate} Hz, ${a.channels} channels, ${Number(a.duration).toFixed(3)} s` : 'none', `aac, as long as the picture (${seconds.toFixed(3)} s)`, !!a && a.codec_name === 'aac' && Math.abs(Number(a.duration) - seconds) < 0.05)
     const dec = await decodeWhole(file)
     row(`${which}: whole decode`, dec.ok ? 'every frame and the sound decode, no error' : `the decoder wrote: ${dec.said || 'an error'}`, 'no error', dec.ok)
-    row(`${which}: size on disk`, mb(out.files[which].bytes), which === 'loop' ? 'noted' : `at most ${cfg.deliver.master.final.targetMb[which]} MB`, which === 'loop' || mode.small ? null : out.files[which].bytes <= cfg.deliver.master.final.targetMb[which] * 1e6)
+    // the films are encoded to a size; the loop to a quality, and it must still be a file that travels (under 2 GB)
+    row(`${which}: size on disk`, mb(out.files[which].bytes), which === 'loop' ? 'under 2,000 MB' : `at most ${cfg.deliver.master.final.targetMb[which]} MB`, which === 'loop' ? out.files[which].bytes < 2e9 : mode.small ? null : out.files[which].bytes <= cfg.deliver.master.final.targetMb[which] * 1e6)
     if (!mode.small && which !== 'loop') {
       const mix = rel('audio', 'final', `${which}.wav`)
       row(`${which}: its mix`, rec?.sound?.sha256 === stamp.sound[which] ? `the final mix the stamp names (${stamp.sound[which].slice(0, 12)})` : `sha256 ${String(rec?.sound?.sha256).slice(0, 12)}`, `sha256 ${stamp.sound[which].slice(0, 12)}`, rec?.sound?.sha256 === stamp.sound[which] && fs.existsSync(mix))

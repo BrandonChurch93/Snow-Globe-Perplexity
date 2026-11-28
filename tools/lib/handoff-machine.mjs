@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
-import { findIn, pathDirs } from './handoff.mjs'
+import { findIn, pathDirs, SMI_ARGS, smiSummary } from './handoff.mjs'
 
 const WIN = process.platform === 'win32'
 const MAC = process.platform === 'darwin'
@@ -18,6 +18,19 @@ export function powershell(script, { timeout = 120000 } = {}) {
   if (r.error) throw new Error(`Windows PowerShell could not be started (${r.error.message})`)
   if (r.status !== 0) throw new Error(`Windows PowerShell ended with code ${r.status}: ${String(r.stderr || r.stdout).trim().split('\n').slice(-3).join(' ')}`)
   return r.stdout
+}
+
+/**
+ * Starts a process of its own on Windows through Start-Process, and waits only for PowerShell, not for what it started.
+ * PowerShell gets no pipe here: a process started by Start-Process inherits the handles PowerShell holds, and a pipe
+ * held by it would keep this call waiting until the started process ends (MEASURED on a hosted Windows machine: the
+ * start of the short test waited out its two minutes and was reported as failed while the work ran on).
+ */
+export function powershellStart(script, { timeout = 60000 } = {}) {
+  const encoded = Buffer.from(`$ProgressPreference = 'SilentlyContinue'\n${script}`, 'utf16le').toString('base64')
+  const r = spawnSync(powershellExe(), ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded], { stdio: 'ignore', timeout, windowsHide: true })
+  if (r.error) throw new Error(`Windows PowerShell could not be started (${r.error.message})`)
+  if (r.status !== 0) throw new Error(`Windows PowerShell ended with code ${r.status} when it was to start the work`)
 }
 
 const run = (file, args, opts = {}) => {
@@ -64,6 +77,8 @@ function macFacts() {
   try {
     for (const c of JSON.parse(sp.out).SPDisplaysDataType ?? []) cards.push({ name: c.sppci_model ?? c._name ?? 'not named', driverVersion: c.spdisplays_mtlgpufamilysupport ? `Metal ${String(c.spdisplays_mtlgpufamilysupport).replace(/^spdisplays_/, '')}` : '', driverDate: '', memoryBytes: 0, memoryFrom: 'shared with the system', status: c.spdisplays_vendor ?? '' })
   } catch {}
+  // when no card comes of it, what the system said is kept, so that the report shows why
+  const cardsSaid = cards.length ? '' : (sp.out || sp.err || String(sp.error?.message ?? 'nothing')).replace(/\s+/g, ' ').trim().slice(0, 1500)
   const batt = run('/usr/bin/pmset', ['-g', 'batt']).out
   const from = /Now drawing from '([^']+)'/.exec(batt)?.[1] ?? ''
   const pct = /(\d+)%/.exec(batt)?.[1]
@@ -73,6 +88,7 @@ function macFacts() {
     processor: { name: sysctl('machdep.cpu.brand_string') || 'not named', cores: Number(sysctl('hw.physicalcpu')) || 0, threads: Number(sysctl('hw.logicalcpu')) || 0 },
     memoryBytes: Number(sysctl('hw.memsize')) || os.totalmem(),
     cards,
+    ...(cardsSaid ? { cardsSaid } : {}),
     power: from ? `${from === 'AC Power' ? 'mains power' : `on battery (${from})`}${pct ? `, battery at ${pct} %` : ''}` : 'not read (pmset gave no answer)',
     onBattery: !!from && from !== 'AC Power',
     desktop: path.join(os.homedir(), 'Desktop'),
@@ -273,5 +289,57 @@ export const alive = (pid) => {
     return true
   } catch (e) {
     return e.code === 'EPERM'
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The load of an NVIDIA card while frames are drawn. nvidia-smi comes with the card's driver. It is asked every two
+// seconds by one child that runs for as long as the watch does. Nothing here can fail a run: what cannot be read is said.
+
+/** Where nvidia-smi is on this machine, or ''. */
+export function findSmi() {
+  const names = WIN ? ['nvidia-smi.exe'] : ['nvidia-smi']
+  const dirs = [...pathDirs(process.env, process.platform)]
+  if (WIN) dirs.push(path.join(process.env.SystemRoot || 'C:\\Windows', 'System32'), path.join(process.env.ProgramFiles || 'C:\\Program Files', 'NVIDIA Corporation', 'NVSMI'))
+  return findIn(dirs, names)
+}
+
+/**
+ * Starts reading the card's load. `stop()` ends the reading and gives { found, why, readings, busiest, mostMb, totalMb }.
+ */
+export function watchCard({ seconds = 2 } = {}) {
+  const file = findSmi()
+  if (!file) return { found: false, file: '', stop: () => ({ found: false, why: 'was not found', ...smiSummary([]) }) }
+  const lines = []
+  let why = ''
+  let rest = ''
+  let child = null
+  try {
+    child = spawn(file, [...SMI_ARGS, '-l', String(seconds)], { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
+    child.stdout.on('data', (d) => {
+      const parts = (rest + String(d)).split(/\r?\n/)
+      rest = parts.pop() ?? ''
+      for (const l of parts) if (l.trim()) lines.push(l)
+    })
+    child.stderr.on('data', (d) => {
+      why ||= String(d).trim().split(/\r?\n/)[0].slice(0, 200)
+    })
+    child.on('error', (e) => {
+      why ||= `could not be started (${e.message})`
+    })
+    child.unref()
+  } catch (e) {
+    why = `could not be started (${e.message})`
+  }
+  return {
+    found: true,
+    file,
+    stop: () => {
+      try {
+        child?.kill()
+      } catch {}
+      const sum = smiSummary(lines)
+      return { found: sum.readings > 0 || !why, why: sum.readings ? '' : why ? `answered: ${why}` : '', file, ...sum }
+    },
   }
 }

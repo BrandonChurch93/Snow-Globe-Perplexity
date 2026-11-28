@@ -61,18 +61,35 @@ export function vendorOf(name) {
 }
 
 const RANK = ['NVIDIA', 'AMD', 'Apple']
-/** The card the film must be drawn on: an NVIDIA card before an AMD one before an Apple one, or null when the machine has none of them. */
+/**
+ * The card the film must be drawn on: an NVIDIA card before an AMD one before an Apple one, and of two cards of one
+ * maker the one with more memory of its own. Null when the machine has none of them.
+ */
 export function wantedCard(cards) {
   for (const vendor of RANK) {
-    const card = (cards ?? []).find((c) => vendorOf(c.name) === vendor)
-    if (card) return { vendor, name: card.name }
+    const same = (cards ?? []).filter((c) => vendorOf(c.name) === vendor)
+    if (!same.length) continue
+    const card = same.reduce((best, c) => ((c.memoryBytes ?? 0) > (best.memoryBytes ?? 0) ? c : best), same[0])
+    return { vendor, name: card.name, others: same.filter((c) => c !== card).map((c) => c.name) }
   }
   return null
 }
 
+const FILLER_WORDS = new Set(['tm', 'r', 'c', 'gpu', 'graphics', 'series', 'adapter', 'device'])
+/** The words of a card's name that tell one model from another: lower case, no marks, no filler. */
+export const modelWords = (name) => String(name ?? '').toLowerCase().split(/[^a-z0-9]+/).filter((w) => w && !FILLER_WORDS.has(w))
+/** Which model words of the card's name the page's renderer string does not hold. */
+export function wordsMissing(renderer, cardName) {
+  const have = new Set(modelWords(renderer))
+  return modelWords(cardName).filter((w) => !have.has(w))
+}
+
 /**
- * Whether the page draws on the right thing. `renderer` is WebGL's unmasked renderer string, `cards` the video cards the
- * system names. Software is refused by name, and so is a card other than the one the machine has for the work.
+ * Whether the page draws on the right thing. `renderer` is WebGL's unmasked renderer string, read from the page that
+ * draws; `cards` are the video cards the system names. Software is refused by name. A card of another maker than the
+ * one the machine has for the work is refused. Where the machine has two different cards of that maker, the page's name
+ * must hold the model words of the stronger one. Where it has one, words that differ are noted (`look`) and not refused:
+ * the maker is the same and there is no other card it could be.
  */
 export function drawVerdict({ renderer, cards, allowSoftware = false }) {
   if (!renderer || /^no webgl/i.test(renderer)) return { ok: false, software: false, why: 'the page got no WebGL at all, so nothing can be drawn' }
@@ -84,8 +101,38 @@ export function drawVerdict({ renderer, cards, allowSoftware = false }) {
   const want = wantedCard(cards)
   if (!want) return { ok: true, software: false, why: 'the page draws on hardware, and the system names no NVIDIA, AMD or Apple card to hold it to' }
   const got = vendorOf(renderer)
-  if (got === want.vendor) return { ok: true, software: false, why: `the page draws on the ${want.vendor} card` }
-  return { ok: false, software: false, why: `the page draws on "${renderer}" and this machine has ${want.name}. The film must be drawn on the ${want.vendor} card` }
+  if (got !== want.vendor) return { ok: false, software: false, why: `the page draws on "${renderer}" and this machine has ${want.name}. The film must be drawn on the ${want.vendor} card` }
+  const missing = wordsMissing(renderer, want.name)
+  if (!missing.length) return { ok: true, software: false, card: want.name, why: `the page draws on the ${want.vendor} card, and its name holds the model words of ${want.name}` }
+  const rivals = want.others.filter((n) => wordsMissing(renderer, n).length === 0 || modelWords(n).join(' ') !== modelWords(want.name).join(' '))
+  if (rivals.length) return { ok: false, software: false, why: `the page draws on "${renderer}", and this machine has more than one ${want.vendor} card (${[want.name, ...want.others].join(', ')}). The page's name does not hold the model words of the stronger one, ${want.name} (it lacks: ${missing.join(' ')}). The film must be drawn on that card` }
+  return { ok: true, software: false, card: want.name, look: `the page draws on "${renderer}". That is a ${want.vendor} card and the only one this machine has, but its name does not hold these words of the system's name for it, "${want.name}": ${missing.join(' ')}`, why: `the page draws on the ${want.vendor} card` }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The card's load while frames are drawn, as nvidia-smi says it.
+
+export const SMI_ARGS = ['--query-gpu=utilization.gpu,memory.used,memory.total', '--format=csv,noheader,nounits']
+/** One line of nvidia-smi's answer to SMI_ARGS: percent busy, MiB in use, MiB in all. Null for a line that is none. */
+export function parseSmi(line) {
+  const m = /^\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*$/.exec(String(line ?? ''))
+  return m ? { busy: Number(m[1]), usedMb: Number(m[2]), totalMb: Number(m[3]) } : null
+}
+/** The busiest reading and the most memory in use of many lines. */
+export function smiSummary(lines) {
+  const read = (lines ?? []).map(parseSmi).filter(Boolean)
+  if (!read.length) return { readings: 0, busiest: 0, mostMb: 0, totalMb: 0 }
+  return { readings: read.length, busiest: Math.max(...read.map((r) => r.busy)), mostMb: Math.max(...read.map((r) => r.usedMb)), totalMb: Math.max(...read.map((r) => r.totalMb)) }
+}
+/** Under this share of its time busy, while frames are drawn, a card is taken to stand idle. */
+export const IDLE_PERCENT = 5
+/** What the card's load says of the test: a line to print, and `look` when someone must look at it. */
+export function loadVerdict(sum, { wantNvidia, found, why = '' }) {
+  if (!found) return wantNvidia ? { text: `not read: nvidia-smi ${why || 'was not found'}`, look: `the load of the NVIDIA card could not be read while frames were drawn (nvidia-smi ${why || 'was not found'}), so only the page's own name says what drew` } : { text: 'not read: this machine has no NVIDIA card, and nvidia-smi is the one reader this tool has', look: '' }
+  if (!sum.readings) return { text: 'nvidia-smi gave no reading', look: wantNvidia ? 'nvidia-smi was started and gave no reading of the card while frames were drawn' : '' }
+  const text = `busiest ${sum.busiest} %, most memory in use ${Math.round(sum.mostMb)} of ${Math.round(sum.totalMb)} MiB, ${sum.readings} readings two seconds apart`
+  if (sum.busiest < IDLE_PERCENT) return { text, look: `the NVIDIA card stayed idle while frames were drawn (busiest ${sum.busiest} %). The page's name says it draws there, the card's own counter says it does not` }
+  return { text, look: '' }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

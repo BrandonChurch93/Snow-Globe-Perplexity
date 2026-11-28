@@ -92,7 +92,8 @@ function reportText(cmd, ctx, result, state) {
     ...(L.anyTestSwitch(ctx.T) ? [`NOTE       this was a run of the tool's own tests (${Object.entries(ctx.T).filter(([, v]) => v).map(([k, v]) => (v === true ? k : `${k}=${v}`)).join(', ')}). It is no run of the film`] : []),
   ]
   const tables = ctx.tables.filter((t) => t.rows.length).flatMap((t) => [bar, `${t.title}:`, L.tableText(t.rows), ...(t.after?.length ? ['', ...t.after] : [])])
-  return [...head, bar, ...ctx.lines, ...tables, bar, L.verdictLine(state, result.why), ''].join('\n')
+  const look = (result.look ?? []).length ? [bar, `TO LOOK AT, ${result.look.length}. It stops nothing here, and the remote team must read it:`, ...result.look.map((l) => `  LOOK  ${l}`)] : []
+  return [...head, bar, ...ctx.lines, ...tables, ...look, bar, L.verdictLine(state, result.why), ''].join('\n')
 }
 
 /** The report of the whole render, which goes to the Desktop with the files. */
@@ -264,7 +265,7 @@ function startWorker(cmd) {
     // A process of its own with a hidden console of its own: the tools it starts open no windows, and ending the
     // terminal that started it does not end it.
     const q = (s) => `'${String(s).replace(/'/g, "''")}'`
-    X.powershell(`$p = Start-Process -FilePath ${q(process.execPath)} -ArgumentList ${q(`"${SELF}" ${cmd} --worker`)} -WorkingDirectory ${q(rel())} -WindowStyle Hidden -RedirectStandardOutput ${q(file(`job-${cmd}.stdout`))} -RedirectStandardError ${q(file(`job-${cmd}.stderr`))} -PassThru; Write-Output $p.Id`)
+    X.powershellStart(`Start-Process -FilePath ${q(process.execPath)} -ArgumentList ${q(`"${SELF}" ${cmd} --worker`)} -WorkingDirectory ${q(rel())} -WindowStyle Hidden -RedirectStandardOutput ${q(file(`job-${cmd}.stdout`))} -RedirectStandardError ${q(file(`job-${cmd}.stderr`))} | Out-Null`)
   } else {
     const err = fs.openSync(file(`job-${cmd}.stderr`), 'w')
     const child = spawn(process.execPath, [SELF, cmd, '--worker'], { cwd: rel(), detached: true, stdio: ['ignore', 'ignore', err], env: process.env })

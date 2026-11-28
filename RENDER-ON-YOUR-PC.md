@@ -19,7 +19,8 @@ card. That is why step 1 draws a little, compares it, reports and stops.
 
 ## Rules for the agent
 
-1. Do not edit any file of the repo. Do not repair code, shaders, settings or tests. A fault is mended by the remote team.
+1. Do not edit any file of the repo. Do not repair code, shaders, settings or tests. A fault is mended by the remote
+   team. A shader that does not compile is such a fault: copy its message whole into what you give Brandon.
 2. Do not commit and do not push.
 3. Run only the commands written in this file, exactly as written, one line at a time. Use no other switches,
    set no variables, and do not join lines with `&&` or `;`.
@@ -27,6 +28,12 @@ card. That is why step 1 draws a little, compares it, reports and stops.
 5. When anything fails, stop. Give Brandon the report file the failing command names, whole, and wait. Do not try
    another way.
 6. Do step 1, then stop. Do step 2 only when Brandon says so in his own words, after step 1 has passed.
+7. While a line answers `RUNNING:`, do not end your turn and do not start another line beside it. Run the same line
+   again until it answers `PASS:` or `FAIL:`.
+8. Change no setting of Windows, of the graphics driver or of Chrome, and no registry value. Where a report names a
+   setting, it is for Brandon to change.
+9. Never mix the work of two computers. Copy nothing from another machine into the clone's folder `out`. The tool
+   refuses frames that another graphics card drew.
 
 ## How every command here behaves
 
@@ -48,6 +55,11 @@ card. That is why step 1 draws a little, compares it, reports and stops.
 - Every `node tools/handoff.mjs` line is run inside the clone's folder `Snow-Globe-Perplexity`. If node answers
   `Cannot find module` with a path that ends in `tools\handoff.mjs`, you are in the wrong folder: run
   `cd Snow-Globe-Perplexity` once and run the line again.
+- The tool writes its reports itself, as plain UTF-8 text. Do not send a command's output into a file of your own.
+- If you are started again in the middle of the work (the agent or the computer was restarted): in step 1, begin
+  again at 1.3. In step 2, run the line of 2.2 again; it carries on from the last finished frames. If a line then
+  answers `FAIL: "<word>" is still at work in the background`, the work outlived the restart and nothing is wrong:
+  run the line that sentence names until it ends, then go on. This is the one `FAIL:` that is not a stop.
 - Do not use WSL. The tool refuses to run in any Linux layer on Windows, because the film must be drawn by the
   Windows graphics driver.
 
@@ -102,7 +114,21 @@ cd Snow-Globe-Perplexity
 
 Good: the clone ends without the word `fatal`. It takes a minute or two.
 
-Bad: git asks for a sign in (the repo may be private): that is for Brandon. Any `fatal:` line: stop and report it.
+The sign in. The repo may be private by the time you read this. Then git needs Brandon's GitHub account once:
+
+- Git for Windows opens a small window by itself that says `Connect to GitHub`. Tell Brandon, word for word:
+  "A GitHub sign in window has opened. Please sign in." Wait for the clone to end. Git keeps the sign in, and no
+  later line asks again.
+- If no window opens and the clone ends with `fatal: Authentication failed`, with `fatal: repository ... not found`
+  or with `fatal: could not read Username`, stop and tell Brandon, word for word: "The clone needs your GitHub sign
+  in and no window opened here. Please open a PowerShell window of your own in this folder, run the clone line
+  below, sign in when it asks, and tell me when it has ended." Give him the clone line and the folder you are in.
+  When he says it is done, run only `cd Snow-Globe-Perplexity` and go on.
+- What is known of this: the clone of the public repo was run on Windows and macOS test machines and asked for no
+  sign in. The sign in of a private repo was tried on no test machine, because it needs Brandon's own account.
+
+Bad: any other `fatal:` line: stop and report it. A folder `Snow-Globe-Perplexity` that is here without this file in
+it (a clone that was cut off): stop and report it. Delete nothing.
 
 ### 1.3 Setup: the packages and the build
 
@@ -125,6 +151,13 @@ the machine itself and prints them. It opens Chrome in a window, as the render w
 A Chrome window opens and closes by itself. Do not touch it.
 
 Good: `PASS: this machine can draw the film: ...` with the name of the graphics card that draws.
+
+The doctor reads the video cards from Windows and the name of what draws from the page itself. The page must draw
+on the strong card of this machine (an NVIDIA card before an AMD one, and of two cards of one maker the one with
+more memory), named by the model words the system gives it. Nothing about the card is written into the tool.
+
+A report may end with a block `TO LOOK AT`, each of its lines beginning with `LOOK`. That is no failure and you go
+on. Give the block to Brandon with the report, as it is.
 
 Under its table the doctor also prints what the shader compiler of this machine wrote about the film's shaders,
 and what the graphics card answers to a list of small sums (the maths probe). Both are for the remote team. They
@@ -166,6 +199,9 @@ computer sleep.
 
 It answers `RUNNING:` every few minutes: run the same line again each time.
 
+Before you run it, tell Brandon, word for word: "The test opens Chrome windows for some minutes. Please do not
+minimize them, do not lock the screen and do not start a game until I say it is done."
+
 How the frames are compared, and why so:
 
 - The reference pictures were drawn on a Linux machine in software. A graphics card under Direct3D 11 (Windows)
@@ -182,10 +218,16 @@ How the frames are compared, and why so:
   difference in levels of 255, how many pixels are more than 8 levels apart, and where in the picture they lie.
   These lines are marked `noted` and fail nothing. They tell the remote team where to look.
 - What this machine drew is kept in `out/work/handoff/compared`, and a sheet of pictures shows each frame beside
-  its reference.
+  its reference: the reference on the left, this machine on the right, with a row of cuts at full size.
+- While the frames are drawn the test asks the NVIDIA card every two seconds how busy it is (with `nvidia-smi`,
+  which comes with the driver) and prints the busiest reading and the most memory in use. A card that stayed idle
+  while the page says it draws there is written as a `LOOK` line.
+- After the two seconds of film are drawn, the test reads from each chunk's own record what drew it. It must be the
+  card the doctor named. So a test that drew nothing, or drew elsewhere, cannot pass as proof of the card.
 
 Good: `PASS: the short test passed on <the graphics card>: ...`. The test film is then on the Desktop as
-`Snow Globe Seasons - Test - 3840x2160.mp4`, with a sheet of pictures beside it.
+`Snow Globe Seasons - Test - 3840x2160.mp4`, with the sheet of pictures beside it as
+`Snow Globe Seasons - Test - Contact Sheet.jpg`.
 
 If the two final sound mixes are not in the clone, the test still passes and says in one line that its film is
 silent and why. That is expected in step 1.
@@ -194,7 +236,8 @@ Bad: `FAIL:` with the reason. Stop and report.
 
 ### 1.6 Report and STOP
 
-Give Brandon the whole text of `out/work/handoff/report-test.txt` as one block, and say where the test film is.
+Give Brandon the whole text of `out/work/handoff/report-test.txt` as one block, with its `TO LOOK AT` block if it
+has one. Say where the test film and the sheet of pictures are, and ask him to open both and look.
 
 STOP here. Do not go on to step 2 by yourself, whatever the report says.
 
@@ -227,6 +270,12 @@ It answers `RUNNING:` every few minutes with a line that says how many frames ar
 end. Run the same line again each time, for as long as it takes. Do nothing else on this machine with the
 graphics card meanwhile, and leave the Chrome windows alone.
 
+Before you run it, tell Brandon, word for word: "The render opens Chrome windows for hours. Please do not minimize
+them, do not lock the screen, do not start a game and do not let Chrome update until I say it is done."
+
+The tool keeps the computer awake by itself while it draws and lets it sleep again when it ends. It changes no
+power setting. It never draws a finished frame twice, and it never joins frames of two graphics cards into one film.
+
 Good: `PASS: the two films, the loop and the screenshot are made in ...`.
 
 Bad, each with the one thing to do:
@@ -236,6 +285,7 @@ Bad, each with the one thing to do:
 | `the film is not released for its final render yet; step 1 only` | stop and tell Brandon. The remote team releases the film; nothing here can |
 | a final mix is missing or is not the one the stamp names | stop and tell Brandon: the two files `audio/final/film-a.wav` and `audio/final/film-b.wav` must be put into the clone by him |
 | it was stopped before it ended (sleep, restart, a closed window) | run the same line again. It carries on from the last finished frames. If it stops a second time at the same place, stop and report |
+| `the WebGL context was lost` (the driver reset the card, or the card ran out of memory) | run the same line again, once. It carries on. If it is lost a second time at the same place, stop and report. Change no setting (rule 8) |
 | the page draws in software, or on another card, or Chrome changed its version | stop and report. Nothing drawn is lost |
 | too little free disk | stop and report. Nothing drawn is lost |
 | the render would take longer than about ten hours | stop and report. The remote team decides |
@@ -258,6 +308,9 @@ node tools/handoff.mjs deliver
 ```
 
 Good: `PASS: the four files and the report are in ...` with the folder `Snow Globe Seasons` on the Desktop.
+
+What the files weigh: each film at most 500 MB, the loop under 2,000 MB (2.3 checks it), the screenshot some tens
+of MB. Nothing in this file uploads them. They stay in that folder until Brandon moves them.
 
 Bad: `FAIL:`. Stop and report.
 
@@ -298,6 +351,13 @@ brew install --cask google-chrome
 
 If `brew` itself is not found, stop and tell Brandon that Homebrew is needed (https://brew.sh). Do not install it
 by yourself.
+
+The sign in on the MacBook, if the repo is private: the first clone can fail in the agent's own shell, because no
+sign in window can open there. If the clone line below ends with `fatal: Authentication failed`, with
+`fatal: repository ... not found` or with `fatal: could not read Username`, stop and tell Brandon, word for word:
+"The clone needs your GitHub sign in. Please open Terminal yourself, run `gh auth login`, then `gh auth setup-git`,
+and tell me when both are done." If he says `gh` is not found, he runs `brew install gh` first. Then run the clone
+line again. This was tried on no test machine, because it needs Brandon's own account.
 
 Then the same lines as on Windows, in the same order, with the same good and bad answers:
 

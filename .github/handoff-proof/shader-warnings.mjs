@@ -26,7 +26,7 @@ const text = S.shaderList(w.seen, S.walkHead(w, [
   `branch    ${branch}`,
   `head      ${head}`,
   `machine   ${process.platform} ${process.arch} ${process.env.ImageOS ?? ''} ${process.env.ImageVersion ?? ''}`.trimEnd(),
-]))
+]), { srcDir: path.join(clone, 'src') })
 fs.writeFileSync(path.join(out, 'shader-messages.txt'), text)
 S.writeShaders(w.seen, path.join(out, 'shaders'))
 fs.writeFileSync(path.join(out, 'shader-messages.json'), JSON.stringify({ branch, head, renderer: w.renderer, browser: w.browser, maths: w.maths, drawn: w.drawn, notDrawn: w.notDrawn, errors: w.errors, linked: w.seen.linked, withLog: w.seen.logs.length, different: S.briefLogs(w.seen) }, null, 1))

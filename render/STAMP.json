@@ -12,9 +12,9 @@
     "film-b:2440",
     "film-b:2880"
   ],
-  "engineHash": "22b2ad3ea80cf9c7",
-  "commit": "48a2e3b754a806dee269f8f76f53c59e3fc3ee0c",
-  "made": "2026-11-28T00:07:20.905Z",
+  "engineHash": "8192a3756180aae6",
+  "commit": "978c8ad5ed5644449e4837859a4535f6abb68b10",
+  "made": "2026-11-28T01:53:13.338Z",
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "c5bc5c38fdabce09",
@@ -74,10 +74,10 @@
       "what": "film-b",
       "frame": 120,
       "name": "winter at rest",
-      "engineHash": "22b2ad3ea80cf9c7",
+      "engineHash": "8192a3756180aae6",
       "samples": 24,
       "travelPx": 2.73,
-      "seconds": 110.5,
+      "seconds": 135.1,
       "png": {
         "sha256": "188d0fc9058522f6de412b7b1a7a87f615813f214a1a0360cbe0accb11f1e573",
         "bytes": 14031775
@@ -129,10 +129,10 @@
       "what": "film-b",
       "frame": 720,
       "name": "spring in storm, just landed",
-      "engineHash": "22b2ad3ea80cf9c7",
+      "engineHash": "8192a3756180aae6",
       "samples": 24,
       "travelPx": 7.27,
-      "seconds": 194.8,
+      "seconds": 210.9,
       "png": {
         "sha256": "f17322d88ac124453935021fb8cb76789456bd44f85e16912136fcafc4d7007c",
         "bytes": 12745745
@@ -184,10 +184,10 @@
       "what": "loop",
       "frame": 0,
       "name": "the first frame of the loop, which is also the screenshot",
-      "engineHash": "22b2ad3ea80cf9c7",
+      "engineHash": "8192a3756180aae6",
       "samples": 96,
       "travelPx": 0.09,
-      "seconds": 381.1,
+      "seconds": 389.1,
       "png": {
         "sha256": "dff51b5e335ad41fbb03f1190dfc86a47ecfc668c6318a964a69008deada7680",
         "bytes": 13329762
@@ -239,7 +239,7 @@
       "what": "opening",
       "frame": 450,
       "name": "the opening while the prompt is typed",
-      "engineHash": "22b2ad3ea80cf9c7",
+      "engineHash": "8192a3756180aae6",
       "samples": 0,
       "pack": "665ac47671ead473d999f38848f854408e3a83b92459ecb66413e87120acec77",
       "renderer": "none: read from the opening pack, never drawn",

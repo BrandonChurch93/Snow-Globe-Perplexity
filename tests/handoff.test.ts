@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
@@ -101,8 +102,8 @@ describe('what draws', () => {
     expect(L.drawVerdict({ renderer: soft[0], cards: [NVIDIA], allowSoftware: true })).toMatchObject({ ok: true, software: true })
   })
   it('wants the NVIDIA card where a machine has one beside a built in card', () => {
-    expect(L.wantedCard([RADEON, NVIDIA])).toEqual({ vendor: 'NVIDIA', name: NVIDIA.name })
-    expect(L.wantedCard([RADEON])).toEqual({ vendor: 'AMD', name: RADEON.name })
+    expect(L.wantedCard([RADEON, NVIDIA])).toEqual({ vendor: 'NVIDIA', name: NVIDIA.name, others: [] })
+    expect(L.wantedCard([RADEON])).toEqual({ vendor: 'AMD', name: RADEON.name, others: [] })
     expect(L.wantedCard([{ name: 'Apple M4 Pro' }])?.vendor).toBe('Apple')
     expect(L.wantedCard([{ name: 'Microsoft Hyper-V Video' }])).toBeNull()
     expect(L.wantedCard([])).toBeNull()
@@ -118,6 +119,45 @@ describe('what draws', () => {
     expect(L.drawVerdict({ renderer: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Pro, Unspecified Version)', cards: [{ name: 'Apple M4 Pro' }] }).ok).toBe(true)
     expect(L.drawVerdict({ renderer: 'ANGLE (Intel, Intel(R) UHD Graphics 770, D3D11)', cards: [{ name: 'Intel(R) UHD Graphics 770' }] }).ok).toBe(true)
   })
+  it('of two cards of one maker wants the one with more memory of its own', () => {
+    const small = { name: 'NVIDIA GeForce GTX 1050', memoryBytes: 2 * 1024 ** 3 }
+    const large = { name: 'NVIDIA GeForce RTX 5080', memoryBytes: 16 * 1024 ** 3 }
+    expect(L.wantedCard([small, large])).toEqual({ vendor: 'NVIDIA', name: large.name, others: [small.name] })
+    expect(L.wantedCard([large, small])).toEqual({ vendor: 'NVIDIA', name: large.name, others: [small.name] })
+    // with no memory read, the first the system names
+    expect(L.wantedCard([{ name: 'NVIDIA A' }, { name: 'NVIDIA B' }])?.name).toBe('NVIDIA A')
+  })
+  it('reads the words of a name that tell one model from another', () => {
+    expect(L.modelWords('NVIDIA GeForce RTX 5080')).toEqual(['nvidia', 'geforce', 'rtx', '5080'])
+    expect(L.modelWords('AMD Radeon(TM) Graphics')).toEqual(['amd', 'radeon'])
+    expect(L.modelWords('')).toEqual([])
+    const page = 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 (0x00002C02) Direct3D11 vs_5_0 ps_5_0, D3D11)'
+    expect(L.wordsMissing(page, 'NVIDIA GeForce RTX 5080')).toEqual([])
+    expect(L.wordsMissing(page, 'NVIDIA GeForce RTX 5080 Laptop GPU')).toEqual(['laptop'])
+    expect(L.wordsMissing(page, 'NVIDIA GeForce RTX 5090')).toEqual(['5090'])
+    // a part of a word is not the word: 508 is not 5080
+    expect(L.wordsMissing('NVIDIA GeForce RTX 5080', 'NVIDIA GeForce RTX 508')).toEqual(['508'])
+  })
+  it('holds the page to the model of the stronger card where a machine has two of one maker', () => {
+    const small = { name: 'NVIDIA GeForce GTX 1050', memoryBytes: 2 * 1024 ** 3 }
+    const large = { name: 'NVIDIA GeForce RTX 5080', memoryBytes: 16 * 1024 ** 3 }
+    const onSmall = L.drawVerdict({ renderer: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1050 (0x00001C81) Direct3D11 vs_5_0 ps_5_0, D3D11)', cards: [RADEON, small, large] })
+    expect(onSmall.ok).toBe(false)
+    expect(onSmall.why).toContain('more than one NVIDIA card')
+    expect(onSmall.why).toContain('rtx 5080')
+    const onLarge = L.drawVerdict({ renderer: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 (0x00002C02) Direct3D11 vs_5_0 ps_5_0, D3D11)', cards: [RADEON, small, large] })
+    expect(onLarge).toMatchObject({ ok: true, card: large.name })
+    expect(onLarge.look).toBeUndefined()
+  })
+  it('passes the one card of its maker under another wording of its name, and says so as a thing to look at', () => {
+    const v = L.drawVerdict({ renderer: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 (0x00002C02) Direct3D11 vs_5_0 ps_5_0, D3D11)', cards: [RADEON, { name: 'NVIDIA GeForce RTX 5080 Founders Edition' }] })
+    expect(v.ok).toBe(true)
+    expect(v.look).toContain('founders edition')
+    // two cards of the same model are one model: no rival, a look
+    const twin = L.drawVerdict({ renderer: 'ANGLE (NVIDIA, NVIDIA RTX 5080, D3D11)', cards: [NVIDIA, NVIDIA] })
+    expect(twin.ok).toBe(true)
+    expect(twin.look).toContain('geforce')
+  })
   it('fails a page with no WebGL', () => {
     expect(L.drawVerdict({ renderer: '', cards: [NVIDIA] }).ok).toBe(false)
     expect(L.drawVerdict({ renderer: 'no WebGL', cards: [] }).ok).toBe(false)
@@ -125,6 +165,38 @@ describe('what draws', () => {
   it('names the software renderer the Windows test machines draw with, as their doctor read it', () => {
     // MEASURED: handoff proof run 46090113975, windows-winget-lines
     expect(L.softwareName('ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)')).toBe('basic render')
+  })
+})
+
+describe("the card's load while frames are drawn", () => {
+  it('asks nvidia-smi one line a reading and reads it', () => {
+    expect(L.SMI_ARGS).toEqual(['--query-gpu=utilization.gpu,memory.used,memory.total', '--format=csv,noheader,nounits'])
+    expect(L.parseSmi('97, 6143, 16303')).toEqual({ busy: 97, usedMb: 6143, totalMb: 16303 })
+    expect(L.parseSmi(' 0 , 512 , 16303 \r')).toEqual({ busy: 0, usedMb: 512, totalMb: 16303 })
+    expect(L.parseSmi('utilization.gpu [%], memory.used [MiB], memory.total [MiB]')).toBeNull()
+    expect(L.parseSmi('[N/A], 512, 16303')).toBeNull()
+    expect(L.parseSmi('')).toBeNull()
+  })
+  it('keeps the busiest reading and the most memory in use', () => {
+    expect(L.smiSummary(['3, 900, 16303', 'noise', '98, 7000, 16303', '41, 7400, 16303'])).toEqual({ readings: 3, busiest: 98, mostMb: 7400, totalMb: 16303 })
+    expect(L.smiSummary([])).toEqual({ readings: 0, busiest: 0, mostMb: 0, totalMb: 0 })
+    expect(L.smiSummary(undefined)).toEqual({ readings: 0, busiest: 0, mostMb: 0, totalMb: 0 })
+  })
+  it('says nothing to look at for a busy card, and asks for a look at an idle one', () => {
+    const busy = L.loadVerdict({ readings: 40, busiest: 98, mostMb: 7400, totalMb: 16303 }, { wantNvidia: true, found: true })
+    expect(busy).toEqual({ text: 'busiest 98 %, most memory in use 7400 of 16303 MiB, 40 readings two seconds apart', look: '' })
+    const idle = L.loadVerdict({ readings: 40, busiest: L.IDLE_PERCENT - 1, mostMb: 600, totalMb: 16303 }, { wantNvidia: true, found: true })
+    expect(idle.look).toContain('stayed idle')
+    expect(L.loadVerdict({ readings: 40, busiest: L.IDLE_PERCENT, mostMb: 600, totalMb: 16303 }, { wantNvidia: true, found: true }).look).toBe('')
+  })
+  it('asks for a look where an NVIDIA card is there and its load cannot be read, and for none where there is no such card', () => {
+    const none = L.loadVerdict({ readings: 0, busiest: 0, mostMb: 0, totalMb: 0 }, { wantNvidia: false, found: false })
+    expect(none.look).toBe('')
+    expect(none.text).toContain('no NVIDIA card')
+    const lost = L.loadVerdict({ readings: 0, busiest: 0, mostMb: 0, totalMb: 0 }, { wantNvidia: true, found: false })
+    expect(lost.look).toContain('could not be read')
+    const silent = L.loadVerdict({ readings: 0, busiest: 0, mostMb: 0, totalMb: 0 }, { wantNvidia: true, found: true })
+    expect(silent.look).toContain('gave no reading')
   })
 })
 
@@ -596,22 +668,108 @@ describe('what the shader compiler wrote', () => {
     const text = S.shaderList(seen, ['the head'])
     expect(text.startsWith('the head\n')).toBe(true)
     expect(text).toContain('programs linked by the page: 9; programs whose log is not empty: 3; different ones (other shaders or other messages): 2; messages that are errors: 0')
-    expect(text).toContain('== 1. fragment shader "GlobeGlass", vertex shader "GlobeGlass": 2 programs with these messages (asked by the page) ==')
+    expect(text).toContain(`== 1. fragment shader "GlobeGlass" (${fragment.split('\n').length} lines), vertex shader "GlobeGlass" (2 lines): 2 programs with these messages (asked by the page) ==`)
+    // every different message once at the top, with the function it is about and how many programs carry it
+    expect(text).toContain('the different messages, each once (2), with the function each is about and how many programs carry it:')
+    expect(text).toContain('   2 programs  warning X4000: use of potentially uninitialized variable (f_glassSeen_int)\n                 in glassSeen, not written under src: the library has it')
+    expect(text).toContain('this browser marks no compiler input in its translation, so read the line as near, not as exact.')
     for (const l of log.split('\n')) expect(text).toContain(`  ${l}`)
     expect(text).toContain('the same messages in the other program (the same two shaders with other switches) stand at: (14,1) (22,1)')
     expect(text).toContain('"f_glassSeen_int" is glassSeen of the fragment shader\'s own source, line 6: float glassSeen(int k) {')
-    expect(text).toContain('line 12 of the translated fragment shader: // translated line 12')
+    expect(text).toContain('line 12 of the fragment shader as the compiler read it: // translated line 12')
     expect(text).toContain('- warning X3577 at (3,5-9): value cannot be NaN')
     expect(S.briefLogs(seen)[0]).toEqual({ fragment: 'GlobeGlass', vertex: 'GlobeGlass', programs: 2, messages: entries[0]!.messages })
   })
-  it('counts an error as an error, names a shader with no name by its first line, and says when nothing was written', () => {
+  it('counts an error as an error, says when a shader has no name, and says when nothing was written', () => {
     const seen = { linked: 1, logs: [{ log: '(7,2): error X3004: undeclared identifier x', askedBy: 'this tool', shaders: [{ stage: 'fragment', source: 'precision highp float;\nuniform sampler2D tDiffuse;\nvoid main() {}', translated: '' }] }] }
     const text = S.shaderList(seen)
     expect(text).toContain('messages that are errors: 1')
-    expect(text).toContain('fragment shader "no name; it begins: uniform sampler2D tDiffuse;", vertex shader "none"')
+    expect(text).toContain('fragment shader "no name" (3 lines), vertex shader "none" (0 lines)')
+    // the library writes the line with nothing behind it for a material without a name: the next line is no name
+    expect(S.sortLogs({ linked: 1, logs: [{ log: 'x', askedBy: 'the page', shaders: [{ stage: 'fragment', source: '#define SHADER_NAME \n#define USE_FOG 1\nvoid main() {}', translated: '' }] }] })[0]!.fragment).toBe('no name')
     expect(text).toContain('the browser gave back no translated shader')
     expect(S.shaderList({ linked: 4, logs: [] })).toContain('no program wrote a message')
     expect(S.shaderList(null)).toContain('the watch did not run on this page')
+  })
+  // the translation as Chrome gives it back under Direct3D: once as it began, once as the compiler read it
+  const hlsl = [
+    '// INITIAL HLSL BEGIN',
+    'float f_far(in float _tx)',
+    '{',
+    'return _tx;',
+    '}',
+    '// INITIAL HLSL END',
+    '',
+    '// COMPILER INPUT HLSL BEGIN',
+    '',
+    'struct PS_INPUT',
+    '{',
+    '    float4 dx_Position : SV_Position;',
+    '};',
+    'float4 gl_texture2D(uint samplerIndex, float2 t)',
+    '{',
+    '    return textures2D[samplerIndex].Sample(samplers2D[samplerIndex], float2(t.x, t.y));',
+    '}',
+    'float f_stageShade(in float _tx)',
+    '{',
+    'for (int _ti = 0; (_ti < 4); (_ti++))',
+    '{',
+    '(_tx += gl_texture2D(_usMap, float2(_tx, _tx)).x);',
+    '}',
+    'return _tx;',
+    '}',
+    'static float _tflat = {1.0};',
+    'PS_OUTPUT main(PS_INPUT input){',
+    'float _tv = f_stageShade(1.0);',
+    'return generateOutput();',
+    '}',
+    '// COMPILER INPUT HLSL END',
+  ].join('\n')
+  it("counts the compiler's lines from the mark of its input, and finds the function a line lies in", () => {
+    const got = S.compilerInput(hlsl)
+    expect(got.marked).toBe(true)
+    expect(got.lines[0]).toBe('struct PS_INPUT')
+    expect(got.lines.at(-1)).toBe('}')
+    expect(S.compilerInput('float a;\nfloat b;')).toEqual({ lines: ['float a;', 'float b;'], marked: false })
+    expect(S.functionsOf(got.lines)).toEqual([
+      { name: 'gl_texture2D', from: 5, to: 8 },
+      { name: 'f_stageShade', from: 9, to: 16 },
+      { name: 'main', from: 18, to: 21 },
+    ])
+    expect(S.enclosing(hlsl, 7)).toBe('gl_texture2D')
+    expect(S.enclosing(hlsl, 13)).toBe('f_stageShade')
+    expect(S.enclosing(hlsl, 17)).toBe('')
+    expect(S.enclosing(hlsl, 2)).toBe('')
+    expect(S.enclosing('', 3)).toBe('')
+    expect(S.callersOf(hlsl, 'gl_texture2D')).toEqual(['f_stageShade'])
+    expect(S.callersOf(hlsl, 'f_stageShade')).toEqual(['main'])
+    expect(S.callersOf(hlsl, 'nothing')).toEqual([])
+  })
+  it('says where in the tree a function of a shader is written, and names the caller of a helper the browser wrote', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'handoff-src-'))
+    try {
+      const src = path.join(dir, 'src')
+      fs.mkdirSync(path.join(src, 'core'), { recursive: true })
+      fs.writeFileSync(path.join(src, 'core', 'light.ts'), ['export const light = /* glsl */ `', 'uniform sampler2D sMap;', '  float stageShade(float x) {', '    return x;', '  }', '`', 'function stageShade(x) {}'].join('\n'))
+      fs.writeFileSync(path.join(src, 'core', 'light.test.ts'), 'float stageShade(float x) {')
+      fs.writeFileSync(path.join(src, 'core', 'glass.ts'), 'const g = `\nvec3 glassSeen(vec3 o) {\n  return o;\n}`')
+      expect(S.whereInTree(src, 'stageShade')).toEqual(['src/core/light.ts:3'])
+      expect(S.whereInTree(src, 'nothing')).toEqual([])
+      expect(S.whereInTree('', 'stageShade')).toEqual([])
+      const own = ['#define SHADER_NAME Stage', 'uniform sampler2D sMap;', 'float stageShade(float x) {', '  return x;', '}', 'void main() {}'].join('\n')
+      const seen = { linked: 1, logs: [{ log: '(7,12-80): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value', askedBy: 'the page', shaders: [{ stage: 'fragment', source: own, translated: hlsl }] }] }
+      const text = S.shaderList(seen, [], { srcDir: src })
+      expect([...S.filesOf(own, src).entries()]).toEqual([['src/core/light.ts', ['stageShade']]])
+      // of two programs, the file only one of them holds comes first
+      const two = [{ frag: { source: own } }, { frag: { source: `${own}\nvec3 glassSeen(vec3 o) {\n  return o;\n}` } }]
+      expect(S.toldApart(two, src)).toEqual([['src/core/light.ts (stageShade)'], ['src/core/glass.ts (glassSeen)', 'src/core/light.ts (stageShade)']])
+      expect(text).toContain('its fragment shader holds functions written in: src/core/light.ts (stageShade)')
+      expect(text).toContain('counted from the mark COMPILER INPUT HLSL BEGIN of the translation')
+      expect(text).toContain('   1 program   warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n                 in gl_texture2D, a helper the browser wrote; called by stageShade, written at src/core/light.ts:3')
+      expect(text).toContain('line 7 of the fragment shader as the compiler read it: return textures2D[samplerIndex].Sample(samplers2D[samplerIndex], float2(t.x, t.y));')
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
   })
   it('reads one answer of the maths probe', () => {
     const lines = ['pow(0, 0) 0.00', '0 / 0 nan', 'isnan(nan) 1.00']
