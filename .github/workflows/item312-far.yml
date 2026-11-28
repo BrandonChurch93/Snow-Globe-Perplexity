@@ -1,21 +1,28 @@
-# Decision 312, T6: why spring's far picture (spring/slab-far.srgb.w2048.png) holds the thread for 3 to 4 s on the hosted
-# macOS card when a page opens in spring, and which way of handing it over takes that away.
+# The trials of item 285 that need the hosted macOS card. Decision 312, T6: why spring's far picture
+# (spring/slab-far.srgb.w2048.png) holds the thread for 3 to 4 s when a page opens in spring, and which way of handing it
+# over takes that away. Decision 314, T4c: whether one early call of navigator.mediaDevices.enumerateDevices() makes the
+# first sound context of a browser's life short.
 # Every job builds two pages on one hosted machine: origin main at 6befeeb0, untouched, and this branch, whose page takes
-# the trials from its address (far=bytes, webp, step, wait, twin; see src/core/far312.ts). It then opens them in the
-# installed Chrome and reads, for each load: the hand-over of the far picture and how long the thread was in it, every
-# call of the card of 5 ms and more, the first picture, when the card had really done all it was given for it, the mark
-# "ready", and the sha256 of the far picture's bytes read back from the card, level by level.
+# the trials of T6 from its address (far=bytes, webp, step, wait, twin; see src/core/far312.ts). It then opens them in the
+# installed Chrome. The kinds of T6 read, for each load: the hand-over of the far picture and how long the thread was in
+# it, every call of the card of 5 ms and more, the first picture, when the card had really done all it was given for it,
+# the mark "ready", and the sha256 of the far picture's bytes read back from the card, level by level.
 #   cold        each load in a browser begun for it, as a first visit is; the pages as visitors get them; 4 rounds, the
 #               trials one after another within a round
 #   cold-named  the same with the pages' names kept and the browser's own profile of the thread
 #   warm        each trial three loads in one browser, the trials in one order and then in the other
 #   winter      main alone, opened in winter, at low and at the plain address, left at rest and pressed 5 s after the
 #               first picture: where the far picture's hand-over falls for the visitor at the plain address
-# The reading is done by tools/item312/measure.mjs, which changes nothing of a page.
+# The kinds of T4c open main's page alone, every reading in a browser begun for it (tools/item312/sound.mjs):
+#   sound       8 rounds of three arms, muted as every tool of this tree is and then not muted as a visitor is: no call;
+#               the call at the first picture and the first context 2 s later; the context 100 ms after the call
+#   sound-late  not muted: the first context 60 s after the call, 3 rounds; then 16 minutes after it, once without the
+#               call and twice with it, to see whether what the call woke is still awake
+# The matrix below names the kinds of this push. T6 is read by tools/item312/measure.mjs. Neither tool changes a page.
 # It starts on a push to agent/p6-far-312-trials alone: the branch is for these trials and is never merged. It has no
 # timer and never starts on main. Every job ends green whatever happens: a red run sends a mail. What a job read is the
 # step "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
-name: item 312 far picture
+name: item 285 trials on the card
 
 on:
   push:
@@ -32,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kind: [cold, cold-named, warm, winter]
+        kind: [sound, sound-late]
     steps:
       - name: the trials of this push
         continue-on-error: true
@@ -111,6 +118,20 @@ jobs:
               for r in 1 2 3 4; do
                 node tools/item312/measure.mjs --dist ../main/dist --name "winter-r$r" --local --seasons winter --qualities low,plain --presses none,5 --limit 300 --pieces --fence --profile --readback "$back" || true
               done
+              ;;
+            sound)
+              node tools/item312/sound.mjs --dist ../main/dist --name sound-muted --local --rounds 8 --arms without,with,near || true
+              node tools/item312/sound.mjs --dist ../main/dist --name sound-unmuted --local --unmuted --rounds 8 --arms without,with,near || true
+              ;;
+            sound-late)
+              node tools/item312/sound.mjs --dist ../main/dist --name sound-60 --local --unmuted --rounds 3 --arms without,with --lead 60000 || true
+              # The three long waits side by side, begun 45 s apart so that no two make their context at one time.
+              node tools/item312/sound.mjs --dist ../main/dist --name sound-960-without --local --unmuted --rounds 1 --arms without --lead 960000 &
+              sleep 45
+              node tools/item312/sound.mjs --dist ../main/dist --name sound-960-with-a --local --unmuted --rounds 1 --arms with --lead 960000 &
+              sleep 45
+              node tools/item312/sound.mjs --dist ../main/dist --name sound-960-with-b --local --unmuted --rounds 1 --arms with --lead 960000 &
+              wait
               ;;
           esac
 
