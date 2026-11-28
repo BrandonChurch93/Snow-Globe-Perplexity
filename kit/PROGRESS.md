@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 264 · 2026-11-28 12:39 UTC
+Status 265 · 2026-11-28 12:58 UTC
 
-- `out/stills/status/status-264-1.jpg`: Film frame 2828 at 4K at its own size, both ends of the base's top, the main branch above and the what-if below, the dotted patches and striped twigs in both, only the faces differ
-- `out/stills/status/status-264-2.jpg`: Film frames 2806 and 2812 at 4K at their own size, the right end of the base, the main branch above and the what-if below, the web and the hatched twigs in both
-- `out/stills/status/status-264-3.jpg`: The render handoff's short test at 4K on hosted Windows through Direct3D 11 left and hosted macOS right, run 46130923210, in each pair the cloud's reference left and what the machine drew right
-- `out/stills/status/status-264-4.jpg`: Still: summer landed hero, hd, draft
+- `out/stills/status/status-265-1.jpg`: Summer's sand mound leaving the table, film frames 2100 to 2116 at draft, the main branch above and the second what-if below, not on main
+- `out/stills/status/status-265-2.jpg`: Film frame 2109 at 1920 wide at three times with the second what-if, the mound as a soft haze, not on main
+- `out/stills/status/status-265-3.jpg`: Fall after its landing at draft, the main branch left and the what-if branch right with the leaves' first what-if, being reworked, not on main
+- `out/stills/status/status-265-4.jpg`: Still: summer rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-28 12:39 UTC
-clock: phase 6, tick of 21.0 minutes
-phase 6: 57.82 h used of its 12.00 h box
-allowance (after the review): 57.82 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 57.82 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-28 12:58 UTC
+clock: phase 6, tick of 19.9 minutes
+phase 6: 58.16 h used of its 12.00 h box
+allowance (after the review): 58.16 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 58.16 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
