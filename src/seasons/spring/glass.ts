@@ -21,10 +21,11 @@ import { mist, updateMist } from './veil'
  * Every drop is a small lens: it shows what is behind it upside down and small (a copy of the frame as it stands when the
  * glass has been drawn), dark at its edge, with the key's glint on it and a crescent of light on the side away from the key.
  *
- * Nothing fades. A bead comes by growing from nothing, each at its own time after the landing (the dew within the first
- * second, as in the approved shake image; the beads over the next three), and goes by shrinking, each at its own place in the
- * change. When the globe is lifted and shaken the runs run off and their trails dry, so the glass carries only still dew
- * into the swap; between the swap and the landing the glass is bare.
+ * Nothing fades. A bead comes by growing from nothing, each at its own time, and goes by shrinking, each at its own place
+ * in the change. When the globe is lifted and shaken the runs run off and their trails dry, so the glass carries only still
+ * dew into the swap. The season that comes is dressed while the storm hides it: inside the swap window the dew grows, then
+ * the beads, and the film forms patch by patch; from the window's close to the landing the runs swell where they stand, each
+ * at its own time. At the landing the glass carries what it carries at rest, and the runs slide on from there.
  */
 const PART = 'glass-dressing-spring'
 const RS = config.globe.sphereDiameterMm / 2
@@ -36,8 +37,17 @@ const SEGMENTS = 14
 const TAU = Math.PI * 2
 
 const look = {
-  /** The beats after the landing are staggered: the petals on the table jump and the first water runs on the landing itself; the glass stays bare of new beads for this long after it, seconds, and then they form and begin to slide. */
+  /** Where the runs' clock stands at the landing, seconds before its zero: the first run of the rest picture starts this long after the landing and a little more. */
   afterLanding: 0.6,
+  /**
+   * The glass at the landing. `formed` is what the dew's clock reads from the swap window's close on (past the film's
+   * `formSeconds`, so all of it stands), reached through the window along `formPower` so that the first dew takes its time.
+   * A run that would start within `carried` seconds of its clock's zero is already on its way at the landing, `young`
+   * seconds old, and gathers pace until `paceBy`; a later one has the run before it still on the glass, which slides on,
+   * hangs for `hangSeconds`, runs off and has dried `drySeconds` and `gapSeconds` before the new one starts. Each swells
+   * from nothing over `swell` of the way from the window's close to the landing, starting within `swellFrom` of it.
+   */
+  landing: { formed: 8, formPower: 1.5, carried: 2.8, young: 1.2, paceBy: 11, hangSeconds: 1, drySeconds: 1.2, gapSeconds: 0.2, swellFrom: [0.05, 0.5], swell: 0.5 },
   dew: { count: 8600, mm: [0.07, 0.34], skew: 2.2, bornBy: 0.3, growSeconds: 0.5 },
   bead: { count: 420, mm: [0.38, 1.25], skew: 2.6, bornBy: 1.2, growSeconds: 1 },
   /** Lowest place of a still drop and the place a run leaves the glass, as polar angles from the top. */
@@ -113,7 +123,7 @@ const dewUniforms = {
   uPathA: { value: Array.from({ length: SLOTS }, () => new THREE.Vector4()) },
   /** Per run: the phase of its wander, where its head is, where its trail has dried to, the radius of its head. */
   uPathB: { value: Array.from({ length: SLOTS }, () => new THREE.Vector4()) },
-  /** Per run: half the width of its track in millimetres, and a number of its own. */
+  /** Per run: half the width of its track in millimetres, a number of its own, and how far it has swollen from nothing. */
   uPathC: { value: Array.from({ length: SLOTS }, () => new THREE.Vector4()) },
 }
 
@@ -220,7 +230,8 @@ if (aLife.z > 1.5) {
     float away = ph - dewPhi(a, b.x, th);
     away -= 6.2831853 * floor(away / 6.2831853 + 0.5);
     if (abs(away) * sin(th) * uDew.z > uPathC[j].x * 1.6 + 0.6 * dR) continue;
-    dOn *= pow(clamp((b.z - th) / 0.3 - 0.15, 0.0, 1.0), 0.5);
+    float back = pow(clamp((b.z - th) / 0.3 - 0.15, 0.0, 1.0), 0.5);
+    dOn *= uPathC[j].z < 1.0 ? mix(1.0, back, clamp(uPathC[j].z, 0.0, 1.0)) : back;
   }
 }
 vec3 dC;
@@ -270,7 +281,6 @@ vec3 dewTap(vec2 at, float span) {
 // Whether this drop is still on the glass in the change, and how large: each drop shrinks away at its own moment.
 float dewKeep(float own) {
   float c = stageChange();
-  if (uState.w > 0.5 && uState.w < 1.5) return 0.0;
   if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return 0.0;
   return uState.w > 1.5 ? smoothstep(0.0, 0.3, (1.0 - c) * 1.3 - own) : 1.0;
 }
@@ -373,6 +383,7 @@ vec3 tAcross = dot(tSide, tSide) > 0.0 ? normalize(tSide) : vec3(1.0, 0.0, 0.0);
 // Wide where it joins the head, thin behind, and drawn to a point where it has dried.
 float tWide = uPathC[tj].x * (0.72 + 0.28 * smoothstep(1.0 - min(0.12 / max(tLong, 1e-3), 1.0), 1.0, aTrail.y)) * smoothstep(0.0, min(0.05 / max(tLong, 1e-3), 0.5), aTrail.y);
 if (uDew.x < 0.0 || tLong <= 0.0) tWide = 0.0;
+tWide *= uPathC[tj].z;
 tWide *= smoothstep(${f(look.limb[0])}, ${f(look.limb[1])}, dot(tNw, tEye));
 float tSoft = dewSoft(tWide, max(dot(cameraPosition - tC, vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2])), 1.0));
 vec3 tP = tC + tAcross * aTrail.z * tWide * (1.0 + tSoft) + tEye * ${f(look.liftMm)};
@@ -841,25 +852,22 @@ export function dressing(): THREE.Object3D {
   return group
 }
 
-/** One run at one moment: its path this time round, where its head is, how far its trail has dried and how large it is. */
-export function runAt(slot: number, since: number, shed: number): { a: [number, number, number, number]; b: [number, number, number, number]; c: [number, number, number, number] } {
+type Run = { a: [number, number, number, number]; b: [number, number, number, number]; c: [number, number, number, number] }
+
+const startOf = (slot: number): number => (slot < 5 ? 0.1 + 0.18 * slot : 0.8 + (look.run.firstBy - 0.8) * rnd(slot, 1, 99))
+
+/** One run of one round, `local` seconds old (null: not yet started), `on` of its size. */
+function runIn(slot: number, round: number, local: number | null, slide: number, hang: number, dry: number, period: number, shed: number, on: number): Run {
   const R = look.run
-  const start = slot < 5 ? 0.1 + 0.18 * slot : 0.8 + (R.firstBy - 0.8) * rnd(slot, 1, 99)
-  const slide = mixOf(R.slideSeconds, rnd(slot, 2, 99))
-  const hang = mixOf(R.hangSeconds, rnd(slot, 3, 99))
-  const period = slide + hang + R.offSeconds + R.drySeconds + 0.8
-  const went = since - start
-  const round = went >= 0 ? Math.floor(went / period) : 0
   const from = mixOf(R.fromDeg, rnd(slot, 4, round)) * RAD
   const to = Math.min(from + mixOf(R.goDeg, rnd(slot, 5, round)) * RAD, 100 * RAD)
   const off = look.offDeg * RAD
   const phi = (rnd(slot, 6, round) - 0.45) * 0.86 * Math.PI
   const head = mixOf(R.headMm, rnd(slot, 7, round))
   const a: [number, number, number, number] = [phi, from, mixOf(R.wander, rnd(slot, 8, round)), mixOf(R.waves, rnd(slot, 9, round))]
-  const c: [number, number, number, number] = [head * R.track, rnd(slot, 10, round), 0, 0]
+  const c: [number, number, number, number] = [head * R.track, rnd(slot, 10, round), on, 0]
   const phase = TAU * rnd(slot, 11, round)
-  if (went < 0) return { a, b: [phase, from, from, 0], c }
-  let local = went - round * period
+  if (local === null) return { a, b: [phase, from, from, 0], c }
   local += Math.min(1, Math.max(0, shed)) * (period - 1e-3 - local)
   const u = Math.min(1, local / slide)
   // In fits and starts: the pace falls to a fifth and rises to nearly twice, a few times on the way down.
@@ -870,35 +878,81 @@ export function runAt(slot: number, since: number, shed: number): { a: [number, 
   const grown = Math.min(1, local / 0.5)
   const radius = run >= 1 ? 0 : head * (0.55 + 0.45 * u) * grown * grown * (3 - 2 * grown)
   const dryFrom = slide + 0.6 * hang
-  const dryTo = slide + hang + R.offSeconds + R.drySeconds
+  const dryTo = slide + hang + R.offSeconds + dry
   const dried = Math.min(1, Math.max(0, (local - dryFrom) / (dryTo - dryFrom)))
   // The wet trail is short: it dries behind the head as the head goes, shortens while the head hangs, and is gone after it.
   const hung = Math.min(1, Math.max(0, (local - slide) / hang))
   const wet = mixOf(R.trailDeg, rnd(slot, 13, round)) * RAD * (1 - 0.8 * hung)
   const tail = Math.max(from, at - wet, from + (off + 0.45 - from) * dried)
-  return { a, b: [phase, at, tail, radius], c }
+  return { a, b: [phase, at, tail, on < 1 ? radius * on : radius], c }
+}
+
+/** One run at one moment: its path this time round, where its head is, how far its trail has dried and how large it is. */
+export function runAt(slot: number, since: number, shed: number): Run {
+  const R = look.run
+  const start = startOf(slot)
+  const slide = mixOf(R.slideSeconds, rnd(slot, 2, 99))
+  const hang = mixOf(R.hangSeconds, rnd(slot, 3, 99))
+  const period = slide + hang + R.offSeconds + R.drySeconds + 0.8
+  const went = since - start
+  const round = went >= 0 ? Math.floor(went / period) : 0
+  return runIn(slot, round, went < 0 ? null : went - round * period, slide, hang, R.drySeconds, period, shed, 1)
+}
+
+/**
+ * The run of a slot as the glass carries it from the swap on. `clock` is the runs' clock (it reads `-afterLanding` at the
+ * landing and less before it) and `coming` how far the glass is from the swap window's close to the landing. From
+ * `paceBy` on, and for a late run from its own start on, this is `runAt`.
+ */
+export function runOn(slot: number, clock: number, shed: number, coming = 1): Run {
+  const R = look.run
+  const L = look.landing
+  const start = startOf(slot)
+  if (clock >= (start > L.carried ? start : L.paceBy)) return runAt(slot, clock, shed)
+  const slide = mixOf(R.slideSeconds, rnd(slot, 2, 99))
+  const begun = Math.min(1, Math.max(0, (coming - mixOf(L.swellFrom, rnd(slot, 14, 99))) / L.swell))
+  const on = coming >= 1 ? 1 : begun * begun * (3 - 2 * begun)
+  if (start > L.carried) {
+    const period = slide + L.hangSeconds + R.offSeconds + L.drySeconds + L.gapSeconds
+    return runIn(slot, -1, Math.max(0, clock - start + period), slide, L.hangSeconds, L.drySeconds, period, shed, on)
+  }
+  const hang = mixOf(R.hangSeconds, rnd(slot, 3, 99))
+  const period = slide + hang + R.offSeconds + R.drySeconds + 0.8
+  const span = L.paceBy + look.afterLanding
+  const short = L.young + look.afterLanding + start
+  const pace = 1 - (2 * short) / span
+  const local = clock < -look.afterLanding ? L.young + pace * (clock + look.afterLanding) : clock - start + (short * (L.paceBy - clock) ** 2) / (span * span)
+  return runIn(slot, 0, Math.max(0, local), slide, hang, R.drySeconds, period, shed, on)
 }
 
 export function update(moment: KitMoment): void {
   const frame = moment.frame
-  const swap = config.shake.swapWindow
+  const S = config.shake
+  const swap = S.swapWindow
+  const L = look.landing
   const beat = moment.beat
   const shaking = beat !== null && beat >= swap.fromBeat
   const two = frame.from !== frame.to && frame.change > 0 && frame.change < 1
   const finite = moment.sinceLanding < Infinity
-  // Bare from the swap to the landing: as the incoming season inside the window, and after the window until the foot is down.
-  const bare = two ? shaking && moment.arrived < 1 : shaking && (beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat) >= 1
+  // Coming on from the swap to the landing: as the incoming season inside the window, and after the window until the foot is
+  // down. A globe shaken into the season it had keeps its dew through the window and has only its runs to come, and after
+  // the window the two are one.
+  const coming = two ? shaking && moment.arrived < 1 : shaking && (beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat) >= 1
+  const land = S.liftBeats + S.strokeBeats + S.setDownBeats
+  const through = coming ? Math.min(1, Math.max(0, (beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat))) : 1
+  const down = coming ? Math.min(1, Math.max(0, (beat! - swap.toBeat) / (land - swap.toBeat))) : 1
   // Lifted and shaken, the runs run off and their trails dry: all of it gone by the time the swap window opens, so what the
   // glass carries into the swap does not depend on how long the season has stood.
   const lifted = beat === null ? 0 : Math.min(1, Math.max(0, (beat - 0.15) / (swap.fromBeat - 0.4)))
-  const shed = !finite || two || shaking ? 1 : lifted * lifted * (3 - 2 * lifted)
-  const since = bare ? -1 : finite ? Math.max(0, moment.sinceLanding - look.afterLanding) : 1e4
-  dewUniforms.uDew.value.set(since, shed, RS, 0)
+  const shed = coming ? 0 : !finite || two || shaking ? 1 : lifted * lifted * (3 - 2 * lifted)
+  const formed = coming ? L.formed * through ** L.formPower : finite ? Math.max(L.formed, moment.sinceLanding - look.afterLanding) : 1e4
+  const clock = coming ? -look.afterLanding - (Math.max(0, land - beat!) * 60) / config.film.defaultBpm : finite ? moment.sinceLanding - look.afterLanding : 1e4
+  dewUniforms.uDew.value.set(formed, shed, RS, 0)
   for (let j = 0; j < SLOTS; j++) {
-    const s = runAt(j, Math.max(0, since), bare ? 1 : shed)
+    const s = runOn(j, clock, shed, down)
     dewUniforms.uPathA.value[j]!.fromArray(s.a)
     dewUniforms.uPathB.value[j]!.fromArray(s.b)
     dewUniforms.uPathC.value[j]!.fromArray(s.c)
   }
-  updateMist(moment, bare)
+  updateMist(moment, coming)
 }

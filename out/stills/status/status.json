@@ -1,45 +1,45 @@
 {
-  "number": 238,
-  "time": "2026-11-28 01:08 UTC",
+  "number": 240,
+  "time": "2026-11-28 02:07 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 238 · 2026-11-28 01:08 UTC · Phase 6",
+    "Status 240 · 2026-11-28 02:07 UTC · Phase 6",
     "Phases 1 to 5 complete. Phase 6 in progress. The decision asked of Brandon in Status 236 at about 5:20 PM MT Friday stands unanswered: move on to the film and the masters, or one more round of looks first. The work goes on in either case and only the freeze waits.",
-    "Chain 41 is on main since 01:00 UTC (6:00 PM MT Friday): summer's see through swirl at the landing. Stated by the helper that ran it, every floor of the order is met: only summer's landing guard moved and equals its builder's, the four shakes measure 0.9694, 0.889, 0.9572 and 0.961 as in chain 40, summer at rest measures 0.8981 as in chain 39, the whole test run 1055 passed and 8 skipped. What I see beside the approved shake picture: tree, cottage glow and lamp posts read through the swirl; the streaks are whiter and coarser than the approved's fine warm swirl and the base is darker and browner than the approved's pale cream. Summer's landing stays below the bar. The live page is still round two (the twelfth publish); the first pictures for the thirteenth publish are being drawn on this head now.",
-    "Preview 07 is finished: rough draft 7 of the film with the prompt opening, 74.5 s, 960x540, 30 frames a second, with sound, drawn by four helpers on a tree whose sources equal chain 41's. In it: fall's darker air, the one smear for each flying petal and leaf, summer's see through swirl. Not in it: spring's glass mend and the patch for the stall at low quality. Measured: 2234 frames, every one of the twelve chunks on the same engine, no page message, no blue, dark or repeated frame in the scan. Two sheets looked at by me at preview size show no fault.",
-    "The final render on his own computer, first run on Windows. Measured by the builder of the one file on a hosted Windows Server 2025 machine with 2 cores and no graphics card, not on his computer: the four install lines run as written in PowerShell in a folder with a space in its name; setup passes with the same engine hash as on Linux; the doctor read the processor, memory, card, Chrome and free disk by itself, drew one film frame at 3840x2160, saw that this machine draws in software and refused, as it must. Finding: Chrome on Windows draws through Direct3D 11, and its shader compiler warns on some of the film's shaders, which still compile and draw. One warning matters: the compiler may leave out the tests for a broken number that guard the glass, the frost and the frame's sum, so one bad sample could spoil a pixel or a block of a master on his card, and the same holds for every Windows visitor of the live page. Whether any frame really differs there is unknown. Decision 249: it is mended now on its own branch (tests the Direct3D compiler cannot leave out, with the eight guard pictures held equal on Linux and the Windows doctor as the proof), and the doctor will print what his card's compiler answers, so the short test on his machine says by itself whether the guards work. No final render is started in the cloud.",
-    "Spring's glass after a shake: its builder states the mend stands on its machine (heads and trails at the landing as at rest, the other seven guards equal); it merged the new main and measures again; its whole report comes about 7:05 PM MT, later than its aim.",
-    "Remaining in phase 6 and what he receives. The thirteenth publish at the same address: chains 40 and 41 live (fall's darker air, the petals' smear, summer's swirl), after the first pictures and the security review. Chain 42: spring's glass, the patch for the stall at low quality if it comes whole, summer's fireflies and the seeds' dots, the petals' weave, the frost line; then a fourteenth publish. The render instructions: one file in the repo and one line to give Claude Code; its builder's own guess for the last report is about 2:00 AM MT Saturday. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order (card loop, judged stills, record round, preview films, proof of the local render, cue sheet, README, last publish, gauntlet) and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last, a fresh reviewer's score against the showcase standard.",
-    "Open, below the bar: summer's landing streaks and base as said above; summer's pond at rest, flat pale plates where the approved has dark water (item 279); fall's storm paler than approved; spring's glass bare after a shake on the live page (mend being measured); spring's fence and trails; the fireflies' flat bars at 4K (item 276); the seeds' lumps of dots at the stills' close camera (item 277); the weave in the petals' smears at film frames 1388 and 1389 (item 278); the frost line at film frame 668 (item 275); the stall at low quality on a software renderer; winter's four small items; fall's near fence and the pumpkin's stepped face (item 272); the petals' fringe at film frame 680; the poster tool that stops on one failed request (item 273).",
-    "Sound credits 7,420 of 10,000 (measured from the ledger at 01:07 UTC: 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render; one new preview, Preview 07.",
-    "phase 6: 46.31 h used of its 12.00 h box",
-    "allowance (after the review): 46.31 h used of 12.00 h allowed",
+    "Spring's glass after a shake is accepted (decision 252) and stands in chain 42, which a helper machine is checking now. It is not on main and not on the live page yet. Read and looked at here: the branch's head equals the reported one, and its pictures show drops and runs on the glass at the landing where main is bare, at the page's low, medium and high quality. Stated by its builder: all 26 runs have a head and a trail as at rest, the other seven guard pictures are equal, the whole test run 1061 passed and 8 skipped. Below the bar, by its word and mine: on the pale storm the trails are pale on pale, one bunch sits at the upper right, and no run shows from film frame 684 to 700. Not seen yet: the strip at every frame on the merged tree and a 4K pair with the globe standing still, both asked of chain 42.",
+    "The petals' weave in the film (item 278): the builder's last mend shows a gain in a trial, not merged. Stated by it at 3840x2160 at the masters' tier: the rib at film frame 1388 measures 1.66 levels on main and 0.83 with the mend, at the cost of a finer soft grain. Looked at here at two times: the ribs and the weave are gone and a soft grain without a pattern remains. The trial was not drawn on the pushed head, so five helper machines now draw film frames 1388, 1389, 668, 2108 and 2121 at 4K on it. If the floors hold it goes into chain 43.",
+    "The stall at low quality on a software renderer: the cause is found (decision 251). Stated by its builder: with the colour fades of the controls off the stall came in 0 of 40 presses, with them on in 9 of 16 named presses. Its mend keeps the same look and is being proven against six floors. Its two reports are due about 8:40 PM and 9:20 PM MT. Nothing of it is on main.",
+    "The final render on his own computer. The Direct3D mend's first part passed (decision 253). Measured by the builder of the one file on a hosted Windows machine, which draws in software: 113 programs linked, 0 errors, and no warning left on the tests for a broken number. Left for its parts two and three: cautions on five functions, one shadow read in a loop and one program whose optimization did not converge. The whole is due about 9:11 PM MT. The one file: its short test failed on all five hosted Windows jobs because the work could not be started in the background. Mended by its builder, unproven until its next run. Decision 254: the tool gets a word to send the four finished files back as a draft release, only on Brandon's yes and only to a private repo. Unknown still: anything on a real NVIDIA card. No final render is started in the cloud.",
+    "Remaining in phase 6 and what he receives. Chain 42: spring's glass after a shake. Chain 43: the petals' weave, the frost line at film frame 668, summer's fireflies and the seeds' dots, as each passes. Chain 44: the stall's mend and the Direct3D mend. Then a critic for the change of season and a fourteenth publish at the same address. The render instructions: one file in the repo and one line to give Claude Code. Its builder's guess for the last report is about 2:00 AM MT Saturday. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order (card loop, judged stills, record round, preview films, proof of the local render, cue sheet, README, last publish, gauntlet) and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last, a fresh reviewer's score against the showcase standard.",
+    "Open, below the bar: summer's landing streaks whiter and coarser than approved and its base darker. Summer's pond at rest, flat pale plates where the approved has dark water (item 279). Fall's storm paler than approved. Spring's glass bare after a shake on the live page (mend in chain 42, pale on pale). Spring's fence and trails. The fireflies' flat bars at 4K (item 276). The seeds' lumps of dots at the stills' close camera (item 277). The petals' weave at film frames 1388 and 1389 (item 278, a third mend in proof). The frost line at film frame 668 (item 275). The stall at low quality on a software renderer. Winter's four small items. Fall's near fence and the pumpkin's stepped face (item 272). The petals' fringe at film frame 680. The poster tool that stops on one failed request (item 273, cause not found).",
+    "Sound credits 7,420 of 10,000 (measured from the ledger at 02:05 UTC: 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render and no new preview since Preview 07.",
+    "phase 6: 47.30 h used of its 12.00 h box",
+    "allowance (after the review): 47.30 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-238-1.jpg",
-      "caption": "Rough draft 7, twenty four frames across the whole film",
-      "w": 1200,
-      "h": 453
+      "file": "out/stills/status/status-240-1.jpg",
+      "caption": "Spring's glass at the landing, bare on main above and dressed with the mend below, in chain 42, not live yet",
+      "w": 770,
+      "h": 734
     },
     {
-      "file": "out/stills/status/status-238-2.jpg",
-      "caption": "Rough draft 7, summer's landing in sixteen frames, the see through swirl",
+      "file": "out/stills/status/status-240-2.jpg",
+      "caption": "The petals' weave at 4K at two times, film frame 1388, main left and the last mend right, a trial, not merged",
       "w": 1200,
-      "h": 678
+      "h": 416
     },
     {
-      "file": "out/stills/status/status-238-3.jpg",
-      "caption": "Summer at the landing on chain 41, approved picture left and build right, on main now, below the bar",
-      "w": 1200,
-      "h": 533
+      "file": "out/stills/status/status-240-3.jpg",
+      "caption": "Spring's glass at the landing with the mend at the page's low, medium and high quality, in chain 42, not live yet",
+      "w": 770,
+      "h": 1035
     },
     {
-      "file": "out/stills/status/status-238-4.jpg",
-      "caption": "Still: spring rest hero, hd, draft",
+      "file": "out/stills/status/status-240-4.jpg",
+      "caption": "Still: winter landed hero, hd, draft",
       "w": 1200,
       "h": 675
     }
