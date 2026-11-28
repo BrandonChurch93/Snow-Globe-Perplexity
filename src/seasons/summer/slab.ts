@@ -22,7 +22,7 @@ const HEAP = {
   bank: { mm: [[-180, 0], [-10, 0], [15, 2.0], [40, 5.0], [62, 7.5], [85, 7.5], [105, 3.0], [135, 0], [180, 0]], r: 58, w: 14 },
   skirt: { at: [96, 8], mm: [22, 9], high: 0.7, patch: [0.05, 0.5] },
   lumps: [0.06, 0.22, 0.8],
-  sprinkle: { at: [-63.8, -47.6], lit: [-0.918, -0.396], run: [-12, -2, 22, 78], rise: [0, 0.6], core: [0.95, 1.1], veil: [0.5, 6.5] },
+  sprinkle: { at: [-63.8, -47.6], lit: [-0.918, -0.396], run: [-12, -2, 22, 78], core: [0.95, 1.1], veil: [0.5, 6.5], edge: { out: [-6.5, 3.5], swing: [0.65, 19, 0.35, 5.3], fray: [2.5, 2.3], soft: [0.6, 2.4, 9.1], veil: [3.5, 3.0, 7.7] } },
   cover: [0.02, 3.0],
   ragged: { mm: [1.7, 4.3], most: 0.55 },
   spread: { looseMm: 0.25, onHeap: 0.1, thickMm: 1.6 },
@@ -32,7 +32,7 @@ const HEAP = {
 // The light on the sand. The stage's lit material is made for the stone of the base; this takes its paint (every grain's
 // own colour and tilt) and the stage's key, sky and card, and lights the sand as dry sand is lit by a low sun from behind.
 export const SAND_LIT = { tilt: 0.25, ramp: [0.02, 0.26], gain: [0.45, 1.4], sun: 4.3, back: 1.0, sky: [3.6, 5.2, 8.0], card: 0.05, knee: 1.8, high: 3.2, pale: 0.75, tint: [1.0, 0.98, 0.93], thin: [0.5, 0.3, 4.0], lone: [1.0, 0.92, 0.84], speck: 1.8, finer: 1.6, rows: 1080, pit: [0.8, 0.33], pitTint: [1.0, 0.75, 0.5], warm: [0.22, 0.45], lean: [0.15, 0.45], tone: [0.6, 1.25], fade: 0.14, fill: [0.5, 1.0], soft: [0.8, 0.05], cast: [0.3, 0.1, 34], turned: { by: 0.6, low: 0.4, w: [0.6, 0.3], mm: 60, blur: 2.5 }, shade: [1.2, 0.93, 0.74], shadeTo: 0.25, ragged: [0.75, 0.5, 5.3], blur: [1.5, 2.5], unsharp: [0.75, 1.25], small: [0.5, 0.6], crest: { mm: [7.0, 9.5], tint: [0.88, 0.72, 0.6] } }
-export const SPRINKLE = { softMm: 5.0 } as const
+export const SPRINKLE = { softMm: 9.0 } as const
 export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 0.5, skin: 2, bare: 0.0019, x: [-150, 142], z: [-232, 216], heap: { x: [-8, 132], z: [-78, 74] } } as const
 
 const hash = (x: number, y: number, s: number): number => {
@@ -139,33 +139,55 @@ export function sandSpread(x: number, z: number): number {
   return 0.2 * Math.min(1, h / HEAP.spread.looseMm) * (HEAP.spread.onHeap + (1 - HEAP.spread.onHeap) / (1 + (h / HEAP.spread.thickMm) ** 2))
 }
 
-// The grains sprinkled beside the foot on the left: how thick they lie at a place, most along the edge of the base's
-// shadow, less with every millimetre into the light and with the distance from the base.
+// The sprinkle beside the foot on the left lies along the edge of the base's shadow, and that edge is ruled: a round
+// base throws a shadow with straight sides. The grains lay whole from that edge on and thinned out behind it over a
+// width that was the same all the way along, so the sprinkle ended on a ruled line on that side while its other sides
+// thin out into single grains (decision 294, W5). Its own edge on that side swings about the ruled one now, a long
+// swing and a short one, frayed at the size of a few grains, and the grains come in over a width that is its own at
+// every place: no line of equal cover is straight.
+//
+// How far into the light from the ruled edge the sprinkle's own edge lies at a place, in mm (behind it where under 0).
+const sprinkleEdge = (s: number, x: number, z: number): number => {
+  const E = HEAP.sprinkle.edge
+  const swing = E.swing[0]! * noise(s / E.swing[1]! + 7.1, 0.61, 41) + E.swing[2]! * noise(s / E.swing[3]! + 2.9, 0.23, 43)
+  return E.out[0]! + (E.out[1]! - E.out[0]!) * swing + E.fray[0]! * (noise(x / E.fray[1]! + 1.7, z / E.fray[1]! + 6.1, 59) - 0.5)
+}
+// How soft the sprinkle comes in at `s` mm along the edge, in mm (the width of the step a grain's chance rises over).
+const sprinkleSoft = (s: number): number => {
+  const E = HEAP.sprinkle.edge
+  return E.soft[0]! + (E.soft[1]! - E.soft[0]!) * noise(s / E.soft[2]! + 5.3, 0.37, 47)
+}
+
+// The grains sprinkled beside the foot on the left: how thick they lie at a place, most a little way into the light
+// from the sprinkle's own edge, less with every millimetre further and with the distance from the base. None of them
+// lies behind the ruled edge (arrival.ts lays them from there on), so where the sprinkle's own edge is behind it they
+// come in from the ruled one: from nothing, over a width of their own, and from a little further into the light at
+// one place than at the next.
 export function sandSprinkle(x: number, z: number): number {
   const S = HEAP.sprinkle
   const ease = (a: number, b: number, v: number): number => {
     const c = Math.min(1, Math.max(0, (v - a) / (b - a)))
     return c * c * (3 - 2 * c)
   }
-  const d = (x - S.at[0]!) * S.lit[0]! + (z - S.at[1]!) * S.lit[1]!
   const s = (x - S.at[0]!) * S.lit[1]! - (z - S.at[1]!) * S.lit[0]!
+  const d = (x - S.at[0]!) * S.lit[0]! + (z - S.at[1]!) * S.lit[1]! - Math.max(sprinkleEdge(s, x, z), 0) - S.edge.veil[1] * noise(s / S.edge.veil[2] + 9.7, 0.83, 61)
   const along = ease(S.run[0]!, S.run[1]!, s) * (1 - ease(S.run[2]!, S.run[3]!, s)) ** 1.3
   const in_ = Math.max(d, 0)
-  const across = ease(S.rise[0]!, S.rise[1]!, d) * (S.core[0]! * Math.exp(-in_ / S.core[1]!) + S.veil[0]! * Math.exp(-in_ / S.veil[1]!))
+  const across = ease(0, S.edge.veil[0] * sprinkleSoft(s), d) * (S.core[0]! * Math.exp(-in_ / S.core[1]!) + S.veil[0]! * Math.exp(-in_ / S.veil[1]!))
   return Math.min(1, along * across * (0.6 + 0.8 * noise(x / 5.1 + 3.3, z / 5.1 + 8.8, 37)))
 }
 
-// How thick the sprinkle's core lies along the edge of the base's shadow: whole from the edge on, and thinning out over
-// a few millimetres into the shadow.
+// How thick the sprinkle's core lies along its edge: thinning out toward the base's shadow in single grains, as it
+// does on its other sides, with no step and no corner in a grain's chance.
 export function sandSprinkleRun(x: number, z: number): number {
   const S = HEAP.sprinkle
   const ease = (a: number, b: number, v: number): number => {
     const c = Math.min(1, Math.max(0, (v - a) / (b - a)))
     return c * c * (3 - 2 * c)
   }
-  const d = (x - S.at[0]!) * S.lit[0]! + (z - S.at[1]!) * S.lit[1]!
   const s = (x - S.at[0]!) * S.lit[1]! - (z - S.at[1]!) * S.lit[0]!
-  return ease(-SPRINKLE.softMm, 0, d) * ease(S.run[0]!, S.run[1]!, s) * (1 - ease(S.run[2]!, S.run[3]!, s)) ** 1.3 * (0.55 + 0.45 * noise(x / 5.1 + 3.3, z / 5.1 + 8.8, 37))
+  const d = (x - S.at[0]!) * S.lit[0]! + (z - S.at[1]!) * S.lit[1]! - sprinkleEdge(s, x, z)
+  return (1 / (1 + Math.exp(-d / sprinkleSoft(s)))) * ease(S.run[0]!, S.run[1]!, s) * (1 - ease(S.run[2]!, S.run[3]!, s)) ** 1.3 * (0.55 + 0.45 * noise(x / 5.1 + 3.3, z / 5.1 + 8.8, 37))
 }
 
 // The place on the table that lies `s` mm along the edge of the base's shadow and `d` mm into the light from it.
