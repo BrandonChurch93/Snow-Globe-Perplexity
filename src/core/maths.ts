@@ -1,4 +1,4 @@
-import { NUMBER_GLSL } from './chunks/number'
+import { MEAN_STEP_GLSL, NUMBER_GLSL } from './chunks/number'
 import type { Gfx } from './gl'
 
 /**
@@ -40,12 +40,18 @@ const PLAIN: ReadonlyArray<readonly [string, string]> = [
   ['nan bits - nan bits', 'nanBits() - nanBits()'],
   ['numberBroken(nan bits)', 'numberBroken(nanBits()) && numberBroken(nanBits() + uOne) && numberNan(nanBits()) && !numberInf(nanBits()) && numberBroken(vec3(uOne, nanBits(), uOne)) && numberBroken(vec4(uOne, uOne, uOne, nanBits())) ? 1.0 : 0.0'],
   ['numberBroken(inf bits)', 'numberBroken(infBits()) && numberBroken(infBits() + uOne) && numberInf(infBits()) && !numberNan(infBits()) && numberBroken(vec3(infBits(), uOne, uOne)) && numberBroken(vec4(uOne, infBits(), uOne, uOne)) ? 1.0 : 0.0'],
+  // The step of the picture's mean, in the accumulator's own text (chunks/number.ts): 1 where the mean held comes back bit for bit.
+  ['mean of 1 and 3', 'meanStep(vec4(uOne), vec4(uOne + uTwo), uOne / uTwo).x'],
+  ['mean past a broken sample', 'same(meanStep(held(), vec4(uOne, nanBits(), uOne, uOne), uOne / uTwo), held()) && same(meanStep(held(), vec4(uOne, uOne, uOne, infBits()), uOne / uTwo), held()) ? 1.0 : 0.0'],
+  ['mean after a broken first sample', 'same(meanStep(vec4(uOne, nanBits(), uOne, uOne), held(), uOne / uTwo), held()) ? 1.0 : 0.0'],
 ]
 
-const PLAIN_PARS = `uniform uint uNan;
+const PLAIN_PARS = `${MEAN_STEP_GLSL}uniform uint uNan;
 uniform uint uInf;
 float nanBits() { return uintBitsToFloat(uNan); }
 float infBits() { return uintBitsToFloat(uInf); }
+vec4 held() { return vec4(uOne, uTwo, uOne + uTwo, uOne); }
+bool same(vec4 a, vec4 b) { return floatBitsToUint(a) == floatBitsToUint(b); }
 `
 
 const VERT = `#version 300 es

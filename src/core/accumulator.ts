@@ -2,8 +2,9 @@ import * as THREE from 'three'
 import type { Gfx } from './gl'
 import { Pass } from './fullscreen'
 import type { Sample } from './sampler'
+import { MEAN_STEP_GLSL } from './chunks/number'
 
-const MEAN = `uniform sampler2D uMean;
+const MEAN = `${MEAN_STEP_GLSL}uniform sampler2D uMean;
 uniform sampler2D uSample;
 uniform float uWeight;
 out vec4 o;
@@ -12,7 +13,7 @@ void main() {
   vec4 s = texelFetch(uSample, p, 0);
   if (uWeight >= 1.0) { o = s; return; }
   vec4 m = texelFetch(uMean, p, 0);
-  o = m + (s - m) * uWeight;
+  o = meanStep(m, s, uWeight);
 }`
 
 /**

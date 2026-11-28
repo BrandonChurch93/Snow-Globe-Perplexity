@@ -2,7 +2,7 @@ import { closeSync, openSync, readdirSync, readFileSync, readSync, statSync } fr
 import { join } from 'node:path'
 import { ShaderChunk } from 'three'
 import { describe, expect, it } from 'vitest'
-import { NUMBER_GLSL } from '../src/core/chunks/number'
+import { MEAN_STEP_GLSL, NUMBER_GLSL } from '../src/core/chunks/number'
 
 /**
  * Under Direct3D every shader is built by Microsoft's compiler, which takes each number for a clean one and may leave
@@ -132,10 +132,33 @@ describe('shader arithmetic: the test for a broken number', () => {
   })
 
   /**
+   * The mean of a picture's samples has its guard in the step itself. The step's text is plain arithmetic, so it is
+   * read here as it stands, for one channel of one pixel through the samples of a frame.
+   */
+  it('lets no broken sample into the mean of a picture, and the samples after it still enter', () => {
+    const step = MEAN_STEP_GLSL.match(/^vec4 meanStep\(vec4 m, vec4 s, float w\) \{ return (.*); \}\n$/)?.[1]
+    expect(step).toBe('numberBroken(s) ? m : (numberBroken(m) ? s : m + (s - m) * w)')
+    const accumulator = readFileSync(join('src', 'core', 'accumulator.ts'), 'utf8')
+    expect(accumulator).toContain('const MEAN = `${MEAN_STEP_GLSL}uniform sampler2D uMean;')
+    expect(accumulator).toContain('  if (uWeight >= 1.0) { o = s; return; }\n  vec4 m = texelFetch(uMean, p, 0);\n  o = meanStep(m, s, uWeight);\n}`')
+    const run = new Function('numberBroken', 'm', 's', 'w', `return ${step}`) as (broken: (x: number) => boolean, m: number, s: number, w: number) => number
+    const mean = (samples: number[]) => samples.reduce((m, s, i) => (i === 0 ? s : run((x) => !Number.isFinite(x), m, s, 1 / (i + 1))), 0)
+    expect(mean([2, 4, 6, 8])).toBeCloseTo(5, 12)
+    // A broken sample counts as the mean before it: (2 + 4 + 3 + 8) / 4.
+    expect(mean([2, 4, NaN, 8])).toBeCloseTo(4.25, 12)
+    expect(mean([2, 4, Infinity, 8])).toBeCloseTo(4.25, 12)
+    expect(mean([2, 4, 6, -Infinity])).toBeCloseTo(4, 12)
+    // A broken first sample is copied as it is, and the first whole sample then takes its place: (4 + 4 + 6 + 8) / 4.
+    expect(mean([NaN, 4, 6, 8])).toBeCloseTo(5.5, 12)
+    expect(mean([NaN, Infinity, 6, 8])).toBeCloseTo(6.5, 12)
+    expect(mean([NaN, NaN])).toBeNaN()
+  })
+
+  /**
    * Under Direct3D only a shader that asks isnan() is built with the strict rules for numbers. The probe's second
    * shader asks it nowhere, as the build's own shaders, and takes its broken values from a uniform's bits.
    */
-  it('is asked of the card a second time in a shader that holds no isnan()', () => {
+  it('is asked of the card a second time in a shader that holds no isnan(), and with it the step of the mean', () => {
     const probe = readFileSync(join('src', ASKS), 'utf8')
     const from = probe.indexOf('\nconst PLAIN: ')
     const to = probe.indexOf('\nconst VERT = ')
@@ -144,8 +167,9 @@ describe('shader arithmetic: the test for a broken number', () => {
     const plain = probe.slice(from, to)
     expect(bare(plain)).toEqual([])
     expect(bare(probe.slice(to))).toEqual([])
-    for (const asked of ["  ['numberBroken(nan bits)', 'numberBroken(nanBits()) && ", "  ['numberBroken(inf bits)', 'numberBroken(infBits()) && "]) expect(plain).toContain(asked)
-    expect(plain).toContain('const PLAIN_PARS = `uniform uint uNan;\nuniform uint uInf;\nfloat nanBits() { return uintBitsToFloat(uNan); }\nfloat infBits() { return uintBitsToFloat(uInf); }\n`\n')
+    expect(bare(MEAN_STEP_GLSL)).toEqual([])
+    for (const asked of ["  ['numberBroken(nan bits)', 'numberBroken(nanBits()) && ", "  ['numberBroken(inf bits)', 'numberBroken(infBits()) && ", "  ['mean past a broken sample', 'same(meanStep(held(), vec4(uOne, nanBits(), uOne, uOne), ", "  ['mean after a broken first sample', 'same(meanStep(vec4(uOne, nanBits(), uOne, uOne), held(), "]) expect(plain).toContain(asked)
+    expect(plain).toContain('const PLAIN_PARS = `${MEAN_STEP_GLSL}uniform uint uNan;\nuniform uint uInf;\nfloat nanBits() { return uintBitsToFloat(uNan); }\nfloat infBits() { return uintBitsToFloat(uInf); }\n')
     expect(probe).toContain("gl.uniform1ui(gl.getUniformLocation(program, 'uNan'), 0x7fc00000)")
     expect(probe).toContain("gl.uniform1ui(gl.getUniformLocation(program, 'uInf'), 0x7f800000)")
     expect(probe).toContain("return [...ask(gfx, CASES, ''), ...ask(gfx, PLAIN, PLAIN_PARS)]")

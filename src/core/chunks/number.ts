@@ -17,3 +17,12 @@ bool numberNan(highp float x) { return (floatBitsToUint(x) & 0x7fffffffu) > 0x7f
 bool numberInf(highp float x) { return (floatBitsToUint(x) & 0x7fffffffu) == 0x7f800000u; }
 #endif
 `
+
+/**
+ * One step of a picture's running mean (accumulator.ts): the mean so far, the sample that joins it, and the sample's
+ * share. A broken sample leaves the mean as it was, and the samples after it still enter. A mean that is itself broken
+ * can only be the frame's first sample, which is copied without this step: the first whole sample then takes its place.
+ * The probe asks this very text what it answers on the card in hand (maths.ts).
+ */
+export const MEAN_STEP_GLSL = `vec4 meanStep(vec4 m, vec4 s, float w) { return numberBroken(s) ? m : (numberBroken(m) ? s : m + (s - m) * w); }
+`
