@@ -31,12 +31,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Seventh push. The commit of Nov 25 stands still as long and loses nothing in 12 loads; it had no still under the
-          # canvas and no fade. The commit that brought the still and the fade (62f380c2, Nov 26) and the one before it on
-          # main's first parent line; and main's page with the canvas kept in full sight with no fade by a style of the tool.
-          - { arm: q4-before-first-still, os: macos-latest, page: b4e262ebea24887f397f2c71e5a4da17d215fa24, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
-          - { arm: q4-first-still, os: macos-latest, page: 62f380c2a2e476cc1552230abdcaae011537ed01, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
-          - { arm: q7-canvas-plain, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '--plain-canvas --oslog all' }
+          # Eighth push. Between the commit of Nov 25 (0 of 12 lost) and that of Nov 26 (10 of 12) a second commit changed
+          # what stands with the canvas at the first picture: c2afb6bb fetches the interface before the first frame, so its
+          # panels, which blur what lies under them, are built in the moment of the first picture and no longer a fetch
+          # later. That commit and the one before it on main's first parent line; and main's page with that blur taken
+          # from every element by a style of the tool (the panels stay).
+          - { arm: q4-before-controls-first, os: macos-latest, page: 7bc04adb961ab0dd4190da7aa651f8974d0091b5, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q4-controls-first, os: macos-latest, page: c2afb6bbf9a878d06e7881c384826724c11b3205, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q8-no-blur, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '--no-blur --oslog all' }
     steps:
       - name: the tools of this branch
         continue-on-error: true

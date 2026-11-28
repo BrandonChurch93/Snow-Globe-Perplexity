@@ -55,6 +55,9 @@ const hideCanvasS = Number(str('hide-canvas', '0'))
 // --plain-canvas: a style of the tool keeps the canvas in full sight with no fade from the page's first moment to its
 // last (opacity 1, no transition), as the page's canvas was before it had a still under it. A tool beside the page.
 const plainCanvas = args['plain-canvas'] === true
+// --no-blur: a style of the tool takes the blur of what lies under a panel (backdrop-filter) from every element for the
+// whole load. The panels stay; only that blur goes. A tool beside the page.
+const noBlur = args['no-blur'] === true
 const oslog = str('oslog', 'lost')
 // --webkit: the driver's own build of WebKit in a window instead of Chrome (the engine of Safari; it is not Safari itself).
 // It has no chrome://gpu and names no processes to the driver: its processes are found by their names.
@@ -352,6 +355,20 @@ async function one(base, query, round) {
         document.addEventListener('DOMContentLoaded', put)
       })
       notes.push('the tool keeps the canvas at opacity 1 with no fade for the whole load')
+    }
+    if (noBlur) {
+      await page.addInitScript(() => {
+        const put = () => {
+          if (document.getElementById('__listen_noblur') || !document.documentElement) return
+          const st = document.createElement('style')
+          st.id = '__listen_noblur'
+          st.textContent = '*,*::before,*::after{backdrop-filter:none !important;-webkit-backdrop-filter:none !important}'
+          document.documentElement.appendChild(st)
+        }
+        put()
+        document.addEventListener('DOMContentLoaded', put)
+      })
+      notes.push('the tool takes backdrop-filter from every element for the whole load')
     }
     if (hideCanvasS > 0) {
       await page.addInitScript(() => {
