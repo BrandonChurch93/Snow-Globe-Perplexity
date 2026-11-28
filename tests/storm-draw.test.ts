@@ -607,8 +607,9 @@ describe('how the storm is drawn', () => {
     const slim = [
       'float bell = exp(-0.5 * d2 / vcBare);',
       'if (!spark && uPoint.w > 1.0 && uWhole < 0.5 && tightL > 0.0) {',
-      `float slimV = vcBare * pow(1.0 + pow(vcBare / (${num(cap * cap)} * uPoint.w * uPoint.w), ${num(capPower)}), ${num(-1 / capPower)});`,
-      `bell = mix(bell, exp(-0.5 * pow(d2 / slimV, ${num(bellPower)})), tightL * min(uPoint.w - 1.0, 1.0));`,
+      // every base of a power is written with its guard (tests/glsl-safe.test.ts): none can be below nought, and the guards change no value
+      `float slimV = vcBare * pow(max(1.0 + pow(max(vcBare / (${num(cap * cap)} * uPoint.w * uPoint.w), 0.0), ${num(capPower)}), 1.0), ${num(-1 / capPower)});`,
+      `bell = mix(bell, exp(-0.5 * pow(max(d2 / slimV, 0.0), ${num(bellPower)})), tightL * min(uPoint.w - 1.0, 1.0));`,
       'core = rc * rc / vc',
       '* bell * fade * bareGain;',
     ]

@@ -1311,8 +1311,9 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     float bell = exp(-0.5 * d2 / vcBare);
     // above the pixels of the hd picture (the film at 3840) a light of the storm is slim (looks.ts, CARD.glow, stormSlim): across, its core is no softer than so many pixels of the hd picture, and it falls off at its sides more steeply than a bell does, so that it is a whole bright line at its middle with no wide soft flank for the film's curve to lift into a slab. Its length, its ends, its place and the light at its middle are as they were. Where a pixel is a pixel of the hd picture none of this is read, and none of it in the app at any size (uWhole)
     if (!spark && uPoint.w > 1.0 && uWhole < 0.5 && tightL > 0.0) {
-      float slimV = vcBare * pow(1.0 + pow(vcBare / (${n(CARD.glow.stormSlim[0] * CARD.glow.stormSlim[0])} * uPoint.w * uPoint.w), ${n(CARD.glow.stormSlim[1])}), ${n(-1 / CARD.glow.stormSlim[1])});
-      bell = mix(bell, exp(-0.5 * pow(d2 / slimV, ${n(CARD.glow.stormSlim[2])})), tightL * min(uPoint.w - 1.0, 1.0));
+      // no base of a power is below nought here (a variance over a square, one and a power, a squared distance over a variance): the guards say so to a graphics card that has no answer for one that is, and change no value
+      float slimV = vcBare * pow(max(1.0 + pow(max(vcBare / (${n(CARD.glow.stormSlim[0] * CARD.glow.stormSlim[0])} * uPoint.w * uPoint.w), 0.0), ${n(CARD.glow.stormSlim[1])}), 1.0), ${n(-1 / CARD.glow.stormSlim[1])});
+      bell = mix(bell, exp(-0.5 * pow(max(d2 / slimV, 0.0), ${n(CARD.glow.stormSlim[2])})), tightL * min(uPoint.w - 1.0, 1.0));
     }
     core = rc * rc / vc / (1.0 + 0.8 * (spark ? 1.0 : mix(1.0, ${n(CARD.glow.stormThin)}, vL2.w)) * vStreak.z / sqrt(vc)) * bell * fade * bareGain;
     float lid = 0.0;
