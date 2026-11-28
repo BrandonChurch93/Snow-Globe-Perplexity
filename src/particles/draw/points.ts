@@ -10,6 +10,7 @@ import { partBytes } from '../../diagnostics/views'
 import type { StageFrame } from '../../scene/frame'
 import { flickerOf, gridInfo } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
+import { landingLook } from '../../seasons/summer/veil'
 import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SEED_RESTS, SETTLE_SHOWN, SHAPE, STORM_BLOOM, lookOf, SEED_NEAR } from './looks'
 import { BEHAVIOUR } from '../engine/kinds'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
@@ -138,6 +139,7 @@ export class ParticleDraw {
       ...coverUniforms,
       uPoint: { value: new THREE.Vector4(1, 1, 0, 1) },
       uStorm: { value: new THREE.Vector4() },
+      uStormLanding: { value: 0 },
       uAperture: { value: new THREE.Vector4(0, 0, 0, 0) },
       uEyeShift: { value: new THREE.Vector3() },
       uWhole: { value: 0 },
@@ -437,6 +439,8 @@ export class ParticleDraw {
     const sampled = f.sample !== null && f.view === ''
     const span = f.live || sampled ? SHUTTER : 0
     ;(u.uStorm!.value as THREE.Vector4).set(this.storm, sampled ? 0.5 - f.sample!.t : 0, this.shown, this.paced)
+    // how far the storm's down has gone over to the look of the landing (decision 222): summer's own course, on the shake's beat
+    u.uStormLanding!.value = landingLook(f)
     ;(u.uPoint!.value as THREE.Vector4).set(f.moment.mix, f.focalPx, span, scale)
     const pose = f.pose
     const dx = f.sample && pose.apertureMm > 0 ? f.sample.lu * pose.apertureMm : 0

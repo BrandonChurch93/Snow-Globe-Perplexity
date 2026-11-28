@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { config } from '../../config'
-import { GUST, STAGE_GUST_GLSL, stageShader } from '../../core/materials'
+import { GUST, STAGE_GUST_FRAG_GLSL, STAGE_GUST_GLSL, gustStreaks, gustTwin, stageShader } from '../../core/materials'
 import { stream } from '../../core/rng'
 import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
@@ -147,6 +147,9 @@ if (uPetalMode > 0.5) petalP.y = 0.07;
 vec4 petalW = modelMatrix * vec4(petalP, 1.0);
 vec4 petalV = viewMatrix * petalW;
 gl_Position = projectionMatrix * petalV;
+#ifdef STAGE_STREAK
+gl_Position = stageGustSeen(gl_Position);
+#endif
 vStageWorld = petalW.xyz;
 vStageLocal = (uGlobeInv * petalW).xyz;
 vStageAux = vec3(0.0, -petalV.z, length(petalV.xyz));
@@ -169,12 +172,16 @@ varying float vPetalSoft;
 varying float vPetalBlur;
 ${LIGHT}
 ${BLUR}
+${STAGE_GUST_FRAG_GLSL}
 vec4 petalTap(vec2 cell, vec2 at, float bias) {
   float inside = smoothstep(0.0, 0.07, at.x) * smoothstep(1.0, 0.93, at.x) * smoothstep(0.0, 0.07, at.y) * smoothstep(1.0, 0.93, at.y);
   vec4 t = texture2D(uPetals, (cell + clamp(at, 0.02, 0.98)) / vec2(4.0, 3.0), bias);
   return vec4(t.rgb, 1.0) * (t.a * inside);
 }
 void main() {
+#ifdef STAGE_STREAK
+  if (stageGustElse()) discard;
+#endif
   float c = stageChange();
   if (stageGone(c)) discard;
   float id = floor(vPetalKind.x + 0.5);
@@ -310,6 +317,7 @@ export async function prepare(): Promise<void> {}
 
 let surface: THREE.Object3D | null = null
 let puddle: THREE.Mesh | null = null
+let inAir: ((on: boolean) => void)[] = []
 
 function lattice(i: number, j: number): number {
   let h = Math.imul(i, 374761393) ^ Math.imul(j, 668265263)
@@ -408,7 +416,9 @@ function makeSurface(): THREE.Group {
   pool.renderOrder = 3
   pool.position.y = 0.06
   puddle = pool
-  return new THREE.Group().add(far, pool, under, petals)
+  const group = new THREE.Group().add(far, pool, under, petals)
+  inAir = [gustTwin(under), gustTwin(petals)]
+  return group
 }
 
 export function dressing(): THREE.Object3D {
@@ -442,4 +452,7 @@ function petalContactShare(sinceLanding: number): number {
 export function update(moment: KitMoment): void {
   // The arrival cues the puff early; blend that clock in from zero at actual contact.
   uniforms.uJump.value.y = petalContactShare(moment.sinceLanding)
+  const f = moment.frame
+  const flies = f.from !== f.to && (f.from.season === 'spring' || f.to.season === 'spring') && gustStreaks(f.sample, f.to.season === 'spring', f.blurMm, f.pose.focusMm)
+  for (const show of inAir) show(flies)
 }

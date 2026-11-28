@@ -1,48 +1,48 @@
 {
-  "number": 233,
-  "time": "2026-11-27 23:09 UTC",
+  "number": 243,
+  "time": "2026-11-28 03:25 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 233 · 2026-11-27 23:09 UTC · Phase 6",
-    "Phases 1 to 5 complete. Phase 6 in progress. No decision is needed from Brandon now.",
-    "Brandon's word on the final render is taken (decision 224 holds his words). The release films are drawn at 3840 x 2160 at 60 frames a second on his own Windows computer, on its graphics card. No final render is started in the cloud. One file is being built in the repo that a coding agent on his machine follows alone, start to finish: what to install, a check that reads and prints the real processor and video card and refuses software drawing, a short test at 4K 60 that compares its frames with reference frames drawn here and then stops with a report, the full render that carries on by the same line after any stop, the check of the finished files, and their copy to the Desktop under the four names. A builder started on it at 23:06 UTC (4:06 PM MT) by decision 234. It is proven on GitHub's Windows and macOS test machines before he runs it. Measured by me today: such a test run works for this repo, and the Windows test machine has no graphics card, so Windows is proven there with software drawing and once through Microsoft's software Direct3D, which walks the shader path his NVIDIA card uses. The real card stays unknown until his own short test. The full render cannot start by accident: the tool refuses it until a mark in the repo says the film may be rendered, and I set that mark only on his word.",
-    "Round two closed at 22:50 UTC (3:50 PM MT). Eleven parts are merged for one measuring run of everything together, chain 39, running on a helper since 22:50 UTC: spring's base, summer's air, sand, stone, glass, tree and miniature, fall's scene and base, the change of season's one item, and the controls. Each report was read and its pictures looked at by me before its merge. The numbers are the builders' own until this run measures them together. The run must hold the floors I set, winter unchanged and no season's number against its approved picture under its floor, or the part that breaks one comes out again. Three of its pictures are attached; all three are below the bar.",
-    "Three pieces are not in that run and go into a second run if they are whole and proven. The mend of the petals' rib at film frames 1388 and 1389: drawn at 4K by its builder, the rib is gone (stated), report about 23:30 UTC (4:30 PM MT). Summer's see through swirl at the landing: its builder has the first shape, whole about 00:05 UTC (5:05 PM MT). Fall's air, held by decision 223: its first answer came at 22:59 UTC. Of the rise of 0.201 in things that live for one frame, 0.089 was there before round two's work and 0.112 is round two's (stated); which of its two changes carries the 0.112 comes with the second answer. It is not merged until I have seen its frames side by side at full size.",
-    "The controls' round two is in the run (decision 233). Open item 263 is mended: a capture address works as the plain page on any host but the local ones, and a making that fails keeps its failure readable. Not mended: a stall of 1 to 2 seconds at low quality while a season's particles are written. Its builder has a patch that waits for the run.",
-    "The eleventh publish is not live yet; the live page is still the ninth publish's build. The page's 40 first pictures had to be made again on the mended commit. A helper did that and answered PASS (stated): the check of the pictures against the page's framing passes, and the built page goes live in 9 to 11 seconds at the plain address and at summer at low and at medium quality with no console message. Its sheet is looked at by me and attached. The publish build runs here since 22:58 UTC and a fresh security reviewer, the fourteenth, reads the commit. It goes live when both are through.",
-    "After chain 39: its stills looked at beside the approved pictures, the merge to main, the second run for the three pieces, a publish of round two's head, Preview 07, then the status that gives the live address with stills, says where each season stands and asks whether to move on to the film. No round three without his word.",
-    "Open: summer's see through at the landing (being built), the petals' rib (mend drawn, not merged), fall's air (above), the stall at low quality (patch waits), winter's four items (no builder in round two), a faint saw tooth in the grass left of summer's pond (item 270), the petals' fringe at film frame 680 (not begun), a nudge at film frames 2113 to 2117.",
-    "Sound credits 7,420 of 10,000 (measured from the ledger at 23:08 UTC, 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render and no new preview since Preview 06.",
-    "phase 6: 44.32 h used of its 12.00 h box",
-    "allowance (after the review): 44.32 h used of 12.00 h allowed",
+    "Status 243 · 2026-11-28 03:25 UTC · Phase 6",
+    "Phases 1 to 5 complete. Phase 6 in progress. The decision asked of Brandon in Status 236 at about 5:20 PM MT Friday stands unanswered: move on to the film and the masters, or one more round of looks first. The work goes on in either case and only the freeze waits.",
+    "The fourteenth publish is live since 8:20 PM MT Friday at the same address: the build of 3e9f39b7, chain 42's main with its own first pictures. New on the page: spring's glass carries drops and runs after a shake. Measured here before it: type check exit 0, the whole test run 1060 passed and 9 skipped (the ninth skip is the test of the built page, as at the thirteenth), build exit 0, engine dc59c0d7c2daa6ab, the first pictures' check passed, and a second build without sound files gave 17 files whose hashes equal the security reviewer's list on 17 of 17 lines. Stated: the seventeenth security reviewer, a fresh agent on the same commit, answered no blocks and no warnings; a helper machine read its own build of the same commit in a browser, thirteen loads live with 0 console messages and four real shakes that landed on the right season. Measured after the upload: the uploaded page holds the local one as its beginning, build.json, the asset list and the first pictures' record are the same bytes as the local build, and unsigned requests to the address answer 401, as Visibility Organization must. Not verified: a real graphics card, a phone, Safari, Firefox, the sound heard, and the live address in a signed in browser.",
+    "The petals' weave (item 278). Decision 261. The two more pairs at 4K at the masters' tier are in, all eight frames verified here by their hashes. Fall's leaves leaving (film frames 2828 and 2829): the two sides are alike at full size; measured here, 3,528 and 822 pixels differ by more than 2 levels and none by more than 8; they pass. The petals arriving (681 and 682): with the mend there is no rib, no comb and no row of copies in either frame, seen here and by its builder. The cost, measured: more single pixel grain on the flown petals than on main (at the hottest place of 682, 0.98 percent of the pixels on main and 2.60 with the mend by my count; over the flown parts 4,978 single pixels on main and 6,707 with the mend by the builder's count) and one small petal's edge about 15 percent softer (3.6 to 4.2 px). So the bar's clause against new single pixel scatter is not met at 681 and 682 by its letter, and is logged so. Measured here on top: after an H.264 encode at about the film's weight for a frame the specks at that place are 0.49 percent on main and 1.54 with the mend. Seen here: after the encode main's comb teeth stay and the mend's grain is softened; scaled to 1920 wide, main's teeth and ribs stay plain and the mend's grain is all but gone. Since my eye knows which side is the mend, two fresh judges of two other model families got nine sheets blind, the sides named by a coin. Stated by them: both find the mend the better picture on all nine sheets. The first marks the mend fine on all nine and main's rows of copies a must mend on five. The second marks the mend's grain a should mend on four of the petals' five 4K sheets and fine on the leaves, after the encode and at 1920 wide, and marks main a must mend on six. Not judged by anyone: the frames played. Ruled: the mend is taken as the smaller of two faults and the one that the encode and a small screen take away. It is merged here (61cf212c) and in chain 43's checks on a helper machine now; it reaches the main branch only after that chain's report and whole test run are read. Item 278 stays open as grain, and no fourth mend is ordered without his word.",
+    "The Direct3D mend. Decision 259. Its second part rewrote the cover of fall's leaf cards to quiet one compiler warning on Windows, and that moved two guard stills on Linux: the leaves kept outline and place and lost their veins and the shading of their fold (stated by the mender, its picture looked at here). Three forms that are equal by reading draw the same moved still; cause unknown. Ruled: the old text is kept, nothing that moves a guard is pushed, the warning stays as open item 282. Asked from pictures that already exist: whether Windows through Direct3D 11 draws fall's leaves with their veins as Linux does. Until one is seen that is unknown, and it matters because the masters are to be drawn on Windows.",
+    "The stall at low quality. Decision 260. Measured by its builder on its own tree: of 336 pictured states of the controls 325 are the same as main's and 11 are not (the menu's options at phone size with a mouse, at most 12 levels in 17 pixels). So floor 1 fails for the mend as committed and nothing was pushed. Its plan is taken, one try: the bar's numbers as whole 255ths and the menu's options back to exactly main's, then every floor again. Reports due about 9:15 PM and 9:55 PM MT. Open item 283, seen and not changed: the pressed fill of the quality option high is square beside round neighbours.",
+    "The final render on his own computer. A correction from its builder: every job of its earlier run had finished. Stated by it: Windows with Git Bash passed in 21 minutes, Windows with PowerShell in 36, Windows with the newest long term Node in 31, macOS at 3840 in 8; the small macOS job failed after 37 minutes because Chrome updated itself between the short test and the render, and the tool stopped as built. Its mend is taken: the short test runs again, on a pass the render carries on and the report names both browser versions; on a fail nothing is rendered. The send back step passed on hosted Windows with stand in files (six files to a draft and back by hash, the draft removed). Two Windows 4K jobs are running for the numbers the floors need. No final render is started in the cloud.",
+    "Remaining in phase 6 and what he receives. Chain 43: the petals' weave, in its checks now, then on the main branch. Chain 44: the stall's mend, the frost line at film frame 668 (report due about 9:20 PM MT), summer's fireflies and the seeds' dots (first report due by 9:00 PM MT), the Direct3D mend (due about 9:11 PM MT), as each passes. Then a critic for the change of season and a fifteenth publish. The render instructions: one file in the repo and one line to give Claude Code, then a cold read by a fresh critic. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last, a fresh reviewer's score against the showcase standard.",
+    "Open, below the bar: summer's landing streaks whiter and coarser than approved and its base darker. Summer's pond at rest (item 279). Fall's storm paler than approved. Spring's glass after a shake pale on pale, with square corners at the lower ends of a few runs. Spring's fence and trails. The fireflies' flat bars at 4K (item 276). The seeds' lumps of dots at the stills' close camera (item 277). The petals' ribs on main and the grain of their mend at 4K (item 278). The frost line at film frame 668 (item 275). The stall at low quality on a software renderer. One compiler warning on Windows at fall's leaf cards (item 282). The square pressed fill of one menu option (item 283). Winter's four small items. Fall's near fence and the pumpkin's stepped face (item 272). The petals' fringe, a little worse with the mend at film frames 681 and 682 and not seen with it at 680. The poster tool that stops on one failed request (item 273).",
+    "Sound credits 7,420 of 10,000 (measured from the ledger: 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render and no new preview since Preview 07.",
+    "phase 6: 48.60 h used of its 12.00 h box",
+    "allowance (after the review): 48.60 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-233-1.jpg",
-      "caption": "The build for the eleventh publish read on a helper machine, the first picture, the live page, summer at low and at medium quality, not live yet",
+      "file": "out/stills/status/status-243-1.jpg",
+      "caption": "The petals arriving at 4K at two times, film frame 682, comb teeth and ribs on main left and fine grain with the mend right, in chain 43",
       "w": 1200,
-      "h": 675
+      "h": 436
     },
     {
-      "file": "out/stills/status/status-233-2.jpg",
-      "caption": "Fall's base, approved picture above, the twelfth step in the middle, round two below, in chain 39, below the bar",
-      "w": 800,
-      "h": 938
-    },
-    {
-      "file": "out/stills/status/status-233-3.jpg",
-      "caption": "Summer's miniature, approved picture above, round two at rest in the middle and just after the landing below, in chain 39, below the bar",
-      "w": 755,
-      "h": 1200
-    },
-    {
-      "file": "out/stills/status/status-233-4.jpg",
-      "caption": "Summer's base after the landing with round two's stone, the low camera above and both cameras below, in chain 39, below the bar",
+      "file": "out/stills/status/status-243-2.jpg",
+      "caption": "The same place as seen at 1920 wide at two times, main left and the mend right, in chain 43",
       "w": 1200,
-      "h": 1016
+      "h": 475
+    },
+    {
+      "file": "out/stills/status/status-243-3.jpg",
+      "caption": "The mend's cost at 4K at six times, film frame 682, one small petal smooth on main left and with a peppered edge with the mend right",
+      "w": 1092,
+      "h": 480
+    },
+    {
+      "file": "out/stills/status/status-243-4.jpg",
+      "caption": "The four seasons on chain 42, after a shake above, from the close camera in the middle and at rest below, live now",
+      "w": 1200,
+      "h": 508
     }
   ]
 }
