@@ -10,6 +10,8 @@ import { rel, readJson, writeJson } from './paths.mjs'
 import { engineHash } from './hashes.mjs'
 import * as L from './handoff.mjs'
 import * as X from './handoff-machine.mjs'
+import { PROFILE_ENV, profileRoot } from './handoff-processes.mjs'
+import { BUNDLE_RECORDS, addBundleFile, discardBundle, fileMatches, startBundle, unexpectedEntries } from './handoff-owned-files.mjs'
 
 export const STAMP_DIR = rel('render')
 export const STAMP_FILE = rel('render', 'STAMP.json')
@@ -41,12 +43,14 @@ const readOr = (file, fallback = null) => {
 // Children. Every child is a program by its full path or a name the system finds as an .exe: never npm, npx or a
 // .cmd by a bare name, and never a shell.
 
-/** The tools a run has started and not seen end, by process number: a later run ends what a stopped one left behind. */
+/** The tools a run started and did not see end, by process number and start time. */
 function trackChild(ctx, pid, on) {
   if (!ctx.H || !pid) return
   const f = path.join(ctx.H, 'children.json')
-  const list = readOr(f, []).filter((p) => p !== pid)
-  if (on) list.push(pid)
+  const old = readOr(f, [])
+  const list = Array.isArray(old) ? old.filter((r) => r?.pid && r.pid !== pid) : []
+  const started = on ? X.processStart(pid) : null
+  if (started) list.push({ pid, started })
   try {
     fs.mkdirSync(ctx.H, { recursive: true })
     fs.writeFileSync(f, JSON.stringify(list))
@@ -128,6 +132,7 @@ export function setChromeSwitches(ctx) {
   // a test switch may name the layer Chrome draws through; Chrome asks for a second word before it draws in SwiftShader
   const extra = ['--force_high_performance_gpu', ...(ctx.T.angle ? [`--use-angle=${ctx.T.angle}`] : []), ...(ctx.T.angle === 'swiftshader' ? ['--enable-unsafe-swiftshader'] : [])]
   process.env.SHOWCASE_LOCAL_ARGS = extra.join(' ')
+  if (ctx.H) process.env[PROFILE_ENV] = profileRoot(ctx.H)
   return extra
 }
 
@@ -708,11 +713,11 @@ export function keepFailedTest(ctx, result) {
   const picked = L.failedTestPick(have, since)
   const desktop = result.desktop || readOr(path.join(ctx.H, 'doctor.json'))?.machine?.desktop || ''
   const places = [...(desktop ? [path.join(desktop, L.failedTestName())] : []), path.join(ctx.H, 'test-failed')]
+  const say = (m) => (ctx.say ?? ctx.note)(m)
   for (const folder of places) {
     try {
-      fs.rmSync(folder, { recursive: true, force: true })
-      fs.mkdirSync(folder, { recursive: true })
-      for (const f of picked) fs.copyFileSync(path.join(ctx.H, ...f.from.split('/')), path.join(folder, f.as))
+      if (!startBundle(ctx.H, folder, say)) continue
+      for (const f of picked) addBundleFile(ctx.H, folder, f.as, (to) => fs.copyFileSync(path.join(ctx.H, ...f.from.split('/')), to, fs.constants.COPYFILE_EXCL))
       return { folder, files: picked.length, bytes: sum(picked.map((f) => f.bytes)), pictures: picked.filter((f) => f.picture).length }
     } catch (e) {
       ctx.note(`the folder of the failed test could not be written as ${folder}: ${e.message}`)
@@ -721,19 +726,21 @@ export function keepFailedTest(ctx, result) {
   return null
 }
 
-/** A short test that passed takes the folder of an earlier failed test away: it would pass for news. */
+/** A short test that passed takes away only sealed files of an earlier failed test. */
 export function dropFailedTest(ctx, result) {
   const desktop = result.desktop || readOr(path.join(ctx.H, 'doctor.json'))?.machine?.desktop || ''
+  const say = (m) => (ctx.say ?? ctx.note)(m)
   for (const folder of [...(desktop ? [path.join(desktop, L.failedTestName())] : []), path.join(ctx.H, 'test-failed')]) {
     try {
-      // only a folder this tool made: it holds the report of a test
-      if (!fs.existsSync(path.join(folder, 'report-test.txt'))) continue
-      fs.rmSync(folder, { recursive: true, force: true })
-      ctx.note(`the folder of an earlier failed test is taken away: ${folder}`)
+      discardBundle(ctx.H, folder, say)
     } catch (e) {
       ctx.note(`the folder of an earlier failed test could not be taken away (${folder}): ${e.message}`)
     }
   }
+}
+
+export function writeFailedTestReport(ctx, folder, text) {
+  addBundleFile(ctx.H, folder, 'report-test.txt', (to) => fs.writeFileSync(to, text, { flag: 'wx' }))
 }
 
 // The small run of the tool's own tests keeps the chunks of its render where the short test keeps its own (the
@@ -1561,39 +1568,75 @@ export async function deliver(ctx, reportText) {
   if (checked.small !== mode.small) return { pass: false, why: 'the check that passed was of another kind of run than this one. Run: node tools/handoff.mjs check' }
   const machine = X.readMachine()
   const folder = path.join(machine.desktop, L.deliveryFolder(mode.small))
+  const report = path.join(folder, `${L.TITLE} - Render Report.txt`)
+  const targets = L.KINDS.map((kind) => ({ kind, from: checked.files[kind], to: path.join(folder, L.deliveryName(kind, mode.format.width, mode.format.height)) }))
+  const other = unexpectedEntries(folder, [...targets.map(({ to }) => path.basename(to)), path.basename(report)])
+  const leave = (names) => ({ pass: false, refused: true, why: `left the Desktop folder alone at ${folder}. It contains other or changed files: ${names.join(', ')}` })
+  if (other.length) return leave(other)
+  const previous = readOr(path.join(ctx.H, 'deliver.json'))
+  const exists = (file) => !!fs.lstatSync(file, { throwIfNoEntry: false })
+  const priorReport = exists(report)
+  if (priorReport && (previous?.report !== report || !fileMatches(report, previous?.reportSha256))) return leave([path.basename(report)])
+  for (const { kind, from, to } of targets) {
+    if (!from || !fileMatches(from.file, from.sha256, from.bytes)) return { pass: false, why: `${kind} is not the file that was checked any more (${from ? short(from.file) : 'not named'}). Run the check again` }
+    if (exists(to) && !fileMatches(to, from.sha256, from.bytes)) return leave([path.basename(to)])
+  }
   fs.mkdirSync(folder, { recursive: true })
   const rows = []
   const files = []
-  for (const kind of L.KINDS) {
-    const f = checked.files[kind]
-    if (!f || !fs.existsSync(f.file) || fs.statSync(f.file).size !== f.bytes) return { pass: false, why: `${kind} is not the file that was checked any more (${f ? short(f.file) : 'not named'}). Run the check again` }
-    const to = path.join(folder, L.deliveryName(kind, mode.format.width, mode.format.height))
-    ctx.say(`copying ${path.basename(to)} (${mb(f.bytes)})`)
+  for (const { kind, from: f, to } of targets) {
     try {
-      fs.copyFileSync(f.file, to)
+      if (!exists(to)) {
+        ctx.say(`copying ${path.basename(to)} (MEASURED: ${mb(f.bytes)})`)
+        fs.copyFileSync(f.file, to, fs.constants.COPYFILE_EXCL)
+      }
     } catch (e) {
+      if (e.code === 'EEXIST') return leave([path.basename(to)])
       if (L.heldOpen(e)) return { pass: false, why: L.heldSentence(path.basename(to)) }
       throw e
     }
-    const sha = L.sha256File(to)
-    rows.push({ check: path.basename(to), found: `${mb(f.bytes)}, sha256 ${sha}`, wanted: 'the checked file, byte for byte', pass: sha === f.sha256 })
-    files.push({ kind, file: to, bytes: f.bytes, sha256: sha })
+    const same = fileMatches(to, f.sha256, f.bytes)
+    rows.push({ check: path.basename(to), found: same ? `MEASURED: ${mb(f.bytes)}, sha256 ${f.sha256}` : 'not the checked file', wanted: 'the checked file, byte for byte', pass: same })
+    files.push({ kind, file: to, bytes: f.bytes, sha256: f.sha256 })
   }
   const pass = rows.every((r) => r.pass)
-  const report = path.join(folder, `${L.TITLE} - Render Report.txt`)
+  if (!pass) return { pass, why: 'a copy on the Desktop is not the file that was checked', rows, folder, files, small: mode.small }
+  const more = unexpectedEntries(folder, [...targets.map(({ to }) => path.basename(to)), ...(priorReport ? [path.basename(report)] : [])])
+  if (more.length) return leave(more)
+  let reportSha256
   try {
-    fs.writeFileSync(report, reportText({ machine, mode, checked, files, rows, folder }))
+    if (priorReport) {
+      reportSha256 = previous.reportSha256
+      if (!fileMatches(report, reportSha256)) return leave([path.basename(report)])
+    } else {
+      const body = reportText({ machine, mode, checked, files, rows, folder })
+      fs.writeFileSync(report, body, { flag: 'wx' })
+      reportSha256 = crypto.createHash('sha256').update(body).digest('hex')
+      if (!fileMatches(report, reportSha256)) return leave([path.basename(report)])
+    }
   } catch (e) {
+    if (e.code === 'EEXIST') return leave([path.basename(report)])
     if (L.heldOpen(e)) return { pass: false, why: L.heldSentence(path.basename(report)) }
     throw e
   }
-  return { pass, why: pass ? `the four files and the report are in ${folder}. Next, only if Brandon says yes to sending them to the remote team: node tools/handoff.mjs upload. Then: node tools/handoff.mjs clean` : 'a copy on the Desktop is not the file that was checked', rows, folder, files, report, small: mode.small }
+  return { pass, why: `the four files and the report are in ${folder}. Next, only if Brandon says yes to sending them to the remote team: node tools/handoff.mjs upload. Then: node tools/handoff.mjs clean`, rows, folder, files, report, reportSha256, small: mode.small }
 }
 
+/** @param {((ctx: any, mode: any) => {file: string, entries: number, bytes: number}) | null} recordsZip */
 export function clean(ctx, recordsZip = null) {
   const delivered = readOr(path.join(ctx.H, 'deliver.json'))
   if (!delivered?.pass) return { pass: false, why: 'nothing is deleted before the delivery has passed. Run: node tools/handoff.mjs deliver' }
-  for (const f of delivered.files) if (!fs.existsSync(f.file) || fs.statSync(f.file).size !== f.bytes) return { pass: false, why: `${f.file} is not on the Desktop any more, so the work files stay. Run the delivery again` }
+  const files = Array.isArray(delivered.files) ? delivered.files : []
+  const bad = L.KINDS.find((kind) => files.filter((f) => f?.kind === kind).length !== 1)
+  if (bad || files.length !== L.KINDS.length) return { pass: false, why: 'the last delivery does not name all the checked files, so the work files stay. Run the delivery again' }
+  for (const f of files) if (!fileMatches(f.file, f.sha256, f.bytes)) return { pass: false, why: `${f.file} does not match the last delivery by SHA-256, so the work files stay. Run the delivery again` }
+  if (delivered.reportSha256 && !fileMatches(delivered.report, delivered.reportSha256)) return { pass: false, why: `${delivered.report} does not match the last delivery by SHA-256, so the work files stay. Run the delivery again` }
+  const dirs = [['master'], ['deliver'], ['work']].map((parts) => rel('out', ...parts))
+  const inWork = (file) => dirs.some((dir) => {
+    const part = path.relative(dir, fs.realpathSync(file))
+    return !path.isAbsolute(part) && part !== '..' && !part.startsWith(`..${path.sep}`)
+  })
+  if (files.some((f) => inWork(f.file))) return { pass: false, why: 'the Desktop copies are inside the render work folders, so the work files stay' }
   // the records of the render are kept as one zip before anything goes, so that an upload after this still has them
   let kept = ''
   if (recordsZip && fs.existsSync(path.join(ctx.H, 'render-state.json'))) {
@@ -1619,7 +1662,7 @@ export function clean(ctx, recordsZip = null) {
   } catch {}
   for (const n of names) if (n !== 'handoff') drop(rel('out', 'work', n))
   // the reports stay, and so does what the doctor, the short test and the delivery found; the state of the render goes
-  const keep = (n) => /^report-.*\.txt$/.test(n) || ['doctor.json', 'test.json', 'check.json', 'deliver.json', 'upload.json', 'upload-release.json', 'upload', 'job.json', 'job-seen.json'].includes(n)
+  const keep = (n) => /^report-.*\.txt$/.test(n) || ['doctor.json', 'test.json', 'check.json', 'deliver.json', 'upload.json', 'upload-release.json', 'upload', 'job.json', 'job-seen.json', BUNDLE_RECORDS].includes(n)
   for (const n of fs.readdirSync(ctx.H)) if (!keep(n)) drop(path.join(ctx.H, n))
   const after = X.freeBytes(rel())
   return { pass: true, why: `the work files are deleted and ${L.gb(Math.max(0, after - before)).toFixed(1)} GB of disk is regained (${L.gb(after).toFixed(1)} GB free now). The delivered files on the Desktop, the reports${kept ? `, the records of the render as one zip (${kept})` : ''} and the clone itself stay`, gone, regainedBytes: Math.max(0, after - before), rows: gone.map((g) => ({ check: g, found: 'deleted', wanted: 'a work folder of the render, which git does not track', pass: true })) }
