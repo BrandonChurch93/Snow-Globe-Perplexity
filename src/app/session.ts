@@ -24,15 +24,25 @@ export const LIVE = {
 const HZ = config.sim.stepHz
 const STATES = Object.keys(config.states).map((k) => k.replace(/Seconds$/, ''))
 
+/** The seasons the shakes lead to from `season`, in the order they lead to them: the one after it first, round to the one before it. */
+export function shakesFrom(season: string): string[] {
+  const all = config.seasons
+  const at = all.indexOf(season)
+  return all.map((_, i) => all[(at + 1 + i) % all.length]!).filter((s) => s !== season)
+}
+
 /**
- * Loads the season the page opens on, then the others one at a time. `after` holds the others back until it resolves, so that
- * nothing the first picture does not need is fetched before it; a season that is asked for (`want`) starts at once, ahead of its turn.
+ * Loads the season the page opens on, then the others one at a time, in the order the shakes lead to them: the first shake
+ * of a page that opens in spring goes into summer, and made in the config's order summer came after winter. `after` holds
+ * the others back until it resolves, so that nothing the first picture does not need is fetched before it; a season that
+ * is asked for (`want`) starts at once, ahead of its turn, and the shakes lead on from it.
  * `load` is told whether somebody waits for the season, which is when it should come from what the first picture needs.
  */
 export class SeasonLoader {
   private readonly done = new Set<string>()
   private readonly held = new Map<string, number>()
   private readonly started = new Map<string, Promise<void>>()
+  private from: string
   readonly first: Promise<void>
   readonly all: Promise<void>
 
@@ -42,10 +52,31 @@ export class SeasonLoader {
     private readonly onReady: (season: string) => void = () => undefined,
     after: Promise<void> = Promise.resolve(),
   ) {
+    this.from = first
     this.first = this.start(first, true)
-    const rest = config.seasons.filter((s) => s !== first)
     const held: Promise<void> = Promise.all([this.first.catch(() => undefined), after.catch(() => undefined)]).then(() => undefined)
-    this.all = rest.reduce<Promise<void>>((chain, s) => chain.then(() => this.start(s, false)).catch(() => undefined), held)
+    this.all = held.then(() => this.others())
+  }
+
+  /**
+   * Each of the others is chosen when its turn comes: a press in between has moved the place the shakes lead on from.
+   * One at a time: a season that was asked for out of its turn is finished before the next begins.
+   */
+  private async others(): Promise<void> {
+    const turned = new Set<string>()
+    for (;;) {
+      const begun = [...this.started.values()]
+      await Promise.allSettled(begun)
+      if (this.started.size > begun.length) continue
+      const season = shakesFrom(this.from).find((s) => !turned.has(s) && !this.started.has(s))
+      if (!season) return
+      turned.add(season)
+      try {
+        await this.start(season, false)
+      } catch {
+        continue
+      }
+    }
   }
 
   private start(season: string, asked: boolean): Promise<void> {
@@ -62,7 +93,9 @@ export class SeasonLoader {
 
   /** Starts a season now if it has not started: the visitor asked for it. */
   want(season: string): Promise<void> {
-    return config.seasons.includes(season) ? this.start(season, true) : Promise.resolve()
+    if (!config.seasons.includes(season)) return Promise.resolve()
+    this.from = season
+    return this.start(season, true)
   }
 
   /**
@@ -122,8 +155,7 @@ export class LiveSession {
   }
 
   shake(): string | null {
-    const all = config.seasons
-    return this.go(all[(all.indexOf(this.season) + 1) % all.length]!)
+    return this.go(shakesFrom(this.season)[0] ?? this.season)
   }
 
   goTo(season: string): string | null {

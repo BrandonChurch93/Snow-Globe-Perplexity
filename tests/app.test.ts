@@ -251,6 +251,72 @@ describe('a season that is not loaded yet', () => {
     expect(loader.ready(bad)).toBe(false)
     for (const season of seasons) if (season !== bad) expect(loader.ready(season)).toBe(true)
   })
+
+  const shakenFrom = (season: string): string[] => {
+    const s = new LiveSession(new FakeSim(), season)
+    const led: string[] = []
+    for (let n = 1; n < seasons.length; n++) {
+      led.push(s.shake()!)
+      run(s, barSeconds + config.shake.landSettleSeconds + 4 * FRAME_S)
+      expect(s.season).toBe(led.at(-1))
+    }
+    return led
+  }
+
+  it('makes the others in the order the shakes lead to them, whichever season the page opens on', async () => {
+    for (const opens of seasons) {
+      const made: string[] = []
+      const loader = new SeasonLoader(opens, async (season) => void made.push(season))
+      await loader.all
+      expect(made).toEqual([opens, ...shakenFrom(opens)])
+      expect(made).toHaveLength(seasons.length)
+    }
+  })
+
+  it('goes on from the season a press asked for with those that are not begun', async () => {
+    for (const opens of seasons) {
+      const made: string[] = []
+      let go: () => void = () => undefined
+      const loader = new SeasonLoader(opens, async (season) => void made.push(season), undefined, new Promise<void>((resolve) => (go = resolve)))
+      await loader.first
+      const asked = next(next(opens))
+      await loader.want(asked)
+      go()
+      await loader.all
+      expect(made).toEqual([opens, asked, ...shakenFrom(asked).filter((season) => season !== opens)])
+      expect(made).toHaveLength(seasons.length)
+    }
+  })
+
+  it('goes on to the next when a load throws at once, and begins none beside a season that was asked for', async () => {
+    const bad = next(first)
+    const asked = next(bad)
+    const begun: string[] = []
+    let end: () => void = () => undefined
+    let go: () => void = () => undefined
+    const loader = new SeasonLoader(
+      first,
+      (season) => {
+        begun.push(season)
+        if (season === bad) throw new Error('missing')
+        return season === asked ? new Promise<void>((done) => (end = done)) : Promise.resolve()
+      },
+      undefined,
+      new Promise<void>((resolve) => (go = resolve)),
+    )
+    await loader.first
+    void loader.want(asked)
+    go()
+    let all = false
+    void loader.all.then(() => (all = true))
+    for (let i = 0; i < 40; i++) await Promise.resolve()
+    expect(all).toBe(false)
+    expect(begun).toEqual([first, asked])
+    end()
+    await loader.all
+    expect(begun).toEqual([first, asked, ...shakenFrom(asked).filter((season) => season !== first)])
+    for (const season of seasons) expect(loader.ready(season)).toBe(season !== bad)
+  })
 })
 
 describe('a season that is loaded and still owed something', () => {
