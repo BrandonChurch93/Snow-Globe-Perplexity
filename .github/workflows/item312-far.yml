@@ -18,7 +18,12 @@
 #               the call at the first picture and the first context 2 s later; the context 100 ms after the call
 #   sound-late  not muted: the first context 60 s after the call, 3 rounds; then 16 minutes after it, once without the
 #               call and twice with it, to see whether what the call woke is still awake
-# The matrix below names the kinds of this push. T6 is read by tools/item312/measure.mjs. Neither tool changes a page.
+#   sound-near  not muted: the first context 250, 500, 1000 and 1500 ms after the call, 4 browsers each: how long before
+#               a press the call has to be made
+# One more kind of T6 b, read by tools/item312/bare.mjs, which puts nothing of its own on the card:
+#   bare        main's page at the plain address (8 browsers), in winter at low (4) and in spring (2), each left at rest
+#               until 3 s after "ready": whether the card is lost there without a tool on it, and when
+# The matrix below names the kinds of this push. T6 is read by tools/item312/measure.mjs. No tool changes a page.
 # It starts on a push to agent/p6-far-312-trials alone: the branch is for these trials and is never merged. It has no
 # timer and never starts on main. Every job ends green whatever happens: a red run sends a mail. What a job read is the
 # step "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
@@ -39,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kind: [sound, sound-late]
+        kind: [bare, sound-near]
     steps:
       - name: the trials of this push
         continue-on-error: true
@@ -132,6 +137,14 @@ jobs:
               sleep 45
               node tools/item312/sound.mjs --dist ../main/dist --name sound-960-with-b --local --unmuted --rounds 1 --arms with --lead 960000 &
               wait
+              ;;
+            sound-near)
+              for ms in 250 500 1000 1500; do
+                node tools/item312/sound.mjs --dist ../main/dist --name "sound-near-$ms" --local --unmuted --rounds 4 --arms near --near $ms || true
+              done
+              ;;
+            bare)
+              node tools/item312/bare.mjs --dist ../main/dist --name bare --local --loads "8:|4:quality=low&season=winter|2:season=spring" --limit 150 --stay 3 || true
               ;;
           esac
 
