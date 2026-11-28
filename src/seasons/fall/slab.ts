@@ -24,8 +24,25 @@ interface LeafExtras {
 
 // The skitter. A leaf lies `pushMm` nearer the foot than its place before the landing (less the further off it lies,
 // by `reachMm`); the thump's air reaches it at `waveMmPerSecond` and it slides out to its place over `slideSeconds`
-// (a longer slide for some), hopping `hopMm` and turning `spin` radians as it goes; one in `tumble` turns over.
-const SKITTER = { pushMm: 34, reachMm: 85, waveMmPerSecond: 520, slideSeconds: 0.75, hopMm: 3.2, spin: 2.6, tumble: 0.1, wakeSeconds: 0.05 }
+// (a longer slide for some), hopping `hopMm` and turning `spin` radians as it goes; `tumble` of them turn over.
+// It begins on the landing frame itself: the air is out over the whole table inside two frames (at 520 mm a second it
+// took a fifth of a second and more to reach the leaves a hand's breadth off, and the table lay still for six frames
+// after the thump), a leaf waits no longer than `ownWaitSeconds` of its own, and it goes fastest as it starts and comes
+// to rest slowly (`skitterLeft`). So the first third of a second is the strongest: more leaves take part (`reachMm`),
+// they come from nearer the foot (`pushMm`), their slide is shorter and more of them turn over. Where a leaf comes to
+// rest is its place, as it was; where it lies before the landing is nearer the foot than it was.
+export const SKITTER = { pushMm: 52, reachMm: 130, waveMmPerSecond: 12000, slideSeconds: 0.6, hopMm: 3.2, spin: 2.6, tumble: 0.18, wakeSeconds: 0.03, ownWaitSeconds: 0.008, clearMm: 2 }
+
+/** How much nearer the foot than its place a leaf lies before the landing, in mm: `gapMm` is its place's distance from the foot's edge, `own` its number. */
+export function skitterPush(gapMm: number, own: number): number {
+  return Math.min(SKITTER.pushMm * Math.exp(-gapMm / SKITTER.reachMm) * (0.45 + 0.9 * own), Math.max(gapMm - SKITTER.clearMm, 0))
+}
+
+/** The share of that way a leaf still has to go, `seconds` after the landing: 1 until the air reaches it, 0 at rest. `wait` and `long` are its own numbers. */
+export function skitterLeft(gapMm: number, wait: number, long: number, seconds: number): number {
+  const t = Math.min(1, Math.max(0, (seconds - gapMm / SKITTER.waveMmPerSecond - SKITTER.ownWaitSeconds * wait) / (SKITTER.slideSeconds * (0.6 + 1.3 * long))))
+  return (1 - t) ** 4
+}
 const leafUniforms = {
   uLeafMap: { value: null as THREE.Texture | null },
   uLeafTime: { value: new THREE.Vector4(99, 0, 0, 0) },
@@ -55,12 +72,12 @@ float leafId = uv1.x;
 float leafFar = length(leafRest);
 vec2 leafDir = leafRest / max(leafFar, 1.0);
 float leafGap = max(leafFar - uLeafSpan.z, 0.0);
-float leafPush = min(uLeafMove.x * exp(-leafGap / uLeafMove.y) * (0.45 + 0.9 * leafHash(leafId * 3.1)), max(leafGap - 2.0, 0.0));
-float leafWait = leafGap / uLeafMove.z + 0.05 * leafHash(leafId * 9.7);
+float leafPush = min(uLeafMove.x * exp(-leafGap / uLeafMove.y) * (0.45 + 0.9 * leafHash(leafId * 3.1)), max(leafGap - ${SKITTER.clearMm.toFixed(1)}, 0.0));
+float leafWait = leafGap / uLeafMove.z + ${SKITTER.ownWaitSeconds.toFixed(3)} * leafHash(leafId * 9.7);
 float leafLong = uLeafMove.w * (0.6 + 1.3 * leafHash(leafId * 5.3));
 float leafT = clamp((uLeafTime.x - leafWait) / leafLong, 0.0, 1.0);
-float leafEase = 1.0 - (1.0 - leafT) * (1.0 - leafT) * (1.0 - leafT);
-float leafLeft = 1.0 - leafEase;
+float leafLeft = (1.0 - leafT) * (1.0 - leafT) * (1.0 - leafT) * (1.0 - leafT);
+float leafEase = 1.0 - leafLeft;
 float leafLive = leafLeft * smoothstep(0.0, ${SKITTER.wakeSeconds.toFixed(2)}, uLeafTime.x - leafWait);
 float leafStir = smoothstep(0.0, 6.0, leafPush);
 float leafSide = (leafHash(leafId * 7.9) - 0.5) * 0.9 * leafPush;
