@@ -135,6 +135,8 @@ export class GlobeStage implements Stage {
   private readonly makings = new Map<string, Making>()
   private readonly colliders = new Map<string, SdfGrid>()
   private readonly prepared = new Map<string, Promise<void>>()
+  /** The files of each season asked for, read: its models, its pictures, its collider. Nothing of its set is made by then. */
+  private readonly loaded = new Map<string, Promise<unknown>>()
   private diag = ''
   private air = true
   private readonly airHeld = new AirHold()
@@ -159,7 +161,16 @@ export class GlobeStage implements Stage {
   private readonly scratch = new Map<string, THREE.WebGLRenderTarget>()
   private stale = false
 
-  constructor(private readonly gfx: Gfx, private readonly source: ParticleSource, private readonly assets: Assets) {
+  /**
+   * `order` is given on a page that captures, and on no other: the order in which the sets are made there, whichever
+   * season's files come first.
+   */
+  constructor(
+    private readonly gfx: Gfx,
+    private readonly source: ParticleSource,
+    private readonly assets: Assets,
+    private readonly order: readonly string[] | null = null,
+  ) {
     const { scene, world, floor, globe, inside } = this
     this.lighting = new Lighting(this.quality.shadowMapPx)
     scene.add(world, floor)
@@ -202,10 +213,24 @@ export class GlobeStage implements Stage {
       const models = prepareGroup(this.assets, 'shared')
         .then(() => prepareGroup(this.assets, season))
         .then(() => kit.prepare?.())
-      p = Promise.all([models, this.fetchCollider(season)]).then(() => this.make(season))
+      const loaded = Promise.all([models, this.fetchCollider(season)])
+      this.loaded.set(season, loaded)
+      const order = this.order
+      p = (order ? loaded.then(() => this.inOrder(season, order)) : loaded).then(() => this.make(season))
       this.prepared.set(season, p)
     }
     return p
+  }
+
+  /**
+   * The turn of `season` to be made on a page that captures: when the files of every season of `order` are read and the
+   * set before it in `order` is made. The files are read side by side as on any page. A season of `order` the page has not
+   * asked for is asked for here, so that no turn waits for files nobody reads.
+   */
+  private async inOrder(season: string, order: readonly string[]): Promise<void> {
+    for (const s of order) void this.prepare(s)
+    await Promise.all(order.map((s) => this.loaded.get(s)))
+    await this.prepared.get(order[order.indexOf(season) - 1]!)
   }
 
   /** Gives what the shake waits for where `season` is built and not yet in the GPU's hands: its hand, begun now. */
