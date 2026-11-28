@@ -645,6 +645,8 @@ export const CARD_VERT = `
       vL3.z = glowC;
       vL3.w = 1.0 + ${n(CARD.line.stormMistScene)} * mistSceneC;
     }
+    // the film's lens looks through another place in every sample and lays a seed's stroke out once for each, over what is left of its circle beside the share the stroke stands still by (shader.ts, lensC). The small glint at a stroke's head then stands once for every sample, a bunch of dots, two dozen of them at the stills' close camera (open item 277). A stroke that is no mist reads nothing else here, so its card says how far the lens lays it out, in pixels of the hd picture, and the glint goes out by that (cardStreak)
+    if (${at(SHAPE.seed)} && lineC > 0.5 && mistC < 0.5) vL3.z = (1.0 - lensC) * abs(coc) / uPoint.w;
     float detC = ca.x * cb.y - ca.y * cb.x;
     detC = abs(detC) < 1e-5 ? 1e-5 : detC;
     vec2 qnC = vec2(nV.x * cb.y - nV.y * cb.x, ca.x * nV.y - ca.y * nV.x) * (rC / detC);
@@ -1488,7 +1490,8 @@ void cardStreak(vec2 p, int kind, vec4 k, vec4 look) {
       if (fract(vL3.x * 733.0) >= ${n(STORM_LANDING.line.stormLockShare)}) lit = mix(lit, plainL, uStormLanding);
     }
     // the seed at the head of some strokes catches the low sun: one small warm glint
-    if (fract(vL3.x * 419.0) < ${n(CARD.line.stormGlint)}) glint = exp(-0.5 * dot(hp, hp) / (vStreak.w + ${n(CARD.line.stormGlintPx * CARD.line.stormGlintPx)} * uPoint.w * uPoint.w));
+    // where the film's lens lays the stroke out over more than a couple of pixels of the hd picture, as its card says, the glint goes out by degrees, the stroke stays (decision 246): under the first of the two it is whole to the last bit, so no frame of the film and no still at the hero camera moves
+    if (fract(vL3.x * 419.0) < ${n(CARD.line.stormGlint)}) glint = exp(-0.5 * dot(hp, hp) / (vStreak.w + ${n(CARD.line.stormGlintPx * CARD.line.stormGlintPx)} * uPoint.w * uPoint.w)) * (1.0 - smoothstep(${n(CARD.line.stormGlintLaidPx[0])}, ${n(CARD.line.stormGlintLaidPx[1])}, vL3.z));
   }
   float headW = 0.0;
   float seen = vCore.w * look.z;

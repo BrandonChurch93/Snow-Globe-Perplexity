@@ -12,9 +12,12 @@ import { BEHAVIOUR } from '../src/particles/engine/kinds'
 import { CENTRE_Y } from '../src/particles/engine/sdf'
 import { filmCut } from '../src/film/cut'
 import { loopMoment, timelineMoment } from '../src/film/moments'
+import { filmPose } from '../src/film/moves'
 import { eventSeconds, filmTimeline, globePoseAt, prerollSeconds, stateSeconds, stillTimeline } from '../src/film/timeline'
 import { innerRadiusMm, lensIor, lensPlace, lensRadiusMm } from '../src/globe/lens'
 import { VEIL_LOOK, veilUniforms } from '../src/core/chunks/veil'
+import { poseById, sphereCentreMm } from '../src/scene/cameras'
+import type { Pose } from '../src/scene/cameras'
 import type { KitMoment } from '../src/seasons/kit'
 import { LANDING_BEAT, LANDING_LOOK, STORM, TAKE, TAKE_END_BEAT, comesOfAnother, floodLeft, holdStorm, landingLook, stormHeld, takePace, veil as summerVeil } from '../src/seasons/summer/veil'
 
@@ -329,6 +332,64 @@ describe('how the storm is drawn', () => {
     expect(line.stormLockFan[0]).toBeLessThan(line.stormLockFan[1])
     expect(line.stormLockFan[1]).toBeLessThan(1)
     expect(line.stormLockShare).toBeGreaterThan(0.5)
+  })
+
+  it("open item 277, decision 246: the small glint at the head of a stroke of summer's down goes out by degrees where the film's lens lays the stroke out over more than about two pixels of the hd picture; the stroke stays, and no frame of the film in summer and no still at the hero camera comes to that", () => {
+    const line = CARD.line
+    const n = (v: number): string => (Number.isInteger(v) ? v.toFixed(1) : String(v))
+    // from about two pixels of the hd picture and by degrees: under the first of the two the glint is whole to the last bit, at the second it is out
+    expect(line.stormGlintLaidPx[0]).toBeGreaterThanOrEqual(2)
+    expect(line.stormGlintLaidPx[0]).toBeLessThanOrEqual(2.5)
+    expect(line.stormGlintLaidPx[1] - line.stormGlintLaidPx[0]).toBeGreaterThanOrEqual(1.5)
+    expect(line.stormGlintLaidPx[1]).toBeLessThanOrEqual(6)
+    // the measure is the radius the lens lays a stroke out over, as the card reckons it: what is left of the lens's circle beside the share by which the stroke stands still in the lens, in pixels of the hd picture. A stroke that is no mist hands it over where a seed's head says how near it is, which no stroke reads; a stroke of mist keeps its glow there
+    const seed = `(shape > ${n(SHAPE.seed - 0.5)} && shape < ${n(SHAPE.seed + 0.5)})`
+    const mistAt = CARD_VERT.indexOf('vL3.z = glowC;')
+    const laidAt = CARD_VERT.indexOf(`if (${seed} && lineC > 0.5 && mistC < 0.5) vL3.z = (1.0 - lensC) * abs(coc) / uPoint.w;`)
+    expect(mistAt).toBeGreaterThan(0)
+    expect(laidAt).toBeGreaterThan(mistAt)
+    expect(VERT_MAIN).toContain('float lensC = afloat * lensShare;')
+    expect(VERT_MAIN).toContain('float coc = uAperture.w * uPoint.y * (1.0 / zImg - uAperture.z);')
+    // one factor on the glint and on nothing else: in a stroke's picture only the mist's glow reads that place beside it, and the mist is drawn before the glint and carries none
+    const streak = CARD_FRAG_PARS.slice(CARD_FRAG_PARS.indexOf('void cardStreak('), CARD_FRAG_PARS.indexOf('void cardStormGlow('))
+    expect(streak).toContain(`if (fract(vL3.x * 419.0) < ${n(line.stormGlint)}) glint = exp(-0.5 * dot(hp, hp) / (vStreak.w + ${n(line.stormGlintPx * line.stormGlintPx)} * uPoint.w * uPoint.w)) * (1.0 - smoothstep(${n(line.stormGlintLaidPx[0])}, ${n(line.stormGlintLaidPx[1])}, vL3.z));`)
+    expect(streak.split('vL3.z').length - 1).toBe(2)
+    expect(streak.indexOf('glowM = vL3.z * exp(')).toBeGreaterThan(streak.indexOf('if (mist) {'))
+    expect(streak.indexOf('glowM = vL3.z * exp(')).toBeLessThan(streak.indexOf('if (swish && !bit && !mist) {'))
+    // how far the lens lays a seed out at the most, wherever in the ball it is: the shader's own reckoning of the image's depth through the glass, at the near and the far end of the ball's inside
+    const laid = (pose: Pose, centre: THREE.Vector3): number => {
+      const focal = 1080 / (2 * Math.tan((pose.fovDeg * Math.PI) / 360))
+      const dist = pose.position.distanceTo(centre)
+      let most = 0
+      for (const a of [-innerRadiusMm, innerRadiusMm]) {
+        const den = Math.max(lensRadiusMm + (lensIor - 1) * a, 0.3 * lensRadiusMm)
+        const zImg = Math.max(dist - (lensRadiusMm - (lensRadiusMm * (lensRadiusMm - a)) / den), 1)
+        most = Math.max(most, (1 - CARD.hair.lensFilm) * pose.apertureMm * focal * Math.abs(1 / zImg - 1 / pose.focusMm))
+      }
+      return most
+    }
+    const rest = new THREE.Vector3(0, sphereCentreMm, 0)
+    // the hero camera is under the first of the two and the stills' close camera, where the bunches of dots stood, far over the second
+    expect(laid(poseById('hero'), rest)).toBeLessThan(line.stormGlintLaidPx[0])
+    expect(laid(poseById('macro'), rest)).toBeGreaterThan(4 * line.stormGlintLaidPx[1])
+    // the film: at every frame and half frame where summer is in the ball, with the ball where the shake has it, the lens lays a seed out over less than the first of the two, so the glint is whole in every frame of the film
+    const cut = filmCut()
+    const film = filmTimeline(cut)
+    const fps = config.film.fps
+    let most = 0
+    let moments = 0
+    for (let half = 0; half < 2 * cut.frameCount; half++) {
+      const sec = half / (2 * fps)
+      const moment = timelineMoment(film, prerollSeconds + sec, 1, 1)
+      if (moment.from !== 'summer' && moment.to !== 'summer') continue
+      const g = moment.globe
+      const centre = rest.clone().applyEuler(new THREE.Euler(g.tiltX, g.twist ?? 0, g.tiltZ, 'XZY')).add(new THREE.Vector3(g.x, g.y, g.z))
+      most = Math.max(most, laid(filmPose(cut, sec), centre))
+      moments++
+    }
+    expect(moments).toBeGreaterThan(2 * 600)
+    expect(most).toBeGreaterThan(1)
+    expect(most).toBeLessThan(line.stormGlintLaidPx[0])
   })
 
   it("summer's lights are streaks along the swirl in the storm and soft glows with a bright heart and no edge at rest; a seed at rest is a round tuft, in sizes, with a stalk on about one in eight", () => {
