@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 278 · 2026-11-28 17:41 UTC
+Status 279 · 2026-11-28 18:07 UTC
 
-- `out/stills/status/status-278-1.jpg`: Summer's lights in the shake out of summer at 4K at own size, film frame 2072, flat squares on the main branch left and thin strokes in the what-if right, not ruled, not on main
-- `out/stills/status/status-278-2.jpg`: Spring into summer at 4K at own size, film frame 1416, the main branch left and the lights' what-if right, a row of white dots along the glass's foot, not ruled, not on main
-- `out/stills/status/status-278-3.jpg`: Film frame 2072 whole with the lights' what-if, drawn at 4K as the masters draw it and shown at 1400 wide, not on main
-- `out/stills/status/status-278-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-279-1.jpg`: Preview 11 in the making, twenty frames from the parts in hand, winter, spring, summer and the change into winter, on the main branch
+- `out/stills/status/status-279-2.jpg`: Preview 11 in the making, twenty frames around the changes into summer and into fall, on the main branch
+- `out/stills/status/status-279-3.jpg`: Still: fall landed hero, hd, draft
+- `out/stills/status/status-279-4.jpg`: Still: fall rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-28 17:41 UTC
-clock: phase 6, tick of 29.8 minutes
-phase 6: 62.87 h used of its 12.00 h box
-allowance (after the review): 62.87 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 62.87 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-28 18:07 UTC
+clock: phase 6, tick of 25.2 minutes
+phase 6: 63.29 h used of its 12.00 h box
+allowance (after the review): 63.29 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 63.29 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached

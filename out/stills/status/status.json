@@ -1,46 +1,46 @@
 {
-  "number": 278,
-  "time": "2026-11-28 17:41 UTC",
+  "number": 279,
+  "time": "2026-11-28 18:07 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 278 · 2026-11-28 17:41 UTC · Phase 6",
-    "Two answers are still needed from you, each a yes or no. One, take the level line's mend, which shows on the live page at low quality only. Two, take the two what-ifs that both fresh reviewers said to take: fall's lit faces going out before winter's base comes, and summer's sand mound breaking up as it leaves. You can answer the second by eye, because Preview 12 will show the whole film with those two in.",
-    "Your word of 10:22 AM MT is in: render the low resolution film. I take it as move on to the film with no further round of looks, and I start no new look work. The film was ordered at 10:37 AM MT on five machines: the whole piece with the prompt opening and its sound, 960 x 540 at 30 frames a second, at the fast draft setting. It comes here as Preview 11 by about 11:45 AM MT, an estimate from the last draft's pace. Preview 11 is the main branch as it stands, without the level line's mend and without the what-ifs. Preview 12 is the same film with the two what-ifs in. No 4K render is started or handed over on these words. That waits for your word after you have watched.",
+    "Status 279 · 2026-11-28 18:07 UTC · Phase 6",
+    "Two answers are still needed from you, each a yes or no, and neither holds the film up. One, take the level line's mend, which shows on the live page at low quality only. Two, take the two what-ifs that both fresh reviewers said to take: fall's lit faces going out before winter's base comes, and summer's sand mound breaking up as it leaves. You can answer the second by eye: Preview 11 is the film without them and Preview 12 is the film with them.",
+    "The low resolution film is ahead of the time I named. At 11:07 AM MT 9 of its 12 parts are drawn and checked, each 150 frames with the build's hash and the calibration equal and no page message. The last three are being drawn and the last is expected about 11:17 AM MT. Joining it to the prompt opening and the sound, and my own look at it, take a few minutes more, so Preview 11 should be attached here before 11:30 AM MT instead of 11:45 AM. The two pictures attached are frames taken from the parts already in. Preview 12 follows when its two parts are in, limit 11:25 AM MT.",
+    "A correction to Preview 10. Its lower half was drawn on a branch that held a third change besides the two what-ifs I asked you about: fall's leaves moving from the landing frame, a what-if that failed its own measure and was never offered. I found this at 10:50 AM MT by reading the branch's history. Measured on Preview 10's own files, the two halves differ where the sand mound leaves (film frames 2108 to 2110) and again from frame 2120 on, after the change into fall, which I read as that third change. The sand mound and fall's faces were shown rightly. Preview 12 is drawn on a clean branch that holds only the two offered what-ifs, and no part from the old branch goes into it.",
     "Phases 0 to 5 are complete. Phase 6, the films and delivery, is open.",
-    "Landed since the last status. The render instructions for your PC had their third cold read by a fresh reader: an agent can follow the file alone once three points are mended, score 7 of 10, all eleven gates met by its read. Two points are real traps: step 2 begun from the wrong folder, and your approval words typed inside quotes. Both are being mended now, then one hosted proof runs on the mended file. It goes onto the main branch only when that proof passes in every row and the same reader says yes.",
-    "The what-if for summer's lights during the shake has its first seven after frames at 4K, three pictures attached. The flat squares are gone in all five frames that should change, and the two frames that should stay are the same bit for bit. What stands in their place reads as fine sparks in the whole frame and as cut sticks with square ends at full size, and one frame shows a row of white dots along the glass's foot. Its builder has that list. Nothing is ruled. The other seven frames and the motion proof are being drawn, then two fresh reviewers judge it, and it reaches you only if both say take it.",
-    "Not offered: the what-if for fall's lifted leaves at the landing. Its second try failed its own measure, so the film keeps the main branch there.",
-    "The page that loses its drawing on hosted Macs, open items 294 and 295, measured on hosted Macs only. The engine of Safari kept the drawing in 12 of 12 loads. A second kind of hosted Mac lost it in 2 of 15 loads against 44 of 71 on the first kind, so it follows the machine more than the page. After a loss the browser itself blocks the page for two minutes, which explains the refusals seen. The hosted run that could not end green ended as cancelled, as I said it would, so GitHub may have mailed you. On a real Mac, a real graphics card or a phone nothing is measured.",
-    "Open and awaited in Mountain Time, by my orders' limits. Preview 11 and Preview 12 about 11:45 AM. The lights' motion proof about 11:30 AM and its builder's report 11:50 AM. The lost drawing's ten must items 11:45 AM, then a second fresh reviewer before anything merges. The sand mound's arrival, its one mend, about 11:55 AM. The hosted Mac report's second version 12:30 PM. The render instructions' mend and proof, time not known yet. The veil's what-if by 1:45 PM.",
-    "Remaining in phase 6 and what he receives. First the low resolution film, Preview 11 and Preview 12, today. Then the render instructions: one file in the repo and one line to give Claude Code. The what-ifs still in work, each shown before and after at 4K with the reviewers' words. On his word after the film: the freeze, the repo goes private and the references are redrawn. Then the film steps of the build order and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last the fresh review and BUILD COMPLETE. Sound credits 7,420 of 10,000 (measured from the ledger at 10:41 AM MT Saturday, 52 rows, the last call 10:47 PM MT Wednesday).",
-    "phase 6: 62.87 h used of its 12.00 h box",
-    "allowance (after the review): 62.87 h used of 12.00 h allowed",
+    "Landed since the last status. The render instructions for your PC are mended on the three points the fresh reader named and pushed to their branch, with 12 tests added (1,387 pass by its builder's count). Their one hosted proof began at 11:03 AM MT, run 46173757954. The last such run took 66 minutes, so its result comes after 12:10 PM MT. The file goes onto the main branch only when every row of that proof passes and the same reader says yes.",
+    "The what-if for summer's lights during the shake has its motion proof from three machines, nine frames at 4K as the masters draw them. All three find the flat squares gone, and all three find that a stroke does not carry on where the frame before left it. Two find that small white lights turn into round dots. Those findings speak against it. Its builder's report is due 11:50 AM MT. It is not offered and it is in neither film.",
+    "The page that loses its drawing on hosted Macs, open item 295, measured on hosted Macs only. The cause is narrowed to one moment: the loss needs the controls mounted and the live picture's first step into sight together, while the graphics card is still busy. With either one taken away no load lost its drawing, 0 of 10 in each of four trials, against 4 of 12 to 12 of 25 lost as the page stands, by the finder's count. One more measuring run is allowed. No mend is built, and a mend that changes how the first picture comes in would be yours to decide.",
+    "Open and awaited in Mountain Time, by my orders' limits. Preview 11 before 11:30 AM. Preview 12 after 11:25 AM. The lights' report 11:50 AM. The lost drawing's ten must items 11:45 AM, then a second fresh reviewer before anything merges. The sand sprinkle's tip, its rework, about 11:55 AM (my last status named the sand mound's arrival there by mistake, and that one is not ordered, since no new look work starts without your word). The render instructions' proof after 12:10 PM. The hosted Mac report's second version 12:30 PM. The veil's what-if by 1:45 PM.",
+    "Remaining in phase 6 and what you receive. First the low resolution film, Preview 11 and Preview 12, today. Then the render instructions: one file in the repo and one line to give Claude Code. On your word after the film: the freeze, the repo goes private and the references are redrawn. Then the full 4K 60 render on your gaming PC, on your word only: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last the fresh review and BUILD COMPLETE. No 4K render is started or handed over. Sound credits 7,420 of 10,000 (measured from the ledger at 11:05 AM MT Saturday, 52 rows, the last call 10:47 PM MT Wednesday).",
+    "phase 6: 63.29 h used of its 12.00 h box",
+    "allowance (after the review): 63.29 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-278-1.jpg",
-      "caption": "Summer's lights in the shake out of summer at 4K at own size, film frame 2072, flat squares on the main branch left and thin strokes in the what-if right, not ruled, not on main",
-      "w": 800,
-      "h": 700
-    },
-    {
-      "file": "out/stills/status/status-278-2.jpg",
-      "caption": "Spring into summer at 4K at own size, film frame 1416, the main branch left and the lights' what-if right, a row of white dots along the glass's foot, not ruled, not on main",
+      "file": "out/stills/status/status-279-1.jpg",
+      "caption": "Preview 11 in the making, twenty frames from the parts in hand, winter, spring, summer and the change into winter, on the main branch",
       "w": 1200,
-      "h": 600
+      "h": 543
     },
     {
-      "file": "out/stills/status/status-278-3.jpg",
-      "caption": "Film frame 2072 whole with the lights' what-if, drawn at 4K as the masters draw it and shown at 1400 wide, not on main",
+      "file": "out/stills/status/status-279-2.jpg",
+      "caption": "Preview 11 in the making, twenty frames around the changes into summer and into fall, on the main branch",
+      "w": 1200,
+      "h": 543
+    },
+    {
+      "file": "out/stills/status/status-279-3.jpg",
+      "caption": "Still: fall landed hero, hd, draft",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-278-4.jpg",
-      "caption": "Still: winter rest hero, hd, draft",
+      "file": "out/stills/status/status-279-4.jpg",
+      "caption": "Still: fall rest hero, hd, draft",
       "w": 1200,
       "h": 675
     }
