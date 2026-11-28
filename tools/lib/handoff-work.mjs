@@ -920,8 +920,8 @@ function addTally(a, b) {
 
 export const BATCH_CHUNKS = 6
 
-const finalsDir = (mode) => (mode.small ? rel('out', 'work', 'master', 'test') : rel('out', 'deliver'))
-const chunksDir = (mode) => (mode.small ? rel('out', 'master', 'test') : rel('out', 'master'))
+export const finalsDir = (mode) => (mode.small ? rel('out', 'work', 'master', 'test') : rel('out', 'deliver'))
+export const chunksDir = (mode) => (mode.small ? rel('out', 'master', 'test') : rel('out', 'master'))
 // Rows of the encoder's own proof that say how well a whole film came out. A draft of a dozen small frames cannot
 // hold them, so the small run of the tool's own tests notes them and goes on. A real render holds every row.
 const DRAFT_ROWS = ['sound bit rate', "the loop against film B's best hold", 'the wrap']
@@ -1327,13 +1327,23 @@ export async function deliver(ctx, reportText) {
   const pass = rows.every((r) => r.pass)
   const report = path.join(folder, `${L.TITLE} - Render Report.txt`)
   fs.writeFileSync(report, reportText({ machine, mode, checked, files, rows, folder }))
-  return { pass, why: pass ? `the four files and the report are in ${folder}. Next: node tools/handoff.mjs clean` : 'a copy on the Desktop is not the file that was checked', rows, folder, files, report, small: mode.small }
+  return { pass, why: pass ? `the four files and the report are in ${folder}. Next, only if Brandon says yes to sending them to the remote team: node tools/handoff.mjs upload. Then: node tools/handoff.mjs clean` : 'a copy on the Desktop is not the file that was checked', rows, folder, files, report, small: mode.small }
 }
 
-export function clean(ctx) {
+export function clean(ctx, recordsZip = null) {
   const delivered = readOr(path.join(ctx.H, 'deliver.json'))
   if (!delivered?.pass) return { pass: false, why: 'nothing is deleted before the delivery has passed. Run: node tools/handoff.mjs deliver' }
   for (const f of delivered.files) if (!fs.existsSync(f.file) || fs.statSync(f.file).size !== f.bytes) return { pass: false, why: `${f.file} is not on the Desktop any more, so the work files stay. Run the delivery again` }
+  // the records of the render are kept as one zip before anything goes, so that an upload after this still has them
+  let kept = ''
+  if (recordsZip && fs.existsSync(path.join(ctx.H, 'render-state.json'))) {
+    try {
+      const z = recordsZip(ctx, modeOf(ctx, loadCfg()))
+      kept = `${short(z.file)} (${z.entries} files, ${mb(z.bytes)})`
+    } catch (e) {
+      return { pass: false, why: `the records of the render could not be kept as a zip (${e.message}), so the work files stay` }
+    }
+  }
   const before = X.freeBytes(rel())
   const gone = []
   const drop = (p) => {
@@ -1349,10 +1359,10 @@ export function clean(ctx) {
   } catch {}
   for (const n of names) if (n !== 'handoff') drop(rel('out', 'work', n))
   // the reports stay, and so does what the doctor, the short test and the delivery found; the state of the render goes
-  const keep = (n) => /^report-.*\.txt$/.test(n) || ['doctor.json', 'test.json', 'deliver.json', 'job.json', 'job-seen.json'].includes(n)
+  const keep = (n) => /^report-.*\.txt$/.test(n) || ['doctor.json', 'test.json', 'check.json', 'deliver.json', 'upload.json', 'upload-release.json', 'upload', 'job.json', 'job-seen.json'].includes(n)
   for (const n of fs.readdirSync(ctx.H)) if (!keep(n)) drop(path.join(ctx.H, n))
   const after = X.freeBytes(rel())
-  return { pass: true, why: `the work files are deleted and ${L.gb(Math.max(0, after - before)).toFixed(1)} GB of disk is regained (${L.gb(after).toFixed(1)} GB free now). The delivered files on the Desktop, the reports and the clone itself stay`, gone, regainedBytes: Math.max(0, after - before), rows: gone.map((g) => ({ check: g, found: 'deleted', wanted: 'a work folder of the render, which git does not track', pass: true })) }
+  return { pass: true, why: `the work files are deleted and ${L.gb(Math.max(0, after - before)).toFixed(1)} GB of disk is regained (${L.gb(after).toFixed(1)} GB free now). The delivered files on the Desktop, the reports${kept ? `, the records of the render as one zip (${kept})` : ''} and the clone itself stay`, gone, regainedBytes: Math.max(0, after - before), rows: gone.map((g) => ({ check: g, found: 'deleted', wanted: 'a work folder of the render, which git does not track', pass: true })) }
 }
 
 export { short, mb, round, sum, readOr, loadCfg, rgbOfFile }

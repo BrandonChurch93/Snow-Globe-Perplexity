@@ -2,7 +2,9 @@
 # Windows PowerShell and in Git Bash, in a folder with a space in its name, from a plain git clone.
 # It runs only on a push to agent/p6-handoff and by hand. It never runs on main.
 # Every job ends green whatever happens: a red run sends a mail. The verdict of each job is the last step of its log
-# and the file verdict.txt of its artifact. It uses no secret.
+# and the file verdict.txt of its artifact. It uses no secret. One job, windows-upload-test, is given the token of
+# the run itself with leave to write, for the upload's own test; that job alone can end red, and only when its last
+# step had to remove a draft the test left behind.
 name: handoff proof
 
 on:
@@ -36,7 +38,7 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,clean
+            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
           # the same in Git Bash
           - id: windows-gitbash-small
             os: windows-latest
@@ -44,7 +46,7 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,clean
+            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
           # the same on the newest LTS of Node
           - id: windows-newest-lts-small
             os: windows-latest
@@ -53,22 +55,23 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,clean
-          # the four winget lines of the file, then setup and the doctor with what they installed
+            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+          # the winget lines of the file, then setup and the doctor with what they installed
           - id: windows-winget-lines
             os: windows-latest
             shell: powershell
             mode: installs
             switches: ''
             refusal: 'yes'
-            expect: winget-git,winget-node,winget-ffmpeg,winget-chrome,clone,setup,doctor-refuses-software
-          # frames at 3840 x 2160 at the masters' tier against the references, drawn by a third renderer: Chrome's
-          # own software renderer (by itself Chrome on this machine draws through Direct3D 11, which the next job covers)
+            expect: winget-git,winget-node,winget-ffmpeg,winget-chrome,winget-gh,clone,setup,doctor-refuses-software
+          # frames at 3840 x 2160 at the masters' tier against the references, with Chrome as it starts by itself on
+          # this machine: through Direct3D 11, on Microsoft's software card. No sound is given, so the test film is silent.
+          # (Chrome's own software renderer lost its graphics context at 3840 x 2160 on this machine, run 46097010961.)
           - id: windows-3840
             os: windows-latest
             shell: powershell
             mode: uhd
-            switches: software,angle=swiftshader,refs=film-b:120+film-b:720,stretch=720-721/1
+            switches: software,refs=film-b:120+film-b:720,stretch=720-721/1
             refusal: 'yes'
             expect: clone,setup,doctor-refuses-software,doctor,test,render-refuses-unreleased
           # the same with Direct3D 11 asked for by name, the shader path of a Windows graphics card
@@ -86,7 +89,7 @@ jobs:
             mode: small
             switches: small,tones,fast-watch
             refusal: 'no'
-            expect: clone,setup,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,clean
+            expect: clone,setup,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
           - id: macos-3840
             os: macos-latest
             shell: bash
@@ -110,7 +113,8 @@ jobs:
       PROOF_REFUSAL: ${{ matrix.refusal }}
       # A push whose message holds [proof small] leaves the 3840 jobs out, [proof 3840] leaves the others out,
       # [proof shaders] leaves all out but the list of shader messages: the job still starts, does nothing and ends green.
-      PROOF_LEFT_OUT: ${{ (contains(github.event.head_commit.message, '[proof small]') && matrix.mode == 'uhd') || (contains(github.event.head_commit.message, '[proof 3840]') && matrix.mode != 'uhd') || (contains(github.event.head_commit.message, '[proof shaders]') && matrix.mode != 'shaders') }}
+      # [proof upload] leaves every job of this list out: only the upload's own test runs.
+      PROOF_LEFT_OUT: ${{ (contains(github.event.head_commit.message, '[proof small]') && matrix.mode == 'uhd') || (contains(github.event.head_commit.message, '[proof 3840]') && matrix.mode != 'uhd') || (contains(github.event.head_commit.message, '[proof shaders]') && matrix.mode != 'shaders') || contains(github.event.head_commit.message, '[proof upload]') }}
     steps:
       # The helpers only, beside the clone under test. The film's clone is made by the flow with a plain git clone.
       - name: left out of this push
@@ -125,6 +129,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: _proof
+          persist-credentials: false
           sparse-checkout: |
             .github
             tools/lib
@@ -171,6 +176,102 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.id }}
+          path: ${{ runner.temp }}/proof-out
+          if-no-files-found: warn
+          retention-days: 14
+
+  # The upload's own test: stand-in files of a few bytes go to a draft release, a cut connection is played, the
+  # files are read back, and the one draft is removed by its id. It needs leave to write releases, so this job, and
+  # no other, is given the token of the run with contents: write. It is the run's own token and no stored secret.
+  # The token is in the environment of two steps only (the test, and the last step that makes sure no draft is
+  # left), in no file and in no log. No checkout action runs here: the helpers come with the plain clone.
+  upload-test:
+    name: windows-upload-test
+    if: ${{ !contains(github.event.head_commit.message, '[proof small]') && !contains(github.event.head_commit.message, '[proof 3840]') && !contains(github.event.head_commit.message, '[proof shaders]') }}
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      PROOF_BRANCH: ${{ github.ref_name }}
+      PROOF_MODE: upload
+    steps:
+      - name: a plain clone in a folder with a space
+        continue-on-error: true
+        shell: powershell
+        run: |
+          $Root = Join-Path $env:RUNNER_TEMP 'render proof'
+          New-Item -ItemType Directory -Force -Path $Root | Out-Null
+          Set-Location -LiteralPath $Root
+          git clone --filter=blob:none --single-branch --branch $env:PROOF_BRANCH https://github.com/BrandonChurch93/Snow-Globe-Perplexity.git Snow-Globe-Perplexity
+
+      - name: the upload's own test, with the token of this run
+        continue-on-error: true
+        timeout-minutes: 20
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: '& "$env:RUNNER_TEMP\render proof\Snow-Globe-Perplexity\.github\handoff-proof\upload-test.ps1"'
+
+      # Runs even after a failure. A draft with the test's mark is removed by its id when this run made it, or when
+      # it is older than 30 minutes (a test at work on another machine is left alone). The job fails when it had to.
+      - name: no draft of the test is left
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          OUT="$(cygpath -u "$RUNNER_TEMP")/proof-out"
+          mkdir -p "$OUT"
+          mine="$(grep -ho 'the draft is made: id [0-9]*' "$OUT/upload-test.out.txt" 2> /dev/null | grep -o '[0-9]*$' | sort -u | tr '\n' ' ')"
+          cutoff="$(date -u -d '30 minutes ago' +%Y%m%d%H%M%S)"
+          listed=no
+          for try in 1 2 3; do
+            if list="$(gh api "repos/$REPO/releases?per_page=100" --jq '.[] | select(.draft == true and (.tag_name | startswith("handoff-upload-test"))) | "\(.id) \(.tag_name)"')"; then
+              listed=yes
+              break
+            fi
+            sleep 5
+          done
+          if [ "$listed" != yes ]; then
+            echo "PROBLEM: the releases of the repo could not be listed, so it is not known whether a draft of the test is left" | tee -a "$OUT/notes.txt"
+            exit 1
+          fi
+          had=0
+          while read -r id tag; do
+            [ -z "$id" ] && continue
+            stamp="$(echo "$tag" | sed -E 's/^handoff-upload-test-([0-9]{14}).*$/\1/')"
+            remove=no
+            case " $mine " in *" $id "*) remove=yes ;; esac
+            if [[ "$stamp" =~ ^[0-9]{14}$ ]]; then
+              [ "$stamp" \< "$cutoff" ] && remove=yes
+            else
+              remove=yes
+            fi
+            if [ "$remove" = yes ]; then
+              gh api --method DELETE "repos/$REPO/releases/$id"
+              echo "PROBLEM: a draft with the test's mark was left and had to be removed here: id $id, $tag (removal ended with exit code $?)" | tee -a "$OUT/notes.txt"
+              had=1
+            else
+              echo "a draft of a test that is at work on another machine now is left alone: id $id, $tag" | tee -a "$OUT/notes.txt"
+            fi
+          done <<< "$list"
+          [ "$had" = 0 ] && echo "the last step found no draft with the test's mark that had to be removed" | tee -a "$OUT/notes.txt"
+          exit $had
+
+      - name: the verdict
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: node "$RUNNER_TEMP/render proof/Snow-Globe-Perplexity/.github/handoff-proof/verdict.mjs" "$RUNNER_TEMP/proof-out" windows-upload-test upload-test
+
+      - name: the reports
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-upload-test
           path: ${{ runner.temp }}/proof-out
           if-no-files-found: warn
           retention-days: 14

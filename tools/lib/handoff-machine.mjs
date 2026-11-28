@@ -132,10 +132,11 @@ function winPlaces() {
     ffmpeg: [path.join(local, 'Microsoft', 'WinGet', 'Links'), path.join(pf, 'WinGet', 'Links'), ...packages, path.join(pf, 'ffmpeg', 'bin'), 'C:\\ffmpeg\\bin', 'C:\\ProgramData\\chocolatey\\bin', path.join(os.homedir(), 'scoop', 'shims')],
     git: [path.join(pf, 'Git', 'cmd'), path.join(pf86, 'Git', 'cmd'), path.join(local, 'Programs', 'Git', 'cmd')],
     chrome: [path.join(pf, 'Google', 'Chrome', 'Application'), path.join(pf86, 'Google', 'Chrome', 'Application'), path.join(local, 'Google', 'Chrome', 'Application')],
+    gh: [path.join(pf, 'GitHub CLI'), path.join(pf86, 'GitHub CLI'), path.join(local, 'Programs', 'GitHub CLI'), path.join(local, 'Microsoft', 'WinGet', 'Links'), 'C:\\ProgramData\\chocolatey\\bin', path.join(os.homedir(), 'scoop', 'shims')],
   }
 }
-const macPlaces = () => ({ ffmpeg: ['/opt/homebrew/bin', '/usr/local/bin'], git: ['/usr/bin', '/opt/homebrew/bin', '/usr/local/bin'], chrome: ['/Applications/Google Chrome.app/Contents/MacOS', path.join(os.homedir(), 'Applications', 'Google Chrome.app', 'Contents', 'MacOS')] })
-const otherPlaces = () => ({ ffmpeg: ['/usr/bin', '/usr/local/bin'], git: ['/usr/bin'], chrome: ['/opt/google/chrome', '/usr/bin'] })
+const macPlaces = () => ({ ffmpeg: ['/opt/homebrew/bin', '/usr/local/bin'], gh: ['/opt/homebrew/bin', '/usr/local/bin'], git: ['/usr/bin', '/opt/homebrew/bin', '/usr/local/bin'], chrome: ['/Applications/Google Chrome.app/Contents/MacOS', path.join(os.homedir(), 'Applications', 'Google Chrome.app', 'Contents', 'MacOS')] })
+const otherPlaces = () => ({ ffmpeg: ['/usr/bin', '/usr/local/bin'], gh: ['/usr/bin', '/usr/local/bin'], git: ['/usr/bin'], chrome: ['/opt/google/chrome', '/usr/bin'] })
 
 const exe = (name) => (WIN ? [`${name}.exe`] : [name])
 

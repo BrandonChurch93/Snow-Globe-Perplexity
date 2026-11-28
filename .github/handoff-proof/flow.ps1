@@ -14,11 +14,12 @@ Note "folder: $Root"
 Note ("git core.autocrlf here: " + ((git config --show-origin --get-all core.autocrlf) -join ' '))
 
 if ($env:PROOF_MODE -eq 'installs') {
-  # the four winget lines of the file, as written, on a machine that has three of the four programs already
+  # the winget lines of the file, as written, on a machine that has most of the programs already
   Line 'winget-git' 'any' 'winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements'
   Line 'winget-node' 'any' 'winget install --id OpenJS.NodeJS.LTS -e --source winget --accept-package-agreements --accept-source-agreements'
   Line 'winget-ffmpeg' 'any' 'winget install --id Gyan.FFmpeg -e --source winget --accept-package-agreements --accept-source-agreements'
   Line 'winget-chrome' 'any' 'winget install --id Google.Chrome -e --source winget --accept-package-agreements --accept-source-agreements'
+  Line 'winget-gh' 'any' 'winget install --id GitHub.cli -e --source winget --accept-package-agreements --accept-source-agreements'
 }
 
 Line 'git-version' '0' 'git --version'
@@ -37,6 +38,9 @@ $CrlfHash = node (Join-Path $Help 'engine-hash.mjs') $Crlf
 Note "engine hash of a clone made with core.autocrlf=true: $CrlfHash"
 if ($CrlfHash -ne $StampHash) { Note "PROBLEM: a clone under core.autocrlf=true has engine hash $CrlfHash, not the stamp's $StampHash" }
 Remove-Item -LiteralPath $Crlf -Recurse -Force -ErrorAction SilentlyContinue
+
+# a file that another program holds: the tool's rename must wait for it
+Note (node (Join-Path $Help 'held-file.mjs') .)
 
 Line 'setup' '0' 'node tools/handoff.mjs setup'
 Note ("git status after setup: " + ((git status --short) -join '|'))
@@ -105,7 +109,12 @@ if ($env:PROOF_MODE -eq 'small') {
   Line 'check' '0' 'node tools/handoff.mjs check'
   Line 'deliver' '0' 'node tools/handoff.mjs deliver'
   node (Join-Path $Help 'after.mjs') $env:PROOF_OUT
+  # the upload on a machine without a GitHub sign in: everything is made ready, then it refuses with the one line
+  Line 'upload-refuses' '1' 'node tools/handoff.mjs upload' 'is not signed in on this machine'
+  Note ("made ready for the upload: " + ((Get-ChildItem -Path 'out/work/handoff/upload' -ErrorAction SilentlyContinue | ForEach-Object { "$($_.Name) $($_.Length) bytes" }) -join '|'))
   Line 'clean' '0' 'node tools/handoff.mjs clean'
+  # after the clean the upload still finds the delivered files and the records
+  Line 'upload-after-clean' '1' 'node tools/handoff.mjs upload' 'the work files are cleaned already'
 } else {
   Line 'test' '0' 'node tools/handoff.mjs test'
   Line 'render-refuses-unreleased' '1' 'node tools/handoff.mjs render' 'not released for its final render yet'

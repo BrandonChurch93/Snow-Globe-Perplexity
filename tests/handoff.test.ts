@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest'
 import * as L from '../tools/lib/handoff.mjs'
 import * as S from '../tools/lib/handoff-shaders.mjs'
 import { planProblems } from '../tools/lib/handoff-stamp.mjs'
+import { crc32, zipRead, zipWrite } from '../tools/lib/handoff-zip.mjs'
+import * as WinFs from '../tools/lib/handoff-win-fs.mjs'
 import { rel, readJson } from '../tools/lib/paths.mjs'
 
 // The render handoff: the parts that need no browser. What is drawn is proven on real machines by
@@ -817,7 +819,7 @@ describe('the handoff file and the tools it names', () => {
   const commands = lines.filter((l) => /^(node|git|winget|brew|cd) /.test(l))
   it('holds commands, and each is one of the few kinds the order allows', () => {
     expect(commands.length).toBeGreaterThan(10)
-    for (const c of commands) expect(c, c).toMatch(/^(node tools\/handoff\.mjs (setup|doctor|test|render|check|deliver|clean)|winget install --id (Git\.Git|OpenJS\.NodeJS\.LTS|Gyan\.FFmpeg|Google\.Chrome) -e --source winget --accept-package-agreements --accept-source-agreements|brew install (git|node|ffmpeg)|brew install --cask google-chrome|git clone --filter=blob:none --single-branch --branch \S+ https:\/\/github\.com\/BrandonChurch93\/Snow-Globe-Perplexity\.git Snow-Globe-Perplexity|cd Snow-Globe-Perplexity|git pull --ff-only|node --version|git --version)$/)
+    for (const c of commands) expect(c, c).toMatch(/^(node tools\/handoff\.mjs (setup|doctor|test|render|check|deliver|upload|clean)|winget install --id (Git\.Git|OpenJS\.NodeJS\.LTS|Gyan\.FFmpeg|Google\.Chrome|GitHub\.cli) -e --source winget --accept-package-agreements --accept-source-agreements|brew install (git|node|ffmpeg)|brew install --cask google-chrome|git clone --filter=blob:none --single-branch --branch \S+ https:\/\/github\.com\/BrandonChurch93\/Snow-Globe-Perplexity\.git Snow-Globe-Perplexity|cd Snow-Globe-Perplexity|git pull --ff-only|node --version|git --version)$/)
   })
   it('gives the same winget lines the doctor prints', () => {
     for (const t of ['git', 'node', 'ffmpeg', 'chrome'] as const) expect(md).toContain(L.installLine(t, 'win32'))
@@ -851,6 +853,308 @@ describe('the handoff file and the tools it names', () => {
   })
 })
 
+describe('the upload: where it sends and under which names', () => {
+  it('reads owner and name of the repo from the origin of a clone, and nothing from any other address', () => {
+    for (const url of ['https://github.com/BrandonChurch93/Snow-Globe-Perplexity.git', 'https://github.com/BrandonChurch93/Snow-Globe-Perplexity', 'https://someone@github.com/BrandonChurch93/Snow-Globe-Perplexity.git\n', 'git@github.com:BrandonChurch93/Snow-Globe-Perplexity.git', 'ssh://git@github.com/BrandonChurch93/Snow-Globe-Perplexity.git/']) {
+      expect(L.repoOf(url), url).toEqual({ owner: 'BrandonChurch93', repo: 'Snow-Globe-Perplexity', slug: 'BrandonChurch93/Snow-Globe-Perplexity' })
+    }
+    for (const url of ['', null, 'https://gitlab.com/a/b.git', 'https://github.com/a', 'https://github.com/a/b/c', 'file:///tmp/repo', 'https://github.com/a/b?x=1']) expect(L.repoOf(url), String(url)).toBeNull()
+  })
+  it('sends a file under the name GitHub would give it, and keeps the true name as its label', () => {
+    expect(L.assetName('Snow Globe Seasons - With Prompt - 3840x2160.mp4')).toBe('Snow.Globe.Seasons.-.With.Prompt.-.3840x2160.mp4')
+    for (const kind of L.KINDS) expect(L.assetName(L.deliveryName(kind, 3840, 2160))).toMatch(/^[A-Za-z0-9._-]+$/)
+    expect(L.assetName(L.recordsName())).toBe('Snow.Globe.Seasons.-.Render.Records.zip')
+    expect(L.assetName(L.sumsName())).toBe('Snow.Globe.Seasons.-.Render.Sums.txt')
+    expect(new Set([...L.KINDS.map((k) => L.assetName(L.deliveryName(k, 3840, 2160))), L.assetName(L.recordsName()), L.assetName(L.sumsName())]).size).toBe(L.KINDS.length + 2)
+  })
+  it('names the draft for the render: its day, its engine hash and the machine', () => {
+    const n = L.releaseNames({ date: '2026-12-01T03:04:05.000Z', engineHash: HASH, machine: "Brandon's PC (5080)" })
+    expect(n.tag).toBe(`render-20261201-${HASH}-Brandon-s-PC-5080`)
+    expect(n.title).toBe(`Snow Globe Seasons render, 2026-12-01, engine ${HASH}, Brandon-s-PC-5080`)
+    expect(n.tag).toMatch(/^[A-Za-z0-9-]+$/)
+    const small = L.releaseNames({ date: '2026-12-01', engineHash: HASH, machine: 'm', small: true })
+    expect(small.tag).toMatch(/-tool-test$/)
+    expect(small.title).toContain('no film')
+    expect(L.releaseNames({ date: '2026-12-01', engineHash: HASH, machine: '' }).tag).toBe(`render-20261201-${HASH}-machine`)
+  })
+  it('marks every draft of its own test, and never a render with that mark', () => {
+    const t = L.testReleaseNames({ time: '2026-11-28T02:21:21.123Z', machine: 'space sandbox' })
+    expect(t.tag).toBe('handoff-upload-test-20261128022121-space-sandbox')
+    expect(t.tag.startsWith(L.UPLOAD_TEST_MARK)).toBe(true)
+    expect(t.title).toContain('stand-in')
+    expect(L.releaseNames({ date: '2026-12-01', engineHash: HASH, machine: L.UPLOAD_TEST_MARK }).tag.startsWith(L.UPLOAD_TEST_MARK)).toBe(false)
+  })
+  it('has stand-ins of a few bytes whose names carry the word test and are no name of a delivered file', () => {
+    const real = L.KINDS.map((k) => L.deliveryName(k, 3840, 2160))
+    const names = [...L.STAND_INS.map((x) => x.label), L.STAND_IN_RECORDS, L.STAND_IN_SUMS]
+    expect(names.length).toBe(6)
+    expect(new Set(names.map(L.assetName)).size).toBe(6)
+    for (const n of names) {
+      expect(n).toMatch(/Test/)
+      expect(real).not.toContain(n)
+      expect([L.recordsName(), L.sumsName()]).not.toContain(n)
+    }
+    for (const x of L.STAND_INS) expect(Buffer.byteLength(x.text)).toBeLessThan(200)
+  })
+  it('knows the kind of each file it sends', () => {
+    expect(L.contentType('a.mp4')).toBe('video/mp4')
+    expect(L.contentType('a.PNG')).toBe('image/png')
+    expect(L.contentType('a.zip')).toBe('application/zip')
+    expect(L.contentType('a.txt')).toMatch(/^text\/plain/)
+    expect(L.contentType('a')).toBe('application/octet-stream')
+  })
+  it('lets no file of 2,000 MB or more through, and none whose size is not known', () => {
+    expect(L.UPLOAD_LIMIT_BYTES).toBe(2_000_000_000)
+    expect(L.tooLarge([{ bytes: 1 }, { bytes: 1_999_999_999 }])).toEqual([])
+    expect(L.tooLarge([{ bytes: 2_000_000_000 }, { bytes: 5 }, { bytes: undefined }, { bytes: NaN }]).length).toBe(3)
+  })
+})
+
+describe('the upload: carrying on after a dropped connection', () => {
+  const w = (name: string, bytes: number, c = 'a') => ({ name, bytes, sha256: SHA(c), label: name.replace(/\./g, ' ') })
+  const asset = (id: number, name: string, size: number, over: Record<string, unknown> = {}) => ({ id, name, size, state: 'uploaded', ...over })
+  const wanted = [w('a.mp4', 100, 'a'), w('b.mp4', 200, 'b'), w('c.png', 300, 'c')]
+  it('sends everything to an empty release', () => {
+    const p = L.uploadPlan(wanted, [])
+    expect(p.send.map((x) => x.name)).toEqual(['a.mp4', 'b.mp4', 'c.png'])
+    expect(p.keep).toEqual([])
+    expect(p.drop).toEqual([])
+  })
+  it('keeps what is whole, removes what is short and sends only what is missing or short', () => {
+    const p = L.uploadPlan(wanted, [asset(1, 'a.mp4', 100, { digest: `sha256:${SHA('a')}` }), asset(2, 'b.mp4', 150)])
+    expect(p.keep.map((x) => x.name)).toEqual(['a.mp4'])
+    expect(p.keep[0].id).toBe(1)
+    expect(p.drop).toEqual([{ id: 2, name: 'b.mp4', why: '150 bytes where 200 are wanted' }])
+    expect(p.send.map((x) => x.name)).toEqual(['b.mp4', 'c.png'])
+  })
+  it('removes a file GitHub has not finished, whatever size it names', () => {
+    const p = L.uploadPlan(wanted, [asset(7, 'a.mp4', 100, { state: 'starter' }), asset(8, 'b.mp4', 0, { state: 'open' })])
+    expect(p.drop.map((d) => d.id)).toEqual([7, 8])
+    expect(p.drop[0].why).toContain('starter')
+    expect(p.send.length).toBe(3)
+  })
+  it('does not keep a file that is as long and not the same', () => {
+    const p = L.uploadPlan(wanted, [asset(1, 'a.mp4', 100, { digest: `sha256:${SHA('f')}` })])
+    expect(p.keep).toEqual([])
+    expect(p.drop).toEqual([{ id: 1, name: 'a.mp4', why: 'as long as the file and not the file (its sum differs)' }])
+    expect(p.send.map((x) => x.name)).toContain('a.mp4')
+  })
+  it('keeps a whole file whose sum GitHub does not name', () => {
+    expect(L.uploadPlan(wanted, [asset(1, 'a.mp4', 100, { digest: null })]).keep.map((x) => x.name)).toEqual(['a.mp4'])
+  })
+  it('sends nothing a second time when all is there, and leaves what others put on the release', () => {
+    const all = [asset(1, 'a.mp4', 100), asset(2, 'b.mp4', 200), asset(3, 'c.png', 300), asset(4, 'notes.txt', 9)]
+    const p = L.uploadPlan(wanted, all)
+    expect(p.send).toEqual([])
+    expect(p.drop).toEqual([])
+    expect(p.others).toEqual(['notes.txt'])
+  })
+  it('keeps one of two files of the same name and removes the other', () => {
+    const p = L.uploadPlan(wanted, [asset(1, 'a.mp4', 40), asset(2, 'a.mp4', 100)])
+    expect(p.keep.map((x) => x.id)).toEqual([2])
+    expect(p.drop.map((x) => x.id)).toEqual([1])
+  })
+})
+
+describe('the upload: the release read back', () => {
+  const wanted = [
+    { name: 'a.mp4', bytes: 100, sha256: SHA('a'), label: 'a film.mp4' },
+    { name: 'b.zip', bytes: 50, sha256: SHA('b'), label: 'b records.zip' },
+  ]
+  const good = {
+    draft: true,
+    assets: [
+      { name: 'a.mp4', size: 100, state: 'uploaded', label: 'a film.mp4', digest: `sha256:${SHA('a')}` },
+      { name: 'b.zip', size: 50, state: 'uploaded', label: 'b records.zip', digest: `sha256:${SHA('b')}` },
+    ],
+  }
+  const failing = (release: unknown) => L.readBackRows(wanted, release as never).filter((r: { pass: boolean | null }) => r.pass === false).map((r: { check: string }) => r.check)
+  it('passes when names, bytes, sums and labels are those that were sent, on a draft', () => {
+    expect(failing(good)).toEqual([])
+    expect(L.readBackRows(wanted, good as never).length).toBe(4)
+  })
+  it('fails on a missing file, a short one, another sum, another label, an unfinished one', () => {
+    expect(failing({ ...good, assets: good.assets.slice(1) })).toEqual(['on the release: a.mp4'])
+    expect(failing({ ...good, assets: [{ ...good.assets[0], size: 99 }, good.assets[1]] })).toEqual(['on the release: a.mp4'])
+    expect(failing({ ...good, assets: [good.assets[0], { ...good.assets[1], digest: `sha256:${SHA('0')}` }] })).toEqual(['on the release: b.zip'])
+    expect(failing({ ...good, assets: [{ ...good.assets[0], label: '' }, good.assets[1]] })).toEqual(['on the release: a.mp4'])
+    expect(failing({ ...good, assets: [{ ...good.assets[0], state: 'starter' }, good.assets[1]] })).toEqual(['on the release: a.mp4'])
+  })
+  it('fails when the release is no draft, and when it could not be read', () => {
+    expect(failing({ ...good, draft: false })).toEqual(['on the release: a draft'])
+    expect(failing(null).length).toBe(3)
+  })
+  it('names what else is on the release without failing on it', () => {
+    const rows = L.readBackRows(wanted, { ...good, assets: [...good.assets, { name: 'other.txt', size: 1, state: 'uploaded' }] } as never)
+    expect(rows.at(-1).found).toContain('other.txt')
+    expect(rows.at(-1).pass).toBeNull()
+  })
+})
+
+describe('the upload: the sums file and the answers of gh', () => {
+  it('writes one line a file with its sum, bytes, frames, seconds and size in pixels', () => {
+    const text = L.sumsText({
+      title: 'T',
+      tag: 'render-x',
+      made: '2026-12-01T00:00:00.000Z',
+      engineHash: HASH,
+      commit: 'c'.repeat(40),
+      machine: 'm1',
+      files: [
+        { sha256: SHA('a'), bytes: 123, frames: 4467, seconds: 74.45, pixels: '3840x2160', name: 'A.mp4', label: 'A film.mp4' },
+        { sha256: SHA('b'), bytes: 9, frames: 1, seconds: null, pixels: '3840x2160', name: 'S.png', label: 'S shot.png' },
+        { sha256: SHA('c'), bytes: 7, name: 'R.zip', label: 'R records.zip' },
+      ],
+    })
+    const lines = text.split('\n')
+    expect(text.endsWith('\n')).toBe(true)
+    expect(lines).toContain(`engine\t${HASH}`)
+    expect(lines).toContain(['sha256', 'bytes', 'frames', 'seconds', 'pixels', 'name on the release', 'name of the file'].join('\t'))
+    expect(lines).toContain([SHA('a'), 123, 4467, '74.450', '3840x2160', 'A.mp4', 'A film.mp4'].join('\t'))
+    expect(lines).toContain([SHA('b'), 9, 1, '-', '3840x2160', 'S.png', 'S shot.png'].join('\t'))
+    expect(lines).toContain([SHA('c'), 7, '-', '-', '-', 'R.zip', 'R records.zip'].join('\t'))
+  })
+  it('reads what gh answers: no sign in, a repo it does not see, a name that is there already', () => {
+    expect(L.ghSays({ code: 0, out: '{}', err: '' })).toEqual({ ok: true, kind: '' })
+    expect(L.ghSays({ code: 4, out: '', err: 'To get started with GitHub CLI, please run:  gh auth login\n' }).kind).toBe('sign in')
+    expect(L.ghSays({ code: 1, out: '{"message":"Bad credentials"}', err: 'gh: Bad credentials (HTTP 401)\n' }).kind).toBe('sign in')
+    expect(L.ghSays({ code: 1, out: '{"message":"Not Found"}', err: 'gh: Not Found (HTTP 404)\n' }).kind).toBe('not found')
+    expect(L.ghSays({ code: 1, out: '{"errors":[{"code":"already_exists"}]}', err: 'gh: Validation Failed (HTTP 422)\n' }).kind).toBe('there already')
+    expect(L.ghSays({ code: 1, out: '{"message":"Resource not accessible by integration"}', err: 'gh: Resource not accessible by integration (HTTP 403)\n' }).kind).toBe('not allowed')
+    const other = L.ghSays({ code: 1, out: '', err: 'error connecting to api.github.com\ncheck your internet connection\n' })
+    expect(other.kind).toBe('other')
+    expect(other.said).toBe('check your internet connection')
+  })
+  it('names the one line for each thing only Brandon or an install can mend', () => {
+    expect(L.SIGN_IN_LINE).toBe('gh auth login')
+    expect(L.notSignedIn()).toContain('gh auth login')
+    expect(L.notPrivate('a/b')).toContain('a/b is not private')
+    expect(L.mayNotWrite('a/b')).toContain('may not write to the repo a/b')
+    expect(L.mayNotWrite('a/b')).toContain('gh auth login')
+    expect(L.ghMissing('win32')).toContain('winget install --id GitHub.cli -e --source winget --accept-package-agreements --accept-source-agreements')
+    expect(L.ghMissing('darwin')).toContain('brew install gh')
+  })
+  it('takes the upload as a word of the file, and the word of its own test without naming it', () => {
+    expect(L.COMMANDS).toContain('upload')
+    expect(L.COMMANDS).not.toContain(L.UPLOAD_TEST_WORD)
+    expect(L.argProblem(['upload'])).toBe('')
+    expect(L.argProblem([L.UPLOAD_TEST_WORD])).toBe('')
+    for (const argv of [['upload', 'out/deliver/film.mp4'], [L.UPLOAD_TEST_WORD, 'C:\\film.mp4'], ['upload', '--public'], [L.UPLOAD_TEST_WORD, '--keep']]) {
+      const said = L.argProblem(argv)
+      expect(said, argv.join(' ')).toMatch(/one word and nothing else/)
+      expect(said).not.toContain(`${L.UPLOAD_TEST_WORD},`)
+    }
+    expect(fs.readFileSync(rel('RENDER-ON-YOUR-PC.md'), 'utf8')).not.toContain(L.UPLOAD_TEST_WORD)
+  })
+})
+
+describe('the records zip', () => {
+  const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'handoff zip '))
+  it('counts the check sum of a zip as every zip reader does', () => {
+    expect(crc32(Buffer.from('123456789'))).toBe(0xcbf43926)
+    expect(crc32(Buffer.alloc(0))).toBe(0)
+  })
+  it('writes files and texts and reads them back byte for byte', () => {
+    const dir = tmp()
+    const big = path.join(dir, 'a log with spaces.txt')
+    fs.writeFileSync(big, 'line of a log\n'.repeat(5000))
+    const bin = path.join(dir, 'bytes.json')
+    fs.writeFileSync(bin, Buffer.from(Array.from({ length: 4096 }, (_, i) => (i * 37) & 255)))
+    const out = path.join(dir, 'records.zip')
+    const made = zipWrite(out, [{ name: 'out/work/handoff/a log with spaces.txt', file: big }, { name: 'bytes.json', file: bin }, { name: 'note/über.txt', data: 'a text\n' }, { name: 'empty.txt', data: '' }])
+    expect(made.entries).toBe(4)
+    expect(made.bytes).toBe(fs.statSync(out).size)
+    expect(made.bytes).toBeLessThan(20000)
+    const back = zipRead(out)
+    expect(back.map((e: { name: string }) => e.name)).toEqual(['out/work/handoff/a log with spaces.txt', 'bytes.json', 'note/über.txt', 'empty.txt'])
+    expect(back[0].data.equals(fs.readFileSync(big))).toBe(true)
+    expect(back[1].data.equals(fs.readFileSync(bin))).toBe(true)
+    expect(back[2].data.toString('utf8')).toBe('a text\n')
+    expect(back[3].data.length).toBe(0)
+    expect(fs.readdirSync(dir).filter((n) => n.includes('.tmp'))).toEqual([])
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+  it('writes a zip that the zip reader of this machine opens, when there is one', () => {
+    const dir = tmp()
+    const out = path.join(dir, 'records.zip')
+    zipWrite(out, [{ name: 'render/STAMP.json', data: '{"a":1}\n' }, { name: 'out/report.txt', data: 'report\n'.repeat(300) }])
+    const r = spawnSync('python3', ['-c', 'import sys,zipfile;z=zipfile.ZipFile(sys.argv[1]);assert z.testzip() is None;print("|".join(z.namelist()));print(len(z.read("out/report.txt")))', out], { encoding: 'utf8' })
+    if (!r.error && r.status !== null && !/No module|not found/i.test(r.stderr ?? '')) {
+      expect(r.status, r.stderr).toBe(0)
+      expect(r.stdout.trim().split('\n')).toEqual(['render/STAMP.json|out/report.txt', '2100'])
+    }
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+  it('refuses a zip that is cut short', () => {
+    const dir = tmp()
+    const out = path.join(dir, 'records.zip')
+    zipWrite(out, [{ name: 'a.txt', data: 'abc\n'.repeat(100) }])
+    const whole = fs.readFileSync(out)
+    fs.writeFileSync(out, whole.subarray(0, whole.length - 30))
+    expect(() => zipRead(out)).toThrow()
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+})
+
+describe('Windows: a file that another program holds', () => {
+  const held = (code: string) => Object.assign(new Error(code), { code })
+  it('tries a rename again while the file is held, and gives the answer when it is let go', () => {
+    let calls = 0
+    let clock = 0
+    const naps: number[] = []
+    const rename = WinFs.patient(
+      (a: string, b: string) => {
+        if (++calls < 4) throw held(WinFs.HELD[(calls - 1) % 3])
+        return `${a}>${b}`
+      },
+      { nap: ((ms: number) => (naps.push(ms), (clock += ms))) as any, now: () => clock },
+    )
+    expect(rename('x', 'y')).toBe('x>y')
+    expect(calls).toBe(4)
+    expect(naps).toEqual([10, 20, 40])
+  })
+  it('gives up after its time and throws what the system said', () => {
+    let clock = 0
+    let calls = 0
+    const rename = WinFs.patient(
+      () => {
+        calls++
+        throw held('EPERM')
+      },
+      { waitMs: 1000, nap: ((ms: number) => (clock += ms)) as any, now: () => clock },
+    )
+    expect(() => rename('x', 'y')).toThrow('EPERM')
+    expect(clock).toBeGreaterThanOrEqual(1000)
+    expect(clock).toBeLessThan(1300)
+    expect(calls).toBeGreaterThan(4)
+  })
+  it('throws every other error at once', () => {
+    let calls = 0
+    const rename = WinFs.patient(
+      () => {
+        calls++
+        throw held('ENOENT')
+      },
+      { nap: () => expect.unreachable('it waited for a file that is not there'), now: () => 0 },
+    )
+    expect(() => rename('x', 'y')).toThrow('ENOENT')
+    expect(calls).toBe(1)
+  })
+  it('gives the removal of a folder its tries and changes nothing a caller set', () => {
+    expect(WinFs.rmOptions({ recursive: true, force: true })).toEqual({ maxRetries: 20, retryDelay: 250, recursive: true, force: true })
+    expect(WinFs.rmOptions({ recursive: true, maxRetries: 2 })).toEqual({ maxRetries: 2, retryDelay: 250, recursive: true })
+    expect(WinFs.rmOptions({ force: true })).toEqual({ force: true })
+    expect(WinFs.rmOptions(undefined)).toBeUndefined()
+  })
+  it('changes nothing and sets nothing on a machine that is not Windows', () => {
+    const env: Record<string, string> = {}
+    expect(WinFs.install('linux', env)).toMatch(/^not Windows/)
+    expect(WinFs.install('darwin', env)).toMatch(/^not Windows/)
+    expect(env).toEqual({})
+    if (process.platform !== 'win32') expect(process.env.NODE_OPTIONS ?? '').not.toContain('handoff-win-fs')
+  })
+})
+
 describe('the tool on the command line', () => {
   const tool = rel('tools', 'handoff.mjs')
   const run = (args: string[], env: Record<string, string> = {}) => spawnSync(process.execPath, [tool, ...args], { cwd: rel(), encoding: 'utf8', env: { ...process.env, HANDOFF_TEST: '', ...env } })
@@ -867,7 +1171,7 @@ describe('the tool on the command line', () => {
     expect(r.stdout.trim().split('\n').at(-1)).toMatch(/^FAIL: HANDOFF_TEST holds released/)
   })
   it('never starts npm, npx or a .cmd by a bare name, and never calls which, ldd, df, cp, rm or bash', () => {
-    for (const f of ['tools/handoff.mjs', 'tools/lib/handoff.mjs', 'tools/lib/handoff-work.mjs', 'tools/lib/handoff-machine.mjs', 'tools/lib/handoff-stamp.mjs']) {
+    for (const f of ['tools/handoff.mjs', 'tools/lib/handoff.mjs', 'tools/lib/handoff-work.mjs', 'tools/lib/handoff-machine.mjs', 'tools/lib/handoff-stamp.mjs', 'tools/lib/handoff-upload.mjs', 'tools/lib/handoff-zip.mjs', 'tools/lib/handoff-win-fs.mjs']) {
       const text = fs.readFileSync(rel(f), 'utf8')
       const calls = [...text.matchAll(/\b(?:spawn|spawnSync|execFile|execFileSync|execSync|exec)\(\s*(['"`])([^'"`]+)\1/g)].map((m) => m[2])
       for (const c of calls) expect(['git', 'ffmpeg', 'ffprobe', 'sysctl', 'sw_vers', 'system_profiler', 'pmset', 'caffeinate', 'pkill', 'pgrep'], `${f} starts ${c}`).toContain(path.posix.basename(c))

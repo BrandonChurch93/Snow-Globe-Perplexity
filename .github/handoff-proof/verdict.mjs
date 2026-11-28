@@ -29,12 +29,14 @@ const asWritten = (line) => line.replace(/--branch \S+ https:/, '--branch main h
 // the job that lists shader messages runs no line of the file: it clones and builds another head with its own lines
 const ofFile = process.env.PROOF_MODE !== 'shaders'
 const ofTheFile = (line) => ofFile && /^(node tools\/handoff\.mjs|git |cd |winget |brew |node --version)/.test(line)
+// the word of the upload's own test is a word of the tool that the file must never name
+const TEST_WORD_LINE = 'node tools/handoff.mjs upload-test'
 const lines = []
 const say = (t = '') => lines.push(t)
 say(`===== VERDICT of ${job} =====`)
 const problems = []
 for (const r of rows) {
-  const inFile = !ofTheFile(r.line) ? 'not a line of the file' : written.has(asWritten(r.line)) ? 'written in the file' : 'NOT WRITTEN IN THE FILE'
+  const inFile = r.line === TEST_WORD_LINE ? "the word of the tool's own test: by design no line of the file" : !ofTheFile(r.line) ? 'not a line of the file' : written.has(asWritten(r.line)) ? 'written in the file' : 'NOT WRITTEN IN THE FILE'
   if (inFile.startsWith('NOT')) problems.push(`${r.name}: the line that was run is not in RENDER-ON-YOUR-PC.md`)
   if (!r.ok) problems.push(`${r.name}: exit code ${r.code} where ${r.want} was wanted${r.last ? ` (${r.last.slice(0, 200)})` : ''}`)
   say(`${r.ok ? 'ok   ' : 'FAILS'}  ${r.name}`)
@@ -44,6 +46,7 @@ for (const r of rows) {
 }
 for (const name of expect) if (!rows.some((r) => r.name === name)) problems.push(`${name}: never ran (the job stopped before it)`)
 if (!md && ofFile) problems.push('RENDER-ON-YOUR-PC.md was not found in the clone')
+if (md.includes('upload-test')) problems.push("RENDER-ON-YOUR-PC.md names the word of the upload's own test, which it must never do")
 say('')
 const notes = read('notes.txt').split(/\r?\n/).filter(Boolean)
 if (notes.length) {

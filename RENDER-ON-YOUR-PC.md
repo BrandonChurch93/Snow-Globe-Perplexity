@@ -13,6 +13,8 @@ graphics card of this computer. This file makes four files on the Desktop:
 | `Snow Globe Seasons - Portfolio Looping Video - 3840x2160.mp4` | the loop, 480 frames, no sound |
 | `Snow Globe Seasons - Portfolio Screenshot - 3840x2160.png` | the first frame of the loop |
 
+With Brandon's yes, step 2 also sends copies of them to the remote team (2.5).
+
 On Windows, Chrome draws the film through Direct3D 11. Before this file existed, the film's pictures had been
 measured on Linux only, drawn in software. Step 1 is the first time this film is drawn by a Windows graphics
 card. That is why step 1 draws a little, compares it, reports and stops.
@@ -21,7 +23,8 @@ card. That is why step 1 draws a little, compares it, reports and stops.
 
 1. Do not edit any file of the repo. Do not repair code, shaders, settings or tests. A fault is mended by the remote
    team. A shader that does not compile is such a fault: copy its message whole into what you give Brandon.
-2. Do not commit and do not push.
+2. Do not commit and do not push. One line of this file writes to GitHub: the upload of 2.5. Run it only after
+   Brandon has said yes to it.
 3. Run only the commands written in this file, exactly as written, one line at a time. Use no other switches,
    set no variables, and do not join lines with `&&` or `;`.
 4. Ask Brandon only for a password, a sign in, or a system prompt that asks for his leave.
@@ -47,7 +50,7 @@ card. That is why step 1 draws a little, compares it, reports and stops.
 | `RUNNING:` | 3 | the work goes on in the background and nothing is wrong | run the very same line again, as often as it takes. Start nothing else in between |
 | `FAIL:` | 1 | the step did not pass | stop, and give Brandon the report (rule 5) |
 
-- Long work (setup, test, render, check) runs in a process of its own. If a line is cut off by a time limit, or the
+- Long work (setup, test, render, check, upload) runs in a process of its own. If a line is cut off by a time limit, or the
   terminal is closed, the work goes on. The same line run again follows it. Nothing is started twice and nothing
   finished is done again.
 - Each line writes its report to `out/work/handoff/report-<word>.txt` inside the clone and prints it between
@@ -310,11 +313,53 @@ node tools/handoff.mjs deliver
 Good: `PASS: the four files and the report are in ...` with the folder `Snow Globe Seasons` on the Desktop.
 
 What the files weigh: each film at most 500 MB, the loop under 2,000 MB (2.3 checks it), the screenshot some tens
-of MB. Nothing in this file uploads them. They stay in that folder until Brandon moves them.
+of MB. They stay in that folder. 2.5 sends copies of them, and only if Brandon says yes.
 
 Bad: `FAIL:`. Stop and report.
 
-### 2.5 Clean up, only after the delivery passed
+### 2.5 Send the files to the remote team, only when Brandon says yes
+
+This line writes to Brandon's repo on GitHub. Before you run it, ask Brandon, word for word: "The files are on your
+Desktop. May I send copies to the remote team now, as a draft release of the repo? A draft is shown to no one
+else." Run the line only after he says yes. If he says no, go on with 2.6.
+
+```
+node tools/handoff.mjs upload
+```
+
+It makes a draft release in the repo, named for the day, the engine hash and this machine. Into it go the two
+films, the loop, the screenshot, a file of sums (sha256, bytes, frames, seconds and size in pixels of each) and
+the records of the render as one zip. A draft is published to no one and makes no tag. The line answers
+`RUNNING:` while it sends; run the same line again each time. After the last file it reads the release back from
+GitHub and compares every name, size and sum.
+
+Good: `PASS: the draft release "..." holds the 6 files, each read back by its name, its bytes and its sum: ...`
+with the address of the release. Give Brandon that address.
+
+Bad, each with the one thing to do:
+
+| the FAIL says | do this |
+| --- | --- |
+| `gh, the GitHub program that sends the files, is not on this machine` | run the install line below, then the upload line again |
+| `gh, the GitHub program, is not signed in on this machine` | tell Brandon, word for word: "The upload needs your GitHub sign in. Please open a terminal yourself, run `gh auth login`, answer what it asks, and tell me when it is done." Then run the upload line again |
+| the sign in `does not see the repo` or `may not write to it` | the same words to Brandon, and add: "It must be the account that owns the repo." Then run the upload line again |
+| `the repo ... is not private, so nothing is sent` | stop and tell Brandon. The remote team makes the repo private; nothing here can |
+| `the check has not passed` or a file `is not the file that was checked` | run the line of 2.3 again, then the upload line. If it says the same again, stop and report |
+| a file `did not go through`, or GitHub `could not be asked` (the connection dropped) | run the same line again. It sends only what is missing or short. If it fails three times in a row, stop and report |
+| a file is 2,000 MB or more | stop and report. The remote team names another way |
+| anything else | stop and report |
+
+```
+winget install --id GitHub.cli -e --source winget --accept-package-agreements --accept-source-agreements
+```
+
+What was tried: sending, carrying on after a cut connection and reading back were run with stand-in files of a
+few bytes, on Linux and on a hosted Windows machine. The refusal for a missing sign in was run on the hosted
+Windows and macOS machines, after a small render there. The refusal for a repo that is not private was run on
+Linux only, while the repo was public. `gh auth login` was run on no test machine, and no whole film was sent by
+this line before Brandon's own run.
+
+### 2.6 Clean up, only after the delivery passed
 
 ```
 node tools/handoff.mjs clean
@@ -325,10 +370,11 @@ and the clone stay.
 
 Bad: `FAIL:`. Stop and report. Delete nothing by hand.
 
-### 2.6 Report
+### 2.7 Report
 
 Give Brandon the whole text of `Snow Globe Seasons - Render Report.txt` from the folder `Snow Globe Seasons` on
-the Desktop as one block, and the last line of each of the four commands of 2.2 to 2.5.
+the Desktop as one block, and the last line of each command of 2.2 to 2.6 that was run. If 2.5 was run, give him
+the address of the draft release too.
 
 ## macOS: the fallback, same commands
 
@@ -359,6 +405,8 @@ sign in window can open there. If the clone line below ends with `fatal: Authent
 and tell me when both are done." If he says `gh` is not found, he runs `brew install gh` first. Then run the clone
 line again. This was tried on no test machine, because it needs Brandon's own account.
 
+If the upload of 2.5 says that `gh` is not on the machine, the line is `brew install gh`.
+
 Then the same lines as on Windows, in the same order, with the same good and bad answers:
 
 ```
@@ -379,7 +427,10 @@ node tools/handoff.mjs test
 node tools/handoff.mjs render
 node tools/handoff.mjs check
 node tools/handoff.mjs deliver
+node tools/handoff.mjs upload
 node tools/handoff.mjs clean
 ```
+
+The upload line is run only after Brandon has said yes to it, as in 2.5. If he says no, leave it out.
 
 Keep the MacBook on its charger and its lid open for the whole render.

@@ -204,8 +204,9 @@ export const WINGET = {
   node: 'winget install --id OpenJS.NodeJS.LTS -e --source winget --accept-package-agreements --accept-source-agreements',
   ffmpeg: 'winget install --id Gyan.FFmpeg -e --source winget --accept-package-agreements --accept-source-agreements',
   chrome: 'winget install --id Google.Chrome -e --source winget --accept-package-agreements --accept-source-agreements',
+  gh: 'winget install --id GitHub.cli -e --source winget --accept-package-agreements --accept-source-agreements',
 }
-export const BREW = { git: 'brew install git', node: 'brew install node', ffmpeg: 'brew install ffmpeg', chrome: 'brew install --cask google-chrome' }
+export const BREW = { git: 'brew install git', node: 'brew install node', ffmpeg: 'brew install ffmpeg', chrome: 'brew install --cask google-chrome', gh: 'brew install gh' }
 export const installLine = (tool, platform) => (platform === 'win32' ? WINGET[tool] : BREW[tool])
 export const NEW_TERMINAL = 'A program installed a moment ago is found only by a terminal opened after the install. This tool also looks in the places winget and Homebrew install to, so run the same line again first.'
 
@@ -657,6 +658,136 @@ export function stretchPlan(text, fallback, chunkFrames) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+// The upload: the finished files go to a draft release of the private repo, so that the remote team can fetch them.
+
+/** GitHub takes no file of a release of 2 GiB or more. The tool holds every file under 2,000 MB. */
+export const UPLOAD_LIMIT_BYTES = 2000 * 1e6
+/** Every release the upload's own test makes carries this mark at the start of its tag. */
+export const UPLOAD_TEST_MARK = 'handoff-upload-test'
+
+/** Owner and name of a GitHub repo, from the address of a clone's origin. The address itself is never printed. */
+export function repoOf(url) {
+  const m = /^(?:https:\/\/(?:[^@/\s]+@)?github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?\/?$/.exec(String(url ?? '').trim())
+  return m ? { owner: m[1], repo: m[2], slug: `${m[1]}/${m[2]}` } : null
+}
+
+/**
+ * The name a file carries on a release. GitHub itself puts a dot for a space ("Stand In - A.mp4" came back as
+ * "Stand.In.-.A.mp4", measured), so the tool sends that name and keeps the true name as the file's label.
+ */
+export const assetName = (name) => String(name).replace(/[^A-Za-z0-9._-]/g, '.')
+
+const cleanWord = (s, most = 40) => String(s ?? '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, most).replace(/-+$/, '') || 'machine'
+/** Tag and title of the draft release of a render: its day, its engine hash and the machine that drew it. */
+export function releaseNames({ date, engineHash, machine, small = false }) {
+  const day = String(date).slice(0, 10)
+  const m = cleanWord(machine)
+  return {
+    tag: `render-${day.replace(/-/g, '')}-${engineHash}-${m}${small ? '-tool-test' : ''}`,
+    title: `${TITLE} render, ${day}, engine ${engineHash}, ${m}${small ? " (a small run of the tool's own tests, no film)" : ''}`,
+  }
+}
+/** Tag and title of the draft the upload's own test makes and removes. */
+export function testReleaseNames({ time, machine }) {
+  const t = String(time).replace(/[^0-9]/g, '').slice(0, 14)
+  return { tag: `${UPLOAD_TEST_MARK}-${t}-${cleanWord(machine)}`, title: 'handoff upload test: stand-in files of a few bytes, removed by the test itself' }
+}
+
+/** The stand-ins of the upload's own test: fixed names that carry the word test, a few bytes each, and no film. */
+export const STAND_INS = [
+  { label: 'Upload Test Stand In - With Prompt - 3840x2160.mp4', text: 'upload test, stand-in 1: no film\n' },
+  { label: 'Upload Test Stand In - Without Prompt - 3840x2160.mp4', text: 'upload test, stand-in 2: no film\n' },
+  { label: 'Upload Test Stand In - Portfolio Looping Video - 3840x2160.mp4', text: 'upload test, stand-in 3: no film, and long enough to be cut short once\n' },
+  { label: 'Upload Test Stand In - Portfolio Screenshot - 3840x2160.png', text: 'upload test, stand-in 4: no picture\n' },
+]
+export const STAND_IN_RECORDS = 'Upload Test Stand In - Render Records.zip'
+export const STAND_IN_SUMS = 'Upload Test Stand In - Render Sums.txt'
+export const recordsName = () => `${TITLE} - Render Records.zip`
+export const sumsName = () => `${TITLE} - Render Sums.txt`
+
+const TYPES = { mp4: 'video/mp4', png: 'image/png', zip: 'application/zip', txt: 'text/plain; charset=utf-8' }
+export const contentType = (name) => TYPES[String(name).toLowerCase().split('.').pop()] ?? 'application/octet-stream'
+
+/** The files that may not be sent: those of 2,000 MB or more. */
+export const tooLarge = (files, limit = UPLOAD_LIMIT_BYTES) => files.filter((f) => !(f.bytes < limit))
+
+/**
+ * What a call of the upload does with what the release holds already. `wanted` is [{ name, bytes, sha256 }], `assets`
+ * what GitHub lists, [{ id, name, size, state, digest }]. A file that is there whole is kept, one that is short, not
+ * finished or not the same is removed and sent again, one that is missing is sent. What the release holds beside
+ * them is named and left.
+ */
+export function uploadPlan(wanted, assets) {
+  const keep = []
+  const drop = []
+  const send = []
+  for (const w of wanted) {
+    const have = assets.filter((a) => a.name === w.name)
+    const sumOf = (a) => /^sha256:([0-9a-f]{64})$/.exec(a.digest ?? '')?.[1] ?? ''
+    const sameSum = (a) => !sumOf(a) || !w.sha256 || sumOf(a) === w.sha256
+    const whole = have.find((a) => a.state === 'uploaded' && a.size === w.bytes && sameSum(a))
+    if (whole) keep.push({ ...w, id: whole.id })
+    else send.push(w)
+    for (const a of have) if (a !== whole) drop.push({ id: a.id, name: a.name, why: a.state !== 'uploaded' ? `not finished (GitHub calls it ${a.state})` : a.size !== w.bytes ? `${a.size} bytes where ${w.bytes} are wanted` : 'as long as the file and not the file (its sum differs)' })
+  }
+  return { keep, drop, send, others: assets.filter((a) => !wanted.some((w) => w.name === a.name)).map((a) => a.name) }
+}
+
+/** The release read back against what was sent: every name there, whole, with the bytes, the label and the sum that were sent. */
+export function readBackRows(wanted, release) {
+  const assets = release?.assets ?? []
+  const rows = wanted.map((w) => {
+    const a = assets.find((x) => x.name === w.name)
+    const want = `${w.bytes} bytes${w.sha256 ? `, sha256 ${w.sha256.slice(0, 12)}` : ''}`
+    if (!a) return { check: `on the release: ${w.name}`, found: 'not there', wanted: want, pass: false }
+    const sum = /^sha256:([0-9a-f]{64})$/.exec(a.digest ?? '')?.[1] ?? ''
+    const label = (a.label ?? '') === (w.label ?? '')
+    const pass = a.state === 'uploaded' && a.size === w.bytes && (!sum || !w.sha256 || sum === w.sha256) && label
+    return { check: `on the release: ${w.name}`, found: `${a.size} bytes, ${a.state === 'uploaded' ? 'whole' : `not finished (${a.state})`}, ${sum ? `sha256 ${sum.slice(0, 12)} by GitHub's own count` : 'GitHub names no sum of it'}${label ? '' : `, labelled "${a.label ?? ''}"`}`, wanted: want, pass }
+  })
+  rows.push({ check: 'on the release: a draft', found: release?.draft === true ? 'a draft: published to no one, and no tag is made' : 'it is not a draft', wanted: 'a draft', pass: release?.draft === true })
+  const others = assets.filter((a) => !wanted.some((w) => w.name === a.name)).map((a) => a.name)
+  rows.push({ check: 'on the release: nothing else', found: others.length ? `also there: ${others.join(', ')}` : 'the files that were sent and no other', wanted: 'noted', pass: null })
+  return rows
+}
+
+/** The sums file: one line a file, tabs between sha256, bytes, frames, seconds, size in pixels, the name on the release and the file's own name. */
+export function sumsText({ title, tag, made, engineHash, commit, machine, files }) {
+  const cell = (v) => (v === null || v === undefined || v === '' ? '-' : String(v))
+  return [
+    `${TITLE}: the sums of the files of one render`,
+    `release\t${title}`,
+    `tag\t${tag}`,
+    `written\t${made}`,
+    `engine\t${engineHash}`,
+    `commit\t${commit}`,
+    `machine\t${machine}`,
+    '',
+    ['sha256', 'bytes', 'frames', 'seconds', 'pixels', 'name on the release', 'name of the file'].join('\t'),
+    ...files.map((f) => [f.sha256, f.bytes, cell(f.frames), cell(typeof f.seconds === 'number' ? f.seconds.toFixed(3) : f.seconds), cell(f.pixels), f.name, f.label].join('\t')),
+    '',
+  ].join('\n')
+}
+
+/** What an answer of the gh program means: `r` is { code, out, err }. */
+export function ghSays(r) {
+  if (r.code === 0) return { ok: true, kind: '' }
+  const text = `${r.err ?? ''}\n${r.out ?? ''}`
+  const said = String(r.err ?? '').trim().split(/\r?\n/).filter(Boolean).pop() ?? `it ended with code ${r.code}`
+  if (r.code === 4 || /gh auth login|set the GH_TOKEN environment variable|HTTP 401|Bad credentials/i.test(text)) return { ok: false, kind: 'sign in', said }
+  if (/HTTP 404/.test(text)) return { ok: false, kind: 'not found', said }
+  if (/HTTP 403/.test(text)) return { ok: false, kind: 'not allowed', said }
+  if (/HTTP 422/.test(text) && /already_exists/.test(text)) return { ok: false, kind: 'there already', said }
+  return { ok: false, kind: 'other', said }
+}
+
+export const SIGN_IN_LINE = 'gh auth login'
+export const notSignedIn = () => `gh, the GitHub program, is not signed in on this machine, so nothing is sent. Brandon runs this one line in a terminal of his own and answers what it asks, then the upload line is run again: ${SIGN_IN_LINE}`
+export const notPrivate = (slug) => `the repo ${slug} is not private, so nothing is sent: no film is to be published by mistake. The remote team makes the repo private first`
+export const mayNotWrite = (slug) => `the GitHub sign in of this machine may not write to the repo ${slug}, so nothing is sent. It must be the account that owns the repo: Brandon runs this one line in a terminal of his own and signs in with that account, then the upload line is run again: ${SIGN_IN_LINE}`
+export const ghMissing = (platform) => `gh, the GitHub program that sends the files, is not on this machine. Run this line, then the upload line again: ${installLine('gh', platform) ?? 'install gh from https://cli.github.com'}`
+
+// ---------------------------------------------------------------------------------------------------------------------
 // The work that goes on behind a command.
 
 export const STALE_SECONDS = 900
@@ -690,10 +821,13 @@ export function secondsLeft(counts, done, cost, gain = 1) {
 }
 
 /** The arguments this tool takes. Anything else is refused, so that no line can carry a switch the handoff file does not hold. */
-export const COMMANDS = ['setup', 'doctor', 'test', 'render', 'check', 'deliver', 'clean']
+export const COMMANDS = ['setup', 'doctor', 'test', 'render', 'check', 'deliver', 'upload', 'clean']
+/** A word of the tool's own tests, which the handoff file never names: it sends stand-in files and takes no argument at all. */
+export const UPLOAD_TEST_WORD = 'upload-test'
 export function argProblem(argv) {
-  if (argv.length === 1 && COMMANDS.includes(argv[0])) return ''
-  if (argv.length === 2 && COMMANDS.includes(argv[0]) && argv[1] === '--worker') return ''
+  const words = [...COMMANDS, UPLOAD_TEST_WORD]
+  if (argv.length === 1 && words.includes(argv[0])) return ''
+  if (argv.length === 2 && words.includes(argv[0]) && argv[1] === '--worker') return ''
   if (argv[0] === 'stamp') return ''
   return `this tool takes one word and nothing else: ${COMMANDS.join(', ')}. It was given "${argv.join(' ')}"`
 }

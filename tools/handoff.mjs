@@ -1,5 +1,5 @@
 // The render handoff: one word for each step of RENDER-ON-YOUR-PC.md.
-//   node tools/handoff.mjs setup | doctor | test | render | check | deliver | clean
+//   node tools/handoff.mjs setup | doctor | test | render | check | deliver | upload | clean
 // Every word prints PASS or FAIL and one sentence as its last line, writes a report file under out/work/handoff, and
 // ends with exit code 0 only on PASS. The long words (setup, test, render, check) do their work in a process of their
 // own in the background: the line that started it watches for some minutes and then answers RUNNING (exit code 3),
@@ -12,26 +12,40 @@ import { fileURLToPath } from 'node:url'
 import * as L from './lib/handoff.mjs'
 import * as X from './lib/handoff-machine.mjs'
 import { rel } from './lib/paths.mjs'
+// on Windows: a rename that waits for a file another program holds, here and in every node process started from here
+import './lib/handoff-win-fs.mjs'
 
 const WIN = process.platform === 'win32'
 const SELF = fileURLToPath(import.meta.url)
 const H = rel('out', 'work', 'handoff')
-const LONG = ['setup', 'test', 'render', 'check']
+const LONG = ['setup', 'test', 'render', 'check', 'upload', L.UPLOAD_TEST_WORD]
 const WATCH_SECONDS = 510
 const FAST_WATCH_SECONDS = 20
 const file = (name) => path.join(H, name)
+const nap = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+/** A record of the tool. A file that is there and cannot be read at this moment (another process is writing it) is read again for two seconds before the fallback is given. */
 const readOr = (f, fallback = null) => {
-  try {
-    return JSON.parse(fs.readFileSync(f, 'utf8'))
-  } catch {
-    return fallback
+  for (let i = 0; ; i++) {
+    try {
+      return JSON.parse(fs.readFileSync(f, 'utf8'))
+    } catch (e) {
+      if (e?.code === 'ENOENT' || i >= 20) return fallback
+      nap(100)
+    }
   }
 }
+/** Writes a record whole: beside its place first, then into its place. If the place is held for too long, it is written there directly. */
 const writeJson = (f, v) => {
   fs.mkdirSync(path.dirname(f), { recursive: true })
+  const text = JSON.stringify(v, null, 2) + '\n'
   const tmp = `${f}.${process.pid}.tmp`
-  fs.writeFileSync(tmp, JSON.stringify(v, null, 2) + '\n')
-  fs.renameSync(tmp, f)
+  try {
+    fs.writeFileSync(tmp, text)
+    fs.renameSync(tmp, f)
+  } catch {
+    fs.writeFileSync(f, text)
+    fs.rmSync(tmp, { force: true })
+  }
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const clock = () => new Date().toISOString().slice(11, 19)
@@ -144,17 +158,20 @@ async function runCommand(cmd, ctx) {
   ctx.work = Work
   if (cmd === 'setup') return Work.setup(ctx)
   // the packages are needed from here on
+  // the word of the tool's own tests sends stand-ins it makes itself and needs no package
+  if (cmd === L.UPLOAD_TEST_WORD) return (await import('./lib/handoff-upload.mjs')).uploadTest(ctx)
   if (!fs.existsSync(rel('node_modules', 'playwright-core')) && cmd !== 'doctor' && cmd !== 'clean') return { pass: false, why: 'the packages are not installed yet. Run this line first: node tools/handoff.mjs setup' }
   if (cmd === 'doctor') return Work.doctor(ctx)
   if (cmd === 'test') return Work.shortTest(ctx)
   if (cmd === 'render') return Work.fullRender(ctx)
   if (cmd === 'check') return Work.check(ctx)
   if (cmd === 'deliver') return Work.deliver(ctx, (facts) => finalReport(ctx, facts))
-  if (cmd === 'clean') return Work.clean(ctx)
+  if (cmd === 'upload') return (await import('./lib/handoff-upload.mjs')).upload(ctx)
+  if (cmd === 'clean') return Work.clean(ctx, (await import('./lib/handoff-upload.mjs')).recordsZip)
   throw new Error(`${cmd} is no word of this tool`)
 }
 
-const KEPT = { doctor: 'doctor.json', test: 'test.json', check: 'check.json', deliver: 'deliver.json' }
+const KEPT = { doctor: 'doctor.json', test: 'test.json', check: 'check.json', deliver: 'deliver.json', upload: 'upload.json' }
 
 /** Runs a command to its end and writes its report and its record. */
 async function carryOut(cmd, ctx) {
@@ -169,7 +186,7 @@ async function carryOut(cmd, ctx) {
   if (result.rows?.length && !ctx.tables.some((t) => t.rows === result.rows)) ctx.tables.push({ title: `the checks of "${cmd}"`, rows: result.rows, after: result.after })
   if (KEPT[cmd] && !result.refused) {
     const { rows, ...rest } = result
-    writeJson(file(KEPT[cmd]), { ...rest, ...(cmd === 'check' || cmd === 'deliver' ? { rows } : {}), command: cmd })
+    writeJson(file(KEPT[cmd]), { ...rest, ...(cmd === 'check' || cmd === 'deliver' || cmd === 'upload' ? { rows } : {}), command: cmd })
   }
   const text = reportText(cmd, ctx, result, state)
   fs.writeFileSync(file(`report-${cmd}.txt`), text)
@@ -233,7 +250,11 @@ async function worker(cmd, T) {
     try {
       more = ctx.heartbeat?.() ?? {}
     } catch {}
-    writeJson(beatFile(), { time: new Date().toISOString(), id, cmd, pid: process.pid, ...more })
+    try {
+      writeJson(beatFile(), { time: new Date().toISOString(), id, cmd, pid: process.pid, ...more })
+    } catch (e) {
+      ctx.note(`the heartbeat file could not be written this time: ${e.message}`)
+    }
   }
   beat()
   const ticking = setInterval(beat, 20000)

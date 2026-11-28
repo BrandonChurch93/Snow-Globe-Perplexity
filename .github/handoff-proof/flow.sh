@@ -28,6 +28,9 @@ note "engine hash of a clone made with core.autocrlf=true: $CRLF_HASH"
 [ "$CRLF_HASH" = "$STAMP_HASH" ] || note "PROBLEM: a clone under core.autocrlf=true has engine hash $CRLF_HASH, not the stamp's $STAMP_HASH"
 rm -rf "$ROOT/crlf check"
 
+# a file that another program holds: the tool's rename must wait for it
+note "$(node "$HELP/held-file.mjs" .)"
+
 line setup 0 'node tools/handoff.mjs setup'
 note "git status after setup: $(git status --short | tr '\n' '|')"
 
@@ -98,7 +101,12 @@ if [ "$PROOF_MODE" = small ]; then
   line check 0 'node tools/handoff.mjs check'
   line deliver 0 'node tools/handoff.mjs deliver'
   node "$HELP/after.mjs" "$PROOF_OUT"
+  # the upload on a machine without a GitHub sign in: everything is made ready, then it refuses with the one line
+  line upload-refuses 1 'node tools/handoff.mjs upload' 'is not signed in on this machine'
+  note "made ready for the upload: $(ls -l out/work/handoff/upload 2> /dev/null | awk 'NR>1 {printf "%s bytes: ", $5; for (i = 9; i <= NF; i++) printf "%s ", $i; printf "|"}')"
   line clean 0 'node tools/handoff.mjs clean'
+  # after the clean the upload still finds the delivered files and the records
+  line upload-after-clean 1 'node tools/handoff.mjs upload' 'the work files are cleaned already'
 else
   line test 0 'node tools/handoff.mjs test'
   line render-refuses-unreleased 1 'node tools/handoff.mjs render' 'not released for its final render yet'
