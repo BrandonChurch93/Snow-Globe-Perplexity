@@ -4,6 +4,7 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
 import * as L from '../tools/lib/handoff.mjs'
+import * as A from '../tools/lib/handoff-approve.mjs'
 import * as S from '../tools/lib/handoff-shaders.mjs'
 import { planProblems } from '../tools/lib/handoff-stamp.mjs'
 import { crc32, zipRead, zipWrite } from '../tools/lib/handoff-zip.mjs'
@@ -323,7 +324,7 @@ describe('the gate of the full render', () => {
     expect(L.renderRefusals({ ...goodRun, stamp: stamp(), doctor: { pass: false, why: 'chrome is missing' } }).join(' ')).toContain('chrome is missing')
     expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: null }).join(' ')).toContain('has not been run')
     expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: { ...goodRun.test, pass: false } }).join(' ')).toContain('did not pass')
-    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: { ...goodRun.test, engineHash: 'ffffffffffffffff' } }).join(' ')).toContain('Run step 1 again')
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: { ...goodRun.test, engineHash: 'ffffffffffffffff' } }).join(' ')).toContain("the build changed since the test: run step 1's test again, give Brandon its report, stop")
     expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: { ...goodRun.test, machine: 'm2' } }).join(' ')).toContain('another machine')
     expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: { ...goodRun.test, small: true } }).join(' ')).toContain("tool's own tests")
     expect(L.renderRefusals({ ...goodRun, stamp: stamp(), sound: [{ ok: false, why: 'the sound of film-a is not here' }] })).toEqual(['the sound of film-a is not here'])
@@ -839,7 +840,7 @@ describe('the handoff file and the tools it names', () => {
   const commands = lines.filter((l) => /^(node|git|winget|brew|cd) /.test(l))
   it('holds commands, and each is one of the few kinds the order allows', () => {
     expect(commands.length).toBeGreaterThan(10)
-    for (const c of commands) expect(c, c).toMatch(/^(node tools\/handoff\.mjs (setup|doctor|test|render|check|deliver|upload|clean|status)|winget install --id (Git\.Git|OpenJS\.NodeJS\.LTS|Gyan\.FFmpeg|Google\.Chrome|GitHub\.cli) -e --source winget --accept-package-agreements --accept-source-agreements|brew install (git|node|ffmpeg)|brew install --cask google-chrome|git clone --filter=blob:none --single-branch --branch \S+ https:\/\/github\.com\/BrandonChurch93\/Snow-Globe-Perplexity\.git Snow-Globe-Perplexity|cd Snow-Globe-Perplexity|git pull --ff-only|node --version|git --version|brew --version)$/)
+    for (const c of commands) expect(c, c).toMatch(/^(node tools\/handoff\.mjs (setup|doctor|test|render|check|deliver|upload|clean|status|approve render <his words>|approve upload <his words>)|winget install --id (Git\.Git|OpenJS\.NodeJS\.LTS|Gyan\.FFmpeg|Google\.Chrome|GitHub\.cli) -e --source winget --accept-package-agreements --accept-source-agreements|brew install (git|node|ffmpeg)|brew install --cask google-chrome|git clone --filter=blob:none --single-branch --branch \S+ https:\/\/github\.com\/BrandonChurch93\/Snow-Globe-Perplexity\.git Snow-Globe-Perplexity|cd Snow-Globe-Perplexity|git pull --ff-only|node --version|git --version|brew --version)$/)
   })
   it('names the floors of the plan, and the plan says what they were measured on', () => {
     const plan = readJson(rel('render', 'PLAN.json')) as { floors: Record<string, number>; floorsFrom: string }
@@ -906,8 +907,12 @@ describe('the handoff file and the tools it names', () => {
     expect(md).not.toMatch(/HANDOFF_/)
   })
   it('names every word of the tool, and no word the tool does not have', () => {
-    const words = new Set(commands.map((c) => /^node tools\/handoff\.mjs (\S+)$/.exec(c)?.[1]).filter(Boolean))
+    const words = new Set(commands.map((c) => /^node tools\/handoff\.mjs (\S+)( (render|upload) <his words>)?$/.exec(c)?.[1]).filter(Boolean))
     expect([...words].sort()).toEqual([...L.COMMANDS].sort())
+    // approve alone carries more than its word: which yes it is, and the place for Brandon's own words
+    const approves = commands.filter((c) => c.startsWith('node tools/handoff.mjs approve'))
+    expect(new Set(approves)).toEqual(new Set([A.approveLine('render'), A.approveLine('upload')]))
+    expect(approves.length).toBe(4)
   })
   it('is written in plain signs: no em dash, no exclamation point, only signs of the keyboard', () => {
     for (const f of ['RENDER-ON-YOUR-PC.md', 'render/README.md', 'tools/handoff.mjs', 'tools/lib/handoff.mjs', 'tools/lib/handoff-work.mjs', 'tools/lib/handoff-machine.mjs', 'tools/lib/handoff-stamp.mjs', '.github/workflows/handoff-proof.yml']) {
@@ -1773,7 +1778,7 @@ describe('order 312: where the files are, what a pass rests on, and where the wo
   it('has in the file one table of stop and recovery with a row for every word, and one line for a new agent', () => {
     const table = md.slice(md.indexOf('### Stop and recovery, one rule'), md.indexOf('## If you are started in the middle'))
     expect(table.length).toBeGreaterThan(800)
-    for (const w of L.COMMANDS) expect(table, w).toContain(`| \`${w}\` | \`node tools/handoff.mjs ${w}\``)
+    for (const w of L.COMMANDS) expect(table, w).toContain(w === 'approve' ? `| \`approve\` | \`${A.approveLine('render')}\` or \`${A.approveLine('upload')}\`` : `| \`${w}\` | \`node tools/handoff.mjs ${w}\``)
     expect(table).toContain('| word | the one line that carries on | how often | stop and report when |')
     const line = 'Read the file RENDER-ON-YOUR-PC.md in this folder. Do what its part If you are started in the middle says, and nothing else.'
     expect(text.split(line).length - 1).toBe(2)
@@ -1812,5 +1817,529 @@ describe('order 312: where the files are, what a pass rests on, and where the wo
     // no line of the file runs Homebrew's installer: it is given to Brandon in words alone
     expect(md).not.toMatch(/^\/bin\/bash/m)
     expect(md).not.toContain('install.sh')
+  })
+})
+
+describe("order 312, the guards: Brandon's yes, the build of the test, and the chunks that count", () => {
+  const md = fs.readFileSync(rel('RENDER-ON-YOUR-PC.md'), 'utf8')
+  const text = md.replace(/\s+/g, ' ')
+  const work = fs.readFileSync(rel('tools', 'lib', 'handoff-work.mjs'), 'utf8')
+  const tool = fs.readFileSync(rel('tools', 'handoff.mjs'), 'utf8')
+  const up = fs.readFileSync(rel('tools', 'lib', 'handoff-upload.mjs'), 'utf8')
+  const E = '0123456789abcdef'
+  const stampOf = { references: [{ what: 'film-b', frame: 120, sha256: SHA('1') }], floors: { psnrWhole: 30 } }
+  const id = A.identityOf({ engineHash: E, stamp: stampOf, calibration: SHA('c'), renderer: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 Direct3D11)', driver: '32.0.15.6094 of 2026-10-01 (NVIDIA GeForce RTX 5080)', chrome: '147.0.7727.15' })
+  const BUILD = "the build changed since the test: run step 1's test again, give Brandon its report, stop"
+
+  // M2 b, M10 a: the new word
+  it('takes the approve word only with render or upload and with words of letters, digits and spaces', () => {
+    expect(L.COMMANDS).toContain('approve')
+    expect(A.approveArgs(['approve', 'render', 'yes', 'the', 'full', 'render', 'may', 'start'])).toEqual({ what: 'render', words: 'yes the full render may start' })
+    expect(A.approveArgs(['approve', 'upload', 'yes'])).toEqual({ what: 'upload', words: 'yes' })
+    expect(L.argProblem(['approve', 'render', 'yes', 'go'])).toBe('')
+    expect(L.argProblem(['approve', 'upload', 'ok', '2'])).toBe('')
+    // no word of the agent's own stands in for his: a line without words is refused, and so is any other sign
+    expect(L.argProblem(['approve', 'render'])).toContain('it was given none. The agent never writes these words for him')
+    expect(L.argProblem(['approve'])).toContain('approve wants the word render or the word upload after it')
+    expect(L.argProblem(['approve', 'film', 'yes'])).toContain('approve wants the word render or the word upload after it')
+    expect(L.argProblem(['approve', 'render', 'yes;', 'go'])).toContain('letters, digits and spaces only, and "yes;" is not')
+    expect(L.argProblem(['approve', 'render', '--force'])).toContain('letters, digits and spaces only')
+    for (const w of ['render', 'upload', 'test', 'clean']) expect(L.argProblem([w, 'yes'])).toContain('one word')
+    expect(A.approveLine('render')).toBe('node tools/handoff.mjs approve render <his words>')
+    expect(A.approveLine('upload')).toBe('node tools/handoff.mjs approve upload <his words>')
+    expect(tool).toContain("if (cmd === 'approve') return Work.approve(ctx)")
+  })
+
+  // M2 a
+  it('knows the build a test passed on by engine, stamp, calibration, renderer, driver and Chrome, and says what changed', () => {
+    expect(Object.keys(id).sort()).toEqual(['calibration', 'chrome', 'driver', 'engineHash', 'renderer', 'stamp'])
+    expect(A.identityDiff(id, { ...id })).toEqual([])
+    expect(A.BUILD_CHANGED).toBe(BUILD)
+    const moved: [string, string, string][] = [
+      ['engineHash', 'ffffffffffffffff', 'the engine is now ffffffffffffffff'],
+      ['renderer', 'ANGLE (AMD, Radeon)', 'the graphics card the page draws on is now ANGLE (AMD, Radeon)'],
+      ['driver', '32.0.15.7000 of 2026-11-20 (NVIDIA GeForce RTX 5080)', "the card's driver is now 32.0.15.7000"],
+      ['chrome', '148.0.1.2', 'Chrome is now 148.0.1.2'],
+      ['calibration', SHA('d'), 'the calibration picture kept on this machine is now'],
+    ]
+    for (const [key, value, said] of moved) {
+      const diff = A.identityDiff(id, { ...id, [key]: value })
+      expect(diff, key).toHaveLength(1)
+      expect(diff[0], key).toContain(said)
+      expect(A.buildChanged(diff)).toContain(`${BUILD}. What changed: `)
+    }
+    // other references or other floors in the stamp are another build too
+    expect(A.stampMark(stampOf)).toBe(id.stamp)
+    expect(A.stampMark({ ...stampOf, floors: { psnrWhole: 29 } })).not.toBe(id.stamp)
+    expect(A.stampMark({ ...stampOf, references: [] })).not.toBe(id.stamp)
+    expect(A.identityDiff(id, { ...id, stamp: A.stampMark({ ...stampOf, floors: { psnrWhole: 29 } }) })[0]).toContain("the stamp's references and floors")
+    // a calibration picture that is not drawn yet is no other picture
+    expect(A.identityDiff(id, { ...id, calibration: '' })).toEqual([])
+    // a record of a test that names no build is no ground for a render
+    expect(A.NO_IDENTITY).toContain(BUILD)
+    expect(work).toContain('if (!test.identity) return fail(A.NO_IDENTITY, { refused: true })')
+    expect(work).toContain('if (changed.length) return fail(A.buildChanged(changed), { refused: true })')
+    // the test writes what it passed on, and takes away a yes that was given for an older test
+    expect(work).toMatch(/result\.identity = A\.identityOf\(/)
+    expect(work).toContain("for (const f of ['test.json', A.APPROVAL_FILES.render, A.APPROVAL_FILES.asked]) fs.rmSync(path.join(ctx.H, f), { force: true })")
+  })
+  it("reads the driver's version on Windows, takes the system for it on a Mac, and says when it could not be read", () => {
+    const cards = [{ name: 'Intel(R) UHD Graphics', driverVersion: '31.0.101.5186' }, { name: 'NVIDIA GeForce RTX 5080', driverVersion: '32.0.15.6094', driverDate: '2026-10-01' }]
+    expect(A.driverText({ platform: 'win32', cards, wanted: cards[1] })).toEqual({ text: '32.0.15.6094 of 2026-10-01 (NVIDIA GeForce RTX 5080)', missing: false })
+    expect(A.driverText({ platform: 'win32', cards: [{ name: 'NVIDIA GeForce RTX 5080' }], wanted: null })).toEqual({ text: 'not read', missing: true })
+    expect(A.driverText({ platform: 'win32', cards: [], wanted: null }).missing).toBe(true)
+    expect(A.driverText({ platform: 'darwin', os: 'macOS 15.1 (24B83)' })).toEqual({ text: 'a part of the system, macOS 15.1 (24B83)', missing: false })
+    expect(A.driverText({ platform: 'darwin', os: '' }).missing).toBe(true)
+    expect(A.driverText({ platform: 'linux' })).toEqual({ text: 'none is read on this system', missing: false })
+    // a driver that cannot be read is a LOOK line that his yes must cover: it stops nothing and hides nothing
+    expect(A.longRunLines({ driverMissing: true }).map((l) => l.kind)).toEqual(['driver'])
+  })
+  it("refuses a render on a test of another engine as a changed build, and after a run of the tool's own tests asks for no mix", () => {
+    const r = L.renderRefusals({ ...goodRun, stamp: stamp(), test: { ...goodRun.test, engineHash: 'ffffffffffffffff' } })
+    expect(r).toEqual([`${BUILD}. What changed: the engine is now ${HASH}, and the test passed on ffffffffffffffff`])
+    const gone = [{ ok: false, why: 'the sound of film-a is not here' }]
+    // M3: a test that carried a switch of the tool's own tests passes without the mixes. It stands for no film
+    const own = L.renderRefusals({ ...goodRun, stamp: stamp(), sound: gone, test: { ...goodRun.test, switches: L.testSwitches('tones'), notReady: [], mixes: [] } })
+    expect(own).toHaveLength(1)
+    expect(own[0]).toContain("the short test here was a run of the tool's own tests, not the real one")
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), sound: gone, test: { ...goodRun.test, small: true } })).toHaveLength(1)
+  })
+  // M3 b
+  it('never refuses a render for a mix after a plain pass: a mix that is gone then is said as a build that changed', () => {
+    const ok = [{ which: 'film-a', ok: true, why: '' }, { which: 'film-b', ok: true, why: '' }]
+    const missing = [{ which: 'film-a', ok: false, why: 'the sound of film-a is not here: audio/final/film-a.wav is missing' }, ok[1]]
+    // the test without the tones switch that finds a mix missing is no plain pass
+    expect(L.notReadyReasons({ stamp: stamp(), sound: missing })).toEqual([missing[0].why])
+    expect(L.notReadyReasons({ stamp: stamp(), sound: ok })).toEqual([])
+    // after such a test the render names the mix as what it is
+    const after = L.renderRefusals({ ...goodRun, stamp: stamp(), sound: missing, test: { ...goodRun.test, notReady: [missing[0].why], mixes: missing } })
+    expect(after).toEqual([missing[0].why])
+    // after a plain pass both mixes were the stamp's: the same finding is then no refusal for a mix
+    const plain = { ...goodRun.test, notReady: [], mixes: ok }
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), sound: ok, test: plain })).toEqual([])
+    const changed = L.renderRefusals({ ...goodRun, stamp: stamp(), sound: missing, test: plain })
+    expect(changed).toHaveLength(1)
+    expect(changed[0]).toContain(`${BUILD}. What changed: a final mix that the test found is not that mix now`)
+    expect(changed[0]).not.toMatch(/^the sound of/)
+    // the test prints one line for each mix with its sha256, and its report names which the test film carries
+    expect(work).toMatch(/ctx\.say\(`the final mix of \$\{name\}: /)
+    expect(work).toContain('The test film carries its own piece of the final mix of film B')
+    expect(work).toContain('result.mixes = mixes.map(')
+  })
+
+  // M2 b c
+  const testRec = { time: '2026-11-28T10:00:00.000Z' }
+  const yes = (over: Record<string, unknown> = {}) =>
+    A.renderApproval({
+      words: 'yes the full render may start',
+      time: '2026-11-28T11:00:00.000Z',
+      machine: 'm1',
+      identity: id,
+      test: { time: testRec.time, report: { path: 'C:\\clone\\out\\work\\handoff\\report-test.txt', sha256: SHA('r') }, film: { path: 'C:\\Users\\b\\Desktop\\test film.mp4', sha256: SHA('f') }, sheet: { path: 'C:\\Users\\b\\Desktop\\sheet.jpg', sha256: SHA('s') } },
+      projection: { seconds: 43200, procs: 2 },
+      disk: { needBytes: 40 * 1024 ** 3, freeBytes: 500 * 1024 ** 3 },
+      longRun: A.longRunLines({ projectionSeconds: 43200 }),
+      look: ['the card stayed idle for 3 s'],
+      ...over,
+    })
+  const fits = (over: Record<string, unknown> = {}) => A.renderApprovalProblems({ approval: yes().record, machine: 'm1', identity: id, test: testRec, reportSha: SHA('r'), longRun: A.longRunLines({ projectionSeconds: 43200 }), ...over })
+  it('prints what a yes for the full render covers, and writes a record tied to it', () => {
+    const made = yes()
+    const said = made.lines.join('\n')
+    expect(made.lines[0]).toBe('WHAT THIS YES COVERS. Brandon\'s words, as they were copied into the line: "yes the full render may start"')
+    for (const part of ['the machine      m1', `the card         ${id.renderer}`, `its driver       ${id.driver}`, 'the browser      Chrome 147.0.7727.15', `the engine       ${E}`, 'the short test   passed, begun at 2026-11-28T10:00:00.000Z', 'report-test.txt', `sha256 ${SHA('r')}`, 'test film.mp4', `sha256 ${SHA('f')}`, 'sheet.jpg', `sha256 ${SHA('s')}`, 'projected        12.0 h with 2 workers', '40.0 GB are needed for what is still to do, and 500.0 GB are free now']) expect(said, part).toContain(part)
+    // every LOOK line of the test that is still open is quoted: the ones that bear on a run of hours, and the others
+    expect(said).toContain('still open now and bearing on a run of hours, covered by this yes, 1:')
+    expect(said).toContain('LOOK  the full render is projected at 12.0 h on this machine, which is more than 10 hours')
+    expect(said).toContain('marked LOOK in the report of the test beside these, for the remote team, 1:')
+    expect(said).toContain('LOOK  the card stayed idle for 3 s')
+    expect(made.record).toMatchObject({ what: 'render', words: 'yes the full render may start', machine: 'm1', identity: id, test: { time: testRec.time, report: { sha256: SHA('r') }, film: { sha256: SHA('f') }, sheet: { sha256: SHA('s') } }, longRun: [{ kind: 'hours' }] })
+    expect(yes({ longRun: [], look: [] }).lines.join('\n')).toContain('still open now   nothing that bears on a run of hours')
+  })
+  it('refuses a render without a yes that fits this machine, this build and this test', () => {
+    expect(fits()).toEqual([])
+    const none = fits({ approval: null })
+    expect(none).toHaveLength(1)
+    expect(none[0]).toContain('the full render is not approved on this machine, and nothing was drawn')
+    expect(none[0]).toContain('node tools/handoff.mjs approve render <his words>')
+    // a record of another kind is no yes for a render
+    expect(fits({ approval: { ...yes().record, what: 'upload' } })[0]).toContain('the full render is not approved on this machine')
+    expect(fits({ machine: 'm2' })[0]).toContain('the yes that is recorded here was given for another machine')
+    expect(fits({ identity: { ...id, chrome: '148.0.1.2' } })[0]).toContain('was given for another build than the one that is here now (Chrome is now 148.0.1.2')
+    expect(fits({ identity: { ...id, driver: 'other' } })[0]).toContain("the card's driver is now other")
+    // any new test needs a new yes: by its time and by the sha256 of its report
+    expect(fits({ test: { time: '2026-11-28T12:00:00.000Z' } })[0]).toContain('the short test was run again since his yes')
+    expect(fits({ reportSha: SHA('x') })[0]).toContain('the short test was run again since his yes, or its report is not the one his yes names')
+    expect(fits({ test: null })[0]).toContain('the short test was run again since his yes')
+    for (const r of [fits({ machine: 'm2' }), fits({ reportSha: SHA('x') })]) {
+      expect(r).toHaveLength(1)
+      expect(r[0]).toContain('the full render is not started, and nothing was drawn')
+      expect(r[0]).toContain('If he says that the full render may start, copy his words into this line')
+    }
+    // the render asks for the yes after the gate of the stamp and before its first frame
+    expect(work.indexOf('const notApproved = A.renderApprovalProblems(')).toBeGreaterThan(work.indexOf('if (changed.length) return fail(A.buildChanged(changed), { refused: true })'))
+    expect(work.indexOf('const notApproved = A.renderApprovalProblems(')).toBeLessThan(work.indexOf("const r = await runTool(ctx, 'master.mjs', args"))
+    expect(text).toContain('You never write these words for him')
+    expect(text).toContain('Do not run this line on a yes he gave before the test of 2.1')
+  })
+  it('sends a line that bears on a long run back to Brandon when it is new since his yes', () => {
+    const now = A.longRunLines({ projectionSeconds: 43200, pendingRestart: 'Windows Update has installed something that needs one' })
+    expect(now.map((l) => l.kind)).toEqual(['hours', 'restart'])
+    const r = fits({ longRun: now })
+    expect(r).toHaveLength(1)
+    expect(r[0]).toContain('this is new since his yes, and his yes does not cover it: Windows waits for a restart (Windows Update has installed something that needs one)')
+    // a line his yes covered stays covered when its numbers move: it is known by its kind
+    expect(fits({ longRun: A.longRunLines({ projectionSeconds: 50000 }) })).toEqual([])
+    expect(A.freshLines(now, [{ kind: 'hours', text: 'older words' }]).map((l) => l.kind)).toEqual(['restart'])
+    expect(A.freshLines(now, now)).toEqual([])
+    // each kind is one line: hours, disk, power, restart, a Desktop in the cloud, the driver, staying awake, a second render
+    const all = A.longRunLines({ projectionSeconds: 43200, freeBytes: 110, needBytes: 100, onBattery: true, power: 'on battery, 80 %', pendingRestart: 'the servicing of the system needs one', cloud: 'the Desktop is in a cloud', driverMissing: true, awakeFailed: 'nothing keeps this system awake', again: A.againText('2026-11-28T09:00:00.000Z') })
+    expect(all.map((l) => l.kind)).toEqual(['hours', 'disk', 'power', 'restart', 'cloud', 'driver', 'awake', 'again'])
+    expect(A.longRunLines({ projectionSeconds: 3600, freeBytes: 500, needBytes: 100 })).toEqual([])
+    // the approve word prints such a line first and records no yes: the same line a second time, with his words, does
+    expect(work).toContain('this is new since the test, and the report Brandon read does not say it')
+    expect(work).toMatch(/const fresh = A\.freshLines\(now\.lines, covered\)/)
+  })
+  // M6 b
+  it('does not begin the film again from nothing after a clean without saying so and asking', () => {
+    const cleaned = '2026-11-28T12:00:00.000Z'
+    const again = A.longRunLines({ again: A.againText(cleaned) })
+    expect(again[0].text).toContain('the film was rendered, delivered and cleaned on this machine already (the clean passed at 2026-11-28T12:00:00.000Z). The render line would begin the whole film again from nothing')
+    // a yes from before the clean covered the render that is done
+    const old = fits({ cleanTime: cleaned, longRun: again })
+    expect(old).toHaveLength(1)
+    expect(old[0]).toContain('his yes was given before the film was rendered, delivered and cleaned here')
+    // a yes given after the clean that saw the line fits
+    const after = yes({ time: '2026-11-28T13:00:00.000Z', longRun: again }).record
+    expect(A.renderApprovalProblems({ approval: after, machine: 'm1', identity: id, test: testRec, reportSha: SHA('r'), longRun: again, cleanTime: cleaned })).toEqual([])
+    // and one given after the clean that did not see it does not
+    const blind = yes({ time: '2026-11-28T13:00:00.000Z', longRun: [] }).record
+    expect(A.renderApprovalProblems({ approval: blind, machine: 'm1', identity: id, test: testRec, reportSha: SHA('r'), longRun: again, cleanTime: cleaned })[0]).toContain('this is new since his yes')
+    // a line about one clean does not cover the next: the film that was rendered and cleaned once more is asked for again
+    const later = A.longRunLines({ again: A.againText('2026-11-28T15:00:00.000Z') })
+    expect(A.freshLines(later, again)).toEqual(later)
+    expect(A.freshLines(again, again)).toEqual([])
+    const power = A.longRunLines({ onBattery: true, power: 'on its battery' })
+    expect(A.freshLines(power, A.longRunLines({ onBattery: true, power: 'on its battery, 40 percent' }))).toEqual([])
+    // the status word names no render line of its own after a clean
+    const at = (state: string, n: number) => ({ state, why: '', engineHash: E, time: new Date(Date.UTC(2026, 10, 28, 10, n)).toISOString() })
+    const done = { setup: at('PASS', 1), doctor: at('PASS', 2), test: at('PASS', 3), render: at('PASS', 10), check: at('PASS', 11), deliver: at('PASS', 12), clean: at('PASS', 13) }
+    expect(L.statusPlan({ packages: true, engineHere: E, engineBuilt: E, ended: done })).toMatchObject({ stage: 'all is done', next: '' })
+    expect(text).toContain('After it the render line does not begin the film again from nothing by itself')
+  })
+
+  // M10 a
+  it('refuses the upload before the delivery, and without a yes that names the repository as private and the files', () => {
+    const files = [
+      { kind: 'film-a', name: 'Snow Globe Seasons - Film A.mp4', file: 'C:\\Users\\b\\Desktop\\Snow Globe Seasons\\Snow Globe Seasons - Film A.mp4', bytes: 400_000_000, sha256: SHA('a') },
+      { kind: 'film-b', name: 'Snow Globe Seasons - Film B.mp4', file: 'C:\\Users\\b\\Desktop\\Snow Globe Seasons\\Snow Globe Seasons - Film B.mp4', bytes: 300_000_000, sha256: SHA('b') },
+    ]
+    const repo = { owner: 'BrandonChurch93', name: 'Snow-Globe-Perplexity', slug: 'BrandonChurch93/Snow-Globe-Perplexity' }
+    const made = A.uploadApproval({ words: 'yes send them', time: '2026-11-28T14:00:00.000Z', repo, isPrivate: true, files, deliverTime: '2026-11-28T13:00:00.000Z' })
+    const said = made.lines.join('\n')
+    expect(said).toContain('the repository   BrandonChurch93/Snow-Globe-Perplexity (owner BrandonChurch93, name Snow-Globe-Perplexity)')
+    expect(said).toContain('it is            private: GitHub was asked now')
+    for (const f of files) {
+      expect(said).toContain(f.name)
+      expect(said).toContain(`${f.bytes} bytes, sha256 ${f.sha256}`)
+    }
+    expect(made.record).toMatchObject({ what: 'upload', words: 'yes send them', repo: { owner: 'BrandonChurch93', name: 'Snow-Globe-Perplexity', private: true } })
+    const delivered = { pass: true, files }
+    const ask = (over: Record<string, unknown> = {}) => A.uploadApprovalProblems({ approval: made.record, delivered, repo, ...over })
+    expect(ask()).toEqual([])
+    // before the delivery has passed it refuses, whatever yes is here
+    for (const d of [null, { pass: false, files }]) {
+      const r = ask({ delivered: d })
+      expect(r).toHaveLength(1)
+      expect(r[0]).toContain('the four files are not delivered to the Desktop yet, so nothing is sent')
+      expect(r[0]).toContain('node tools/handoff.mjs deliver')
+    }
+    // a delivery of an earlier render is no delivery of the files that were checked last
+    const checkOf = (list: typeof files) => ({ pass: true, files: Object.fromEntries(list.map((f) => [f.kind, { bytes: f.bytes, sha256: f.sha256 }])) })
+    expect(ask({ checked: checkOf(files) })).toEqual([])
+    expect(A.deliveryStands(delivered, checkOf(files))).toBe(true)
+    const other = ask({ checked: checkOf([files[0], { ...files[1], sha256: SHA('y') }]) })
+    expect(other[0]).toContain('the four files are not delivered to the Desktop yet as they were checked last (the delivery on record is of other files)')
+    expect(ask({ checked: { pass: false, files: {} } })[0]).toContain('are not delivered to the Desktop yet')
+    expect(ask({ checked: null })[0]).toContain('are not delivered to the Desktop yet')
+    expect(work).toContain("checked: readOr(path.join(ctx.H, 'check.json')) })[0] ?? ''")
+    const none = ask({ approval: null })
+    expect(none[0]).toContain('the upload is not approved on this machine, and nothing is sent')
+    expect(none[0]).toContain('node tools/handoff.mjs approve upload <his words>')
+    // a yes for the render is no yes for the upload
+    expect(ask({ approval: yes().record })[0]).toContain('the upload is not approved on this machine')
+    expect(ask({ repo: { slug: 'someone/else' } })[0]).toContain('his yes names the repository BrandonChurch93/Snow-Globe-Perplexity, and this clone belongs to someone/else')
+    expect(ask({ repo: null })[0]).toContain('this clone belongs to no repository the tool knows')
+    expect(ask({ approval: { ...made.record, repo: { ...made.record.repo, private: false } } })[0]).toContain('his yes does not say that the repository is private')
+    expect(ask({ delivered: { pass: true, files: [files[0], { ...files[1], sha256: SHA('x') }] } })[0]).toContain('the files that were delivered are not the files his yes names by size and sha256')
+    expect(ask({ delivered: { pass: true, files: [files[0]] } })[0]).toContain('are not the files his yes names')
+    // the refusal is the first thing the upload does, before anything is read or sent
+    const body = up.slice(up.indexOf('export async function upload(ctx) {'))
+    const first = body.split('\n').slice(1).filter((l) => l.trim() && !l.trim().startsWith('//'))
+    expect(first[0].trim()).toBe('const notApproved = W.uploadGate(ctx, whichRepo())')
+    expect(first[1].trim()).toBe('if (notApproved) return { pass: false, why: notApproved, refused: true }')
+    expect(work).toContain('export function uploadGate(ctx, repo) {')
+  })
+
+  // M7
+  it('counts for a render that carries on only the work that remains', () => {
+    const G = 1024 ** 3
+    const plan = { chunks: 100, intermediates: 50 * G, inFlight: 4 * G, finals: 3 * G, encodeRoom: 6 * G, spare: 5 * G }
+    const whole = A.diskRemaining(plan)
+    expect(whole.total).toBe((50 + 4 + 3 + 6 + 3 + 5) * G)
+    expect(whole.leftChunks).toBe(100)
+    // 80 of 100 chunks are finished: a fifth of the chunks is left to write
+    const part = A.diskRemaining(plan, { chunksFinished: 80 })
+    expect(part.intermediates).toBeCloseTo(10 * G, 3)
+    expect(part.total).toBeCloseTo((10 + 4 + 3 + 6 + 3 + 5) * G, 3)
+    // every chunk is finished: no chunk and no frames in work, the encodes and the copies still
+    const drawn = A.diskRemaining(plan, { chunksFinished: 100 })
+    expect(drawn).toMatchObject({ leftChunks: 0, intermediates: 0, inFlight: 0, finals: 3 * G, encodeRoom: 6 * G, copies: 3 * G })
+    // the films are encoded: the copies for the Desktop are what is left
+    const encoded = A.diskRemaining(plan, { chunksFinished: 100, finalsBytes: 3 * G })
+    expect(encoded).toMatchObject({ finals: 0, encodeRoom: 0, copies: 3 * G, total: 8 * G })
+    // delivered: the spare alone
+    expect(A.diskRemaining(plan, { chunksFinished: 100, finalsBytes: 3 * G, deliveredBytes: 3 * G }).total).toBe(5 * G)
+    // more finished than planned never counts below nothing
+    expect(A.diskRemaining(plan, { chunksFinished: 120 }).leftChunks).toBe(0)
+    expect(A.remainingText(whole)).toContain('71.0 GB for what is still to do: 100 chunks 50.0')
+    expect(A.remainingText(part)).toContain('the 20 of 100 chunks that are not on disk yet 10.0')
+    // the doctor, the test, the approval and the render ask with what is on disk, not with a whole new render
+    expect(work.match(/A\.diskRemaining\(/g)?.length ?? 0).toBeGreaterThanOrEqual(4)
+    expect(work).toContain("else fail('free disk', text, want, `${text}, and ${left.leftChunks === left.chunks ? 'the render needs' : 'what is still to do of the render needs'}")
+  })
+  it("checks the Desktop's own drive where the Desktop is written", () => {
+    const G = 1024 ** 3
+    const plan = { chunks: 10, intermediates: 50 * G, inFlight: 4 * G, finals: 3 * G, encodeRoom: 6 * G, spare: 5 * G }
+    // a Desktop on another drive: its copies are not asked of the clone's drive, and are asked of its own
+    const apart = A.diskRemaining(plan, { sameDrive: false })
+    expect(apart.copies).toBe(0)
+    expect(apart.desktop).toBe(3 * G)
+    expect(apart.total).toBe(A.diskRemaining(plan).total - 3 * G)
+    expect(A.diskRemaining(plan, { sameDrive: false, deliveredBytes: 3 * G }).desktop).toBe(0)
+    expect(A.DESKTOP_SPARE).toBe(256 * 1024 ** 2)
+    // the doctor has a row of its own for that drive, and the deliver word asks it before its first copy
+    expect(work).toContain(`row("free on the Desktop's drive"`)
+    expect(work).toContain(`fail("free on the Desktop's drive"`)
+    expect(work).toContain('export function desktopRoom(ctx) {')
+    expect(tool.indexOf('const room = Work.desktopRoom(ctx)')).toBeGreaterThan(-1)
+    expect(tool.indexOf('if (room) return { pass: false, why: room, refused: true }')).toBeLessThan(tool.indexOf('return Work.deliver(ctx, '))
+    expect(tool.indexOf('const room = Work.desktopRoom(ctx)')).toBeLessThan(tool.indexOf('if (room) return { pass: false, why: room, refused: true }'))
+    expect(text).toContain('| `the drive of the Desktop ... has ... free, and the four files and their report need ...` | stop and report. Nothing was copied.')
+  })
+
+  // M8
+  it("takes a finished chunk only as the approved test's build with its own bytes", () => {
+    const record = { engineHash: E, calibration: id.calibration, graphics: id.renderer, browser: 'Chrome 147.0.7727.15', sha256: SHA('9'), bytes: 1000, time: '2026-11-28T11:30:00.000Z' }
+    const key = 'film-b/film-b-000000-000059'
+    const drawn = { driver: id.driver, chrome: id.chrome, renderer: id.renderer }
+    const ask = (over: Record<string, unknown> = {}) => A.chunkProblem({ what: 'film-b', record, bytesSha: SHA('9'), identity: id, calibration: id.calibration, drawn, rejected: [], key, ...over })
+    expect(ask()).toBe('')
+    expect(ask({ record: null })).toBe('it left no record')
+    expect(ask({ bytesSha: SHA('8') })).toContain('its bytes are not the ones its record names')
+    expect(ask({ record: { ...record, engineHash: 'ffffffffffffffff' } })).toContain('it was drawn by engine ffffffffffffffff, and the approved test passed on')
+    expect(ask({ record: { ...record, calibration: SHA('d') } })).toBe('it names another calibration picture than the one the approved test saw')
+    expect(ask({ calibration: '' })).toBe('it names another calibration picture than the one the approved test saw')
+    expect(ask({ record: { ...record, graphics: 'ANGLE (AMD, Radeon)' } })).toContain('it was drawn on "ANGLE (AMD, Radeon)", and the approved test passed on')
+    expect(ask({ record: { ...record, browser: 'Chrome 148.0.1.2' } })).toContain('it was drawn by browser version 148.0.1.2, and the approved test passed on 147.0.7727.15')
+    // the driver is not in the chunk's own record: the tool's ledger says which one was read before its first frame
+    expect(ask({ drawn: null })).toBe('the tool holds no record of the driver that was read before its first frame')
+    expect(ask({ drawn: { driver: '32.0.15.7000 (NVIDIA GeForce RTX 5080)' } })).toContain('the driver read before its first frame was 32.0.15.7000')
+    // a chunk of the opening is read from the pack and drawn by no card: its bytes are held
+    const opening = { ...record, engineHash: 'none', graphics: 'none', browser: '' }
+    expect(A.chunkProblem({ what: 'opening', record: opening, bytesSha: SHA('9'), identity: id, calibration: id.calibration, drawn: null, rejected: [], key: 'opening/x' })).toBe('')
+    expect(A.chunkProblem({ what: 'opening', record: opening, bytesSha: SHA('8'), identity: id, calibration: id.calibration, drawn: null, rejected: [], key: 'opening/x' })).toContain('its bytes are not the ones its record names')
+  })
+  it('never takes a chunk again that the tool rejected once', () => {
+    const record = { engineHash: E, calibration: id.calibration, graphics: id.renderer, browser: 'Chrome 147.0.7727.15', sha256: SHA('9'), bytes: 1000, time: '2026-11-28T11:30:00.000Z' }
+    const key = 'film-b/film-b-000000-000059'
+    const drawn = { driver: id.driver }
+    const rejected = [{ key, time: record.time, sha256: record.sha256 }]
+    // the very same chunk, whole and of the right build, put back by any hand
+    expect(A.chunkProblem({ what: 'film-b', record, bytesSha: SHA('9'), identity: id, calibration: id.calibration, drawn, rejected, key })).toBe('the tool rejected this very chunk before, and a rejected chunk is never taken again')
+    // the same frames drawn anew are another chunk: another time and other bytes
+    const anew = { ...record, time: '2026-11-28T12:30:00.000Z', sha256: SHA('7') }
+    expect(A.chunkProblem({ what: 'film-b', record: anew, bytesSha: SHA('7'), identity: id, calibration: id.calibration, drawn, rejected, key })).toBe('')
+    expect(A.chunkProblem({ what: 'opening', record, bytesSha: SHA('9'), identity: id, calibration: id.calibration, drawn: null, rejected: [{ key: 'opening/x', time: record.time, sha256: record.sha256 }], key: 'opening/x' })).toContain('never taken again')
+    // what was rejected leaves the folder of the chunks, so that no later step joins it, and is written into the ledger first
+    expect(A.APPROVAL_FILES.ledger).toBe('chunk-ledger.json')
+    const reject = work.slice(work.indexOf('function rejectChunk('), work.indexOf('function rejectChunk(') + 1600)
+    expect(reject).toContain('ledger.rejected.push(')
+    expect(reject.indexOf('writeJson(ledgerFile(ctx), ledger)')).toBeGreaterThan(-1)
+    expect(reject.indexOf('writeJson(ledgerFile(ctx), ledger)')).toBeLessThan(reject.indexOf('fs.rmSync('))
+    expect(reject.indexOf('fs.rmSync(')).toBeGreaterThan(-1)
+  })
+  it("reads the card, its driver and the browser before the first frame of every part, and holds them against the test's", () => {
+    const render = work.slice(work.indexOf('export async function fullRender('), work.indexOf('export async function check('))
+    expect(render.length).toBeGreaterThan(4000)
+    const loop = render.slice(render.indexOf('for (const b2 of plan.batches) {'))
+    // the guard comes first in the loop of the batches, of every part, and a stop there draws nothing
+    expect(loop.indexOf('const stop = await guard()')).toBeGreaterThan(-1)
+    expect(loop.indexOf('const stop = await guard()')).toBeLessThan(loop.indexOf("const r = await runTool(ctx, 'master.mjs', args"))
+    expect(loop.indexOf('if (stop) return end(fail(stop))')).toBeLessThan(loop.indexOf("const r = await runTool(ctx, 'master.mjs', args"))
+    // what it reads: the driver from the machine, the renderer and the browser from a page it opens
+    const guard = render.slice(render.indexOf('const guard = async () => {'), render.indexOf('const encodeGuard = () => {'))
+    for (const part of ['driver = driverNow()', 'if (driver !== expected.driver) return', 'seen = await readRenderer(mode)', 'if (seen.renderer !== expected.renderer) return', 'if (seen.browser !== expected.browser) return', 'read = { driver, chrome: seen.browser, renderer: seen.renderer']) expect(guard, part).toContain(part)
+    expect(render).toContain('const expected = { renderer: test.identity.renderer, browser: test.identity.chrome, driver: test.identity.driver }')
+    expect(render).toContain('const m = X.readMachine()')
+    // what was read is written down for each chunk before its first frame, and the driver is read again after the batch
+    expect(loop.indexOf('ledger.drawn[key] = { ...read }')).toBeLessThan(loop.indexOf("const r = await runTool(ctx, 'master.mjs', args"))
+    expect(loop.indexOf('writeJson(ledgerFile(ctx), ledger)')).toBeLessThan(loop.indexOf("const r = await runTool(ctx, 'master.mjs', args"))
+    expect(loop.indexOf('driverAfter = driverNow()')).toBeGreaterThan(loop.indexOf("const r = await runTool(ctx, 'master.mjs', args"))
+    // every chunk of the batch is judged by its own record, and one that does not count ends the render
+    expect(loop).toContain('const v = judge(part.what, c)')
+    expect(loop).toContain('It is not taken a second time, and what the tool rejected is listed in')
+    // the room is asked again before each encode
+    expect(render).toContain('const noRoom = encodeGuard()')
+    expect(text).toContain('Before the first frame of every part it draws, the tool reads the card, its driver and the browser from the machine again')
+  })
+
+  // M6 c
+  it('gives a last line and a report to a worker that died and to a word that hangs', () => {
+    expect(L.testSwitches('short-limit=2').stop).toBe(2)
+    expect(L.testSwitches('').stop).toBe(0)
+    expect(() => L.testSwitches('short-limit=0')).toThrow()
+    expect(tool).toContain('const SHORT_SECONDS = 540')
+    expect(Number(/const WATCH_SECONDS = (\d+)/.exec(tool)?.[1])).toBeLessThan(600)
+    expect(Number(/const SHORT_SECONDS = (\d+)/.exec(tool)?.[1])).toBeLessThan(600)
+    // a word in the foreground that has not ended inside the limit is ended with a report and a FAIL
+    expect(tool).toContain('const limit = T.stop > 0 ? T.stop : SHORT_SECONDS')
+    expect(tool).toMatch(/const why = `"\$\{cmd\}" did not end within /)
+    expect(tool).toMatch(/deathReport\(cmd, why, \{ died: false, lines: ctx\.lines \}\)/)
+    // a worker that never started, that could not be started, or that could not be told for sure leaves a FAIL with the report's path
+    expect(tool.match(/end\('FAIL', why, await deathReport\(cmd, why/g)?.length ?? 0).toBeGreaterThanOrEqual(3)
+    // a worker that is gone leaves one too, whether the line was following it or found it gone at its start
+    expect(tool.match(/await stopEnd\(cmd, job, 'gone'\)/g)?.length ?? 0).toBe(2)
+    expect(tool).toContain("await stopEnd(cmd, job, 'silent', Math.round(age / 60))")
+    expect(tool).toContain("end('FAIL', v.why, await deathReport(cmd, v.why))")
+    expect(tool).not.toContain('carrying on from there')
+    expect(tool).not.toContain('it is ended and started again')
+    const death = tool.slice(tool.indexOf('async function deathReport('), tool.indexOf('async function deathReport(') + 2600)
+    expect(death).toContain('ENDED WITHOUT A REPORT OF ITS OWN')
+    expect(death).toContain("label: 'THE REPORT'")
+    expect(death).toMatch(/died/)
+    // the status word knows a word that died from one that failed: its line is run once more
+    const at = (state: string, n: number, over: Record<string, unknown> = {}) => ({ state, why: 'x', engineHash: E, time: new Date(Date.UTC(2026, 10, 28, 10, n)).toISOString(), ...over })
+    const base = { packages: true, engineHere: E, engineBuilt: E }
+    expect(L.statusPlan({ ...base, ended: { setup: at('PASS', 1), doctor: at('FAIL', 2, { died: true }) } })).toMatchObject({ stage: 'doctor', next: 'node tools/handoff.mjs doctor' })
+    expect(L.statusPlan({ ...base, ended: { setup: at('PASS', 1), doctor: at('FAIL', 2) } })).toMatchObject({ stage: 'doctor', next: '' })
+    expect(L.statusPlan({ ...base, ended: { setup: at('PASS', 1), doctor: at('PASS', 2), test: at('FAIL', 3, { died: true }) } })).toMatchObject({ stage: 'test', next: 'node tools/handoff.mjs test' })
+    expect(L.statusPlan({ ...base, ended: { setup: at('PASS', 1), doctor: at('PASS', 2), test: at('PASS', 3), render: at('FAIL', 4, { died: true }) } })).toMatchObject({ stage: 'render', next: 'node tools/handoff.mjs render' })
+    expect(text).toContain('Every start of the tool ends with one last line, `RUNNING:`, `PASS:` or `FAIL:`, inside ten minutes')
+    expect(text).toContain('has not ended after 9 minutes ends itself with `FAIL: "<word>" did not end within 9 minutes ...`')
+  })
+
+  // S10, R2, R3
+  it('says every stop of a word as a FAIL of its own, counts the stops in a row itself, and names no line after the last', () => {
+    const line = 'node tools/handoff.mjs test'
+    const first = A.stopVerdict({ cmd: 'test', stops: 1, how: 'gone', line })
+    expect(first.again).toBe(true)
+    expect(first.why).toContain('"test" was stopped before it ended')
+    expect(first.why).toContain(`Run the same line again and it carries on: ${line}`)
+    // the test, the setup and the check are run once more and no more
+    for (const cmd of ['setup', 'test', 'check']) {
+      const second = A.stopVerdict({ cmd, stops: 2, how: 'gone', line })
+      expect(second.again).toBe(false)
+      expect(second.why).toContain(`"${cmd}" was stopped before it ended`)
+      expect(second.why).toContain('This is stop 2 in a row')
+      expect(second.why).toContain('Do not run the line again: stop and give Brandon the report')
+      expect(second.why).not.toContain('Run the same line again')
+    }
+    // a render carries on after every stop that came after more frames, and not after two stops with none between
+    expect(A.stopVerdict({ cmd: 'render', stops: 5, how: 'gone', line, made: true }).again).toBe(true)
+    expect(A.stopVerdict({ cmd: 'render', stops: 1, how: 'gone', line, made: false }).again).toBe(true)
+    const stuck = A.stopVerdict({ cmd: 'render', stops: 2, how: 'gone', line, made: false })
+    expect(stuck.again).toBe(false)
+    expect(stuck.why).toContain('no more frames were done since the stop before')
+    // an upload is sent up to two more times
+    expect(A.stopVerdict({ cmd: 'upload', stops: 2, how: 'gone', line }).again).toBe(true)
+    expect(A.stopVerdict({ cmd: 'upload', stops: 3, how: 'gone', line }).again).toBe(false)
+    // work that gave no sign and was ended by the line is a stop like the others, and says how it came
+    const silent = A.stopVerdict({ cmd: 'check', stops: 1, how: 'silent', minutes: 16, line })
+    expect(silent.why).toContain('"check" was stopped before it ended: it gave no sign of life for 16 min and was ended here')
+    // the line counts: the count is carried into the next start, two lines that follow one work count one stop,
+    // and frames done are read from the heartbeat of the work that stopped
+    const stopEnd = tool.slice(tool.indexOf('async function stopEnd('), tool.indexOf('async function foreground('))
+    expect(stopEnd).toContain('const stops = (job.stops ?? 0) + 1')
+    expect(stopEnd).toContain("onRecord?.id === job.id && onRecord.state === 'stopped'")
+    expect(stopEnd).toContain('beat.framesDone')
+    expect(stopEnd).toContain('final: !v.again')
+    expect(tool).toContain("const carried = job?.cmd === cmd && job.state === 'stopped' && job.stops ? { stops: job.stops, doneBefore: job.doneBefore ?? null } : {}")
+    expect(tool).toContain('startWorker(cmd, carried)')
+    // a line that sees the work gone takes the record on disk before it says so: another start is not marked as stopped
+    expect(tool).toContain("if (job.id !== dead || job.state !== 'running' || X.alive(job.pid)) continue")
+    // work whose record names another start by now ends itself and leaves the record alone
+    expect(tool).toContain('if (onRecord?.id && onRecord.id !== id) {')
+    expect(tool).toContain('if (!ownRecord?.id || ownRecord.id === id) writeJson(jobFile(),')
+    // the status word names no line for a word that was stopped as often as it may be
+    const at = (state: string, n: number, over: Record<string, unknown> = {}) => ({ state, why: 'x', engineHash: E, time: new Date(Date.UTC(2026, 10, 28, 10, n)).toISOString(), ...over })
+    const base = { packages: true, engineHere: E, engineBuilt: E }
+    const ended = { setup: at('PASS', 1), doctor: at('PASS', 2), test: at('FAIL', 3, { died: true }) }
+    expect(L.statusPlan({ ...base, ended, job: { cmd: 'test', state: 'stopped', alive: false, stops: 1, final: false } })).toMatchObject({ stage: 'test', next: line })
+    const last = L.statusPlan({ ...base, ended, job: { cmd: 'test', state: 'stopped', alive: false, stops: 2, final: true } })
+    expect(last).toMatchObject({ stage: 'test', next: '' })
+    expect(last.why).toContain('was stopped 2 times in a row')
+    expect(last.why).toContain('Stop and give Brandon the report')
+    // the file says the same: the sentence that ends a word's line for good, and that it rules
+    expect(md).toContain('Do not run the line again: stop and give Brandon the report')
+  })
+  it('says in one LOOK line each that the Desktop lies in a cloud folder and that Windows waits for a restart', () => {
+    const one = A.desktopInCloud({ platform: 'win32', desktop: 'C:\\Users\\b\\OneDrive\\Desktop', env: { OneDrive: 'C:\\Users\\b\\OneDrive' } })
+    expect(one).toContain('the Desktop of this machine is inside OneDrive (C:\\Users\\b\\OneDrive\\Desktop)')
+    // known by its name too, where the variable is not set, and with the name of a firm behind it
+    expect(A.desktopInCloud({ platform: 'win32', desktop: 'D:\\Users\\b\\OneDrive - Contoso\\Desktop', env: {} })).toContain('is inside OneDrive')
+    expect(A.desktopInCloud({ platform: 'win32', desktop: 'C:\\Users\\b\\Desktop', env: { OneDrive: 'C:\\Users\\b\\OneDrive' } })).toBe('')
+    expect(A.desktopInCloud({ platform: 'win32', desktop: 'C:\\Users\\b\\OneDriveBackup\\Desktop', env: { OneDrive: 'C:\\Users\\b\\OneDrive' } })).toBe('')
+    expect(A.desktopInCloud({ platform: 'darwin', desktop: '/Users/b/Desktop', icloudDesktop: true })).toContain('the Desktop of this Mac is kept in iCloud Drive (/Users/b/Desktop)')
+    expect(A.desktopInCloud({ platform: 'darwin', desktop: '/Users/b/Desktop', icloudDesktop: false })).toBe('')
+    expect(A.desktopInCloud({ platform: 'linux', desktop: '/home/b/Desktop' })).toBe('')
+    expect(A.longRunLines({ cloud: one })).toEqual([{ kind: 'cloud', text: one }])
+    const restart = A.longRunLines({ pendingRestart: 'Windows Update has installed something that needs one' })
+    expect(restart).toHaveLength(1)
+    expect(restart[0]).toMatchObject({ kind: 'restart' })
+    expect(restart[0].text).toContain('Windows waits for a restart (Windows Update has installed something that needs one). A restart in the middle stops the render')
+    // the doctor reads both and changes nothing: the two marks of Windows, read with Test-Path alone
+    expect(work).toContain('WindowsUpdate\\\\Auto Update\\\\RebootRequired')
+    expect(work).toContain('Component Based Servicing\\\\RebootPending')
+    const script = work.slice(work.indexOf('const RESTART_SCRIPT = `'), work.indexOf('export function pendingRestart()'))
+    expect(script).not.toMatch(/Set-|Remove-|New-Item|Restart-/)
+    if (process.platform !== 'win32') expect(Work.pendingRestart()).toEqual({ read: false, why: '', said: 'not read on this system (the tool reads it on Windows alone)' })
+    expect(work).toContain('for (const l of out.longRun) look.push(l.text)')
+    for (const line of ['`Windows waits for a restart ...`', '`the Desktop of this machine is inside OneDrive ...`', '`this machine runs on its battery now ...`', "`the version of the card's driver could not be read ...`"]) expect(text, line).toContain(line)
+  })
+
+  it('has in the file a row with one named act for every refusal of the approve word and of the guards', () => {
+    const render = md.slice(md.indexOf("### 2.2 Brandon's yes, then the render"), md.indexOf('### 2.3 Check the four files'))
+    const upload = md.slice(md.indexOf('### 2.5 Send the files'), md.indexOf('### 2.6 Clean up'))
+    expect(render).toContain('```\nnode tools/handoff.mjs approve render <his words>\n```')
+    expect(upload).toContain('```\nnode tools/handoff.mjs approve upload <his words>\n```')
+    // the approve line stands above the line it opens
+    expect(render.indexOf('node tools/handoff.mjs approve render <his words>')).toBeLessThan(render.indexOf('```\nnode tools/handoff.mjs render\n```'))
+    expect(upload.indexOf('node tools/handoff.mjs approve upload <his words>')).toBeLessThan(upload.indexOf('```\nnode tools/handoff.mjs upload\n```'))
+    for (const row of [
+      '| `this is new since the test, and the report Brandon read does not say it: ...` |',
+      "| `the build changed since the test: run step 1's test again, give Brandon its report, stop` |",
+      '| `the full render is not approved on this machine ...` |',
+      '| `the full render is not started, and nothing was drawn: ...`',
+      '| `the chunk ... that was just drawn is not taken: ...` | stop and report. Do not run the render line again |',
+      '| `Chrome is now version ...: the browser was updated` |',
+    ]) expect(render, row).toContain(row)
+    for (const row of ['| `the four files are not delivered to the Desktop yet ...` |', '| `the upload is not approved on this machine ...` |', '| `the upload is not started, and nothing is sent: ...`']) expect(upload, row).toContain(row)
+    // every sentence the rows quote is one the tool can say
+    const rules = fs.readFileSync(rel('tools', 'lib', 'handoff-approve.mjs'), 'utf8')
+    for (const said of ['the full render is not approved on this machine', 'the full render is not started, and nothing was drawn', 'the upload is not approved on this machine', 'the upload is not started, and nothing is sent', 'the four files are not delivered to the Desktop yet']) expect(rules, said).toContain(said)
+    expect(work).toContain('that was just drawn is not taken')
+    // no row of these tables is without an act
+    for (const table of [render, upload]) {
+      const rows = table.split('\n').filter((l) => l.startsWith('| ') && !l.startsWith('| ---') && !l.startsWith('| the FAIL says'))
+      expect(rows.length).toBeGreaterThan(8)
+      for (const r of rows) expect(r.split(' | ')[1]?.replace(/\|\s*$/, '').trim().length ?? 0, r).toBeGreaterThan(12)
+    }
+    // the rules of the agent name the one place where a line is not run as written
+    expect(text).toContain('Two lines hold the place `<his words>`, the approve lines of 2.2 and 2.5')
+    // the approve line is in the Mac part too, above the line it opens
+    const mac = md.slice(md.indexOf('## macOS: the fallback'))
+    expect(mac.indexOf('node tools/handoff.mjs approve render <his words>')).toBeLessThan(mac.indexOf('node tools/handoff.mjs render\n'))
+    expect(mac.indexOf('node tools/handoff.mjs approve upload <his words>')).toBeLessThan(mac.indexOf('node tools/handoff.mjs upload\n'))
   })
 })

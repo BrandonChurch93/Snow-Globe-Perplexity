@@ -250,7 +250,19 @@ async function factsOf(kind, file) {
   return { frames: Number(v.nb_frames) || null, seconds: Number(s.format?.duration) || null, pixels: `${v.width}x${v.height}` }
 }
 
+/** What the approve word asks GitHub before a yes for the upload is recorded: the repository of this clone, and whether it is private. */
+export async function uploadGround(ctx) {
+  const repo = whichRepo()
+  if (!repo) return { refuse: NO_REPO }
+  const g = await ground(ctx, repo, { wantPrivate: true })
+  return g.refuse ? { refuse: g.refuse, repo } : { repo, isPrivate: g.isPrivate }
+}
+
 export async function upload(ctx) {
+  // before anything is read or sent: the delivery has passed, and Brandon's yes for this very upload is recorded
+  // here, naming this repository as private and these files by size and sha256 (tools/lib/handoff-approve.mjs)
+  const notApproved = W.uploadGate(ctx, whichRepo())
+  if (notApproved) return { pass: false, why: notApproved, refused: true }
   const refuse = (why) => ({ pass: false, why, refused: true })
   const mode = W.modeOf(ctx, W.loadCfg())
   const stamp = W.readStamp()

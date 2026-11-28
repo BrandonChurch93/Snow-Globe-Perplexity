@@ -38,10 +38,12 @@ of 2.1, which may bring a newer one. Carry on in the newer copy at the step you 
 1. Do not edit any file of the repo. Do not repair code, shaders, settings or tests. A fault is mended by the remote
    team. A shader that does not compile is such a fault: copy its message whole into what you give Brandon.
 2. Do not commit and do not push. One line of this file writes to GitHub: the upload of 2.5. Run it only after
-   Brandon has said yes to it.
+   Brandon has said yes to it and his yes is recorded by the approve line of 2.5.
 3. Run only the commands written in this file, exactly as written, one line at a time. Use no other switches,
-   set no variables, and do not join lines with `&&` or `;`. Beyond these lines you do one thing only: you may
-   open a report file this file names with your own file reader, to give its text to Brandon.
+   set no variables, and do not join lines with `&&` or `;`. Two lines hold the place `<his words>`, the approve
+   lines of 2.2 and 2.5: there you put the words Brandon wrote in the chat, and nothing of your own. Beyond these
+   lines you do one thing only: you may open a report file this file names with your own file reader, to give
+   its text to Brandon.
 4. Ask Brandon only for a password, a sign in, or a system prompt that asks for his leave, and for what this file
    tells you, word for word, to ask him. Ask him nothing else and decide nothing for him.
 5. When a line ends in `FAIL:`, look for its sentence in the table of the step you are in, and do the one thing
@@ -95,11 +97,23 @@ A word was stopped when its last line says `FAIL: "<word>" was stopped before it
 restarted, a window was closed, a process was ended), or when your own command was cut off before any last line
 came. For each word this table is the whole rule. The tables of the steps name the same acts.
 
+The tool counts the stops of a word itself, and it never starts stopped work again in silence: the line that
+finds the work gone says so with this `FAIL:`, and the same line run again carries on. When a word was stopped
+as often as its row allows, the `FAIL:` ends with `Do not run the line again: stop and give Brandon the report`.
+That sentence rules. `status` then names no next line.
+
+Every start of the tool ends with one last line, `RUNNING:`, `PASS:` or `FAIL:`, inside ten minutes. Work that
+died without a last word of its own leaves a `FAIL:` too, and the line `THE REPORT` beside it names a report that
+holds the last lines the work wrote. A word that does its work inside the line itself (doctor, approve, deliver,
+clean) and has not ended after 9 minutes ends itself with `FAIL: "<word>" did not end within 9 minutes ...`. That
+is a stop: give Brandon its report.
+
 | word | the one line that carries on | how often | stop and report when |
 | --- | --- | --- | --- |
 | `setup` | `node tools/handoff.mjs setup` | once more | it is stopped a second time, or it ends in any other `FAIL:` |
 | `doctor` | `node tools/handoff.mjs doctor` | once more | it is stopped a second time, or its `FAIL:` has no row in 1.4 |
 | `test` | `node tools/handoff.mjs test` | once more, and only when it was stopped | it is stopped a second time. A test that ended in any other `FAIL:` is never run again (1.5) |
+| `approve` | `node tools/handoff.mjs approve render <his words>` or `node tools/handoff.mjs approve upload <his words>`, with the words Brandon wrote in the chat (2.2, 2.5). It draws nothing and sends nothing | once for each yes of Brandon's, and once more when it was stopped | it is stopped a second time, or its `FAIL:` has no row in 2.2 or 2.5 |
 | `render` | `node tools/handoff.mjs render`. It carries on from the last finished frames | once more after each stop | it is stopped twice with no more frames done in between (every `RUNNING:` line says how many are done), or a row of 2.2 says stop |
 | `check` | `node tools/handoff.mjs check` | once more | it is stopped a second time, or it ends in any other `FAIL:` |
 | `deliver` | `node tools/handoff.mjs deliver` | once more, and once more after Brandon has closed a player (2.4) | any other `FAIL:` |
@@ -254,8 +268,9 @@ Bad: `FAIL:` with the reason. Stop and report.
 node tools/handoff.mjs doctor
 ```
 
-It reads the processor, the memory, every video card with its driver, the system, the tools and the free disk from
-the machine itself and prints them. It opens Chrome in a window, as the render will, and prints what draws the page.
+It reads the processor, the memory, every video card with its driver, the system, the tools, the free disk on the
+drive of the clone and on the drive of the Desktop, and whether Windows waits for a restart, from the machine
+itself and prints them. It opens Chrome in a window, as the render will, and prints what draws the page.
 A Chrome window opens and closes by itself. Do not touch it.
 
 Good: `PASS: this machine can draw the film: ...` with the name of the graphics card that draws.
@@ -266,6 +281,17 @@ more memory), named by the model words the system gives it. Nothing about the ca
 
 A report may end with a block `TO LOOK AT`, each of its lines beginning with `LOOK`. That is no failure and you go
 on. Give the block to Brandon with the report, as it is.
+
+Four of these lines bear on a render of hours. You mend none of them and change no setting for them. Brandon
+reads them, and his yes for the full render (2.2) covers the ones that are still open then:
+
+- `this machine runs on its battery now ...`. A render of hours needs mains power.
+- `Windows waits for a restart ...`. A restart in the middle stops the render. Brandon restarts the computer when
+  he chooses. After a restart a new agent begins at "If you are started in the middle".
+- `the Desktop of this machine is inside OneDrive ...`. The test film, the sheet of pictures and the four files
+  are written into a folder that OneDrive copies to the cloud.
+- `the version of the card's driver could not be read ...`. The tool then cannot see a driver that is updated
+  between the test and the render.
 
 Under its table the doctor also prints what the shader compiler of this machine wrote about the film's shaders,
 and what the graphics card answers to a list of small sums (the maths probe). Both are for the remote team. They
@@ -280,7 +306,7 @@ Bad, each with the one thing to do:
 | Chrome is missing or too old | run the Chrome line below, then the doctor again |
 | the page draws in software | stop and report. The film is never drawn in software |
 | the page draws on another card than the strong one | stop and report. The report says which Windows setting Brandon can change. When Brandon says he has changed it, run the doctor line again and go on from there |
-| too little free disk | stop and report. The report says how much is needed |
+| too little free disk, on the drive of the clone or on the drive of the Desktop | stop and report. The report says how much is needed and on which drive |
 | the engine hash differs from the stamp's | stop and report. Do not pull, reset or edit anything |
 | this is WSL or another Linux layer | stop and report. Open PowerShell or Git Bash on Windows itself |
 | `"<word>" is still at work in the background` | no stop: run the line that sentence names until it ends, then the doctor again |
@@ -368,6 +394,10 @@ How the frames are compared, and why so:
   there. If it prints another, this clone holds a newer build, which was drawn and compared on Linux only and
   ran on no Windows and no macOS test machine. The remote team has said that it runs the test machines once more
   on the final build before it releases the full render.
+- What was added after that run. The two approve lines (2.2, 2.5), the record of Brandon's yes, the reading of
+  the card's driver, the `LOOK` lines for a restart that Windows waits for and for a Desktop inside OneDrive,
+  and the rule that a finished chunk counts only as the build of the approved test: all of these were run on
+  Linux only, with a small picture drawn in software. On a Windows or macOS machine they have not run yet.
 - The report also says, for every frame, how far the picture stands from its reference: the largest and the mean
   difference in levels of 255, how many pixels are more than 8 levels apart, and where in the picture they lie.
   These lines are marked `noted` and fail nothing. They tell the remote team where to look.
@@ -417,7 +447,7 @@ Bad, each with the one thing to do:
 
 | the last line says | do this |
 | --- | --- |
-| `FAIL: "test" was stopped before it ended` (sleep, a restart, a closed window), or your command was cut off | run the same line once more. If it is stopped a second time, stop and report |
+| `FAIL: "test" was stopped before it ended` (sleep, a restart, a closed window), or your command was cut off | run the same line once more. If it is stopped a second time, the sentence ends with `Do not run the line again`: stop and report |
 | `FAIL: "<word>" is still at work in the background` | no stop: run the line that sentence names until it ends, then the test line |
 | any other `FAIL:` | the test has failed. Do what stands under this table. Change no floor and no file. Do not run the test again to see whether it passes. Step 1 ends here, and you do not go on to 1.6 |
 
@@ -487,6 +517,9 @@ pull may have brought a newer one than the copy you were reading.
 When the pull brought a new build of the film, this test draws the calibration picture (1.5) for that build,
 once, and keeps it. When it brought none, the test keeps the one it has.
 
+Every run of the test takes away a yes for the full render that was recorded before it. Brandon's yes covers one
+test and its report, so after this test 2.2 asks him again.
+
 Bad, each with the one thing to do:
 
 | what you see | do this |
@@ -499,7 +532,47 @@ Bad, each with the one thing to do:
 If the test film of step 1 is still open in a player, this test writes its film beside it with `(new)` in the
 name and says so in a `LOOK` line. That is no failure.
 
-### 2.2 The render
+### 2.2 Brandon's yes, then the render
+
+The render starts only on Brandon's own yes, written in the chat after the test of 2.1. First give him the whole
+report of that test as one block (its path is the line `THE REPORT`), with its `TO LOOK AT` block if it has one,
+and the two printed paths of `THE TEST FILM` and `THE SHEET OF PICTURES`. Then ask him, word for word: "The test
+passed again on this machine. Its report says how many hours the full render takes and how much disk it needs.
+May the full render start now?"
+
+Only when he has written in the chat that it may, copy what he wrote into the line below, in the place of
+`<his words>`. Copy his own words and change none. Leave out every sign that is no letter, no digit and no space.
+
+```
+node tools/handoff.mjs approve render <his words>
+```
+
+You never write these words for him. Do not run this line on a yes he gave before the test of 2.1, on a yes he
+gave for something else, or on what you think he would say. If he has not written it, wait.
+
+The line draws nothing. It prints a block that begins `WHAT THIS YES COVERS`: the machine, the graphics card, its
+driver, the browser, the engine, the report of the test and its two previews (the test film and the sheet) by
+path and sha256, the projected hours, the disk, and every `LOOK` line that is still open. It writes a record of
+all that, and the render line refuses without a record that fits this machine, this build and this test. Give
+Brandon the printed block as it is.
+
+Good: `PASS: the full render is approved on this machine, by Brandon's words "..." ...`.
+
+Bad, each with the one thing to do:
+
+| the FAIL says | do this |
+| --- | --- |
+| `the film is not released for its final render yet; step 1 only` | stop and tell Brandon. The remote team releases the film; nothing here can |
+| the approve line `carries the words Brandon wrote in the chat ... and it was given none`, or its words `are letters, digits and spaces only` | run the line again with his words as he wrote them, without the other signs. If he has written no yes, wait for it |
+| `this is new since the test, and the report Brandon read does not say it: ...` | give Brandon the printed `LOOK` lines word for word. If he then writes that the full render may start, copy his words into the same line and run it again. If he does not, stop |
+| `the build changed since the test: run step 1's test again, give Brandon its report, stop` | run `node tools/handoff.mjs test` once, give Brandon its report as in 1.6, and stop |
+| `the short test has not passed on this machine ...`, or the report, the test film or the sheet of the short test `is not ... any more` | run `node tools/handoff.mjs test` once, give Brandon its report as in 1.6, and stop |
+| `the doctor does not pass on this machine now: ...` | the table of 1.4 holds |
+| `the drive of the clone has ... GB free, and what is still to do of the render needs ...` | stop and report. When Brandon says he has made room, run the same line again |
+| `"<word>" is still at work in the background` | no stop: run the line that sentence names until it ends, then the approve line |
+| anything else | stop and report |
+
+Then the render:
 
 ```
 node tools/handoff.mjs render
@@ -517,11 +590,17 @@ Read the file RENDER-ON-YOUR-PC.md in this folder. Do what its part If you are s
 nothing else."
 
 The tool keeps the computer awake by itself while it draws and lets it sleep again when it ends. It changes no
-power setting. It never draws a finished frame twice, and it never joins frames of two graphics cards into one film.
+power setting. If it cannot keep the computer awake, it says so in a `LOOK` line that Brandon's yes must cover.
+It draws no finished frame twice, but for the chunks named below, and it never joins frames of two graphics
+cards, two drivers or two versions of Chrome into one film.
 
-The render draws no new calibration picture: it uses the one the test kept (1.5), on every start. Two lines of
-its output say that it mended something by itself. They are no failures and need nothing from you. Give both to
-Brandon in the report of 2.7 if you see them:
+Before the first frame of every part it draws, the tool reads the card, its driver and the browser from the
+machine again and holds them against the test Brandon said yes to. A finished chunk counts only when its own
+record names that build and its bytes have the sha256 its record names.
+
+The render draws no new calibration picture: it uses the one the test kept (1.5), on every start. Three lines of
+its output say that it mended something by itself. They are no failures and need nothing from you. Give each to
+Brandon in the report of 2.7 if you see it:
 
 - `the record of the calibration picture was gone or could not be read ...: the record is written again from them`.
   The record was lost while finished chunks lay on disk. The tool wrote it again from what those chunks say and
@@ -529,6 +608,11 @@ Brandon in the report of 2.7 if you see them:
 - `... finished chunks (...) on disk name another build or another calibration picture, and are drawn again
   before the films are joined`. This is the one case in which finished chunks are drawn again: they do not
   belong to this build and its kept picture. It costs their time once more, and the film comes out whole.
+- `... on disk did not count for this render and ... drawn again`, with a line `the chunk ... on disk is not
+  taken: ...` for each. A finished chunk was not drawn by the build the approved test passed on (the engine, the
+  calibration picture, the card, its driver, Chrome), or its bytes are not the ones its record names. The tool
+  deletes its film, lists it in `out/work/handoff/chunk-ledger.json` and draws it again. A chunk the tool has
+  rejected is never taken again.
 
 Good: `PASS: the two films, the loop and the screenshot are made in ...`.
 
@@ -537,13 +621,17 @@ Bad, each with the one thing to do:
 | the FAIL says | do this |
 | --- | --- |
 | `the film is not released for its final render yet; step 1 only` | stop and tell Brandon. The remote team releases the film; nothing here can |
+| `the full render is not approved on this machine ...` | do the first half of 2.2: Brandon's yes in the chat, the approve line, then the render line |
+| `the full render is not started, and nothing was drawn: ...` (the short test was run again since his yes, his yes was given for another machine or another build, it was given before the film was rendered, delivered and cleaned here, or something `is new since his yes`) | give Brandon the report of the short test and that sentence, word for word. If he then writes that the full render may start, do the first half of 2.2 with his new words. If he does not, stop |
+| `the build changed since the test: run step 1's test again, give Brandon its report, stop` (a pull, another card, a driver that was updated) | run `node tools/handoff.mjs test` once, give Brandon its report as in 1.6, and stop. Nothing drawn is deleted by you. The render starts again only on a new yes |
+| `the chunk ... that was just drawn is not taken: ...` | stop and report. Do not run the render line again |
 | a final mix is missing or is not the one the stamp names | stop and tell Brandon that the remote team has not put the sound mixes into the repository yet, or that the file in the clone is not the one the stamp names. Do not ask him for the files |
-| `"render" was stopped before it ended` (sleep, a restart, a closed window) | run the same line again. It carries on from the last finished frames. If it is stopped a second time with no more frames done in between, stop and report |
+| `"render" was stopped before it ended` (sleep, a restart, a closed window) | run the same line again. It carries on from the last finished frames. If it is stopped a second time with no more frames done in between, the sentence ends with `Do not run the line again`: stop and report |
 | `the render stopped at ...` with `browser has been closed`, `the browser went away` or `the page crashed or closed` (a Chrome window was closed or Chrome ended) | run the same line again, once. It carries on from the last finished frames, and what was drawn is kept. If it stops a second time with no more frames done in between, stop and report. Change no setting (rule 8) |
 | `the WebGL context was lost` (the driver reset the card, or the card ran out of memory) | run the same line again, once. It carries on. If it is lost a second time with no more frames done in between, stop and report. Change no setting (rule 8) |
-| `Chrome is now version ...: the browser was updated` | Chrome updated itself in the middle. Run `node tools/handoff.mjs test` again. It keeps the calibration picture (1.5), so what was drawn before the update and what is drawn after it are joined into one film. When it ends with `PASS:`, run the render line again: it carries on from the last finished frames, and the report names both versions of Chrome. When the test ends with `FAIL:`, do not run the render line: nothing more is drawn with a browser the test did not pass on (the tool refuses it too). Stop and give Brandon the report of the test |
+| `Chrome is now version ...: the browser was updated` | Chrome updated itself in the middle. Run `node tools/handoff.mjs test` once, give Brandon its report as in 1.6, and stop. The render starts again only on a new yes (the first half of 2.2). It then draws again what the older Chrome drew, because one film is drawn by one tested browser, and the test keeps the calibration picture (1.5) for it |
 | the page draws in software, or on another card | stop and report. Nothing drawn is lost |
-| too little free disk | stop and report. Nothing drawn is lost |
+| too little free disk (`only ... GB of disk is free ...`) | stop and report. Nothing drawn is lost. When Brandon says he has made room, run the same line again |
 | `"<word>" is still at work in the background` | no stop: run the line that sentence names until it ends, then the render line |
 | anything else | stop and report |
 
@@ -575,6 +663,7 @@ Bad, each with the one thing to do:
 | the FAIL says | do this |
 | --- | --- |
 | a file on the Desktop `could not be written, because another program holds it open` | tell Brandon, word for word: "A film from an earlier run is open in a player on your Desktop. Please close the player and tell me." When he has, run the same line again, once |
+| `the drive of the Desktop ... has ... free, and the four files and their report need ...` | stop and report. Nothing was copied. When Brandon says he has made room on that drive, run the same line again |
 | anything else | stop and report |
 
 What the files weigh: each film at most 500 MB, the loop under 2,000 MB (2.3 checks it), the screenshot some tens
@@ -582,9 +671,25 @@ of MB. They stay in that folder. 2.5 sends copies of them, and only if Brandon s
 
 ### 2.5 Send the files to the remote team, only when Brandon says yes
 
-This line writes to Brandon's repo on GitHub. Before you run it, ask Brandon, word for word: "The files are on your
-Desktop. May I send copies to the remote team now, as a draft release of the repo? A draft is shown to no one
-else." Run the line only after he says yes. If he says no, go on with 2.6.
+The upload writes to Brandon's repo on GitHub. Before anything is run, ask Brandon, word for word: "The files are
+on your Desktop. May I send copies to the remote team now, as a draft release of the repo? A draft is not
+public. Everyone with write access to the repository can see the draft and its files." If he says no, go on
+with 2.6.
+
+Only when he has written yes in the chat, copy what he wrote into the line below, in the place of `<his words>`.
+Copy his own words and change none. Leave out every sign that is no letter, no digit and no space. You never
+write these words for him.
+
+```
+node tools/handoff.mjs approve upload <his words>
+```
+
+The line sends nothing. It asks GitHub whether the repo is private and prints a block that begins
+`WHAT THIS YES COVERS`: the repository by owner and name, that it is private, and the four files with their
+sizes and sha256. It writes a record of that, and the upload line refuses without a record that names this
+repository and these very files. It refuses too before 2.4 has passed. Give Brandon the printed block as it is.
+
+Good: `PASS: the upload is approved on this machine, by Brandon's words "..." ...`. Then:
 
 ```
 node tools/handoff.mjs upload
@@ -599,13 +704,20 @@ GitHub and compares every name, size and sum.
 Good: `PASS: the draft release "..." holds the 6 files, each read back by its name, its bytes and its sum: ...`
 with the address of the release. Give Brandon that address.
 
-Bad, each with the one thing to do:
+Bad, each with the one thing to do. The table holds for the approve line and for the upload line; "the same
+line" is the one that gave the answer. The approve line begins these sentences with
+`no yes for the upload is recorded:`.
 
 | the FAIL says | do this |
 | --- | --- |
-| `gh, the GitHub program that sends the files, is not on this machine` | run the install line below, then the upload line again |
-| `gh, the GitHub program, is not signed in on this machine` | tell Brandon, word for word: "The upload needs your GitHub sign in. Please open a terminal yourself, run `gh auth login`, answer what it asks, and tell me when it is done." Then run the upload line again |
-| the sign in `does not see the repo` or `may not write to it` | the same words to Brandon, and add: "It must be the account that owns the repo." Then run the upload line again |
+| `the four files are not delivered to the Desktop yet ...` | run the line of 2.4, then the same line again |
+| `the upload is not approved on this machine ...` | do the first half of 2.5: Brandon's yes in the chat, the approve line, then the upload line. After the clean of 2.6 his yes is gone too, and is asked for again |
+| `the upload is not started, and nothing is sent: ...` (his yes names another repository or other files) | ask Brandon the question of 2.5 again. If he writes yes, do the first half of 2.5 with his new words. If he does not, go on with 2.6 |
+| a file `is not on the Desktop any more as it was delivered` | run the line of 2.4, then the same line again |
+| the approve line `carries the words Brandon wrote in the chat ... and it was given none`, or its words `are letters, digits and spaces only` | run the line again with his words as he wrote them, without the other signs. If he has written no yes, wait for it |
+| `gh, the GitHub program that sends the files, is not on this machine` | run the install line below, then the same line again |
+| `gh, the GitHub program, is not signed in on this machine` | tell Brandon, word for word: "The upload needs your GitHub sign in. Please open a terminal yourself, run `gh auth login`, answer what it asks, and tell me when it is done." Then run the same line again |
+| the sign in `does not see the repo` or `may not write to it` | the same words to Brandon, and add: "It must be the account that owns the repo." Then run the same line again |
 | `the repo ... is not private, so nothing is sent` | stop and tell Brandon. The remote team makes the repo private; nothing here can |
 | `the check has not passed` or a file `is not the file that was checked` | run the line of 2.3 again, then the upload line. If it says the same again, stop and report |
 | a file `did not go through`, or GitHub `could not be asked` (the connection dropped) | run the same line again. It sends only what is missing or short. If it fails three times in a row, stop and report |
@@ -620,7 +732,8 @@ What was tried: sending, carrying on after a cut connection and reading back wer
 few bytes, on Linux and on a hosted Windows machine. The refusal for a missing sign in was run on the hosted
 Windows and macOS machines, after a small render there. The refusal for a repo that is not private was run on
 Linux only, while the repo was public. `gh auth login` was run on no test machine, and no whole film was sent by
-this line before Brandon's own run.
+this line before Brandon's own run. The approve line of the upload was run on Linux only, where it refused
+because the repo was public. Its `PASS:` was run on no machine, because the repo of the tests is public.
 
 ### 2.6 Clean up, only after the delivery passed
 
@@ -630,6 +743,11 @@ node tools/handoff.mjs clean
 
 Good: `PASS: the work files are deleted and ... GB of disk is regained ...`. The files on the Desktop, the reports
 and the clone stay.
+
+The clean takes away both of Brandon's recorded yeses. After it the render line does not begin the film again
+from nothing by itself: it refuses, and the approve line of 2.2 first prints that the film was rendered,
+delivered and cleaned here already, as a `LOOK` line for Brandon. Do not render a second time unless Brandon
+asks for it in the chat.
 
 Bad: `FAIL:`. Stop and report. Delete nothing by hand.
 
@@ -700,6 +818,10 @@ agent again and give it the same task." Then wait.
 - 1.2: the window `Connect to GitHub` of Git for Windows. The sign in on the Mac stands below.
 - 1.4: the rows for WSL and for a Windows graphics setting. A MacBook with Apple's own chip has one card. If the
   doctor says the page draws in software or on another card there: stop and report.
+- 1.4: the line `restart` says that it is not read on a Mac. The line `driver` names the version of macOS,
+  because on a Mac the driver is a part of the system. An update of macOS between the test and the render is
+  therefore a changed build (2.2). The `LOOK` line for a Desktop in the cloud reads
+  `the Desktop of this Mac is kept in iCloud Drive ...` there.
 - 1.5: the reading of an NVIDIA card with `nvidia-smi`. The test prints no such reading on a Mac.
 - 2.2: the words to Brandon about Windows updates. Say in their place: "Please keep the MacBook on its charger
   and its lid open until I say it is done."
@@ -733,13 +855,17 @@ git pull --ff-only
 node tools/handoff.mjs setup
 node tools/handoff.mjs doctor
 node tools/handoff.mjs test
+node tools/handoff.mjs approve render <his words>
 node tools/handoff.mjs render
 node tools/handoff.mjs check
 node tools/handoff.mjs deliver
+node tools/handoff.mjs approve upload <his words>
 node tools/handoff.mjs upload
 node tools/handoff.mjs clean
 ```
 
-The upload line is run only after Brandon has said yes to it, as in 2.5. If he says no, leave it out.
+Each approve line is run only with the words Brandon wrote in the chat, as in 2.2 and in 2.5. You never write
+them for him. The two lines of the upload are run only after Brandon has said yes to it, as in 2.5. If he says
+no, leave both out.
 
 Keep the MacBook on its charger and its lid open for the whole render.

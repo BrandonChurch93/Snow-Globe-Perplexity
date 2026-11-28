@@ -9,6 +9,7 @@ import { spawn, spawnSync } from 'node:child_process'
 import { rel, readJson, writeJson } from './paths.mjs'
 import { engineHash } from './hashes.mjs'
 import * as L from './handoff.mjs'
+import * as A from './handoff-approve.mjs'
 import * as X from './handoff-machine.mjs'
 
 export const STAMP_DIR = rel('render')
@@ -227,6 +228,85 @@ export function diskNeed(stamp, mode, measured = null, procs = 2) {
   })
 }
 
+/** The folder itself, or the nearest folder above it that is there: a Desktop that is not made yet is on the drive of what holds it. */
+const existingFolder = (dir) => {
+  let d = path.resolve(dir)
+  for (let i = 0; i < 64 && !fs.existsSync(d); i++) {
+    const up = path.dirname(d)
+    if (up === d) break
+    d = up
+  }
+  return d
+}
+
+/** What of the render is on disk already, counted lightly: finished chunks by their two files, the films by their size, the delivery by its record. */
+function workDone(ctx, stamp, mode) {
+  let chunksFinished = 0
+  for (const p of renderParts(stamp, mode)) {
+    for (const c of L.chunkLines(p.first, p.last, mode.chunk)) {
+      const stem = path.join(chunksDir(mode), p.what, L.chunkFile(p.what, c))
+      if (fs.existsSync(`${stem}.json`) && fs.existsSync(`${stem}.mp4`)) chunksFinished++
+    }
+  }
+  let finalsBytes = 0
+  for (const f of Object.values(finalFiles(mode))) {
+    try {
+      finalsBytes += fs.statSync(f).size
+    } catch {}
+  }
+  const delivered = readOr(path.join(ctx.H, 'deliver.json'))
+  return { chunksFinished, finalsBytes, deliveredBytes: delivered?.pass ? sum((delivered.files ?? []).map((f) => f.bytes ?? 0)) : 0 }
+}
+
+// Whether Windows waits for a restart: the two places where Windows Update and the servicing of the system mark it.
+// It reads only, and changes nothing.
+const RESTART_SCRIPT = `
+$a = Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\RebootRequired'
+$b = Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending'
+Write-Output "update=$a servicing=$b"
+`
+export function pendingRestart() {
+  if (!WIN) return { read: false, why: '', said: 'not read on this system (the tool reads it on Windows alone)' }
+  try {
+    const said = X.powershell(RESTART_SCRIPT, { timeout: 60000 }).trim()
+    const why = [/update=True/i.test(said) ? 'Windows Update has installed something that needs one' : '', /servicing=True/i.test(said) ? 'the servicing of the system needs one' : ''].filter(Boolean).join(', and ')
+    return { read: true, why, said }
+  } catch (e) {
+    return { read: false, why: '', said: `could not be read (${String(e?.message ?? e).split('\n')[0]})` }
+  }
+}
+
+/** Before the four files are copied: the Desktop's own drive must take them. Empty when it does, else the refusal. */
+export function desktopRoom(ctx) {
+  const checked = readOr(path.join(ctx.H, 'check.json'))
+  if (!checked?.pass) return ''
+  let desktop = ''
+  try {
+    desktop = X.readMachine().desktop
+  } catch {
+    return ''
+  }
+  const mode = modeOf(ctx, loadCfg())
+  const folder = path.join(desktop, L.deliveryFolder(mode.small))
+  let need = mode.small ? 1024 ** 2 : A.DESKTOP_SPARE
+  for (const kind of L.KINDS) {
+    const f = checked.files?.[kind]
+    if (!f) continue
+    let there = -1
+    try {
+      there = fs.statSync(path.join(folder, L.deliveryName(kind, mode.format.width, mode.format.height))).size
+    } catch {}
+    if (there !== f.bytes) need += f.bytes
+  }
+  let free
+  try {
+    free = X.freeBytes(existingFolder(folder))
+  } catch (e) {
+    return `the room on the drive of the Desktop (${desktop}) could not be read (${String(e?.message ?? e).split('\n')[0]}), so nothing was copied. Stop and report`
+  }
+  return free >= need ? '' : `the drive of the Desktop (${desktop}) has ${mb(free)} free, and the four files and their report need ${mb(need)} there. Nothing was copied. Make room on that drive, then run the same line again: node tools/handoff.mjs deliver`
+}
+
 export async function doctor(ctx, { draw = true } = {}) {
   const rows = []
   const row = (check, found, wanted, pass) => rows.push({ check, found, wanted, pass })
@@ -273,6 +353,17 @@ export async function doctor(ctx, { draw = true } = {}) {
   ctx.say(`desktop    ${machine.desktop}`)
   ctx.say(`read with  ${machine.readWith}`)
   if (machine.onBattery) row('power', machine.power, 'mains power for a render of hours', null)
+  // the driver of the card that draws: a part of the build a short test passes on
+  const driver = A.driverText({ platform: process.platform, os: machine.os, cards: machine.cards, wanted: L.wantedCard(machine.cards) })
+  out.driver = driver.text
+  ctx.say(`driver     ${driver.text}`)
+  // what bears on a render of hours and stops nothing here: each is a LOOK line, and Brandon's yes must have seen it
+  const restart = pendingRestart()
+  out.pendingRestart = restart
+  ctx.say(`restart    ${restart.read ? (restart.why ? `Windows waits for one: ${restart.why}` : 'Windows waits for none') : restart.said}`)
+  const cloud = A.desktopInCloud({ platform: process.platform, desktop: machine.desktop, env: process.env, icloudDesktop: process.platform === 'darwin' && fs.existsSync(path.join(os.homedir(), 'Library', 'Mobile Documents', 'com~apple~CloudDocs', 'Desktop')) })
+  out.longRun = A.longRunLines({ onBattery: machine.onBattery, power: machine.power, pendingRestart: restart.why, cloud, driverMissing: driver.missing })
+  for (const l of out.longRun) look.push(l.text)
 
   // the tools
   const tools = X.readTools()
@@ -325,11 +416,28 @@ export async function doctor(ctx, { draw = true } = {}) {
   out.freeBytes = free
   if (!bad.length) {
     const plan = diskNeed(stamp, mode, readOr(path.join(ctx.H, 'test.json'))?.disk ?? null)
-    out.diskNeedBytes = plan.total
+    // what is drawn, encoded or delivered already needs no room again: a render that carries on is asked only for
+    // the work that remains, and the Desktop's own drive is looked at for what is written there
+    const desk = existingFolder(machine.desktop)
+    const sameDrive = X.sameDrive(rel(), desk)
+    const left = A.diskRemaining(plan, { ...workDone(ctx, stamp, mode), sameDrive })
+    out.diskNeedBytes = left.total
+    out.diskWholeBytes = plan.total
     const text = `${L.gb(free).toFixed(1)} GB free on the drive of the clone`
-    const want = `${L.gb(plan.total).toFixed(1)} GB: ${plan.chunks} chunks ${L.gb(plan.intermediates).toFixed(1)}, frames in work ${L.gb(plan.inFlight).toFixed(1)}, the files ${L.gb(plan.finals).toFixed(1)}, room to encode ${L.gb(plan.encodeRoom).toFixed(1)}, the copies ${L.gb(plan.copies).toFixed(1)}, spare ${L.gb(plan.spare).toFixed(1)}`
-    if (free >= plan.total) row('free disk', text, want, true)
-    else fail('free disk', text, want, `${text}, and the render needs ${L.gb(plan.total).toFixed(1)} GB at its fullest. Make room on that drive, or clone onto a drive with more`)
+    const want = A.remainingText(left)
+    if (free >= left.total) row('free disk', text, want, true)
+    else fail('free disk', text, want, `${text}, and ${left.leftChunks === left.chunks ? 'the render needs' : 'what is still to do of the render needs'} ${L.gb(left.total).toFixed(1)} GB at its fullest. Make room on that drive, or clone onto a drive with more`)
+    let deskFree = null
+    try {
+      deskFree = X.freeBytes(desk)
+    } catch {}
+    out.desktopFreeBytes = deskFree
+    const deskNeed = left.desktop + A.DESKTOP_SPARE
+    const deskWant = `${L.gb(deskNeed).toFixed(1)} GB for the test film, the sheet of pictures and the four files`
+    if (deskFree === null) fail("free on the Desktop's drive", `not read for ${machine.desktop}`, deskWant, `the room on the drive of the Desktop (${machine.desktop}) could not be read, and the test film, the sheet of pictures and the four files are written there. Stop and report`)
+    else if (sameDrive) row("free on the Desktop's drive", `the Desktop (${machine.desktop}) is on the drive of the clone`, `counted in the row above: the copies for the Desktop ${L.gb(left.copies).toFixed(1)} GB`, true)
+    else if (deskFree >= deskNeed) row("free on the Desktop's drive", `${L.gb(deskFree).toFixed(1)} GB free on the drive of ${machine.desktop}`, deskWant, true)
+    else fail("free on the Desktop's drive", `${L.gb(deskFree).toFixed(1)} GB free on the drive of ${machine.desktop}`, deskWant, `the drive of the Desktop (${machine.desktop}) has ${L.gb(deskFree).toFixed(1)} GB free, and the test film, the sheet of pictures and the four files need ${L.gb(deskNeed).toFixed(1)} GB there. Make room on that drive`)
   }
 
   // the browser, opened as the render opens it
@@ -776,6 +884,9 @@ async function shortTestOnce(ctx) {
   const rows = []
   const row = (check, found, wanted, pass) => rows.push({ check, found, wanted, pass })
   const result = { pass: false, why: '', rows, time: new Date().toISOString() }
+  // a test that begins takes away the record of the test before it, and the yes that was given on that test: a test
+  // that dies leaves no older pass behind, and every yes belongs to one test
+  for (const f of ['test.json', A.APPROVAL_FILES.render, A.APPROVAL_FILES.asked]) fs.rmSync(path.join(ctx.H, f), { force: true })
   let onFail = () => {}
   const fail = (why) => {
     onFail()
@@ -786,6 +897,7 @@ async function shortTestOnce(ctx) {
   const doc = await doctor(ctx)
   if (doc.machine?.desktop) result.desktop = doc.machine.desktop
   if (!doc.pass) return fail(`the doctor does not pass, so nothing was drawn: ${doc.why}`)
+  result.driver = doc.driver ?? ''
   const look = [...(doc.look ?? [])]
   result.look = look
   // the machine is kept awake for as long as this process lives; nothing of the system's settings is changed
@@ -831,6 +943,8 @@ async function shortTestOnce(ctx) {
   const samplesAhead = mode.small ? (refs.length + stretch.last - stretch.first + 1) * 2 : sum(refs.filter((r) => r.what !== 'opening').map((r) => r.samples)) + sum(counts['film-b'].slice(stretch.first, stretch.last + 1))
   const guess = samplesAhead * perSampleGuess
   result.calibration = { seconds: cal.seconds, sha256: cal.sha256, did: cal.did, twice: { ...twice, line: L.twiceLine(twice) } }
+  // the build this test stands for: a render finds the same again, or it does not start
+  result.identity = A.identityOf({ engineHash: hash, stamp, calibration: cal.sha256, renderer: doc.renderer, driver: doc.driver ?? '', chrome: doc.page?.browser ?? '' })
   ctx.say(`the calibration picture took ${cal.seconds} s. By that, the test draws ${samplesAhead} samples in about ${L.hoursText(guess)} (a rough guess before anything is measured)`)
   if (guess > 20 * 60) ctx.say(`THIS MACHINE IS SLOW: the short test will take about ${L.hoursText(guess)}. It goes on by itself and nothing needs doing meanwhile`)
 
@@ -962,7 +1076,7 @@ async function shortTestOnce(ctx) {
   if (sheet.length) {
     const file = path.join(T, 'contact-sheet.jpg')
     const made2 = await contactSheet(sheet, file, `${L.TITLE}: the short test on ${doc.renderer}`)
-    result.sheet = { file, bytes: made2.bytes }
+    result.sheet = { file, bytes: made2.bytes, sha256: L.sha256File(file) }
     ctx.say(`contact sheet: ${file} (${mb(made2.bytes)})`)
     const sheetName = `${L.TITLE} - Test - Contact Sheet.jpg`
     let sheetProblem = ''
@@ -1131,20 +1245,26 @@ async function shortTestOnce(ctx) {
   const disk = mode.small ? null : { chunkMb: round((chunkBytes * (mode.chunk / size)) / 1e6, 1), ...(pngBytes ? { pngMb: round(pngBytes / 1e6, 1) } : {}) }
   const plan = diskNeed(stamp, mode, disk, rule.procs)
   const free = X.freeBytes(rel())
-  row('free disk for the full render', `${L.gb(free).toFixed(1)} GB free`, `${L.gb(plan.total).toFixed(1)} GB at its fullest, with the chunks as large as the test's`, free >= plan.total)
+  // a test in the middle of a render is asked for the work that remains, not for a whole new render
+  const left = A.diskRemaining(plan, { ...workDone(ctx, stamp, mode), sameDrive: X.sameDrive(rel(), existingFolder(doc.machine.desktop)) })
+  row('free disk for the full render', `${L.gb(free).toFixed(1)} GB free`, `${A.remainingText(left)}, with the chunks as large as the test's`, free >= left.total)
   const encodePerFrame = madeRecord.encodeSeconds / frames
   const all = stamp.frames['film-a'] + stamp.frames['film-b'] + stamp.frames.loop
   const batches = Math.ceil(stamp.frames['film-b'] / (mode.chunk * BATCH_CHUNKS)) + Math.ceil(stamp.frames.loop / (mode.chunk * BATCH_CHUNKS))
   const proj = mode.small ? null : L.projection({ counts: { ...addTally(L.tally(counts['film-b']), L.tally(counts.loop)) }, cost, gain, encodeSeconds: encodePerFrame * all + (openingSeconds ?? 0) * stamp.frames.opening, startSeconds: 20, batches, chunkSeconds: chunkStart, chunks: Math.ceil(stamp.frames['film-b'] / mode.chunk) + Math.ceil(stamp.frames.loop / mode.chunk) })
-  Object.assign(result, { cost: { each: round(cost.each, 3), perSample: round(cost.perSample, 4), frames: cost.frames, chunkStart: round(chunkStart, 2) }, gainMeasured: round(gainMeasured, 2), procs: rule.procs, procsWhy: rule.why, memoryHolds, disk, diskNeedBytes: plan.total, timed, projection: proj })
+  Object.assign(result, { cost: { each: round(cost.each, 3), perSample: round(cost.perSample, 4), frames: cost.frames, chunkStart: round(chunkStart, 2) }, gainMeasured: round(gainMeasured, 2), procs: rule.procs, procsWhy: rule.why, memoryHolds, disk, diskNeedBytes: left.total, timed, projection: proj })
   ctx.say(`time: a frame of 24 samples takes ${at(24)}, a frame of 96 samples ${at(96)} (the time estimate: ${cost.each.toFixed(2)} s a frame and ${cost.perSample.toFixed(3)} s a sample, from ${cost.frames} frames drawn by one process${chunkStart > 0 ? `, and ${chunkStart.toFixed(1)} s more at the start of each chunk` : ''})`)
   ctx.say(`workers (drawing processes side by side): ${rule.why}. The full render uses ${rule.procs} ${rule.procs === 1 ? 'worker' : 'workers'}`)
   if (proj) {
     ctx.say(`projection: film B and the loop are ${proj.frames} frames, ${L.hoursText(proj.drawSeconds)} of drawing with ${rule.procs} ${rule.procs === 1 ? 'process' : 'processes'}, ${L.hoursText(proj.startSeconds)} of starting browsers, ${L.hoursText(proj.encodeSeconds)} for the opening and the three encodes: ${L.hoursText(proj.seconds)} in all`)
-    ctx.say(`disk: at its fullest the full render holds ${L.gb(plan.total).toFixed(1)} GB (chunks of ${disk.chunkMb} MB), and ${L.gb(free).toFixed(1)} GB is free`)
+    ctx.say(`disk: at its fullest ${left.leftChunks === left.chunks ? 'the full render holds' : 'what is still to do of the full render holds'} ${L.gb(left.total).toFixed(1)} GB (chunks of ${disk.chunkMb} MB), and ${L.gb(free).toFixed(1)} GB is free`)
     if (proj.seconds > L.TOO_LONG_HOURS * 3600) ctx.say(`MORE THAN ${L.TOO_LONG_HOURS} HOURS: the full render is projected at ${L.hoursText(proj.seconds)} on this machine. Say so in the report; whether it is started is decided by the one who released the film`)
   }
 
+  // what bears on a render of hours: each is a LOOK line of this report, and Brandon's yes for the full render quotes it
+  const cleanTime = cleanedSince(ctx)
+  result.longRun = [...A.longRunLines({ projectionSeconds: proj?.seconds ?? null, tooLongHours: L.TOO_LONG_HOURS, freeBytes: free, needBytes: left.total, awakeFailed: awake.pid ? '' : awake.how, again: cleanTime ? A.againText(cleanTime) : '' }), ...(doc.longRun ?? [])]
+  for (const l of result.longRun) if (!look.includes(l.text)) look.push(l.text)
   ctx.say(`test film: ${result.testFilm.file} (${mb(fs.statSync(made).size)}, ${frames} frames)`)
 
   // the test's chunks leave the folder a later encode reads
@@ -1205,24 +1325,6 @@ function renderParts(stamp, mode) {
   return [{ what: 'film-b', first: 0, last: stamp.frames['film-b'] - 1 }, { what: 'loop', first: 0, last: stamp.frames.loop - 1 }, { what: 'opening', first: 0, last: stamp.frames.opening - 1 }]
 }
 
-/**
- * Whether a chunk is finished on disk for the render that goes on. `kept()` gives the build and the kept
- * calibration picture: a chunk of film B or of the loop that names another one does not count and is drawn again.
- */
-const chunkDone = (mode, kept) => {
-  const known = new Map()
-  return (what, c) => {
-    const stem = path.join(chunksDir(mode), what, L.chunkFile(what, c))
-    if (!fs.existsSync(`${stem}.json`) || !fs.existsSync(`${stem}.mp4`)) return false
-    const k = kept()
-    const key = `${stem}|${k.calibration ?? ''}`
-    if (known.get(key)) return true
-    const ok = L.chunkCounts(readOr(`${stem}.json`), { what, engineHash: k.engineHash, calibration: k.calibration })
-    if (ok) known.set(key, true)
-    return ok
-  }
-}
-
 /** A small pack of the opening for the tool's own tests, made from the real one: every frame, at the small size. */
 async function smallPack(ctx, mode) {
   const dir = path.join(ctx.H, 'small-pack')
@@ -1246,6 +1348,207 @@ async function smallPack(ctx, mode) {
   fs.writeFileSync(path.join(dir, PACK_FILES.bin), out.bin)
   fs.writeFileSync(path.join(dir, PACK_FILES.manifest), out.manifest)
   return dir
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Brandon's yes, for the full render and for the upload. The rules are in tools/lib/handoff-approve.mjs.
+
+/** When the film was rendered, delivered and cleaned here and not rendered since: the time the clean passed. Else empty. */
+function cleanedSince(ctx) {
+  const ended = readOr(path.join(ctx.H, 'ended.json'), {})
+  const c = ended?.clean
+  const r = ended?.render
+  if (c?.state !== 'PASS' || !c.time) return ''
+  if (r?.state === 'PASS' && Date.parse(r.time) > Date.parse(c.time)) return ''
+  return c.time
+}
+
+/** What bears on a render of hours as the machine is now, with the room that what is still to do needs. */
+function longRunNow(ctx, { doc, test, stamp, mode, awake = null }) {
+  const plan = diskNeed(stamp, mode, test?.disk ?? null, mode.small ? 2 : (test?.procs ?? 1))
+  const left = A.diskRemaining(plan, { ...workDone(ctx, stamp, mode), sameDrive: X.sameDrive(rel(), existingFolder(doc.machine.desktop)) })
+  const free = X.freeBytes(rel())
+  const cleanTime = cleanedSince(ctx)
+  const lines = [...A.longRunLines({ projectionSeconds: test?.projection?.seconds ?? null, tooLongHours: L.TOO_LONG_HOURS, freeBytes: free, needBytes: left.total, awakeFailed: awake && !awake.pid ? awake.how : '', again: cleanTime ? A.againText(cleanTime) : '' }), ...(doc.longRun ?? [])]
+  return { lines, left, free, cleanTime, plan }
+}
+
+/** A preview of the test by path and sha256: where the test left it, or its copy in the clone, whichever still is that file. */
+function previewOf(paths, sha) {
+  for (const p of paths) {
+    try {
+      if (p && fs.existsSync(p) && L.sha256File(p) === sha) return { path: p, sha256: sha }
+    } catch {}
+  }
+  return null
+}
+
+export async function approve(ctx) {
+  const a = A.approveArgs(['approve', ...(ctx.args ?? [])])
+  if ('problem' in a) return { pass: false, why: a.problem, refused: true }
+  return a.what === 'render' ? approveRender(ctx, a.words) : approveUpload(ctx, a.words)
+}
+
+async function approveRender(ctx, words) {
+  const fail = (why) => ({ pass: false, why, refused: true })
+  const none = 'No yes is recorded'
+  const stamp = readStamp()
+  const mode = modeOf(ctx, loadCfg())
+  const hash = engineHash()
+  // the remote team's own lock stands beside this one, and comes first
+  const gate = L.renderRefusals({ stamp, engineHash: hash, doctor: { pass: true }, test: { pass: true, engineHash: hash }, sound: [], small: mode.small })
+  if (gate.length) return fail(`${gate[0]}. ${none}`)
+  const { machineId } = await import('./browser.mjs')
+  const machine = machineId()
+  const test = readOr(path.join(ctx.H, 'test.json'))
+  const again = "Run step 1's test, give Brandon its report, stop"
+  if (!test || test.pass !== true) return fail(`the short test has not passed on this machine, so there is nothing for a yes to cover. ${none}. ${again}`)
+  if (test.machine !== machine) return fail(`the short test has not passed on this machine: its record names another machine (${test.machine}). ${none}. ${again}`)
+  if (!mode.small && (test.small || (test.switches && L.anyTestSwitch(test.switches)))) return fail(`the short test has not passed on this machine as a real test: the one recorded here was a run of the tool's own tests. ${none}. ${again}`)
+  if ((test.notReady ?? []).length) return fail(`the short test has not passed on this machine in full: its picture passed, and the full render cannot start yet (${test.notReady.join('; ')}). ${none}. Stop and give Brandon the report of the test`)
+  if (!test.identity) return fail(`${A.NO_IDENTITY}. ${none}`)
+  const doc = await doctor(ctx)
+  if (!doc.pass) return fail(`the doctor does not pass on this machine now: ${doc.why}. ${none}`)
+  const cal = await keptCalibration(ctx, mode, hash, renderParts(stamp, mode), { draw: false })
+  const identity = A.identityOf({ engineHash: hash, stamp, calibration: cal.sha256 ?? '', renderer: doc.renderer, driver: doc.driver ?? '', chrome: doc.page?.browser ?? '' })
+  const diff = A.identityDiff(test.identity, identity)
+  if (diff.length) return fail(`${A.buildChanged(diff)}. ${none}`)
+  // the mixes the test found are the stamp's still: a yes covers a film that can be made
+  const gone = soundState(stamp).filter((m) => !m.ok)
+  if (gone.length && !mode.small) return fail(`${A.buildChanged(gone.map((m) => `a final mix that the test found is not that mix now (${m.why})`))}. ${none}`)
+  // the report of the test and its two previews, by path and sha256
+  const reportFile = path.join(ctx.H, 'report-test.txt')
+  if (!fs.existsSync(reportFile)) return fail(`the report of the short test is not in this clone any more (${reportFile}), and a yes names it by its sha256. ${none}. ${again}`)
+  const report = { path: reportFile, sha256: L.sha256File(reportFile) }
+  const T = path.join(ctx.H, 'test')
+  const film = previewOf([test.testFilm?.file, path.join(T, L.testFilmName(mode.format.width, mode.format.height))], test.testFilm?.sha256)
+  if (!film) return fail(`the test film of the short test is not the file the test made any more, neither where the test left it (${test.testFilm?.file ?? 'no place recorded'}) nor in the clone, and a yes names it by its sha256. ${none}. ${again}`)
+  let sheet = { path: 'none was made by this test', sha256: 'none' }
+  if (test.sheet) {
+    sheet = previewOf([test.sheet.onDesktop, test.sheet.file], test.sheet.sha256)
+    if (!sheet) return fail(`the sheet of pictures of the short test is not the file the test made any more, neither where the test left it (${test.sheet.onDesktop ?? test.sheet.file}) nor in the clone, and a yes names it by its sha256. ${none}. ${again}`)
+  }
+  // what bears on a run of hours, as the machine is now
+  const awake = await X.keepAwake(process.pid)
+  awake.stop()
+  const now = longRunNow(ctx, { doc, test, stamp, mode, awake })
+  if (now.free < now.left.total) return fail(`the drive of the clone has ${L.gb(now.free).toFixed(1)} GB free, and what is still to do of the render needs ${L.gb(now.left.total).toFixed(1)} GB at its fullest. ${none}. Make room on that drive, then run the same approve line again`)
+  // a line that Brandon cannot have read in the test's report goes to him first: the same line a second time records his yes
+  const askedFile = path.join(ctx.H, A.APPROVAL_FILES.asked)
+  const asked = readOr(askedFile)
+  const covered = [...(test.longRun ?? []), ...(asked?.testTime === test.time ? (asked.lines ?? []) : [])]
+  const fresh = A.freshLines(now.lines, covered)
+  if (fresh.length) {
+    writeJson(askedFile, { testTime: test.time, time: new Date().toISOString(), lines: [...(asked?.testTime === test.time ? (asked.lines ?? []) : []), ...fresh] })
+    for (const l of fresh) ctx.say(`LOOK  ${l.text}`)
+    return fail(`this is new since the test, and the report Brandon read does not say it: ${fresh.map((l) => l.text).join(' | ')}. ${none}. Give Brandon these lines word for word. If he then writes that the full render may start, copy his words into the same line and run it again: ${A.approveLine('render')}`)
+  }
+  const longTexts = new Set((test.longRun ?? []).map((l) => l.text))
+  const made = A.renderApproval({
+    words,
+    time: new Date().toISOString(),
+    machine,
+    identity,
+    test: { time: test.time, report, film, sheet },
+    projection: test.projection?.seconds > 0 ? { seconds: test.projection.seconds, procs: test.procs ?? 1 } : null,
+    disk: { needBytes: now.left.total, freeBytes: now.free },
+    longRun: now.lines,
+    look: (test.look ?? []).filter((l) => !longTexts.has(l)),
+    small: mode.small,
+  })
+  writeJson(path.join(ctx.H, A.APPROVAL_FILES.render), made.record)
+  for (const l of made.lines) ctx.say(l)
+  return { pass: true, why: `the full render is approved on this machine, by Brandon's words "${words}", for the build and the test named above. The record is ${short(path.join(ctx.H, A.APPROVAL_FILES.render))}. Next: node tools/handoff.mjs render` }
+}
+
+async function approveUpload(ctx, words) {
+  const fail = (why) => ({ pass: false, why, refused: true })
+  const delivered = readOr(path.join(ctx.H, 'deliver.json'))
+  const checked = readOr(path.join(ctx.H, 'check.json'))
+  if (!A.deliveryStands(delivered, checked)) return fail(A.uploadApprovalProblems({ approval: null, delivered, repo: null, checked })[0])
+  for (const f of delivered.files ?? []) {
+    let size = -1
+    try {
+      size = fs.statSync(f.file).size
+    } catch {}
+    if (size !== f.bytes) return fail(`${f.file} is not on the Desktop any more as it was delivered, so no yes for the upload is recorded. Run the delivery again: node tools/handoff.mjs deliver`)
+  }
+  // GitHub is asked now which repository this clone belongs to and whether it is private: his yes names both
+  const { uploadGround } = await import('./handoff-upload.mjs')
+  const g = await uploadGround(ctx)
+  // the same sentences as the upload's own, with the line that is run again named as it is here
+  if (g.refuse) return fail(`no yes for the upload is recorded: ${g.refuse.replace(/the upload line/g, 'the approve line')}`)
+  const made = A.uploadApproval({
+    words,
+    time: new Date().toISOString(),
+    repo: { owner: g.repo.owner, name: g.repo.repo, slug: g.repo.slug },
+    isPrivate: g.isPrivate === true,
+    files: delivered.files.map((f) => ({ kind: f.kind, name: path.basename(f.file), bytes: f.bytes, sha256: f.sha256 })),
+    deliverTime: delivered.time ?? '',
+  })
+  writeJson(path.join(ctx.H, A.APPROVAL_FILES.upload), made.record)
+  for (const l of made.lines) ctx.say(l)
+  return { pass: true, why: `the upload is approved on this machine, by Brandon's words "${words}", for the repository and the files named above. The record is ${short(path.join(ctx.H, A.APPROVAL_FILES.upload))}. Next: node tools/handoff.mjs upload` }
+}
+
+/** The first thing the upload asks: whether the delivery passed and Brandon's yes for this upload is recorded here. Empty when it is, else the refusal. */
+export function uploadGate(ctx, repo) {
+  return A.uploadApprovalProblems({ approval: readOr(path.join(ctx.H, A.APPROVAL_FILES.upload)), delivered: readOr(path.join(ctx.H, 'deliver.json')), repo, checked: readOr(path.join(ctx.H, 'check.json')) })[0] ?? ''
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Which finished chunks count, and the tool's own ledger of them.
+
+const ledgerFile = (ctx) => path.join(ctx.H, A.APPROVAL_FILES.ledger)
+function readLedger(ctx) {
+  const l = readOr(ledgerFile(ctx))
+  return { drawn: l?.drawn ?? {}, rejected: l?.rejected ?? [] }
+}
+const chunkKey = (what, c) => `${what}/${L.chunkFile(what, c)}`
+const framesFolder = (mode, what, c) => path.join(mode.small ? rel('out', 'work', 'master', 'test', what) : rel('out', 'work', 'master', what), `frames-${String(c.first).padStart(6, '0')}-${String(c.last).padStart(6, '0')}`)
+
+/**
+ * Whether a chunk on disk counts for the approved render, and why not. `now()` gives the build of the approved
+ * test, the kept calibration picture and the ledger. The bytes of a chunk are read once for as long as the file
+ * stays as it is.
+ */
+function chunkJudge(mode, now) {
+  const sums = new Map()
+  return (what, c) => {
+    const stem = path.join(chunksDir(mode), what, L.chunkFile(what, c))
+    if (!fs.existsSync(`${stem}.json`) || !fs.existsSync(`${stem}.mp4`)) return { there: false, why: 'it is not on disk' }
+    const st = fs.statSync(`${stem}.mp4`)
+    const at = `${stem}|${st.size}|${st.mtimeMs}`
+    if (!sums.has(at)) sums.set(at, L.sha256File(`${stem}.mp4`))
+    const k = now()
+    const key = chunkKey(what, c)
+    const record = readOr(`${stem}.json`)
+    return { there: true, record, stem, key, why: A.chunkProblem({ what, record, bytesSha: sums.get(at), identity: k.identity, calibration: k.calibration ?? '', drawn: k.ledger.drawn[key] ?? null, rejected: k.ledger.rejected, key }) }
+  }
+}
+
+/** A chunk that does not count leaves the folder of the chunks for good: its film is deleted, its record is kept, and the ledger names it. */
+function rejectChunk(ctx, mode, ledger, what, c, v) {
+  const dir = path.join(ctx.H, 'rejected')
+  fs.mkdirSync(dir, { recursive: true })
+  const name = `${L.chunkFile(what, c)}-${Date.now().toString(36)}.json`
+  try {
+    if (v.record) writeJson(path.join(dir, name), { ...v.record, rejected: { why: v.why, time: new Date().toISOString() } })
+  } catch {}
+  // the ledger is written first: whatever happens to the files after this line, this chunk is never taken again
+  ledger.rejected.push({ key: v.key, time: v.record?.time ?? '', sha256: v.record?.sha256 ?? '', why: v.why, at: new Date().toISOString(), record: v.record ? short(path.join(dir, name)) : '' })
+  delete ledger.drawn[v.key]
+  writeJson(ledgerFile(ctx), ledger)
+  // then its film, its record and its frames leave the folders of the render. A file that another program holds
+  // stays where it is and is still rejected: the render then ends at this chunk, with the reason
+  const gone = (f, o = {}) => {
+    try {
+      fs.rmSync(f, { force: true, ...o })
+    } catch {}
+  }
+  for (const p of v.record?.parts ?? []) gone(path.join(chunksDir(mode), what, p.file))
+  for (const ext of ['mp4', 'json', 'jpg']) gone(`${v.stem}.${ext}`)
+  gone(framesFolder(mode, what, c), { recursive: true })
 }
 
 export async function fullRender(ctx) {
@@ -1272,13 +1575,45 @@ export async function fullRender(ctx) {
   // the calibration picture, before the first look at the chunks: kept, or written again from the chunks' word.
   // Where one must be drawn, that is done further down, after the refusals
   let cal = await keptCalibration(ctx, mode, hash, parts, { draw: false })
-  const done = chunkDone(mode, () => ({ engineHash: hash, calibration: cal.sha256 }))
+  // a chunk on disk counts only for the build the approved test passed on, with the bytes its record names
+  const ledger = readLedger(ctx)
+  const judge = chunkJudge(mode, () => ({ identity: test?.identity ?? {}, calibration: test?.identity?.calibration ?? '', ledger }))
+  const done = (what, c) => judge(what, c).why === ''
   const planNow = L.resumePlan({ parts, chunkFrames: mode.chunk, batchChunks: BATCH_CHUNKS, done })
-  // what is already drawn needs no room again
-  const share = 1 - sum(planNow.map((p) => p.framesDone)) / sum(planNow.map((p) => p.frames))
-  const refusals = L.renderRefusals({ stamp, engineHash: hash, doctor: doc, test, sound, freeGb: L.gb(X.freeBytes(rel())), needGb: L.gb(need.spare + (need.total - need.spare) * share), small: mode.small, machine: machineId() })
+  // what is drawn, encoded or delivered already needs no room again: the room is asked for the work that remains
+  const sameDrive = X.sameDrive(rel(), existingFolder(doc.machine?.desktop ?? rel()))
+  const left = A.diskRemaining(need, { ...workDone(ctx, stamp, mode), chunksFinished: sum(planNow.map((p) => p.finished)), sameDrive })
+  const refusals = L.renderRefusals({ stamp, engineHash: hash, doctor: doc, test, sound, freeGb: L.gb(X.freeBytes(rel())), needGb: L.gb(left.total), small: mode.small, machine: machineId() })
   if (refusals.length) return fail(`the full render is refused, and nothing was drawn: ${refusals.join('. ')}`, { refused: true, refusals })
   if (!mode.small && test.software) return fail('the short test here was drawn in software, so no full render starts on this machine', { refused: true })
+  // the build the test passed on is the build that is here now: the engine, the stamp's references and floors, the
+  // kept calibration picture, the card, its driver and Chrome. Else nothing is drawn
+  if (!test.identity) return fail(A.NO_IDENTITY, { refused: true })
+  const identity = A.identityOf({ engineHash: hash, stamp, calibration: cal.sha256 ?? '', renderer: doc.renderer, driver: doc.driver ?? '', chrome: doc.page?.browser ?? '' })
+  const changed = A.identityDiff(test.identity, identity)
+  if (changed.length) return fail(A.buildChanged(changed), { refused: true })
+  // Brandon's yes for this render: on this machine, for this build, after this test, and covering every line that
+  // bears on a run of hours as the machine is now. The stamp's own lock was held above, beside this one
+  const awake = await X.keepAwake(process.pid)
+  const longRun = longRunNow(ctx, { doc, test, stamp, mode, awake })
+  const reportOfTest = path.join(ctx.H, 'report-test.txt')
+  const notApproved = A.renderApprovalProblems({ approval: readOr(path.join(ctx.H, A.APPROVAL_FILES.render)), machine: machineId(), identity, test, reportSha: fs.existsSync(reportOfTest) ? L.sha256File(reportOfTest) : '', longRun: longRun.lines, cleanTime: longRun.cleanTime })
+  if (notApproved.length) {
+    awake.stop()
+    return fail(notApproved[0], { refused: true })
+  }
+  // chunks on disk that do not count leave the folder for good, before the first frame: they are drawn again
+  let setAside = 0
+  for (const part of parts) {
+    for (const c of L.chunkLines(part.first, part.last, mode.chunk)) {
+      const v = judge(part.what, c)
+      if (!v.there || !v.why) continue
+      ctx.say(`the chunk ${L.chunkFile(part.what, c)} on disk is not taken: ${v.why}. Its film is deleted and it is drawn again`)
+      rejectChunk(ctx, mode, ledger, part.what, c, v)
+      setAside++
+    }
+  }
+  if (setAside) ctx.say(`${setAside} ${setAside === 1 ? 'chunk' : 'chunks'} on disk did not count for this render and ${setAside === 1 ? 'is' : 'are'} drawn again. What the tool rejected is listed in ${short(ledgerFile(ctx))}`)
 
   const state = readOr(path.join(ctx.H, 'render-state.json'), { sessions: [] })
   const open = state.sessions.filter((s) => !s.end)
@@ -1288,7 +1623,6 @@ export async function fullRender(ctx) {
   const saveState = () => writeJson(path.join(ctx.H, 'render-state.json'), state)
   saveState()
   if (state.sessions.length > 1) ctx.say(`carrying on: this is start ${state.sessions.length} of the render. ${sum(planNow.map((p) => p.framesDone))} frames are finished in chunks on disk and are not drawn again`)
-  const awake = await X.keepAwake(process.pid)
   ctx.say(`awake: ${awake.how}${awake.pid ? ` (process ${awake.pid})` : ''}`)
   state.awake = awake.how
   const end = (result) => {
@@ -1336,17 +1670,34 @@ export async function fullRender(ctx) {
   if (!cal.sha256) {
     cal = await keptCalibration(ctx, mode, hash, parts)
     if (!cal.ok) return end(fail(cal.why))
+    // a calibration picture drawn now must be the one the test saw: every chunk names it
+    if (test.identity.calibration && cal.sha256 !== test.identity.calibration) return end(fail(A.buildChanged([`the calibration picture kept on this machine is now ${cal.sha256}, and the test passed on ${test.identity.calibration}`])))
   }
-  const expected = { renderer: test?.renderer ?? doc.renderer, browser: test?.browser ?? doc.page.browser }
+  const expected = { renderer: test.identity.renderer, browser: test.identity.chrome, driver: test.identity.driver }
   // the tool's own test of a browser that updated itself: see browserMovedPretend
   const movedFile = path.join(ctx.H, 'browser-moved.json')
   const moved = L.browserMovedPretend({ on: ctx.T.browserMoved === true, seen: readOr(movedFile)?.seen ?? null, testTime: test?.time, framesDone: session.framesAtStart })
   if (moved.mark) writeJson(movedFile, { seen: new Date().toISOString() })
   if (moved.pretend) expected.browser = `${expected.browser} ${L.MADE_UP_UPDATE}`
+  // the driver of the card that draws, as it is read at this moment
+  const driverNow = () => {
+    const m = X.readMachine()
+    return A.driverText({ platform: process.platform, os: m.os, cards: m.cards, wanted: L.wantedCard(m.cards) }).text
+  }
+  // Before the first frame of every batch of every part: the room on the disk, and the card, its driver and the
+  // browser as they are read now, held against the build the approved test passed on
+  let read = null
   const guard = async () => {
     const free = X.freeBytes(rel())
     const floor = need.spare + need.inFlight
     if (free < floor) return `only ${L.gb(free).toFixed(1)} GB of disk is free and the next chunks need ${L.gb(floor).toFixed(1)} GB. Nothing drawn is lost: make room and run the same line again`
+    let driver
+    try {
+      driver = driverNow()
+    } catch (e) {
+      return `the card and its driver could not be read before the next chunks: ${String(e.message).split('\n')[0]}. Nothing drawn is lost`
+    }
+    if (driver !== expected.driver) return `${A.buildChanged([`the card's driver is now ${driver}, and the test passed on ${expected.driver}`])}. Nothing was drawn by the other driver`
     let seen
     try {
       seen = await readRenderer(mode)
@@ -1357,7 +1708,15 @@ export async function fullRender(ctx) {
     if (!v.ok) return `before the next chunks ${v.why}. Nothing drawn is lost`
     if (seen.renderer !== expected.renderer) return `before the next chunks the page draws on "${seen.renderer}", and the short test passed on "${expected.renderer}". Nothing drawn is lost`
     if (seen.browser !== expected.browser) return `Chrome is now version ${seen.browser}, and the short test passed on ${expected.browser}: the browser was updated. Nothing drawn is lost, and no chunk is drawn by another browser than the one that was tested`
+    read = { driver, chrome: seen.browser, renderer: seen.renderer, time: new Date().toISOString() }
     return ''
+  }
+  // the room the encodes and the films still need, asked before each encode
+  const encodeGuard = () => {
+    const free = X.freeBytes(rel())
+    const now = A.diskRemaining(need, { ...workDone(ctx, stamp, mode), chunksFinished: Infinity, sameDrive: false })
+    const floor = now.finals + now.encodeRoom + need.spare
+    return free < floor ? `only ${L.gb(free).toFixed(1)} GB of disk is free and the films still to encode need ${L.gb(floor).toFixed(1)} GB. Nothing drawn is lost: make room and run the same line again` : ''
   }
 
   const packDir = mode.small ? await smallPack(ctx, mode) : PACK_DIR
@@ -1367,9 +1726,24 @@ export async function fullRender(ctx) {
     for (const b2 of plan.batches) {
       phase = `${part.what} frames ${b2.first} to ${b2.last}`
       const engine = part.what !== 'opening'
+      const stop = await guard()
+      if (stop) return end(fail(stop))
+      const batch = L.chunkLines(b2.first, b2.last, mode.chunk)
       if (engine) {
-        const stop = await guard()
-        if (stop) return end(fail(stop))
+        // the ledger says what was read before the first frame of each chunk. Frames that lie in work from an
+        // earlier start under another reading, or under none, are deleted: a chunk is drawn whole by one build
+        for (const c of batch) {
+          if (done(part.what, c)) continue
+          const key = chunkKey(part.what, c)
+          const had = ledger.drawn[key]
+          const frames = framesFolder(mode, part.what, c)
+          if (fs.existsSync(frames) && (!had || had.driver !== read.driver || had.chrome !== read.chrome || had.renderer !== read.renderer)) {
+            fs.rmSync(frames, { recursive: true, force: true })
+            ctx.say(`the frames in work of ${L.chunkFile(part.what, c)} were drawn ${had ? 'under another card, driver or browser' : 'before the tool recorded what drew them'}: they are deleted and the chunk is drawn whole`)
+          }
+          ledger.drawn[key] = { ...read }
+        }
+        writeJson(ledgerFile(ctx), ledger)
       }
       base = framesDone()
       inBatch = 0
@@ -1383,14 +1757,29 @@ export async function fullRender(ctx) {
         if (m) ctx.note(`finished ${m[1]}`)
       })
       if (r.code !== 0) return end(fail(`the render stopped at ${part.what} frames ${b2.first} to ${b2.last}: ${whyOf(r)}\nNothing drawn is lost: the same line carries on from the last finished frame`))
-      // every chunk of the batch says what drew it
-      for (const c of L.chunkLines(b2.first, b2.last, mode.chunk)) {
-        const rec = readOr(path.join(chunksDir(mode), part.what, `${L.chunkFile(part.what, c)}.json`))
-        if (!rec) return end(fail(`the chunk ${L.chunkFile(part.what, c)} left no record`))
-        if (!engine) continue
-        if (L.softwareName(rec.graphics) && !ctx.T.software) return end(fail(`the chunk ${L.chunkFile(part.what, c)} was drawn in software ("${rec.graphics}"). It must be drawn again on the card: report this`))
-        if (rec.graphics !== expected.renderer) return end(fail(`the chunk ${L.chunkFile(part.what, c)} was drawn on "${rec.graphics}", not on "${expected.renderer}" as the short test was`))
+      // a driver that changed while the batch was drawn: no chunk of the batch is taken
+      let driverAfter = expected.driver
+      if (engine) {
+        try {
+          driverAfter = driverNow()
+        } catch {
+          driverAfter = 'not read'
+        }
       }
+      // every chunk of the batch says what drew it, and counts only as the approved test's build with its own bytes
+      let bad = ''
+      for (const c of batch) {
+        const v = judge(part.what, c)
+        if (!v.there || !v.record) return end(fail(`the chunk ${L.chunkFile(part.what, c)} left no record`))
+        let why = v.why
+        if (!why && engine && L.softwareName(v.record.graphics) && !ctx.T.software) why = `it was drawn in software ("${v.record.graphics}")`
+        if (!why && engine && driverAfter !== expected.driver) why = `the card's driver was ${driverAfter} after its batch, and the test passed on ${expected.driver}`
+        if (!why) continue
+        ctx.say(`the chunk ${L.chunkFile(part.what, c)} that was just drawn is not taken: ${why}. Its film is deleted`)
+        rejectChunk(ctx, mode, ledger, part.what, c, { ...v, why })
+        bad ||= `the chunk ${L.chunkFile(part.what, c)} that was just drawn is not taken: ${why}`
+      }
+      if (bad) return end(fail(`${bad}. It is not taken a second time, and what the tool rejected is listed in ${short(ledgerFile(ctx))}. Stop and report`))
       inBatch = 0
       base = framesDone()
       ctx.say(beat().line)
@@ -1413,6 +1802,8 @@ export async function fullRender(ctx) {
       ctx.say(`${which} is encoded and proven already (${mb(rec.bytes)})`)
       continue
     }
+    const noRoom = encodeGuard()
+    if (noRoom) return end(fail(noRoom))
     ctx.say(`encoding ${which}`)
     let extra = []
     if (mode.small) {

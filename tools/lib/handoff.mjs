@@ -3,6 +3,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
+import { approveArgs, BUILD_CHANGED } from './handoff-approve.mjs'
 
 export const TITLE = 'Snow Globe Seasons'
 export const STAMP_VERSION = 1
@@ -62,6 +63,8 @@ export function testSwitches(text = '') {
     else if (key === 'fast-watch' && !value) out.fastWatch = true
     else if (key === 'browser-moved' && !value) out.browserMoved = true
     else if (key === 'floors-high' && !value) out.floorsHigh = true
+    // the seconds after which a word in the foreground is ended with a last line of its own: 540 without this switch
+    else if (key === 'short-limit' && /^[1-9]\d*$/.test(value)) out.stop = Number(value)
     else if (TEST_WORDS.includes(key) && !value) out[key] = true
     else throw new Error(`${TEST_VARIABLE} holds ${word}, which is no switch of the tool's tests`)
   }
@@ -420,12 +423,22 @@ export function renderRefusals({ stamp, engineHash, doctor, test, sound, freeGb,
   if (!small && (stamp.stillToDraw ?? []).length) return [`${NOT_RELEASED} (the stamp still lacks the references of ${stamp.stillToDraw.join(', ')})`]
   if (stamp.engineHash !== engineHash) out.push(`the engine here is ${engineHash} and the stamp was made for ${stamp.engineHash}: ${hashCause()}`)
   if (!doctor?.pass) out.push(`the doctor does not pass on this machine now: ${doctor?.why ?? 'it was not run'}`)
+  let own = false
   if (!test) out.push('the short test has not been run on this machine. Run step 1 first')
   else if (!test.pass) out.push('the short test did not pass on this machine. Run step 1 again and send its report')
-  else if (test.engineHash !== engineHash) out.push(`the short test passed for engine ${test.engineHash} and the engine here is now ${engineHash}. Run step 1 again`)
+  else if (test.engineHash !== engineHash) out.push(`${BUILD_CHANGED}. What changed: the engine is now ${engineHash}, and the test passed on ${test.engineHash}`)
   else if (machine && test.machine !== machine) out.push(`the short test passed on another machine (${test.machine}). Run step 1 on this one`)
-  else if (!small && test.small) out.push("the short test here was a run of the tool's own tests, not the real one. Run step 1")
-  for (const s of sound ?? []) if (!s.ok) out.push(s.why)
+  else if (!small && (test.small || (test.switches && anyTestSwitch(test.switches)))) {
+    // a test of the tool's own tests passes without the mixes: it stands for no film, and no mix is asked for after it
+    own = true
+    out.push("the short test here was a run of the tool's own tests, not the real one. Run step 1")
+  }
+  // A mix is asked for where no test stands for it. After a test that passed plainly, both mixes were the stamp's:
+  // one that is missing or wrong now was changed since, and that is said as what it is, a build that changed.
+  const plain = !!test?.pass && Array.isArray(test.notReady) && test.notReady.length === 0 && Array.isArray(test.mixes) && test.mixes.length > 0 && test.mixes.every((m) => m.ok)
+  const gone = own ? [] : (sound ?? []).filter((s) => !s.ok)
+  if (gone.length && plain) out.push(`${BUILD_CHANGED}. What changed: ${gone.map((s) => `a final mix that the test found is not that mix now (${s.why})`).join('; ')}`)
+  else for (const s of gone) out.push(s.why)
   if (Number.isFinite(freeGb) && Number.isFinite(needGb) && freeGb < needGb) out.push(`${freeGb.toFixed(0)} GB of disk is free where the clone is, and the render needs ${needGb.toFixed(0)} GB`)
   return out
 }
@@ -1093,16 +1106,23 @@ export const STAGES = ['setup', 'doctor', 'test', 'render', 'check', 'deliver', 
  * `ended` holds how each word last ended here ({ state, why, time, engineHash }), `job` the work in the background
  * ({ cmd, state, alive }), `renderBegun` whether a full render was ever started for this engine. Nothing is started
  * by this: it never names the render or the setup unless the records say that this is the stage that was reached.
- * @param {{ packages: boolean, engineHere: string, engineBuilt: string, ended?: Record<string, any>, job?: { cmd: string, state: string, alive: boolean } | null, renderBegun?: boolean }} o
+ * @param {{ packages: boolean, engineHere: string, engineBuilt: string, ended?: Record<string, any>, job?: { cmd: string, state: string, alive: boolean, stops?: number, final?: boolean } | null, renderBegun?: boolean }} o
  */
 export function statusPlan({ packages, engineHere, engineBuilt, ended = {}, job = null, renderBegun = false }) {
   const last = (w) => ended[w] ?? null
   const ok = (w) => last(w)?.state === 'PASS' && last(w).engineHash === engineHere
-  const failed = (w) => last(w)?.state === 'FAIL' && last(w).engineHash === engineHere
+  // a word whose work died (its process went away before it could say how it ended) did not fail: it was interrupted
+  const died = (w) => last(w)?.state === 'FAIL' && last(w).died === true
+  const failed = (w) => last(w)?.state === 'FAIL' && last(w).engineHash === engineHere && !died(w)
   const none = (stage, why) => ({ stage, next: '', why })
   const run = (stage, word, why) => ({ stage, next: LINE(word), why })
+  const again = (w) => run(w, w, `"${w}" was stopped before it ended (sleep, a restart, a closed window). Run its line once more: it carries on and nothing finished is lost. If it stops a second time at the same place, stop and report`)
   if (job?.state === 'running' && job.alive) return run(job.cmd, job.cmd, `"${job.cmd}" is at work in the background now. The line follows it and starts nothing new`)
   if (job?.state === 'starting') return run(job.cmd, job.cmd, `"${job.cmd}" is being started in the background now. The line follows it`)
+  // a word that was stopped as often as it may be: its line is not named again, whatever else is on record
+  if (job?.state === 'stopped' && job.final === true) {
+    return none(job.cmd, `"${job.cmd}" was stopped ${job.stops ?? 2} times in a row${job.cmd === 'render' ? ', with no more frames done in between' : ''}. Its line is not run again from here. Stop and give Brandon the report`)
+  }
   const stopped = job && (job.state === 'stopped' || (job.state === 'running' && !job.alive)) ? job.cmd : ''
   if (stopped && STAGES.concat('upload').includes(stopped) && !ok(stopped)) {
     return run(stopped, stopped, `"${stopped}" was stopped before it ended (sleep, a restart, a closed window). Run its line once more: it carries on and nothing finished is lost. If it stops a second time at the same place, stop and report`)
@@ -1114,17 +1134,20 @@ export function statusPlan({ packages, engineHere, engineBuilt, ended = {}, job 
   if (failed('setup')) return none('setup', `the setup ended in FAIL on this build: ${last('setup').why}. Stop and give Brandon the report`)
   for (const w of ['doctor', 'test']) {
     if (ok(w)) continue
+    if (died(w)) return again(w)
     if (failed(w)) return none(w, w === 'test' ? `the short test ended in FAIL on this build: ${last(w).why}. It is not run a second time to see whether it passes. Stop and give Brandon the report` : `the doctor ended in FAIL on this build: ${last(w).why}. Do the one thing the table of 1.4 names for that sentence. If it names none, stop and give Brandon the report`)
     return run(w, w, last(w) ? `"${w}" last passed for another build (engine ${last(w).engineHash}), and this clone is engine ${engineHere}` : `"${w}" has not been run in this clone yet`)
   }
   if (!ok('render')) {
     if (!renderBegun && !last('render')) return none('step 1 is done', 'the short test passed on this build. Step 1 ends here: give Brandon its report and stop (1.6). The full render is never started from here: step 2 begins at 2.1, and only on his word')
     if (failed('render') && last('render').refused) return none('render', `the render line was refused and drew nothing: ${last('render').why}. Do the one thing the table of 2.2 names for that sentence. If it names none, stop and give Brandon the report`)
+    if (died('render')) return again('render')
     if (failed('render')) return none('render', `the render ended in FAIL: ${last('render').why}. Do the one thing the table of 2.2 names for that sentence. If it names none, stop and give Brandon the report`)
     return run('render', 'render', 'the full render was begun here and has not ended. Its line carries on from the last finished frames')
   }
   for (const w of ['check', 'deliver']) {
     if (ok(w) && Date.parse(last(w).time) >= Date.parse(last('render').time)) continue
+    if (died(w) && Date.parse(last(w).time) >= Date.parse(last('render').time)) return again(w)
     if (failed(w) && Date.parse(last(w).time) >= Date.parse(last('render').time)) return none(w, `"${w}" ended in FAIL: ${last(w).why}. Stop and give Brandon the report`)
     return run(w, w, `the step before it passed, and "${w}" has not passed since`)
   }
@@ -1164,7 +1187,7 @@ export function whereLines(paths = []) {
 }
 
 /** The arguments this tool takes. Anything else is refused, so that no line can carry a switch the handoff file does not hold. */
-export const COMMANDS = ['setup', 'doctor', 'test', 'render', 'check', 'deliver', 'upload', 'clean', 'status']
+export const COMMANDS = ['setup', 'doctor', 'test', 'approve', 'render', 'check', 'deliver', 'upload', 'clean', 'status']
 /** A word of the tool's own tests, which the handoff file never names: it sends stand-in files and takes no argument at all. */
 export const UPLOAD_TEST_WORD = 'upload-test'
 /**
@@ -1191,8 +1214,13 @@ export function stampArgProblem(rest) {
 }
 export function argProblem(argv) {
   const words = [...COMMANDS, UPLOAD_TEST_WORD]
+  // approve alone carries more: which yes it is, and Brandon's own words (tools/lib/handoff-approve.mjs holds its rule)
+  if (argv[0] === 'approve') {
+    const a = approveArgs(argv)
+    return 'problem' in a ? a.problem : ''
+  }
   if (argv.length === 1 && words.includes(argv[0])) return ''
   if (argv.length === 2 && words.includes(argv[0]) && argv[0] !== 'status' && argv[1] === '--worker') return ''
   if (argv[0] === 'stamp') return stampArgProblem(argv.slice(1))
-  return `this tool takes one word and nothing else: ${COMMANDS.join(', ')}. It was given "${argv.join(' ')}"`
+  return `this tool takes one word and nothing else: ${COMMANDS.join(', ')} (approve alone is followed by render or upload and by Brandon's words). It was given "${argv.join(' ')}"`
 }
