@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 243 · 2026-11-28 03:25 UTC
+Status 244 · 2026-11-28 03:46 UTC
 
-- `out/stills/status/status-243-1.jpg`: The petals arriving at 4K at two times, film frame 682, comb teeth and ribs on main left and fine grain with the mend right, in chain 43
-- `out/stills/status/status-243-2.jpg`: The same place as seen at 1920 wide at two times, main left and the mend right, in chain 43
-- `out/stills/status/status-243-3.jpg`: The mend's cost at 4K at six times, film frame 682, one small petal smooth on main left and with a peppered edge with the mend right
-- `out/stills/status/status-243-4.jpg`: The four seasons on chain 42, after a shake above, from the close camera in the middle and at rest below, live now
+- `out/stills/status/status-244-1.jpg`: The petals arriving, film frames 681 and 682 at preview size at the masters' tier, one smear for each flown petal, on the main branch now
+- `out/stills/status/status-244-2.jpg`: Fall's leaves close up, with their veins on the main branch left and without them in the dropped rewrite in the middle, the difference right
+- `out/stills/status/status-244-3.jpg`: The menu at phone size on a machine starved on purpose, the main branch left and the stall's mend right, one level apart in 14 corner pixels, open item 284
+- `out/stills/status/status-244-4.jpg`: Still: fall rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-28 03:25 UTC
-clock: phase 6, tick of 30.2 minutes
-phase 6: 48.60 h used of its 12.00 h box
-allowance (after the review): 48.60 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 48.60 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-28 03:46 UTC
+clock: phase 6, tick of 21.4 minutes
+phase 6: 48.95 h used of its 12.00 h box
+allowance (after the review): 48.95 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 48.95 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
