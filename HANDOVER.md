@@ -149,3 +149,9 @@ Written 23:40 UTC, 27 November 2026, the lines on frame 2121 added at 23:50 UTC,
 - Frames with nothing in the air are the same bytes with and without: 668 and 2108 at 3840, four frames at draft, two at preview at the final tier. The eight guards equal chain 42's list on `07c94d0a`. The whole vitest: 1064 passed, 8 skipped.
 - Not seen: anything played; the petals arriving (680 to 682) and change 4 at 3840 with the mend; any film frame on `07c94d0a`. Section 13, `streak-21` to `streak-36`.
 
+### The mend beside main on change 4 and change 1 (decision 258), added 03:02 UTC, 28 November
+
+- Helpers drew the frames at 3840, final tier: the mend on `07c94d0a`, main on `60f4d0ae`. The section above says 02:35; it was written at 02:34.
+- Frame 2828 (the leaves leaving): the leaves are dark and the two frames differ on them by one level mostly. On their footprint the spread of the fine part is 0.695 on main and 0.708 with the mend. Boxes of 200 x 60 px where a wave of 3.5 to 12 px stands out over 2.0 times the middle wave: 32 on main, 17 with the mend. No new single pixels by count.
+- Seen in 2828: at true levels no rib and no row of copies with the mend. With the levels times 4 a faint trace of main's comb is left on one leaf (x 3040 to 3110, y 1705 to 1735; 0.941 levels on main, 0.776 with the mend). Section 14, `streak-43` to `streak-45`.
+

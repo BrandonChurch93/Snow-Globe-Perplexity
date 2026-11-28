@@ -178,3 +178,22 @@ BELOW THE BAR OR NOT SEEN, plainly:
 - Nothing was played. No frame of change 1's arriving petals or of change 4 with (c). No frame of the film on 07c94d0a.
 - The lean of lens point with place in the pixel that `lensOrder` deals is lost for the flown parts; I did not measure what that costs.
 - (a) and (b) of section 12 are dropped, unproven as a gain. My answer about the tile and my guess about the foot's kick were wrong.
+
+14. ADDED 03:02 UTC, 28 November: (c) BESIDE MAIN ON THE LEAVES LEAVING AND THE PETALS ARRIVING (decision 258, points 3 to 6)
+Four helpers drew these at 3840 x 2160, final tier, (c) on 07c94d0a (engine 144059cb99b0d134) and main on 60f4d0ae (engine dc59c0d7c2daa6ab). I drew none. Each pair is measured as 1388, 1389 and 2121 were: the strongest wave of 3.5 to 12 px across a box, beside the middle wave of that band (how far a rib stands out of the grain), and the spread of the fine part (the picture less itself blurred by 1.5 px). The flown parts are found two ways: the pixels that differ between the two frames by more than 2 levels, grown by 2 px (as in section 13), and the footprint, where a quarter or more of the 15 x 15 around a pixel differs at all. The second is needed here because the leaves that leave are dark and the two frames differ on them by one level mostly.
+A correction to section 13 and the handover: they say 02:35 UTC; they were written at 02:34.
+
+FRAME 2828 (change 4, the leaves leaving). MEASURED. 76 samples each; main c7d75159a3a29702 (862 s), (c) 5c42a2ac1070506b (892 s).
+- The whole frame: 499,128 pixels differ at all, 3,528 by more than 2, none by more than 8. Above row 1296 (the globe) 739 pixels differ, none by more than 2.
+- Parts that differ by more than 2, grown by 2 px (25,488 px): spread of the fine part main 1.340, (c) 1.369; mean step between neighbours 0.953, 1.067.
+- The footprint (836,025 px): spread of the fine part main 0.695, (c) 0.708; mean step 0.546, 0.577. Pixels whose fine part is over 6 levels: 857, 865; over 10: 209, 210; over 20: 19, 19.
+- Single pixels standing over the middle of their 5 x 5 by more than 8 levels: in the footprint main 604, (c) 607; in the ring of 40 px around it 1,090, 1,088. By more than 16: 205, 195 and 440, 440. So no new scatter of single pixels by this count.
+- 224 boxes of 200 x 60 px that are six tenths or more footprint: the strongest wave, mean over the boxes, main 0.189, (c) 0.164; how far it stands out of the middle wave, mean 1.674, 1.454; boxes where it stands out over 2.0 times: main 32, (c) 17. The wave of (c) is over main's in 30 boxes, by more than a tenth in 2, by more than a fifth in none (largest ratio 1.164, at 0.218 levels).
+- 620 boxes of 100 x 40 px, seven tenths or more footprint: wave mean main 0.275, (c) 0.235; standing out over 2.0 times: main 90, (c) 29. (c) over main by more than a fifth in 2 boxes, both under 0.35 levels (x 3450 to 3550, y 1720 to 1780: main 0.248, (c) 0.342 at 8.33 px, 1.78 times the middle wave).
+- The boxes where the wave stands out most (5.14 times at x 2450 to 2550, y 1600 to 1640 and at x 1000 to 1100, y 1860 to 1900) are the same on both to the second place: they are the steps of the base and the streaks of the lights, drawn alike by both, not flown parts.
+- The one place where a comb shows on main, the leaf at x 3040 to 3110, y 1705 to 1735 (mean level 21 of 255): main 0.941 levels at 7.00 px, (c) 0.776 at 6.36 px; 2.44 and 2.37 times the middle wave. Around it, x 3010 to 3120, y 1700 to 1740: main 0.746 at 5.50 px (2.45 times), (c) 0.488 at 6.11 px (1.90 times).
+SEEN (pictures 43, 44 at true levels, 45 with the levels times 4):
+- At one to one and at two times, true levels, with (c): no rib and no row of copies that I can see anywhere on the flown leaves. On main at true levels the comb on that one leaf is faint but there at five times.
+- With the levels times 4 (picture 45) main's leaf shows a plain comb, and its darker smears a crossed weave; with (c) the weave is gone to a fine grain, and of the comb a faint trace is left at the top of that leaf (x 3040 to 3110, y 1705 to 1735). It is weaker than main's and I do not see it without the gain. It is a trace of a row of copies all the same, so I name it.
+- No new dotted edge. The grain with (c) is a little more than main's, as the numbers say; I can see it only with the gain.
+NOT LOOKED AT: the globe and all above row 1296 beyond the count; the frame in motion; anything at a tier or size other than this one.
