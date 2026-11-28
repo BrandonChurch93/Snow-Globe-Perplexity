@@ -1,3 +1,4 @@
 # The job windows-shaders lists the shader compiler's messages for the head named here: one line, the branch and
 # the full commit, with a space between. With no such line it lists the head of the push itself.
 # Nothing is pushed to that branch and nothing of it is changed: it is cloned and built on the test machine.
+agent/p6-d3d a254960aadcf339caa84f9fd375ec414ae33f50c

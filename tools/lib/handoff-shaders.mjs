@@ -91,8 +91,8 @@ export function watchShaders(browser) {
 /** What the watch gathered on a page: { linked, logs } or null where the watch did not run. */
 export const collectShaders = (page) => page.evaluate(() => (window.__shaderWatch ? window.__shaderWatch.collect() : null)).catch(() => null)
 
-const nameOf = (source) => /#define\s+SHADER_NAME\s+(\S+)/.exec(source ?? '')?.[1] ?? ''
-const firstLine = (source) => (String(source ?? '').split(/\r?\n/).map((l) => l.trim()).find((l) => l && !l.startsWith('#') && !l.startsWith('//') && !l.startsWith('precision')) ?? '').slice(0, 100)
+// three.js writes `#define SHADER_NAME` and the material's name behind it. A material without a name leaves the line empty.
+const nameOf = (source) => /#define[ \t]+SHADER_NAME[ \t]+(\S+)/.exec(source ?? '')?.[1] ?? ''
 
 /** One message of the compiler: `(1185,1): warning X4000: use of potentially uninitialized variable (f_x)`. */
 export function parseMessage(line) {
@@ -124,9 +124,104 @@ export function whereWritten(source, name) {
   return at < 0 ? null : { line: at + 1, text: lines[at].trim().slice(0, 160) }
 }
 
+/**
+ * The text the compiler was given. Chrome under Direct3D gives back the translation twice: first as it began, then,
+ * between the marks COMPILER INPUT HLSL BEGIN and END, as the compiler read it. The compiler counts its lines in the
+ * second: its line 1 is the second line after the mark (measured on three messages whose columns fit only there).
+ */
+export function compilerInput(translated) {
+  const lines = String(translated ?? '').split(/\r?\n/)
+  const b = lines.findIndex((l) => /COMPILER INPUT HLSL BEGIN/.test(l))
+  if (b < 0) return { lines, marked: false }
+  const e = lines.findIndex((l, i) => i > b && /COMPILER INPUT HLSL END/.test(l))
+  return { lines: lines.slice(b + 2, e < 0 ? undefined : e), marked: true }
+}
+
+const FN_HEAD = /^\s*([A-Za-z_][A-Za-z0-9_<>]*)\s+([A-Za-z_][A-Za-z0-9_]*)\s*\([^;]*$/
+const NOT_A_TYPE = ['return', 'else', 'if', 'for', 'while', 'do', 'switch', 'case']
+/** The functions of a text the compiler was given: name, first line and last line, counted as the compiler counts. */
+export function functionsOf(lines) {
+  const out = []
+  let depth = 0
+  let open = null
+  lines.forEach((l, i) => {
+    if (depth === 0 && !open) {
+      const m = FN_HEAD.exec(l)
+      if (m && !NOT_A_TYPE.includes(m[1])) open = { name: m[2], from: i + 1, to: i + 1, began: false }
+    }
+    for (const c of l.replace(/\/\/.*$/, '')) {
+      if (c === '{') {
+        depth++
+        if (open) open.began = true
+      } else if (c === '}') depth = Math.max(0, depth - 1)
+    }
+    if (open && open.began && depth === 0) {
+      open.to = i + 1
+      out.push({ name: open.name, from: open.from, to: open.to })
+      open = null
+    }
+  })
+  return out
+}
+/** The function a line of the compiler's count lies in: its name there, or '' when the line lies in none. */
+export function enclosing(translated, line) {
+  if (!translated || !line) return ''
+  return functionsOf(compilerInput(translated).lines).find((f) => line >= f.from && line <= f.to)?.name ?? ''
+}
+/** The functions of the compiler's text that call a function of it, at most six names. */
+export function callersOf(translated, name) {
+  if (!translated || !name) return []
+  const { lines } = compilerInput(translated)
+  const re = new RegExp(`(^|[^A-Za-z0-9_])${name}\\s*\\(`)
+  return functionsOf(lines).filter((f) => f.name !== name && lines.slice(f.from, f.to).some((l) => re.test(l))).map((f) => f.name).slice(0, 6)
+}
+
+const GLSL_TYPE = '(?:void|float|int|uint|bool|[biu]?vec[234]|mat[234](?:x[234])?)'
+const srcCache = new Map()
+function srcFiles(dir) {
+  if (srcCache.has(dir)) return srcCache.get(dir)
+  const out = []
+  const walk = (d) => {
+    let names = []
+    try {
+      names = fs.readdirSync(d, { withFileTypes: true })
+    } catch {}
+    for (const n of names) {
+      const f = path.join(d, n.name)
+      if (n.isDirectory()) walk(f)
+      else if (/\.(ts|js|glsl)$/.test(n.name) && !/\.test\./.test(n.name)) out.push({ file: f, lines: fs.readFileSync(f, 'utf8').split(/\r?\n/) })
+    }
+  }
+  walk(dir)
+  srcCache.set(dir, out)
+  return out
+}
+/** Where a shader function is written in the tree: `src/globe/shell.ts:431`, every place, at most four. */
+export function whereInTree(srcDir, name) {
+  if (!srcDir || !name || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) return []
+  const re = new RegExp(`^\\s*(?:(?:highp|mediump|lowp)\\s+)?${GLSL_TYPE}\\s+${name}\\s*\\(`)
+  const out = []
+  for (const { file, lines } of srcFiles(srcDir)) {
+    lines.forEach((l, i) => {
+      if (re.test(l)) out.push(`${path.relative(path.dirname(srcDir), file).split(path.sep).join('/')}:${i + 1}`)
+    })
+  }
+  return out.slice(0, 4)
+}
+
+/** The function of the shader's own source that a name of the translation stands for, with where it is written. */
+function ownFunction(e, translatedName, srcDir) {
+  for (const own of ownNames(translatedName)) {
+    const f = whereWritten(e.frag?.source, own)
+    const v = whereWritten(e.vert?.source, own)
+    if (f || v) return { own, f, v, tree: whereInTree(srcDir, own) }
+  }
+  return null
+}
+
 const lineOf = (text, n) => {
   if (!text || !n) return null
-  const l = text.split(/\r?\n/)[n - 1]
+  const l = compilerInput(text).lines[n - 1]
   return l === undefined ? null : l.trim().slice(0, 220)
 }
 
@@ -143,8 +238,8 @@ export function sortLogs(seen) {
   for (const p of seen?.logs ?? []) {
     const frag = p.shaders.find((s) => s.stage === 'fragment') ?? null
     const vert = p.shaders.find((s) => s.stage === 'vertex') ?? null
-    const fragment = nameOf(frag?.source) || (frag ? `no name; it begins: ${firstLine(frag.source)}` : 'none')
-    const vertex = nameOf(vert?.source) || (vert ? `no name; it begins: ${firstLine(vert.source)}` : 'none')
+    const fragment = nameOf(frag?.source) || (frag ? 'no name' : 'none')
+    const vertex = nameOf(vert?.source) || (vert ? 'no name' : 'none')
     const messages = p.log.split(/\r?\n/).map(parseMessage).filter(Boolean)
     // one entry for the programs made from the same two shaders with other switches: their text is the same but
     // for the lines that begin with #define, and the compiler says the same of them at other places
@@ -161,8 +256,21 @@ export function sortLogs(seen) {
   return [...entries.values()]
 }
 
+const treeSaid = (fn) => `${fn.own}${fn.tree.length ? `, written at ${fn.tree.join(' and ')}` : ', not written under src: the library has it'}`
+/** In one line, the function of the tree a message is about. */
+function aboutOf(e, m, named, srcDir) {
+  const inside = m.line ? enclosing(e.frag?.translated, m.line) || enclosing(e.vert?.translated, m.line) : ''
+  const fn = ownFunction(e, named || inside, srcDir)
+  if (fn) return treeSaid(fn)
+  if (!inside) return m.line ? 'no function: the place lies in none' : 'no place given'
+  // a helper the browser wrote itself: say which functions of the shader call it
+  const callers = [...callersOf(e.frag?.translated, inside), ...callersOf(e.vert?.translated, inside)]
+  const own = [...new Set(callers.map((c) => ownFunction(e, c, srcDir)).filter(Boolean).map(treeSaid))]
+  return `${inside}, a helper the browser wrote${own.length ? `; called by ${own.join('; ')}` : callers.length ? `; called by ${callers.join(', ')} of the translation` : ''}`
+}
+
 /** The list as text. Each entry: the program, its log in full, and for each message what can be said of its place. */
-export function shaderList(seen, head = []) {
+export function shaderList(seen, head = [], { srcDir = '' } = {}) {
   const entries = sortLogs(seen)
   const out = [...head]
   if (!seen) {
@@ -171,11 +279,33 @@ export function shaderList(seen, head = []) {
   }
   const errors = entries.reduce((n, e) => n + e.messages.filter((m) => m.kind === 'error').length, 0)
   out.push(`programs linked by the page: ${seen.linked}; programs whose log is not empty: ${seen.logs.length}; different ones (other shaders or other messages): ${entries.length}; messages that are errors: ${errors}`)
-  out.push('The place (line,column) is the compiler\'s own count in the shader it was given. The browser gives back the shader it translated, and the')
-  out.push('line of that number is printed under each message; the compiler may count a few lines more than that text holds, so read the line as near, not as exact.')
+  const marked = entries.some((e) => compilerInput(e.frag?.translated).marked || compilerInput(e.vert?.translated).marked)
+  out.push('The place (line,column) is the compiler\'s own count in the text it was given. The browser gives that text back, and the line of that number')
+  out.push(marked ? 'is printed under each message, counted from the mark COMPILER INPUT HLSL BEGIN of the translation (in the files beside this list).' : 'is printed under each message; this browser marks no compiler input in its translation, so read the line as near, not as exact.')
   out.push('')
+  // every different message once, with the function it is about and where that function is written in the tree
+  const digest = new Map()
+  for (const e of entries) {
+    const here = new Set()
+    for (const m of e.messages) {
+      const named = /\(([A-Za-z_][A-Za-z0-9_]*)\)\s*$/.exec(m.text)?.[1]
+      const about = aboutOf(e, m, named, srcDir)
+      const key = `${m.kind} ${m.code}: ${m.text}\n${about}`
+      const d = digest.get(key) ?? { text: `${m.kind} ${m.code}: ${m.text}`, about, programs: 0, times: 0 }
+      d.times += e.programs
+      if (!here.has(key)) d.programs += e.programs
+      here.add(key)
+      digest.set(key, d)
+    }
+  }
+  if (digest.size) {
+    out.push(`the different messages, each once (${digest.size}), with the function each is about and how many programs carry it:`)
+    for (const d of [...digest.values()].sort((a, b) => b.programs - a.programs)) out.push(`  ${String(d.programs).padStart(4)} ${d.programs === 1 ? 'program ' : 'programs'}  ${d.text}`, `                 in ${d.about}`)
+    out.push('', 'then every different program, with its log in full:', '')
+  }
   entries.forEach((e, i) => {
-    out.push(`== ${i + 1}. fragment shader "${e.fragment}", vertex shader "${e.vertex}": ${e.programs} ${e.programs === 1 ? 'program' : 'programs'} with these messages (asked by ${e.askedBy}) ==`)
+    const lines = (t) => (t ? t.split(/\r?\n/).length : 0)
+    out.push(`== ${i + 1}. fragment shader "${e.fragment}" (${lines(e.frag?.source)} lines), vertex shader "${e.vertex}" (${lines(e.vert?.source)} lines): ${e.programs} ${e.programs === 1 ? 'program' : 'programs'} with these messages (asked by ${e.askedBy}) ==`)
     out.push(e.programs === 1 ? 'the log in full:' : 'the log of the first of them in full:')
     for (const l of e.log.split(/\r?\n/)) out.push(`  ${l}`)
     if (e.others.length) out.push(`the same messages in the other ${e.others.length === 1 ? 'program' : `${e.others.length} programs`} (the same two shaders with other switches) stand at: ${e.others.join(' | ')}`)
@@ -186,25 +316,24 @@ export function shaderList(seen, head = []) {
       if (told.has(key)) continue
       told.add(key)
       out.push(`- ${m.kind} ${m.code}${m.line ? ` at (${m.line},${m.column}${m.columnEnd ? `-${m.columnEnd}` : ''})` : ''}: ${m.text}`)
-      if (named) {
-        let found = false
-        for (const own of ownNames(named)) {
-          const f = whereWritten(e.frag?.source, own)
-          const v = whereWritten(e.vert?.source, own)
-          if (f) out.push(`    "${named}" is ${own} of the fragment shader's own source, line ${f.line}: ${f.text}`)
-          if (v) out.push(`    "${named}" is ${own} of the vertex shader's own source, line ${v.line}: ${v.text}`)
-          if (f || v) {
-            found = true
-            break
-          }
-        }
-        if (!found) out.push(`    "${named}" was not found as a function of either shader's own source`)
+      const said = (name, fn) => {
+        if (!fn) return out.push(`    "${name}" was not found as a function of either shader's own source`)
+        if (fn.f) out.push(`    "${name}" is ${fn.own} of the fragment shader's own source, line ${fn.f.line}: ${fn.f.text}`)
+        if (fn.v) out.push(`    "${name}" is ${fn.own} of the vertex shader's own source, line ${fn.v.line}: ${fn.v.text}`)
+        if (fn.tree.length) out.push(`    ${fn.own} is written in the tree at ${fn.tree.join(' and ')}`)
       }
+      if (named) said(named, ownFunction(e, named, srcDir))
       if (m.line) {
+        const inside = enclosing(e.frag?.translated, m.line) || enclosing(e.vert?.translated, m.line)
+        if (inside && inside !== named) {
+          const fn = ownFunction(e, inside, srcDir)
+          if (fn) said(inside, fn)
+          else out.push(`    the place lies in ${aboutOf(e, m, '', srcDir)}`)
+        }
         const f = lineOf(e.frag?.translated, m.line)
         const v = lineOf(e.vert?.translated, m.line)
-        if (f !== null) out.push(`    line ${m.line} of the translated fragment shader: ${f || '(an empty line)'}`)
-        if (v !== null) out.push(`    line ${m.line} of the translated vertex shader: ${v || '(an empty line)'}`)
+        if (f !== null) out.push(`    line ${m.line} of the fragment shader as the compiler read it: ${f || '(an empty line)'}`)
+        if (v !== null) out.push(`    line ${m.line} of the vertex shader as the compiler read it: ${v || '(an empty line)'}`)
         if (f === null && v === null) out.push(e.frag?.translated || e.vert?.translated ? `    neither translated shader has a line ${m.line}` : '    the browser gave back no translated shader')
       }
     }
