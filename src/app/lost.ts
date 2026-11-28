@@ -5,7 +5,7 @@
  * by the dozen and showed nothing. Here the page stands instead. From the loss on nothing asks the card, the still of
  * the season on show lies where the picture was, and the page is loaded again at that season, once: when the browser
  * gives the context back, or after `WAIT_MS` without it. A page that loses its context within `SOON_MS` of such a
- * load is not loaded again: it keeps its still and says that it cannot draw.
+ * load is not loaded again: it keeps its still and says that the globe stopped drawing.
  */
 
 /** How long a page that is shown waits for its context before it is loaded again without one. A browser that gives a context back does so within a second or two. */
@@ -20,7 +20,7 @@ const COMPLETION_STATUS_KHR = 0x91b1
 export interface LossAnswer {
   /** Stops all that asks the card, lays the still, and says which season it is the still of. */
   stand(): string
-  /** The page stays as it stands and says that it cannot draw. */
+  /** The page stays as it stands and shows the notice, in the words of a globe that stopped drawing (src/copy.ts, `lost`). */
   cannot(): void
 }
 
@@ -44,6 +44,18 @@ function quiet(gl: unknown): void {
     if (name === 'isContextLost') card[name] = () => true
     else if (name === 'getProgramParameter') card[name] = (_program: unknown, what: number) => (what === COMPLETION_STATUS_KHR ? true : null)
     else card[name] = () => null
+  }
+}
+
+/**
+ * Whether this tab loaded itself after a loss, however long ago. Such a tab drew the globe before: a notice there says
+ * that the globe stopped, never that the browser cannot draw.
+ */
+export function drewBefore(page: Pick<LossPage, 'sessionStorage'> = window): boolean {
+  try {
+    return page.sessionStorage.getItem(MEMORY) !== null
+  } catch {
+    return false
   }
 }
 

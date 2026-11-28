@@ -56,7 +56,7 @@ const WAIT_MS = 4000
 const LATE_MS = 2500
 /** A held shake begins two beats in and lasts four seconds at most (config.shake.swapWindow, config.live.loadWaitSeconds). */
 const HELD_MS = 2000
-const NOTICE = 'This browser cannot draw the globe. A current Chrome, Safari, Firefox or Edge can.'
+const NOTICE = 'The globe stopped drawing. Reload the page to try again.'
 const after = (from) => cfg.seasons[(cfg.seasons.indexOf(from) + 1) % cfg.seasons.length]
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const DONE = Symbol('done')

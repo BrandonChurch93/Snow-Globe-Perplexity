@@ -1,5 +1,5 @@
 import { startApp } from './app/app'
-import { ContextWatch } from './app/lost'
+import { ContextWatch, drewBefore } from './app/lost'
 import { createOverlay } from './app/overlay'
 import { config } from './config'
 import { createShowcase, type Showcase } from './capture/showcase'
@@ -48,7 +48,8 @@ const gfx = (() => {
     return createGfx(canvas, { deny: params.deny, preserve: capture, visitor })
   } catch (e) {
     const ui = document.getElementById('ui')
-    if (!capture && ui) void import('./ui/cannot').then((m) => m.showCannot(ui))
+    // A tab that loaded itself after a loss drew the globe before: there the notice says that the globe stopped.
+    if (!capture && ui) void import('./ui/cannot').then((m) => m.showCannot(ui, drewBefore() ? 'lost' : 'cannot'))
     throw e
   }
 })()

@@ -597,7 +597,7 @@ export function startApp(d: AppDeps): AppBridge {
     cannot(): void {
       if (!ui) return
       face?.dispose()
-      void import('../ui/cannot').then((m) => m.showCannot(ui)).catch(() => undefined)
+      void import('../ui/cannot').then((m) => m.showCannot(ui, 'lost')).catch(() => undefined)
     },
   })
 

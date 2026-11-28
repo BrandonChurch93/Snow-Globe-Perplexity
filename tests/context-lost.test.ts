@@ -1,5 +1,8 @@
-import { describe, expect, it } from 'vitest'
-import { ContextWatch, MEMORY, SOON_MS, WAIT_MS, type LossPage } from '../src/app/lost'
+import { readFileSync } from 'node:fs'
+import { describe, expect, it, vi } from 'vitest'
+import { ContextWatch, MEMORY, SOON_MS, WAIT_MS, drewBefore, type LossPage } from '../src/app/lost'
+import { copy } from '../src/copy'
+import { showCannot } from '../src/ui/cannot'
 
 /**
  * The page's answer to a WebGL context that the browser takes away (src/app/lost.ts), with a canvas, a card, a clock,
@@ -20,6 +23,8 @@ interface Opts {
   season?: string
   /** The app is not there yet when the context goes. */
   late?: boolean
+  /** What the app does when the watch tells it that the page stays as it stands. */
+  says?: () => void
 }
 
 function page(o: Opts = {}) {
@@ -75,7 +80,10 @@ function page(o: Opts = {}) {
       told.stood++
       return o.season ?? 'spring'
     },
-    cannot: (): void => void told.cannot++,
+    cannot: (): void => {
+      told.cannot++
+      o.says?.()
+    },
   }
   if (!o.late) watch.answerWith(answer)
 
@@ -91,7 +99,7 @@ function page(o: Opts = {}) {
     doc.visibilityState = state
     for (const fn of shown) fn()
   }
-  return { watch, answer, canvas, gl, fire, show, waits, loads, reached, memory, clock, told, lose: () => fire('webglcontextlost'), giveBack: () => fire('webglcontextrestored') }
+  return { watch, answer, win, canvas, gl, fire, show, waits, loads, reached, memory, clock, told, lose: () => fire('webglcontextlost'), giveBack: () => fire('webglcontextrestored') }
 }
 
 describe('a page whose WebGL context is taken away', () => {
@@ -133,7 +141,7 @@ describe('a page whose WebGL context is taken away', () => {
     expect(p.told.cannot).toBe(0)
   })
 
-  it('a second loss soon after such a load: no load and no wait, the context is not asked back, and the page says that it cannot draw', () => {
+  it('a second loss soon after such a load: no load and no wait, the context is not asked back, and the page says that the globe stopped drawing', () => {
     for (const ago of [0, 1500, SOON_MS - 1]) {
       const p = page({ loadedAgo: ago })
       const lost = p.lose()
@@ -257,5 +265,118 @@ describe('a page whose WebGL context is taken away', () => {
     expect(p.waits.map((w) => w.ms)).toEqual([WAIT_MS])
     p.waits[0]!.over()
     expect(p.loads).toEqual(['https://globe.test/?quality=low&season=spring'])
+  })
+})
+
+/**
+ * The words of a page that stays on its still. The notice is written by the page's own code (src/ui/cannot.ts) on a
+ * document that the test holds. Which words it is given is one line in the app's answer to the watch (src/app/app.ts)
+ * and one line where the page is given no context at all (src/main.ts): both are read here as they are written.
+ */
+describe('the words of a page that stays on its still', () => {
+  const CANNOT = 'This browser cannot draw the globe. A current Chrome, Safari, Firefox or Edge can.'
+  const LOST = 'The globe stopped drawing. Reload the page to try again.'
+  const app = readFileSync('src/app/app.ts', 'utf8')
+  const main = readFileSync('src/main.ts', 'utf8')
+
+  class Part {
+    kids: (Part | string)[] = []
+    textContent = ''
+    className = ''
+    attrs: Record<string, string> = {}
+    setAttribute(name: string, value: string): void {
+      this.attrs[name] = value
+    }
+    append(...parts: (Part | string)[]): void {
+      this.kids.push(...parts)
+    }
+    replaceChildren(...parts: (Part | string)[]): void {
+      this.kids = parts
+    }
+  }
+  const read = (p: Part | string): string => (typeof p === 'string' ? p : p.kids.length ? p.kids.map(read).join('') : p.textContent)
+
+  /** All that a visitor reads in the interface once the notice is written over the controls. */
+  const notice = (words?: 'cannot' | 'lost'): string => {
+    const dataset: Record<string, string> = {}
+    vi.stubGlobal('document', { createElement: () => new Part(), documentElement: { dataset } })
+    const ui = new Part()
+    ui.append('Shake', 'Sound')
+    try {
+      const line = showCannot(ui as unknown as HTMLElement, words) as unknown as Part
+      // In either words it is the same line: the one thing in the interface, a status, and the page marked.
+      expect([ui.kids, line.attrs, dataset]).toEqual([[line], { role: 'status' }, { cannot: '1' }])
+    } finally {
+      vi.unstubAllGlobals()
+    }
+    return read(ui)
+  }
+
+  /** The app's answer when the watch tells it that the page stays. */
+  const stays = (): string => {
+    expect(app.match(/showCannot\(/g)).toHaveLength(1)
+    expect(app).toContain("    cannot(): void {\n      if (!ui) return\n      face?.dispose()\n      void import('../ui/cannot').then((m) => m.showCannot(ui, 'lost')).catch(() => undefined)\n    },\n")
+    return notice('lost')
+  }
+
+  /** The page's answer when it is given no WebGL2 context at all: the words go by the memory, and the throw is main's. */
+  const refused = (p: ReturnType<typeof page>): string => {
+    expect(main.match(/showCannot\(/g)).toHaveLength(1)
+    expect(main).toContain("    if (!capture && ui) void import('./ui/cannot').then((m) => m.showCannot(ui, drewBefore() ? 'lost' : 'cannot'))\n    throw e\n")
+    return notice(drewBefore(p.win) ? 'lost' : 'cannot')
+  }
+
+  const stopped = (reads: string[], note = ''): void => {
+    expect(reads, note).toEqual([LOST])
+    expect(reads.join(' '), note).not.toContain('cannot')
+  }
+
+  it('a second loss soon after a load the page made: the notice says that the globe stopped drawing, not that this browser cannot draw it', () => {
+    for (const ago of [0, 1500, SOON_MS - 1]) {
+      const said: string[] = []
+      const p = page({ loadedAgo: ago, says: () => void said.push(stays()) })
+      p.lose()
+      stopped(said, String(ago))
+    }
+  })
+
+  it('a page that cannot keep the memory of its load: the same words, when the context is back and when the wait is over without it', () => {
+    for (const how of ['back', 'over'] as const) {
+      const said: string[] = []
+      const p = page({ sealed: true, says: () => void said.push(stays()) })
+      p.lose()
+      expect(said, how).toEqual([])
+      if (how === 'back') p.giveBack()
+      else p.waits[0]!.over()
+      stopped(said, how)
+    }
+  })
+
+  it('a memory that is no number: the same words', () => {
+    const said: string[] = []
+    const p = page({ says: () => void said.push(stays()) })
+    p.memory[MEMORY] = 'yesterday'
+    p.lose()
+    stopped(said)
+  })
+
+  it('a load that is given no WebGL2 while the tab holds the memory, whatever its age: the same words, since such a tab drew the globe before', () => {
+    for (const ago of [0, 1500, SOON_MS - 1, SOON_MS, 24 * 3600 * 1000]) stopped([refused(page({ loadedAgo: ago }))], String(ago))
+    const p = page()
+    p.memory[MEMORY] = 'yesterday'
+    stopped([refused(p)])
+  })
+
+  it('a visit with no memory that is given no WebGL2 reads what it read before, word for word', () => {
+    expect(copy.cannot).toBe(CANNOT)
+    expect(refused(page())).toBe(CANNOT)
+    // A browser that gives the page no memory holds none: there is nothing to say that the globe was ever drawn.
+    expect(refused(page({ sealed: true }))).toBe(CANNOT)
+    expect(notice()).toBe(CANNOT)
+  })
+
+  it('the words of the stopped globe are the ordered ones and hold no em dash, no exclamation point and no upright bar', () => {
+    expect(copy.lost).toBe(LOST)
+    expect(copy.lost).not.toMatch(/[\u2014!|]/)
   })
 })
