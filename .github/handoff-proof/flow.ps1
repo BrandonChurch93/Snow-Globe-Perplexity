@@ -132,7 +132,10 @@ if ($env:PROOF_MODE -eq 'small') {
   Line 'test-again' '0' 'test'
   if (-not $script:LastOk) { exit 1 }
   if ($RenderGuard) {
-    Line 'render-refuses-unapproved' '1' 'render' 'the full render is not approved on this machine' -Once
+    # The render reads the machine and opens the page before it can say whether a yes fits this build, so its
+    # first answer may be RUNNING. The file says what to do then: run the same line again. So this row is
+    # followed to its last word, and never asked for its refusal in one call.
+    Line 'render-refuses-unapproved' '1' 'render' 'the full render is not approved on this machine'
     if (-not $script:LastOk) { exit 1 }
   }
   Approve-Render 'approve-render-before-first'

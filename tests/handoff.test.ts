@@ -2487,6 +2487,37 @@ describe('order 312, the join: the two parts on one head, and a run that nobody 
     expect(check).toContain('PROBLEM: the other browser: ')
   })
 
+  it('follows a word that answers RUNNING, as the file says: no row of the proof asks long work for its refusal in one call', () => {
+    // run 46161915190, job windows-gitbash-small: the render line without a yes answered RUNNING first, because it
+    // reads the machine and opens the page before it can refuse, and the row had asked for the refusal in one call
+    const sh = src('.github', 'handoff-proof', 'flow.sh')
+    const ps = src('.github', 'handoff-proof', 'flow.ps1').replace(/\r\n/g, '\n')
+    const onceOf = (flow: string, shell: 'sh' | 'ps') => flow.split('\n').filter((l) => !/^\s*#/.test(l)).flatMap((l) => {
+      const m = shell === 'sh' ? /ONCE=1 line "?([$\w-]+)"? (\S+) (\S+)/.exec(l) : /Line '([\w-]+)' '(\w+)' '([\w-]+)'.* -Once\b/.exec(l)
+      return m ? [{ name: m[1], want: m[2], word: m[3] }] : []
+    })
+    // the words that do their work inside the line itself answer in one call; long work is asked once only for
+    // the first call of the render, which is wanted to come back RUNNING
+    const inOneCall = (r: { want: string; word: string }) => ['status', 'doctor'].includes(r.word) || (r.word === 'render' && r.want === '3')
+    for (const [flow, shell] of [[sh, 'sh'], [ps, 'ps']] as const) {
+      const once = onceOf(flow, shell)
+      expect(once.length, `rows asked once in the ${shell} flow`).toBeGreaterThanOrEqual(4)
+      expect(once.filter((r) => !inOneCall(r)).map((r) => r.name)).toEqual([])
+    }
+    expect(sh).toContain("\n    line render-refuses-unapproved 1 render 'the full render is not approved on this machine'\n")
+    expect(ps).toContain("\n    Line 'render-refuses-unapproved' '1' 'render' 'the full render is not approved on this machine'\n")
+    // the row as it stood in that run is found by the same reading
+    const old = onceOf("    ONCE=1 line render-refuses-unapproved 1 render 'the full render is not approved on this machine'", 'sh')
+    expect(old.filter((r) => !inOneCall(r)).map((r) => r.name)).toEqual(['render-refuses-unapproved'])
+    const oldPs = onceOf("    Line 'render-refuses-unapproved' '1' 'render' 'the full render is not approved on this machine' -Once", 'ps')
+    expect(oldPs.filter((r) => !inOneCall(r)).map((r) => r.name)).toEqual(['render-refuses-unapproved'])
+    // and the tool does read the machine before it holds the yes against the build
+    const work = src('tools', 'lib', 'handoff-work.mjs')
+    const full = work.slice(work.indexOf('export async function fullRender(ctx)'))
+    expect(full.indexOf('const doc = await doctor(ctx)')).toBeGreaterThan(0)
+    expect(full.indexOf('const doc = await doctor(ctx)')).toBeLessThan(full.indexOf('A.renderApprovalProblems('))
+  })
+
   it('ends what a stopped word left only by a record with a start token, never by a bare process number', async () => {
     const P = await import('../tools/lib/handoff-processes.mjs')
     // the worker's restart call, the short word's watchdog and the sweep all pass a record

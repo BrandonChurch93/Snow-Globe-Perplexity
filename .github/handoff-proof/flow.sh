@@ -160,7 +160,10 @@ if [ "$PROOF_MODE" = small ]; then
   fi
   [ "$LAST_OK" = yes ] || exit 1
   if [ "$RENDER_GUARD" = yes ]; then
-    ONCE=1 line render-refuses-unapproved 1 render 'the full render is not approved on this machine'
+    # The render reads the machine and opens the page before it can say whether a yes fits this build, so its
+    # first answer may be RUNNING. The file says what to do then: run the same line again. So this row is
+    # followed to its last word, and never asked for its refusal in one call.
+    line render-refuses-unapproved 1 render 'the full render is not approved on this machine'
     [ "$LAST_OK" = yes ] || exit 1
   fi
   approve_render approve-render-before-first
