@@ -4,7 +4,7 @@
 # which only listens: nothing of a tool is on the card. The page is main, untouched (a3320a30, the same src as the
 # 6befeeb0 the trials of item 285 opened), or an older commit of main, or the probe build of this branch, whose only
 # change to main's src is switches that turn a part off (src/core/off295.ts names them).
-# The matrix below names the arms of this push: the page, the addresses and how many browsers each gets, how long a
+# The matrix below names the arms of this push (the arms of the pushes before it are in this file's history): the page, the addresses and how many browsers each gets, how long a
 # load is left, the browser's own switches, and whether the machine's sampler is begun (never in a listening arm).
 # It starts on a push to agent/p6-loss-295 that changes this file, and by hand. It has no timer and never starts on
 # main or on another builder's branch. Every job ends green whatever happens: a red run sends a mail. What a job read is
@@ -29,10 +29,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { arm: q1-winter-plain, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '12:', stay: 150, after: 0, spindump: 0, flags: '' }
-          - { arm: q1-winter-low, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '12:quality=low&season=winter', stay: 150, after: 0, spindump: 0, flags: '' }
-          - { arm: q1-spring, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '12:season=spring', stay: 150, after: 0, spindump: 0, flags: '' }
-          - { arm: q2-winter-sampled, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '6:', stay: 60, after: 20, spindump: 14, flags: '' }
+          - { arm: q2-commands, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '4:', stay: 25, after: 4, spindump: 0, flags: '--enable-gpu-command-logging,--enable-gpu-debugging', more: '' }
+          - { arm: q2-no-watchdog, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:', stay: 30, after: 5, spindump: 0, flags: '--disable-gpu-watchdog', more: '' }
+          - { arm: q5-plain-flags, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:', stay: 30, after: 5, spindump: 0, flags: '', more: '--plain-flags' }
+          - { arm: q4-2bbd1b9e, os: macos-latest, page: 2bbd1b9e2d9346657ed3a48ba5f98825356917e1, loads: '12:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q4-c755fcba, os: macos-latest, page: c755fcba26832cb706a6ca803d679609e17b82e0, loads: '12:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q4-976e271e, os: macos-latest, page: 976e271eddb698792f587f0edd9fa8b1cb72e9bb, loads: '12:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q4-9f4d94ae, os: macos-latest, page: 9f4d94aebada702e061a8651eca141722a097074, loads: '12:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
     steps:
       - name: the tools of this branch
         continue-on-error: true
@@ -90,7 +93,8 @@ jobs:
           flags="${{ matrix.flags }}"
           more=()
           if [ -n "$flags" ]; then more=(--flags "$flags"); fi
-          node tools/item295/listen.mjs --dist ../page/dist --name "${{ matrix.arm }}" --local --loads "${{ matrix.loads }}" --stay "${{ matrix.stay }}" --after-loss "${{ matrix.after }}" --spindump "${{ matrix.spindump }}" "${more[@]}" || true
+          # matrix.more is words for the tool as they stand (--plain-flags, --viewport 640x360, --scale 2): split on purpose.
+          node tools/item295/listen.mjs --dist ../page/dist --name "${{ matrix.arm }}" --local --loads "${{ matrix.loads }}" --stay "${{ matrix.stay }}" --after-loss "${{ matrix.after }}" --spindump "${{ matrix.spindump }}" ${{ matrix.more }} "${more[@]}" || true
 
       - name: what was read
         if: always()
@@ -101,6 +105,7 @@ jobs:
           cat "out/work/item295/${{ matrix.arm }}.txt"
           for f in out/work/item295/*-spindump.txt; do [ -f "$f" ] && gzip -9 "$f"; done
           rm -f out/work/item295/*-driver.log
+          find out/work/item295 -name '*-chrome.log' -size +2000k -exec gzip -9 {} \;
           du -sh out/work/item295
 
       - name: the files

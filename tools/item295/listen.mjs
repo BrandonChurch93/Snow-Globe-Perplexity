@@ -15,6 +15,8 @@
 // picture came. Only after that does the tool ask the canvas whether its card is lost, take a picture of the window, open
 // chrome://gpu in the same browser and ask the browser for its processes.
 // --flags are passed to the browser as they stand (a switch of the browser, never of the page).
+// --plain-flags: the browser is begun without the flags every tool of this tree begins it with; the driver's own
+// default switches stay (none of them names the card). --viewport WxH and --scale N set the window and its pixel ratio.
 // --spindump N: at the first picture the machine's own sampler (spindump, as root) is begun for N s on the browser's
 // graphics process. That is a tool beside the card, so such loads are never counted with the listening ones.
 // --local opens the installed Chrome in a window with the machine's graphics card, with the flags of every tool of
@@ -43,6 +45,10 @@ const afterLossMs = Number(str('after-loss', '0')) * 1000
 const limitMs = Number(str('limit', '200')) * 1000
 const spindumpS = Number(str('spindump', '0'))
 const oslog = str('oslog', 'lost')
+// --plain-flags: the browser is begun without the flags of this tree's tools (the driver's own stay, and the logging).
+const plainFlags = args['plain-flags'] === true
+const [viewW, viewH] = str('viewport', '1280x720').split('x').map(Number)
+const scale = Number(str('scale', '1'))
 const extraFlags = str('flags', '').split(',').map((s) => s.trim()).filter(Boolean)
 const out = path.resolve(str('out', 'out/work/item295'))
 const loads = str('loads', '4:').split('|').map((s) => {
@@ -73,6 +79,7 @@ const COMMON = ['--disable-background-timer-throttling', '--disable-renderer-bac
 const LOGGING = ['--enable-logging=stderr', '--log-level=0']
 function begin(tag) {
   const more = ['--disable-hang-monitor', ...LOGGING, `--loss295-tag=${tag}`, ...extraFlags]
+  if (local && plainFlags) return chromium.launch({ channel: 'chrome', headless: false, ignoreDefaultArgs: ['--disable-hang-monitor', ...COMMON.slice(0, 4)], args: [...LOGGING, `--loss295-tag=${tag}`, ...extraFlags] })
   if (local) return chromium.launch({ channel: 'chrome', headless: false, args: [...COMMON, '--ignore-gpu-blocklist', '--enable-gpu-rasterization', ...more] })
   const soft = softwareRenderer()
   return chromium.launch({ executablePath: findBrowser(), headless: true, args: [...soft.flags, ...COMMON, ...more], ...(soft.env ? { env: soft.env } : {}) })
@@ -285,7 +292,7 @@ async function one(base, query, round) {
   })()
   let result
   try {
-    const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 })
+    const context = await browser.newContext({ viewport: { width: viewW, height: viewH }, deviceScaleFactor: scale })
     const page = await context.newPage()
     let errorAt = null
     const t0 = Date.now()
@@ -373,7 +380,7 @@ async function one(base, query, round) {
   } catch (error) {
     notes.push(`the driver's file could not be read: ${String(error?.message ?? error)}`)
   }
-  const telling = lines.filter((l) => /\[(err|out)\]/.test(l) && TELLING.test(l) && !/<launching>/.test(l)).map((l) => l.replace(/^\S+ pw:browser /, '').slice(0, 700))
+  const telling = lines.filter((l) => /\[(err|out)\]/.test(l) && TELLING.test(l) && !/<launching>/.test(l) && !/\]cmd: /.test(l)).map((l) => l.replace(/^\S+ pw:browser /, '').slice(0, 700)).slice(0, 400)
   const reports = reportsSince(began, path.join(out, `${tag}-reports`))
   const gpus = []
   for (const s of samples) for (const p of s.processes) if (p.kind === 'gpu-process' && !gpus.includes(p.pid)) gpus.push(p.pid)
@@ -405,7 +412,7 @@ function line(r) {
 const server = await serve({ dist, port: 0 })
 const file = path.join(out, `${name}.json`)
 const table = path.join(out, `${name}.txt`)
-fs.writeFileSync(table, `item 295, listen ${name}: ${dist}, ${build}, ${local ? 'the installed Chrome with the card' : 'the pinned browser, software'}, nothing of the tool on the card, flags ${extraFlags.join(' ') || 'none of its own'}${spindumpS ? `, SPINDUMP ${spindumpS} s at the first picture (not a listening load)` : ''}, stay ${stayMs / 1000} s, after a loss ${afterLossMs ? `${afterLossMs / 1000} s` : 'the whole stay'}, ${os.cpus().length} processors, ${Math.round(os.totalmem() / 1048576)} MB, begun ${new Date().toISOString()}\n`)
+fs.writeFileSync(table, `item 295, listen ${name}: ${dist}, ${build}, ${local ? 'the installed Chrome with the card' : 'the pinned browser, software'}, nothing of the tool on the card, flags ${extraFlags.join(' ') || 'none of its own'}${plainFlags ? ', WITHOUT the flags of the tree\'s tools (no --ignore-gpu-blocklist, --enable-gpu-rasterization, --disable-hang-monitor, --hide-scrollbars, --mute-audio, nor the three against throttling and the colour profile one; the driver\'s other default switches stay, the whole line is in each load\'s chrome log)' : ''}, window ${viewW}x${viewH} at scale ${scale}${spindumpS ? `, SPINDUMP ${spindumpS} s at the first picture (not a listening load)` : ''}, stay ${stayMs / 1000} s, after a loss ${afterLossMs ? `${afterLossMs / 1000} s` : 'the whole stay'}, ${os.cpus().length} processors, ${Math.round(os.totalmem() / 1048576)} MB, begun ${new Date().toISOString()}\n`)
 
 // The card as the browser names it before any page of ours, in a browser of its own.
 try {
