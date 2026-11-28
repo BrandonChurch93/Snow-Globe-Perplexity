@@ -22,6 +22,10 @@
 // --spindump-at MS begins that sampler MS after the address was asked for instead. --hide-canvas S: a style of the tool
 // keeps the canvas out of sight (opacity 0, as the page keeps it before its first picture) until S s after the first
 // picture. Such loads are named so and never counted with the listening ones.
+// --cut-canvas: a style of the tool takes the transition from the canvas, so it comes into sight at the first picture
+// by a cut. --fade-canvas frames|S: the tool holds the canvas and the page's still until the page's frames run again
+// (or until S s after the first picture) and then lets the page's own 0.5 s fade run. Named so, never counted with
+// the listening ones.
 // --local opens the installed Chrome in a window with the machine's graphics card, with the flags of every tool of
 // this tree; without it the pinned browser draws with the software renderer.
 // It writes <out>/<name>.json, <name>.txt, and for each load <tag>.png, <tag>-chrome.log, <tag>-gpu.txt and what the
@@ -58,6 +62,19 @@ const plainCanvas = args['plain-canvas'] === true
 // --no-blur: a style of the tool takes the blur of what lies under a panel (backdrop-filter) from every element for the
 // whole load. The panels stay; only that blur goes. A tool beside the page.
 const noBlur = args['no-blur'] === true
+// --cut-canvas: a style of the tool takes the transition from the canvas for the whole load, so that the canvas comes
+// into sight at the first picture by a cut and not by the page's 0.5 s fade. The page keeps it out of sight until then
+// by its own rule, and everything else is the page's. A tool beside the page.
+const cutCanvas = args['cut-canvas'] === true
+// --fade-canvas frames|S: the tool holds the canvas out of sight (opacity 0, no fade) and holds the page's still under
+// it (the page's own call that ends the still is kept back), then lets the page's own rule fade the canvas in over
+// 0.5 s and ends the still when that fade is over, as the page does. With "frames" it lets go when the page's frames
+// run again: at the first frame that is 2 s or more after the first picture and has had no two frames 250 ms or more
+// apart in the half second before it. With a number S it lets go S s after the first picture. It stands in for a page
+// that holds its canvas back until the card has answered; it makes nothing on the card. A tool beside the page.
+const fadeCanvas = str('fade-canvas', '')
+const FADE_AFTER_MS = 2000
+const FADE_STEADY_MS = 500
 const oslog = str('oslog', 'lost')
 // --webkit: the driver's own build of WebKit in a window instead of Chrome (the engine of Safari; it is not Safari itself).
 // It has no chrome://gpu and names no processes to the driver: its processes are found by their names.
@@ -174,6 +191,119 @@ function early() {
   requestAnimationFrame(tick)
 }
 
+// In the page, before any of its scripts: holds the canvas and the still, and lets the page's own fade run at the moment
+// named. Everything it does is written into window.__listen.fade with the page's clock.
+function holdAndFade({ mode, seconds, afterMs, steadyMs }) {
+  const w = window.__listen
+  const f = (w.fade = { mode, seconds, afterMs, steadyMs, firstAt: null, stillAskedToEndAt: null, releasedAt: null, releasedBy: null, opacityAtRelease: null, transitionAtRelease: null, fadeRuns: null, fadeEndedAt: null, fadeEndedBy: null, opacityAfter: null, stillEndedAt: null, stillThere: null })
+  const put = () => {
+    if (document.getElementById('__listen_hold') || !document.documentElement) return
+    const st = document.createElement('style')
+    st.id = '__listen_hold'
+    st.textContent = 'canvas{opacity:0 !important;transition:none !important}'
+    document.documentElement.appendChild(st)
+  }
+  put()
+  document.addEventListener('DOMContentLoaded', put)
+  // The page's still: the page ends it at the end of its own fade or 1500 ms after the first picture. Under the tool's
+  // hold there is no fade to end, so that call is kept back until the tool's fade is over.
+  let still
+  let endStill = null
+  Object.defineProperty(window, 'firstStill', {
+    configurable: true,
+    enumerable: true,
+    get: () => still,
+    set: (v) => {
+      still = v
+      if (v && typeof v.end === 'function') {
+        const real = v.end
+        v.end = function () {
+          if (f.fadeEndedAt !== null) return real.call(v)
+          if (f.stillAskedToEndAt === null) f.stillAskedToEndAt = Math.round(performance.now())
+          endStill = () => real.call(v)
+          return undefined
+        }
+      }
+    },
+  })
+  const release = (by) => {
+    if (f.releasedAt !== null) return
+    const canvas = document.querySelector('canvas')
+    if (!canvas) return
+    f.releasedAt = Math.round(performance.now())
+    f.releasedBy = by
+    f.stillThere = (document.getElementById('first')?.childElementCount ?? 0) > 0
+    // The page's reveal has set the canvas's own transition to none at its 1500 ms cap: the page's rule gets its fade back.
+    canvas.style.transition = ''
+    f.opacityAtRelease = getComputedStyle(canvas).opacity
+    const over = (by2) => {
+      if (f.fadeEndedAt !== null) return
+      f.fadeEndedAt = Math.round(performance.now())
+      f.fadeEndedBy = by2
+      f.opacityAfter = getComputedStyle(canvas).opacity
+      canvas.style.transition = 'none'
+      if (endStill) {
+        endStill()
+        f.stillEndedAt = Math.round(performance.now())
+      }
+    }
+    canvas.addEventListener('transitionrun', () => (f.fadeRuns = Math.round(performance.now())), { once: true })
+    canvas.addEventListener('transitionend', () => over('the fade ended'), { once: true })
+    setTimeout(() => over('1500 ms after the tool let go'), 1500)
+    document.getElementById('__listen_hold')?.remove()
+    f.transitionAtRelease = getComputedStyle(canvas).transitionDuration
+  }
+  let lastGapEnd = null
+  let last = null
+  // The first picture is taken in the moment the page sets its mark, before the page's thread can stand still.
+  const marked = () => {
+    if (f.firstAt !== null || document.documentElement.dataset.firstPicture !== '1') return
+    const now = performance.now()
+    f.firstAt = Math.round(now)
+    lastGapEnd = now
+    if (mode === 'seconds') setTimeout(() => release(`${seconds} s after the first picture, by the clock`), seconds * 1000)
+  }
+  new MutationObserver(marked).observe(document, { attributes: true, subtree: true, attributeFilter: ['data-first-picture'] })
+  const tick = (t) => {
+    marked()
+    if (last !== null && t - last >= 250) lastGapEnd = t
+    last = t
+    if (f.firstAt !== null && f.releasedAt === null) {
+      if (mode === 'frames' && t - f.firstAt >= afterMs && t - lastGapEnd >= steadyMs) release('the frames ran again')
+      if (mode === 'seconds' && t - f.firstAt >= seconds * 1000) release(`${seconds} s after the first picture, at a frame`)
+    }
+    requestAnimationFrame(tick)
+  }
+  requestAnimationFrame(tick)
+}
+
+// In the page, before any of its scripts: the canvas's transition is taken away, and the moment the canvas is in sight
+// is written down with the page's clock.
+function cutIn() {
+  const w = window.__listen
+  const c = (w.cut = { seenAt: null, opacity: null, transition: null })
+  const put = () => {
+    if (document.getElementById('__listen_cut') || !document.documentElement) return
+    const st = document.createElement('style')
+    st.id = '__listen_cut'
+    st.textContent = 'canvas{transition:none !important}'
+    document.documentElement.appendChild(st)
+  }
+  put()
+  document.addEventListener('DOMContentLoaded', put)
+  const tick = (t) => {
+    const canvas = document.querySelector('canvas')
+    if (canvas && 'live' in canvas.dataset) {
+      c.seenAt = Math.round(t)
+      c.opacity = getComputedStyle(canvas).opacity
+      c.transition = getComputedStyle(canvas).transitionDuration
+      return
+    }
+    requestAnimationFrame(tick)
+  }
+  requestAnimationFrame(tick)
+}
+
 function end() {
   const w = window.__listen
   const canvas = document.querySelector('canvas')
@@ -197,7 +327,7 @@ function end() {
   if (w.last !== null && now - w.last >= 250) w.gaps.push([Math.round(w.last), Math.round(now - w.last)])
   const html = document.documentElement
   const size = canvas ? { width: canvas.width, height: canvas.height, cssWidth: canvas.clientWidth, cssHeight: canvas.clientHeight } : null
-  return { marks: w.marks, lost: w.lost, back: w.back, refused: w.refused, gaps: w.gaps, perSecond: w.perSecond, frames: w.frames, endMs: Math.round(now), wall0: w.wall0, page0: w.page0, lostNow, cardByPage, made: html.dataset.made ?? null, detail: html.dataset.detail ?? null, canvasLive: canvas ? 'live' in canvas.dataset : null, canvas: size, ratio: window.devicePixelRatio, agent: navigator.userAgent, cores: navigator.hardwareConcurrency, memoryGb: navigator.deviceMemory ?? null }
+  return { marks: w.marks, lost: w.lost, back: w.back, refused: w.refused, gaps: w.gaps, perSecond: w.perSecond, frames: w.frames, endMs: Math.round(now), wall0: w.wall0, page0: w.page0, lostNow, cardByPage, made: html.dataset.made ?? null, detail: html.dataset.detail ?? null, canvasLive: canvas ? 'live' in canvas.dataset : null, canvas: size, ratio: window.devicePixelRatio, agent: navigator.userAgent, cores: navigator.hardwareConcurrency, memoryGb: navigator.deviceMemory ?? null, fade: w.fade ?? null, cut: w.cut ?? null }
 }
 
 // The words of a page of the browser's own, through its shadow trees.
@@ -383,6 +513,19 @@ async function one(base, query, round) {
         document.addEventListener('DOMContentLoaded', put)
       })
       notes.push(`the tool keeps the canvas at opacity 0 until ${hideCanvasS} s after the first picture`)
+    }
+    if (cutCanvas) {
+      await page.addInitScript(cutIn)
+      notes.push('the tool takes the transition from the canvas for the whole load: it comes into sight at the first picture by a cut')
+    }
+    if (fadeCanvas !== '') {
+      const frames = fadeCanvas === 'frames'
+      await page.addInitScript(holdAndFade, { mode: frames ? 'frames' : 'seconds', seconds: frames ? null : Number(fadeCanvas), afterMs: FADE_AFTER_MS, steadyMs: FADE_STEADY_MS })
+      notes.push(
+        frames
+          ? `the tool holds the canvas at opacity 0 and the still under it until the page's frames run again (${FADE_AFTER_MS} ms or more after the first picture, no two frames 250 ms apart in the ${FADE_STEADY_MS} ms before), then the page's own 0.5 s fade runs`
+          : `the tool holds the canvas at opacity 0 and the still under it until ${Number(fadeCanvas)} s after the first picture, then the page's own 0.5 s fade runs`,
+      )
     }
     await page.goto(`${base}${query === '' ? '' : `?${query}`}`, { waitUntil: 'commit' })
     let endedBy = 'the limit'

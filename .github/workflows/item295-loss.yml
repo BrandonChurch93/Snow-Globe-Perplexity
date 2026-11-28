@@ -31,14 +31,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Eighth push. Between the commit of Nov 25 (0 of 12 lost) and that of Nov 26 (10 of 12) a second commit changed
-          # what stands with the canvas at the first picture: c2afb6bb fetches the interface before the first frame, so its
-          # panels, which blur what lies under them, are built in the moment of the first picture and no longer a fetch
-          # later. That commit and the one before it on main's first parent line; and main's page with that blur taken
-          # from every element by a style of the tool (the panels stay).
-          - { arm: q4-before-controls-first, os: macos-latest, page: 7bc04adb961ab0dd4190da7aa651f8974d0091b5, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
-          - { arm: q4-controls-first, os: macos-latest, page: c2afb6bbf9a878d06e7881c384826724c11b3205, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
-          - { arm: q8-no-blur, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '--no-blur --oslog all' }
+          # Ninth push, allowed by root's rulings of 18:02 and 18:03 UTC (at most three hosted Macs at work for this branch
+          # at any moment: these three arms, nothing else of this branch is running). Two arms of the seventh push kept the
+          # card with no fade of the canvas at any moment (the canvas out of sight for 25 s and then cut in; the canvas in
+          # full sight from the first moment), so they do not say whether the page's own 0.5 s fade is safe once the card is
+          # through, nor whether it is the fade or the canvas's first coming into sight at the mark that the loss needs.
+          # Three arms of 10 winter loads of main's page, tools beside the page only, the machine's log kept in every load:
+          #   q9-fade-when-frames-run: the canvas and the still held until the page's frames run again, then the page's fade.
+          #   q9-cut-at-mark: main with only the canvas's transition taken away, so it cuts in at the mark.
+          #   q9-fade-at-25: the canvas and the still held until 25 s after the mark, then the page's fade.
+          - { arm: q9-fade-when-frames-run, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '--fade-canvas frames --oslog all' }
+          - { arm: q9-cut-at-mark, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '--cut-canvas --oslog all' }
+          - { arm: q9-fade-at-25, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 45, after: 5, spindump: 0, flags: '', more: '--fade-canvas 25 --oslog all' }
     steps:
       - name: the tools of this branch
         continue-on-error: true
