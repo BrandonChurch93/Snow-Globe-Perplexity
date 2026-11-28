@@ -1,0 +1,110 @@
+THE FRINGE AT FILM FRAME 680: the lines from the code, and four trials on origin main
+From change_finisher to /root, on your orders of 00:51 and 00:54 UTC and point 5 of decision 273.
+Stamped 06:13 UTC on 28 November by the clock.
+
+In one line: for the petal in the air yes, the tile's place is the same in every sample; for the front no. But the
+mend you named (the place of the tile goes by the sample) was tried and gains little, and the fringe on main now is
+three times what it was on chain 42's main by the count of pixels that stand out by more than 12 levels (647 against
+205): that came with chain 43 (measured), by my reading with its lens points, and not with the tile.
+
+Nothing is edited and nothing is committed. stageChange and stageGone are untouched and stay so until you say where
+their work stands. The trials were single edits in the tree of a detached origin main 54416c96, one at a time, each
+put back before the next. The checkout was put back on agent/p6-change at bfbf6ac6 with a clean tree and its own
+build (engine 3c899f56a7f2cd5f) at 06:02 UTC. Since 06:08 it stands on the proof head 7e94aaf2 for one trial of item
+275 at 3840 (in the proof's report), and it goes back to the branch when that ends.
+
+NOT DONE AND NOT SEEN, first
+- 680 alone, at hd final alone (1920 by 1080, 24 samples a frame): not at 3840, not in motion, no other frame of the
+  flight in (678 to 683), no other shake, and nothing of fall, whose slab chain 43 also changed.
+- No trial was run through tsc or vitest. Trial C as I read it breaks what tests/gust-streak.test.ts holds (a pixel
+  takes each part about as often); not run.
+- Why trial C is better than trial B is my reading of the code, not proven by a trial of its own.
+- What is left with no second mesh at all (trial A) is not sorted into grain and true detail: the measure also
+  counts a sharp petal's edge and a glint.
+- No fresh reviewer: I may not start agents.
+
+1. YOUR QUESTION: is the arriving of the petals drawn by a threshold against a tile whose place is the same in every
+   sample? Two thresholds act on an arriving petal in a film frame. Line numbers are those of origin main 54416c96.
+
+   The front (is this place filled yet): no.
+     src/core/materials.ts 597   if (uPass.w < 0.5) return stageGoneStill(c);
+     src/core/materials.ts 599   float h = stageHash(vec3(gl_FragCoord.xy, uSeed));
+     src/scene/stage.ts 552      u.uSeed.value = moment.seed + (sample ? sample.index * 7.31 : 0)
+   The still tile is read by stageGoneStill alone, where uPass.w is 0: the app, one sample a frame. In a film frame
+   the threshold is a hash of the pixel and uSeed, and uSeed goes on with every sample.
+
+   The petal in the air: yes.
+     src/core/materials.ts 376   the part a pixel keeps:
+         floor(fract(stageStill(ivec2(gl_FragCoord.xy) + ivec2(53, 17)) + uGustSlot.z) * float(STAGE_STREAK))
+       and a fragment of any other part is discarded (stageGustElse).
+     src/core/materials.ts 365   gustSlot.value.set(sample.hold + (rank / of) * SHUTTER_CHANGE, SHUTTER_CHANGE / of,
+                                   (rank * GUST_STREAK.turn) % 1, 0)
+     src/seasons/spring/slab.ts 183   if (stageGustElse()) discard;
+   In a film frame of 8 samples or more whose shutter is open while a piece of the incoming scatter is in the air
+   (film 678 to 683 in the first shake, reckoned from the code's own numbers) spring's petals are drawn by the second
+   mesh: 8 parts of each sample's share of the shutter, and a pixel keeps one. The tile is read at the pixel's own
+   place, moved by a fixed (53, 17), in every sample. What goes by the sample is the level alone, turned on by 0.618
+   of a whole (uGustSlot.z).
+   Since chain 43 each of the 8 parts is also seen from its own point of the lens:
+     src/core/materials.ts 292 to 299   stageGustSeen: the sample's point turned an eighth of the round a part and
+                                        set on another ring.
+
+2. MEASURED: film 680 at hd final, six pictures, every record with errors [] and 24 samples.
+   The measure: by how much a pixel stands out from the median of its 3 by 3, in levels of luma, over one place for
+   all six: every pixel where any two of the six differ by more than 2 levels, grown by 2 px (62,743 px, x 0 to
+   1919, y 644 to 1079).
+
+                                                        rms   over 6   over 12   over 20   most
+   chain 42's main (drawn on bfbf6ac6)                  2.11    1786      205        28     51
+   origin main 54416c96 (chains 43 and 44 in it)        3.05    3621      647       136     49
+   trial A: the second mesh never shown                 1.94    1485      204        29     51
+   trial D: the petals' front with no hash              2.88    3089      583       128     49
+   trial B: the still tile's place goes by the sample   2.79    3197      530        69     37
+   trial C: the level not turned by the sample          2.41    2373      326        30     33
+
+   The edits, each alone on 54416c96:
+   A  GUST_STREAK.join 8 to 999, so the second mesh is never shown and the scatter is drawn once a sample.
+   D  in spring's slab the front is in or out by the patch alone (stageEdge against the change, no feather), the
+      same in every sample; no hash of the pixel.
+   B  the mend you named: uGustSlot.w carries the sample's rank and the tile is read at
+      ivec2(gl_FragCoord.xy) + ivec2(53, 17) + int(uGustSlot.w + 0.5) * ivec2(37, 59). The turn of the level is kept.
+   C  uGustSlot.z is 0 in every sample: a pixel keeps the same part all through the frame. The place is as it is.
+   Engines: main fc272474aa83fe51, A ec1a38205f5f2ddc, D 93b352fd216fe401, B ccfcb96f133bd95b, C c2179e01043724a1.
+   Drawn 05:46 to 06:01 UTC, one render at a time, every draw exit 0.
+
+   Two things the bytes say besides:
+   - main 54416c96 draws 680 to the same bytes as my local trial merge of c72ca3a7 (chain 43) with the frost's mend
+     (sha256 d113328f75649d74): neither the mend of item 275 nor chain 44 reaches frame 680.
+   - so "chain 42's main" in the table, drawn on bfbf6ac6, differs from main in chain 43 alone at this frame.
+
+3. WHAT I SAW, at three times and as it is, in the picture attached (x 1440 to 1619, y 770 to 859) and in a second
+   place (x 1620 to 1799, y 740 to 829); main against each trial also over x 1360 to 1919 as it is.
+   - Chain 42's main: a coarse grain behind the petal, along its flight, and specks under it. The outline of the
+     petal's blur is smooth.
+   - Main now: the grain lies round the whole outline of every petal that is out of focus, and behind it as before.
+   - A: no grain round the outline. The flight shows as level streaks and the two small petals below as doubled
+     images: what the second mesh was built to take away.
+   - D: as main. I can tell no gain.
+   - B: as main. The pattern is another one, as coarse.
+   - C: the grain round the outline is finer and more even; it is still there, and the tail is as grainy as main's.
+   Whole at 400 px wide (a phone's feed) I can tell none of the six from another.
+
+4. WHAT IT COMES TO
+   - The front does not make the fringe (D). Round two's trial said the same of its own evening of the front.
+   - The second mesh does: without it (A) the count over 12 levels is 204, with it as chain 42 had it 205, with it
+     as main has it 647. Before chain 43 its grain stood in place of A's streaks at the same count; chain 43 added
+     the grain round the outline.
+   - The tile's place by the sample (B) takes the worst pixels (over 20 levels: 136 to 69) and leaves the body of
+     the grain (over 6 levels: 3621 to 3197). It is not the mend.
+   - My reading of why, from the code: a pixel keeps one part of eight a sample, so at hd final it holds a petal at
+     24 of the frame's 192 pairs of a moment and a lens point, and its neighbour at another 24. Before chain 43 the
+     eight parts of a sample shared the sample's lens point, so neighbours differed in the moment alone: grain along
+     the flight. Now they differ in the lens point too: grain wherever the blur has an edge. Moving the tile does not
+     change the 24. Not turning the level (C) leaves a pixel the 24 lens points of one part, which are the samples'
+     own well spread points turned as one; the turn mixes points of different parts, which can crowd.
+   - Whose lines: the second threshold and stageGustSeen lie in src/core/materials.ts outside my block (MODE to
+     OUTSIDE_RAMP) and were last changed by the shutter's builder in chain 43. I take them as not mine unless you
+     say so, and I have edited none of them.
+
+Files on my machine: /tmp/r2/f680/{main,A,D,B,C}/film-000680.png with their records, trial.log, trial.diff, edit.py.
+The picture attached goes to the looks branch as 103 with its caption.

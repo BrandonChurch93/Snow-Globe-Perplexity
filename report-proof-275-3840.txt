@@ -1,0 +1,153 @@
+THE 3840 PROOF OF ITEM 275 (decision 273): the judge's report
+From change_finisher to /root. Stamped 06:27 UTC, 28 November, by the clock.
+
+HEAD LINE
+Not below the bar at 3840 on the three frames that stand (620, 667, 668), because the ruled level end at the
+table's line is gone in each and what stands in its place is the leaving frost's own streaks, of the size the
+frost carries beside it in both pictures. Two things keep that from being the whole answer. Four of the seven
+frames do not stand yet. And in 668 one run that the after alone has is over the judge's first setting (53 px by
+8.8 levels): MEASURED at 3840, plain frost with no image zone at all has that run in the same place, longer and
+stronger (61 px by 9.6 levels), so it is the frost's and not the image's end. I did not change the setting;
+whether a frost streak over it passes is yours to rule.
+
+NOT DONE AND NOT SEEN, first
+- Missing at 06:27 UTC: film 619, 621, 666 and 669 stand on neither branch. agent/p6-looks-275-before at 907dddaf
+  and agent/p6-looks-275-after at c64712db hold 620, 667 and 668 and no other. So nothing is said here of 619 to
+  620 to 621 from one frame to the next, nor of 666 to 667, nor of 668 to 669. I judge the four when they stand
+  and send the lines to add.
+- Plain frost at 3840 is drawn for 668 alone. For 667's four runs the same proof stands at 1920 wide only (below);
+  I start 667 with the zone off at 3840 now and send its lines when it stands (about 15 minutes of drawing).
+- Nothing was played. Every picture is a single frame; "from one frame to the next" is measured and looked at on
+  two neighbouring stills, not seen moving.
+- No fresh reviewer: I may not start agents. The pass was my own.
+
+HEADS AND RECORDS (each record's errors read first)
+- Before: agent/p6-looks-275-before at 907dddafbe90b2044ce58641cdd0e6f610a26078, looks/275/before/. Each of the
+  three records: errors [], engine fc272474aa83fe51, uhd, final, assets full, 3840 by 2160, lavapipe. MEASURED
+  here: main 54416c96 builds to that engine on my machine (05:46 UTC), and 54416c96 differs from 4580676e in 12
+  files under kit/ and out/stills/status/ and in no source. 4580676e itself I did not build.
+- After: agent/p6-looks-275-after at c64712db60373665acf9b6b970543160a5f5e914, looks/275/after/. Each of the three
+  records: errors [], engine 29b8ddd5edda71ac, the same format, tier and assets.
+- MEASURED here at 06:08 to 06:09 UTC: agent/p6-proof-275 is 7e94aaf2; against main 4580676e it differs in two
+  files and no other (src/seasons/winter/frost.ts, tests/shake-change.test.ts), both the same text as on the
+  commit bfbf6ac6; built on my machine it gives engine 29b8ddd5edda71ac, the hash the after's records carry.
+- Samples a frame, the same on both sides: 620 has 46, 667 has 74, 668 has 80.
+- sha256, first 16: before 620 f5187dfdb748220f, 667 ec583bfefae305ae, 668 ace4c21e65964f24; after 620
+  0edef026f67265c7, 667 4b15259e093b37b9, 668 998797ff72265705.
+
+THE JUDGE AT 3840 (MEASURED)
+"A level run" is so many columns side by side in which the step of luma from one row to the next is over so many
+levels, the same way all along. The table's line under the foot lies on rows 1911/1912 (hd row 956 doubled; the
+before's level edge stands there in each of the three). Judged: rows 1904/1905 to 1919/1920, the whole width, at 6
+levels and 40 px and at 3 levels and 28 px. "Before alone" is gone with the mend, "after alone" is new with it,
+"both" is not the mend's.
+
+620 (the foot up, the frost lying)
+  6 levels, 40 px: before alone 1: rows 1911/1912, x 2529 to 2573, 45 px, 62.5 levels. After alone: none. Both: 1,
+    the foot's own lower rim at the left (rows 1904/1905, x 1219 to 1303, 7.5 levels in both, looked at).
+  3 levels, 28 px: before alone 3 (rows 1911/1912 54 px by 53.7; rows 1905/1906 40 px by 27.6; rows 1910/1911
+    31 px by 36.4). After alone: none. Both: 15.
+  On the old line, x 2529 to 2582: 53.7 levels before, the same way in 54 of 54 columns; 2.5 after, in 29 of 54.
+  The two files differ by more than 6 levels in 11,855 px at the right end of the foot's image (x 2141 to 2603)
+  and in 14 px at the left end.
+
+667 (the leaving)
+  6 levels, 40 px: before alone 2: rows 1911/1912, x 2541 to 2607, 67 px, 27.0 levels; rows 1910/1911, x 2548 to
+    2602, 55 px, 17.4. After alone: none. Both: 33.
+  3 levels, 28 px: before alone 2 (83 px by 22.6; 64 px by 15.6). AFTER ALONE 4, all within x 2557 to 2610, one to
+    eight rows under the old line: rows 1913/1914 35 px by 12.6; 1914/1915 34 px by 12.0; 1915/1916 36 px by 12.2;
+    1919/1920 36 px by 12.8. Both: 119 (longest 157 px, strongest 27.0 levels); of those 119, 81 to 93 are as long
+    or longer than each of the four and 30 to 37 as strong or stronger.
+  On the old line, x 2537 to 2619: 22.6 levels before, 83 of 83 columns; 0.0 after, 32 of 83.
+
+668 (the leaving)
+  6 levels, 40 px: before alone 2: rows 1911/1912, x 2658 to 2743, 86 px, 11.5 levels; rows 1910/1911, x 2653 to
+    2714, 62 px, 11.5. AFTER ALONE 1: rows 1914/1915, x 2664 to 2716, 53 px, 8.8 levels, brighter below, three
+    rows under the old line (before in that place: +1.0). Both: 21 (longest 301 px, strongest 14.9 levels); of
+    those 21, 17 are as long or longer than the after's run, 19 as strong or stronger, 16 both.
+  3 levels, 28 px: before alone 2 (111 px by 10.2; 105 px by 9.6). AFTER ALONE 2: rows 1914/1915, x 2663 to 2725,
+    63 px by 8.2 (the same run); rows 1915/1916, x 2649 to 2686, 38 px by 5.7. Both: 74.
+  On the old line, x 2645 to 2755: 10.2 levels before, 111 of 111 columns; 0.3 after, 64 of 111.
+  The same judge 24 rows either way: at the first setting no further run the after alone has in any of the three
+  frames. At the second setting it finds four more in 667 (29 to 57 px by 7.8 to 12.7 levels, three of them 9 to
+  18 rows under the old line, one 17 rows over it) and three more in 668 (29 to 58 px by 5.3 to 5.8 levels),
+  among 374 and 264 runs that both pictures have there.
+
+The short level runs you took as frost grain at 1920 wide (decision 273, point 6), looked at first at 3840 as you
+ordered: they are these. In 667 they stay under the first setting (34 to 36 px against 40). In 668 one of them is
+over it (53 px, 8.8 levels).
+
+IS 668'S RUN THE MEND'S OR THE FROST'S
+- MEASURED at 1920 wide, on frames I drew earlier for the mend's own proof (hd, final, errors [] in each record):
+  the same run stands at hd rows 957/958 (3840 rows 1914/1915). Over x 1332 to 1358: before (chain 42's main,
+  engine dc59c0d7c2daa6ab) -0.1 levels; after (the commit bfbf6ac6, engine 3c899f56a7f2cd5f) +7.5, in 27 of 27
+  columns; and with the foot's image zone switched off altogether, so that the place is plain frost with no image
+  (a trial never committed, engine 26c8277699b823ec), +8.2, in 27 of 27 columns. The hd judge finds the run in the
+  after at x 1326 to 1371 (46 px by 7.1) and in the plain frost at x 1328 to 1372 (45 px by 7.7).
+  So at 1920 wide the run is the leaving frost's own streak: the before's image lay over it with its flat dark,
+  and the mend's image has faded out by there and lets it show.
+- MEASURED at 3840, drawn on my machine 06:09:57 to 06:24:07 UTC: film 668, uhd, final, the proof head 7e94aaf2
+  with the image zone switched off (one line of frost.ts, never committed, put back after; engine
+  6b1c7d89d665c176; record errors [], 80 samples, 841 s, sha256 e03caf61a319113c).
+  Rows 1914/1915 over x 2664 to 2716: before +1.0 levels, after +8.8 (53 of 53 columns), plain frost +10.0 (53 of
+  53). The judge on the plain frost at the first setting: rows 1914/1915, x 2664 to 2724, 61 px by 9.6 levels (the
+  after: x 2664 to 2716, 53 px by 8.8). At the second setting the plain frost has both of the after's runs: rows
+  1914/1915, x 2662 to 2744, 83 px by 8.6 (the after 63 px by 8.2) and rows 1915/1916, x 2647 to 2686, 40 px by 6.2
+  (the after 38 px by 5.7). On the old line the plain frost steps by 0.2 levels, the after by 0.3.
+  So at 3840 both runs the after alone has in 668 are in the frost with no image there at all, each a little
+  longer and stronger than under the mend's fading image.
+- 667's four runs, MEASURED at 1920 wide only (hd, final, 37 samples, errors [] each; 3 levels and 14 px, x 1240
+  to 1340): the after has rows 957/958, x 1278 to 1300, 23 px by 15.1 and rows 959/960, x 1271 to 1300, 30 px by
+  9.6; the plain frost has rows 957/958, x 1278 to 1301, 24 px by 15.5 and rows 959/960, x 1280 to 1298, 19 px by
+  7.6, and one more on rows 958/959 (27 px by 13.4). The before has none of them. Not measured at 3840.
+
+FROM ONE FRAME TO THE NEXT (MEASURED, 667 to 668 alone; the other neighbours are missing)
+- The place moves 113 columns right and one row up between the two (best fit over x 2300 to 2859, y 1830 to
+  1997), the same before and after. With that shift taken out, what is left in the mend's place (8,390 px):
+  before rms 15.16 levels, 44.8 px in 100 over 12 levels, largest 51; after rms 15.23, 45.4 in 100, largest 53.
+  In the rest of the box, frost the mend does not touch: 29.56 before, 29.34 after.
+- A run that comes and goes: yes, and the frost's own do the same. Each run 667 has in that box at 3 levels and
+  28 px, followed 113 columns on into 668 (the same rows and one row up): of the 17 that both pictures have, 4
+  keep half their step or more in the after (5 in the before) and their mean step falls from 8.1 levels to 3.1
+  (8.0 to 3.6 in the before). The after's own four: 12.6 becomes 0.5, 12.0 becomes 8.1, 12.2 becomes 3.7, 12.8
+  becomes under 1; one of four keeps half, mean 12.4 to 3.0. The before's ruled line itself falls from 22.6 to
+  11.3. So between these two frames the streaks of the leaving frost fade or go, with the mend and without it,
+  and the after's four do it at about the frost's own rate (1 of 4 keeps half, against 4 of 17).
+- A finger that jumps: none found between 667 and 668. The after's runs go with the frost's end (667 at x 2557 to
+  2610, 668 at x 2649 to 2725; the shift is 113) and stay under the old line in both.
+
+WHAT I SAW (each pair in its place at full size, at 2x and at 4x, 667 and 668 also at 8x; each frame whole at 400 px;
+668's plain frost at 4x beside its before and after)
+- 620 before: the right end of the foot's image is a dark wedge with a flat level top, ruled along the table's
+  line for about 50 px. After: the wedge ends in a grainy, frayed edge that falls away into the frost; no level
+  edge.
+- 667 before: a ruled level line at the table's line, bright over dark with a blue rim, about 80 px long, the
+  hardest thing in the place. After: no ruled line. In the dark under where it was there are several short faint
+  level streaks, light and dark by turns, a comb rather than a smooth fade. At 2x and closer I see them plainly;
+  at full size they read as the grain of the leaving frost, which is streaked the same way all round in both
+  pictures.
+- 668 before: the same ruled line, fainter and longer (about 110 px). After: no ruled line; faint level streaks
+  under it, the plainest a light one three rows under the old line, softer than the before's line. At full size
+  I find it only because the judge names its columns.
+- 668 plain frost beside its after at 4x: the same streaks in the same rows, a little lighter all over; I cannot
+  tell the two apart by their streaks.
+- At 400 px wide I cannot tell any before from its after.
+
+WHAT IS BELOW THE BAR OR NEAR IT, plainly
+- 668: one run over the judge's first setting in the after alone. It is the frost's own streak (plain frost has
+  it at 3840, longer and stronger). The mend did not make it; the before's flat dark hid it.
+- 667: where the image ends after the mend the place is a comb of short level streaks at 2x and closer, not a
+  clean fade. Under the first setting, over the second (four runs of 34 to 36 px by 12 levels). At 1920 wide
+  they are the plain frost's; at 3840 that is not measured yet.
+- The leaving frost is streaked level all round the place in 667 and 668 on both sides (seen), and the judge
+  counts 33 and 21 runs at the first setting in its band that both pictures have (I did not look at each of
+  them). That is not this mend's and no order touches it; I name it because the judge's settings count it.
+- The proof covers three frames of seven.
+
+PICTURES (7, JPEG, none over 1200 px; before left, after right; labels in the margins only; the tick marks rows
+1911/1912)
+104 film 620, the place as it is.  105 film 620, the place at 2x.
+106 film 667 and 668, the place as it is.  107 film 667 and 668, the place at 2x.
+108 film 667 and 668, the after's own level runs at 4x.
+109 film 620, 667 and 668 whole, made 400 px wide.
+110 film 668, the run at 4x: before, after, and plain frost with the image zone off.
