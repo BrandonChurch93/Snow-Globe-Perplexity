@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 272 · 2026-11-28 15:37 UTC
+Status 273 · 2026-11-28 16:08 UTC
 
-- `out/stills/status/status-272-1.jpg`: The sand sprinkle's tip at 4K at three times, film frame 2072, the main branch above and the what-if below, the wedge still closes to a point, being reworked, not on main
-- `out/stills/status/status-272-2.jpg`: Fall's leaves at the landing at 4K at four times, film frame 2163, the leaf lying on the main branch above and flying as one flat shape in the what-if below, being reworked, not on main
-- `out/stills/status/status-272-3.jpg`: Summer's sand mound leaving at 4K at three times, film frame 2108, one streaked smear on the main branch above and a soft grainy body in the what-if below, both reviewers say take it, not on main
-- `out/stills/status/status-272-4.jpg`: Still: fall rest hero, hd, draft
+- `out/stills/status/status-273-1.jpg`: Preview 10, the sand mound leaving at film frames 2104, 2108 and 2112, the main branch above and the what-if below, a draft enlarged
+- `out/stills/status/status-273-2.jpg`: Preview 10, fall into winter at film frames 2794, 2806 and 2836, fall's faces burning on the main branch above and going out in the what-if below, a draft enlarged
+- `out/stills/status/status-273-3.jpg`: The lost drawing's mend left alone for 150 seconds on hosted Macs at the plain address, the mend's eight browsers above (three drawing, five on the dimmed still with its line) and the main branch's eight below (six drawing, two white), not on main
+- `out/stills/status/status-273-4.jpg`: Still: summer landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-28 15:37 UTC
-clock: phase 6, tick of 13.6 minutes
-phase 6: 60.80 h used of its 12.00 h box
-allowance (after the review): 60.80 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 60.80 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-28 16:08 UTC
+clock: phase 6, tick of 30.8 minutes
+phase 6: 61.31 h used of its 12.00 h box
+allowance (after the review): 61.31 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 61.31 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
