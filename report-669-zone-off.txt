@@ -1,0 +1,55 @@
+ITEM 275, THE 3840 PROOF: 669 with the image zone off, as promised at 06:52 UTC
+From change_finisher to /root. Stamped 07:11 UTC, 28 November, by the clock. Low priority; nothing is asked of you.
+
+FIRST LINE
+No fault by the proof's judge (before against after), and nothing edited. One thing I must set right. At 06:52 I
+wrote that 669's three runs are the edges of a glint "that the before holds too, a little weaker", and with 667's
+and 668's in mind you may have read them as the frost's own. Plain frost says one of the three is. The other two,
+and the glint's underside one row under the old line, are 2 to 4 levels steeper under the mend than in plain frost.
+I do not call it a fault; it is yours to rule, and by decision 279 I edit nothing.
+
+NOT DONE AND NOT SEEN
+- Nothing was played. Single frames, as before.
+- No fresh reviewer: I may not start agents. The pass was my own.
+
+669 WITH THE ZONE OFF AT 3840 (MEASURED)
+Drawn on my machine 06:46:28 to 06:59:46 UTC: film 669, uhd, final, full assets, the proof head 7e94aaf2 with the
+image zone switched off (the same one line of frost.ts as for 667 and 668, never committed, put back after; engine
+6b1c7d89d665c176; record errors [], 81 samples, 788 s, sha256 f6707171f1b365ec). After it the checkout stood on
+agent/p6-change at bfbf6ac6 again, tree clean, engine 3c899f56a7f2cd5f (07:00:36 UTC), and no trial frame lies in
+the film's folder.
+The glint is a bright streak in the frost, x 2896 to 2940, rows 1904 to 1915, across the old line at the right end
+of the foot's image. The step over the same columns, before, after, plain frost:
+  rows 1906/1907, x 2896 to 2923, its upper edge:    +7.0    +9.3    +7.0   own run over 3 levels: 25, 28, 25 px
+  rows 1907/1908, x 2897 to 2927, its upper edge:    +7.0   +10.3    +7.0   own run over 3 levels: 24, 31, 24 px
+  rows 1910/1911, x 2896 to 2923, its core:          -4.9    -6.9    -5.5
+  rows 1912/1913, x 2901 to 2940, its underside:    -18.5   -13.8   -10.0   own run over 6 levels: 43, 40, 36 px
+  rows 1914/1915, x 2901 to 2940, under it:          -3.3    -4.6    -5.0   the frost's own
+Above the old line the before and the plain frost are one picture (above row 1909 the same bytes), so the two upper
+edges are the mend's by 2.3 and 3.3 levels. The cause, read from frost.ts and measured: where the image zone lies
+the thin film clears and the lumps stay (IMAGE_CLEAR, IMAGE_LUMP, older than the mend), and this glint is one that
+stays: at row 1912, where the before's zone is whole, the before lies 1.0 level under plain frost on the glint and
+10.8 right of it. The mend's spread lays a part of the zone either way from the axis, so the ground round the glint
+is 2 to 5 levels darker than in plain frost above the line and 4 to 6 below it, and the glint itself is within 2
+levels of plain frost (rows 1908 to 1912). Under the mend it stands 2 to 4 levels further out of its ground than
+in plain frost, on both edges; under the before 8.5 further out below the line and not at all above.
+Right of the glint (x 2942 to 3010) the after's zone is a ramp with no step. Under plain frost by, at rows 1880,
+1900, 1910, 1912 and 1920: after 1.0, 1.9, 4.2, 4.3 and 5.0 levels; before 0.0, 0.0, 0.3, 10.8 and 11.9. On the
+old line there: 6.2 before, 0.2 after, 0.1 plain frost. At the left end (x 837 to 885): 4.5, 0.3, 0.6. The run ten
+rows over the line at the left end (29 px by 4.1 in the after) is the frost's own: 4.0 in plain frost, 29 of 29
+columns the same way.
+
+THE AFTER AGAINST PLAIN FROST IN PLACE OF THE BEFORE (MEASURED; within 8 rows of the line, the whole width)
+667 and 668: no run of the after's own at either setting. Every level run the after has there, plain frost has.
+669: one at the first setting (the glint's underside, rows 1912/1913, 40 px by 13.8 levels; the before has it at
+43 px by 17.7, which is why the proof's judge calls it "both") and three at the second (the two upper edges, and
+rows 1910/1911, 28 px by 6.9), all four on the one glint. Elsewhere in 669: none.
+
+WHAT I SAW
+The glint at 8x, 4x, 2x and as it is; before, after and plain frost side by side. Before: its underside is cut flat
+on the line and a faint level edge runs right from it. After: whole, soft below, no level edge from it. Plain
+frost: the same glint, lighter all over, a little softer. Beside plain frost the after's glint is a little crisper;
+I can tell the two apart at 4x and closer, and as it is only by the darker ground.
+
+PICTURE (1, JPEG, 1152 px wide; labels in the margins only; the tick marks rows 1911/1912)
+120 film 669, the glint at 4x, at 2x and as it is: before, after, and plain frost with the image zone off.
