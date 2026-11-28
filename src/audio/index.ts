@@ -137,6 +137,19 @@ function contextClass(): typeof AudioContext | null {
   return w.AudioContext ?? w.webkitAudioContext ?? null
 }
 
+/**
+ * Asks the browser for its list of sound devices and does nothing with the answer. The first sound context of a browser's
+ * life waits, on the page's thread, until the browser's own sound service is up, and the page makes its context inside the
+ * visitor's first press; the list starts that service ahead of the press. It needs no gesture and shows no prompt.
+ */
+function wakeSound(): void {
+  const devices = typeof navigator === 'undefined' ? undefined : navigator.mediaDevices
+  if (typeof devices?.enumerateDevices !== 'function') return
+  void Promise.resolve()
+    .then(() => devices.enumerateDevices())
+    .catch(() => undefined)
+}
+
 function shape(p: AudioParam, from: number, to: number, at: number, seconds: number): void {
   const d = Math.max(seconds, 0.005)
   try {
@@ -733,6 +746,7 @@ export function createSoundEngine(opts: SoundEngineOptions): SoundEngine {
   if (backend && Ctor) {
     void opts.afterFirstPicture.then(() => {
       if (disposed) return
+      wakeSound()
       for (const f of [...spriteFiles, ...loopFiles(season)]) void shared.raw(f)
     })
   }
