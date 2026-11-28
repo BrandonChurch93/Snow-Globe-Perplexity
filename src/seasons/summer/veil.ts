@@ -98,6 +98,39 @@ export function takePace(moment: KitMoment): number {
 }
 
 /**
+ * Decision 222, the see through at the landing: the storm's look has a course of its own in time. While the take over runs the
+ * down is the storm at its full, dense, as the take over was proved on it. From the take over's end to the landing it goes over
+ * to the look of the landing (looks.ts, `STORM_LANDING`), so the cottage, the lanterns and the tree are seen through the down when
+ * the globe is set down. The course runs on the shake's own beat, the clock the take over runs on, so the page and the film do
+ * the same thing; it eases in and out, with no corner at the take over's end and none at the landing. A shake of summer alone
+ * runs the same course on the same beats.
+ *
+ * After the landing the look of the landing stands for as long as a storm does: whole to `settled[0]` seconds after it, and back
+ * at the storm's full numbers by `settled[1]`, when the liquid is calm and no stroke of the storm is drawn that could show the
+ * way back (read on the film after the landing of shake 2, frame 1440: the liquid's turbulence falls under the level where the
+ * draw's storm ends, looks.ts `LENS_LOOK.stormFrom`, 5.6 s after the landing, and the draw's storm is nothing from there). So the
+ * rest state reads the storm's full numbers, a shake out of summer at rest starts dense, as it did, and the swap out of summer
+ * is hidden as it was. A shake that starts sooner carries the look of the landing in and eases it out over its first `carryBeats`.
+ */
+export const LANDING_LOOK = { settled: [6.5, 9] as const, carryBeats: 1 }
+
+/** The beat of a shake at which the take over is over: frame 1421 of the film, where shake 2 runs from frame 1296. */
+export const TAKE_END_BEAT = config.shake.swapWindow.toBeat + (TAKE.fromFrames + TAKE.frames) / FRAMES_A_BEAT
+/** The beat of a shake at which the globe lands. */
+export const LANDING_BEAT = config.shake.liftBeats + config.shake.strokeBeats + config.shake.setDownBeats
+
+/** How far the storm's look has gone over to the look of the landing at a moment, 0 to 1: a pure function of the beat, the time since the landing and the seasons of the moment. */
+export function landingLook(f: { moment: { beat: number | null; sinceLanding: number }; from: { veil: unknown }; to: { veil: unknown } }): number {
+  const beat = f.moment.beat
+  const since = f.moment.sinceLanding
+  const stands = since >= 0 && since < Infinity ? 1 - ramp(since, LANDING_LOOK.settled[0], LANDING_LOOK.settled[1]) : 0
+  if (beat === null) return f.to.veil === veil ? stands : 0
+  const carried = f.from.veil === veil ? stands * (1 - ramp(beat, 0, LANDING_LOOK.carryBeats)) : 0
+  const eased = f.to.veil === veil ? ramp(beat, TAKE_END_BEAT, LANDING_BEAT) : 0
+  return Math.max(carried, eased)
+}
+
+/**
  * The share of the flood that still stands when the take over has run `pace` of its way: all of it at 0, none at 1, and between
  * them less by one and the same share of itself on every equal step of the way. A haze thins by ratio. Taken over by sum, the bank stood whole
  * until the last frames of the swap window and went tenfold in two of them: what stands 60 mm deep in it was 4, 30 and 70
