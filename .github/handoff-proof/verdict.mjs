@@ -44,7 +44,15 @@ for (const r of rows) {
   say(`       exit   ${r.code}, wanted ${r.want}, ${r.calls} ${r.calls === '1' ? 'call' : 'calls'}`)
   if (r.last) say(`       said   ${r.last.slice(0, 400)}`)
 }
-for (const name of expect) if (!rows.some((r) => r.name === name)) problems.push(`${name}: never ran (the job stopped before it)`)
+// with a released stamp the flows leave the render line out (it would start the real render), so it is not wanted then
+let released = false
+try {
+  released = JSON.parse(fs.readFileSync(path.join(clone, 'render', 'STAMP.json'), 'utf8')).releasedForFinalRender === true
+} catch {}
+for (const name of expect) {
+  if (name === 'render-refuses-unreleased' && released) continue
+  if (!rows.some((r) => r.name === name)) problems.push(`${name}: never ran (the job stopped before it)`)
+}
 if (!md && ofFile) problems.push('RENDER-ON-YOUR-PC.md was not found in the clone')
 if (md.includes('upload-test')) problems.push("RENDER-ON-YOUR-PC.md names the word of the upload's own test, which it must never do")
 say('')

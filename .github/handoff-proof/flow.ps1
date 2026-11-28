@@ -134,7 +134,12 @@ if ($env:PROOF_MODE -eq 'small') {
   } else {
     Line 'test' '0' 'node tools/handoff.mjs test'
   }
-  Line 'render-refuses-unreleased' '1' 'node tools/handoff.mjs render' 'not released for its final render yet'
+  # with a stamp that is released the render line would start the real render here, so it is left out then
+  if ((node (Join-Path $Help 'released.mjs') .) -eq 'yes') {
+    Note 'the stamp of this clone is released: the render line is not run on a test machine'
+  } else {
+    Line 'render-refuses-unreleased' '1' 'node tools/handoff.mjs render' 'not released for its final render yet'
+  }
   node (Join-Path $Help 'after.mjs') $env:PROOF_OUT
 }
 Note 'the flow ran to its end'

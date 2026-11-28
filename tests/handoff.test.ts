@@ -353,10 +353,17 @@ describe('the gate of the full render', () => {
 describe('the tracked stamp of this branch', () => {
   const file = rel('render', 'STAMP.json')
   const s = readJson(file) as Stamp & { references: { what: string; frame: number; half: { file: string; sha256: string; width: number; height: number }; cuts: { file: string; sha256: string; w: number; h: number }[]; glass: unknown[] }[]; sound: Record<string, string>; opening: { files: Record<string, string>; folder: string; commit: string }; delivery: { names: Record<string, string>; folder: string; test: string }; frames: Record<string, number>; floors: Record<string, number>; samples: Record<string, [number, number][]> }
-  it('is whole, and is not released: only /root sets that', () => {
+  it('is whole, and the render refuses it until it is released: only /root sets that, at the freeze', () => {
     expect(L.stampProblems(s)).toEqual([])
-    expect(s.releasedForFinalRender).toBe(false)
-    expect(L.renderRefusals({ ...goodRun, engineHash: s.engineHash, test: { ...goodRun.test, engineHash: s.engineHash }, stamp: s })[0]).toContain(L.NOT_RELEASED)
+    expect(typeof s.releasedForFinalRender).toBe('boolean')
+    const refusals = L.renderRefusals({ ...goodRun, engineHash: s.engineHash, test: { ...goodRun.test, engineHash: s.engineHash }, stamp: s })
+    if (s.releasedForFinalRender) {
+      // after the freeze: a released stamp holds every reference of the plan, and nothing in it stands in the render's way
+      expect(s.stillToDraw ?? []).toEqual([])
+      expect(refusals).toEqual([])
+    } else {
+      expect(refusals[0]).toContain(L.NOT_RELEASED)
+    }
   })
   it('names the two final mixes by the sha256 of the order', () => {
     expect(s.sound['film-a']).toBe('883ee8bd67c284161d0156b0e10fcc7dc79be5c0526423809174e456544b5515')
@@ -1401,6 +1408,35 @@ describe('the proof workflow', () => {
     expect(job.match(/GH_TOKEN: \$\{\{ github\.token \}\}/g)).toHaveLength(2)
     expect(job.match(/github\.token|GITHUB_TOKEN/g)).toHaveLength(2)
     expect(text).toMatch(/persist-credentials: false/)
+  })
+  it('leaves the render line out on a test machine once the stamp is released, in both shells and in the verdict', () => {
+    // the 3840 jobs prove the refusal of an unreleased stamp. With a released one the same line would start the real render.
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'handoff released '))
+    const ask = () => spawnSync(process.execPath, [rel('.github', 'handoff-proof', 'released.mjs'), dir], { encoding: 'utf8' }).stdout.trim()
+    try {
+      expect(ask()).toBe('no')
+      fs.mkdirSync(path.join(dir, 'render'))
+      for (const [value, want] of [[true, 'yes'], [false, 'no'], ['true', 'no']] as const) {
+        fs.writeFileSync(path.join(dir, 'render', 'STAMP.json'), JSON.stringify({ releasedForFinalRender: value }))
+        expect(ask(), String(value)).toBe(want)
+      }
+      fs.writeFileSync(path.join(dir, 'render', 'STAMP.json'), 'no json')
+      expect(ask()).toBe('no')
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+    const line = "'node tools/handoff.mjs render' 'not released for its final render yet'"
+    for (const f of ['flow.sh', 'flow.ps1']) {
+      const text = fs.readFileSync(rel('.github', 'handoff-proof', f), 'utf8')
+      const at = text.indexOf(line)
+      expect(at, f).toBeGreaterThan(0)
+      expect(text.indexOf(line, at + 1), `${f} runs the line at one place`).toBe(-1)
+      const before = text.slice(0, at).split('\n').slice(-5).join('\n')
+      expect(before, f).toContain('released.mjs')
+      expect(before, f).toContain('is not run on a test machine')
+    }
+    const verdict = fs.readFileSync(rel('.github', 'handoff-proof', 'verdict.mjs'), 'utf8')
+    expect(verdict).toContain("name === 'render-refuses-unreleased' && released")
   })
 })
 

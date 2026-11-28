@@ -10,6 +10,7 @@ The words for a push further down belong to that time.
 | `proof.ps1`, `proof.sh` | run one line of the handoff file exactly as written, again while it answers RUNNING, and note what came of it |
 | `flow.ps1`, `flow.sh` | the lines of the handoff file in their order, in Windows PowerShell and in bash (Git Bash on Windows, Terminal on macOS) |
 | `engine-hash.mjs` | prints the engine hash of a clone |
+| `released.mjs` | says yes or no: whether the stamp of a clone is released for the final render |
 | `after.mjs` | lists the Desktop and gathers the reports for the uploaded artifact |
 | `verdict.mjs` | reads what the lines did, checks that every line run is written in the handoff file, and writes the verdict |
 | `shader-warnings.mjs`, `shaders.sh` | list what the shader compiler of the machine writes about every program of the film, and what the card answers to the maths probe, for one head |
@@ -40,3 +41,8 @@ small job runs such a test first (the line `test-fails`), looks into the folder 
 test that passes and makes sure the folder is gone. The job `windows-3840-direct3d11` does it with real pictures
 at 3840 x 2160 and runs no passing test: that the same frames pass on the same renderer is proven by the job
 `windows-3840`. The 3840 jobs also keep the whole frames the machine drew in the artifact (folder `frames`).
+
+The 3840 jobs end with the render line, which must refuse a stamp that is not released. Once the stamp is released
+that line would start the real render on the test machine, so the flows ask `released.mjs` first and leave the line
+out then, with a note, and the verdict does not want it. That branch was tried by hand on Linux and in the unit
+tests; no run of the workflow has met a released stamp.

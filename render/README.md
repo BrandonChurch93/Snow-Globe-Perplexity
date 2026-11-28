@@ -28,8 +28,11 @@ deletes its PNGs). It reads the opening's frame from the pack. It copies the pac
 in `PLAN.json`. It writes `STAMP.json` with `"releasedForFinalRender": false`. It prints what it wrote and ends with
 PASS or FAIL.
 
-On a cloud helper of four cores a frame of 24 samples took two to three minutes and a frame of 96 samples a little
-over six (measured when this was written). Eleven frames in one go are about an hour. To split the work over helpers, give each helper its frames:
+On a cloud helper of four cores a frame of 24 samples took two to four minutes, a frame of 96 samples six to
+eleven, and the frame of the change with its 81 samples twelve (measured). The command was run whole once as a
+trial, for the engine `fc272474aa83fe51`: the ten frames it draws took 60 minutes in all (three of them were there
+already, the other seven took 48), and the eleven references came to 26.6 MB of the 40 allowed. Nothing of that
+trial is committed. To split the work over helpers, give each helper its frames:
 
 ```
 node tools/handoff.mjs stamp --only film-b:120,film-b:675,film-b:720
@@ -38,7 +41,7 @@ node tools/handoff.mjs stamp --only film-b:2160,film-b:2440,film-b:2880,loop:0,o
 ```
 
 Each helper commits its files of `render/refs/` and nothing else. When all are merged, one more
-`node tools/handoff.mjs stamp` finds every frame there, draws nothing, and writes the stamp (about ten seconds).
+`node tools/handoff.mjs stamp` finds every frame there, draws nothing, and writes the stamp (12 seconds in the trial).
 
 ## The switches of `stamp`
 
@@ -55,13 +58,23 @@ A switch that is not in this table is refused before anything is drawn, with FAI
 
 ## At the freeze, in order
 
-1. Merge everything that moves a picture. Run `npm ci`, the build, and read the engine hash.
+1. Merge everything that moves a picture. Run `node tools/handoff.mjs setup`: it is `npm ci`, the build and the
+   engine hash. When a picture moved since the stamp was made it ends with `FAIL: the build is made, and its engine
+   is ... where the stamp was made for ...`. That is expected here, the build is made all the same, and 2 mends it.
 2. `node tools/handoff.mjs stamp` (or the split above on helpers, then one plain `stamp`). Every reference is drawn
    again by itself, because the engine hash is a new one.
 3. Look at `render/refs/*-half.webp`. They are the pictures the render must match.
 4. Check the floors in `PLAN.json` (`floors`, and `floorsFrom`, which says what they were measured on).
-5. `node tools/handoff.mjs stamp --released true`
-6. Commit `render/` and push. The commit that holds the released stamp is the one the machine clones.
+5. If the proof is wanted once more on the frozen tree: commit `render/` and push, then start the workflow by hand
+   (`gh workflow run handoff-proof.yml --ref main`) and read the verdict of each job. Do it while the repo is still
+   public: the jobs clone as the render machine does, without a sign in, and on a private repo they stop at the
+   clone. Starting it by hand was never tried, because it cannot be before the workflow is on the default branch.
+6. `node tools/handoff.mjs stamp --released true` (it draws nothing; 12 seconds in the trial).
+7. `npx vitest run`, whole. The handoff's own tests hold with a released stamp as with one that is not.
+8. Commit `render/` and push. The commit that holds the released stamp is the one the machine clones.
+
+After 6 the proof workflow still ends well when it is started: its 3840 jobs leave the render line out, because
+with a released stamp that line would start the real render on the test machine.
 
 `releasedForFinalRender` is a hard gate in the tool: while it is false, `node tools/handoff.mjs render` refuses with
 "the film is not released for its final render yet; step 1 only". The engine hash of the clone must equal the stamp's,

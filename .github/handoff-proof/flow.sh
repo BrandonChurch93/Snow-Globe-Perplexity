@@ -200,7 +200,12 @@ else
       ;;
     *) line test 0 'node tools/handoff.mjs test' ;;
   esac
-  line render-refuses-unreleased 1 'node tools/handoff.mjs render' 'not released for its final render yet'
+  # with a stamp that is released the render line would start the real render here, so it is left out then
+  if [ "$(node "$HELP/released.mjs" .)" = yes ]; then
+    note "the stamp of this clone is released: the render line is not run on a test machine"
+  else
+    line render-refuses-unreleased 1 'node tools/handoff.mjs render' 'not released for its final render yet'
+  fi
   node "$HELP/after.mjs" "$PROOF_OUT"
 fi
 note "the flow ran to its end"
