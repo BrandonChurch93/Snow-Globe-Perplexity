@@ -15,8 +15,9 @@
 //   the first picture; the call's own time on the thread, the ms until its promise settled and how (fulfilled,
 //   rejected, not settled when the context was made), the count of entries it gave, whole and by kind (numbers only:
 //   no label and no id is read); the ms of `new AudioContext()` for the first context and for one more made after it;
-//   the first context's state at birth and when it read "running"; the longest gap of a 20 ms timer between the call
-//   and the context (the thread standing); what navigator.permissions.query says of the microphone and of the camera
+//   the first context's state at birth and when it read "running"; the longest gap of a 20 ms timer that ended between
+//   the call and the context (the thread standing, the context's own making left out; in the arm without a call, from the
+//   first picture); what navigator.permissions.query says of the microphone and of the camera
 //   before the call and after the context; rejections that reached the page (unhandledrejection); the page's messages
 //   (errors, warnings, exceptions).
 // --local opens the installed Chrome in a window with the machine's graphics card; without it the pinned browser draws
@@ -143,8 +144,9 @@ async function make(lead) {
     }
   }
   const after = { microphone: await state('microphone'), camera: await state('camera') }
+  // Only what ended before the context was begun: the making of the context is a stand of its own, kept by its own number.
   const firstAt = c.at + (made[0]?.afterCallMs ?? 0)
-  const gaps = w.gaps.filter(([from, ms]) => from + ms >= c.at && from <= firstAt)
+  const gaps = w.gaps.filter(([from, ms]) => from + ms >= c.at && from + ms <= firstAt)
   await first?.close().catch(() => undefined)
   return {
     call: { made: c.made, has: c.has, secure: c.secure, atMs: Math.round(c.at), callMs: c.callMs, settledMs: c.settledMs, how: c.how, howWhenTheContextWasMade: howThen, entries: c.entries, kinds: c.kinds },
@@ -194,7 +196,7 @@ function line(r) {
   const x = r.contexts
   const p = r.permission
   const same = p.before.microphone === p.after.microphone && p.before.camera === p.after.camera
-  return `${r.arm} round ${r.round}: first picture ${r.firstPictureMs} ms; ${call}; first context ${f(x[0]?.ms)} ms, made ${f(x[0]?.afterCallMs, 0)} ms after ${c.made ? 'the call' : 'the first picture'}, born ${x[0]?.state}${x[0]?.runningAfterMs ? `, running after ${f(x[0].runningAfterMs, 0)} ms` : ''}; one more ${f(x[1]?.ms)} ms; longest gap of the thread between ${f(r.longestGapMs, 0)} ms; microphone ${p.before.microphone} then ${p.after.microphone}, camera ${p.before.camera} then ${p.after.camera}${same ? '' : ' CHANGED'}; rejections that reached the page ${r.rejections.length}; messages ${r.messages.length}`
+  return `${r.arm} round ${r.round}: first picture ${r.firstPictureMs} ms; ${call}; first context ${f(x[0]?.ms)} ms, made ${f(x[0]?.afterCallMs, 0)} ms after ${c.made ? 'the call' : 'the first picture'}, born ${x[0]?.state}${x[0]?.runningAfterMs ? `, running after ${f(x[0].runningAfterMs, 0)} ms` : ''}; one more ${f(x[1]?.ms)} ms; longest stand of the thread before it ${f(r.longestGapMs, 0)} ms; microphone ${p.before.microphone} then ${p.after.microphone}, camera ${p.before.camera} then ${p.after.camera}${same ? '' : ' CHANGED'}; rejections that reached the page ${r.rejections.length}; messages ${r.messages.length}`
 }
 
 const server = await serve({ dist, port: 0 })
