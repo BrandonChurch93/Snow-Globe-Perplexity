@@ -79,8 +79,11 @@ jobs:
         shell: bash
         working-directory: page
         run: |
-          npx vite build --minify false --outDir out/work/item285b-plain --emptyOutDir
-          node tools/item285b/measure.mjs --dist out/work/item285b-plain --name "pieces-${{ matrix.tree.name }}-${{ matrix.season }}-${{ runner.os }}" --local --seasons ${{ matrix.season }} --qualities low --presses 5,ready --limit 420 --pieces --profile
+          # The tool reads the order of the seasons from config/showcase.json beside the built page it is given.
+          mkdir -p out/work/item285b-plain
+          cp -R config out/work/item285b-plain/config
+          npx vite build --minify false --outDir out/work/item285b-plain/dist --emptyOutDir
+          node tools/item285b/measure.mjs --dist out/work/item285b-plain/dist --name "pieces-${{ matrix.tree.name }}-${{ matrix.season }}-${{ runner.os }}" --local --seasons ${{ matrix.season }} --qualities low --presses 5,ready --limit 420 --pieces --profile
 
       - name: what was read
         if: always()
