@@ -45,6 +45,9 @@ const afterLossMs = Number(str('after-loss', '0')) * 1000
 const limitMs = Number(str('limit', '200')) * 1000
 const spindumpS = Number(str('spindump', '0'))
 const oslog = str('oslog', 'lost')
+// --webkit: the driver's own build of WebKit in a window instead of Chrome (the engine of Safari; it is not Safari itself).
+// It has no chrome://gpu and names no processes to the driver: its processes are found by their names.
+const webkitMode = args.webkit === true
 // --plain-flags: the browser is begun without the flags of this tree's tools (the driver's own stay, and the logging).
 const plainFlags = args['plain-flags'] === true
 const [viewW, viewH] = str('viewport', '1280x720').split('x').map(Number)
@@ -65,7 +68,7 @@ const build = fs.existsSync(path.join(dist, 'build.json')) ? fs.readFileSync(pat
 const driverLog = path.join(out, `${name}-driver.log`)
 process.env.DEBUG = 'pw:browser'
 process.env.DEBUG_FILE = driverLog
-const { chromium } = await import('playwright-core')
+const { chromium, webkit } = await import('playwright-core')
 const { serve } = await import('../lib/server.mjs')
 const { findBrowser, softwareRenderer, isReadbackNotice } = await import('../lib/browser.mjs')
 
@@ -78,6 +81,7 @@ const sh = (cmd, a, ms = 15000) =>
 const COMMON = ['--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--force-color-profile=srgb', '--hide-scrollbars', '--mute-audio']
 const LOGGING = ['--enable-logging=stderr', '--log-level=0']
 function begin(tag) {
+  if (webkitMode) return webkit.launch({ headless: false })
   const more = ['--disable-hang-monitor', ...LOGGING, `--loss295-tag=${tag}`, ...extraFlags]
   if (local && plainFlags) return chromium.launch({ channel: 'chrome', headless: false, ignoreDefaultArgs: ['--disable-hang-monitor', ...COMMON.slice(0, 4)], args: [...LOGGING, `--loss295-tag=${tag}`, ...extraFlags] })
   if (local) return chromium.launch({ channel: 'chrome', headless: false, args: [...COMMON, '--ignore-gpu-blocklist', '--enable-gpu-rasterization', ...more] })
@@ -166,11 +170,20 @@ function end() {
   } catch {
     lostNow = null
   }
+  // The card as the page's own context names it, asked only now, when the stay is over and only of a card that is there.
+  let cardByPage = null
+  try {
+    const gl = lostNow === false ? canvas.getContext('webgl2') : null
+    const dbg = gl?.getExtension('WEBGL_debug_renderer_info')
+    if (gl) cardByPage = String(gl.getParameter(dbg ? dbg.UNMASKED_RENDERER_WEBGL : gl.RENDERER))
+  } catch {
+    cardByPage = null
+  }
   const now = performance.now()
   if (w.last !== null && now - w.last >= 250) w.gaps.push([Math.round(w.last), Math.round(now - w.last)])
   const html = document.documentElement
   const size = canvas ? { width: canvas.width, height: canvas.height, cssWidth: canvas.clientWidth, cssHeight: canvas.clientHeight } : null
-  return { marks: w.marks, lost: w.lost, back: w.back, refused: w.refused, gaps: w.gaps, perSecond: w.perSecond, frames: w.frames, endMs: Math.round(now), wall0: w.wall0, page0: w.page0, lostNow, made: html.dataset.made ?? null, detail: html.dataset.detail ?? null, canvasLive: canvas ? 'live' in canvas.dataset : null, canvas: size, ratio: window.devicePixelRatio, agent: navigator.userAgent, cores: navigator.hardwareConcurrency, memoryGb: navigator.deviceMemory ?? null }
+  return { marks: w.marks, lost: w.lost, back: w.back, refused: w.refused, gaps: w.gaps, perSecond: w.perSecond, frames: w.frames, endMs: Math.round(now), wall0: w.wall0, page0: w.page0, lostNow, cardByPage, made: html.dataset.made ?? null, detail: html.dataset.detail ?? null, canvasLive: canvas ? 'live' in canvas.dataset : null, canvas: size, ratio: window.devicePixelRatio, agent: navigator.userAgent, cores: navigator.hardwareConcurrency, memoryGb: navigator.deviceMemory ?? null }
 }
 
 // The words of a page of the browser's own, through its shadow trees.
@@ -246,7 +259,7 @@ const stamp = (ms) => {
   const p = (n) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
 }
-const OSLOG = 'process CONTAINS[c] "Chrome" OR senderImagePath CONTAINS[c] "Paravirt" OR senderImagePath CONTAINS[c] "IOGPU" OR senderImagePath CONTAINS[c] "IOAccel" OR senderImagePath CONTAINS[c] "Metal" OR subsystem CONTAINS[c] "Metal" OR process == "ReportCrash" OR (process == "kernel" AND (eventMessage CONTAINS[c] "GPU" OR eventMessage CONTAINS[c] "Paravirt" OR eventMessage CONTAINS[c] "memorystatus" OR eventMessage CONTAINS[c] "jetsam" OR eventMessage CONTAINS[c] "low swap"))'
+const OSLOG = 'process CONTAINS[c] "Chrome" OR process CONTAINS[c] "WebKit" OR process CONTAINS[c] "Playwright" OR senderImagePath CONTAINS[c] "Paravirt" OR senderImagePath CONTAINS[c] "IOGPU" OR senderImagePath CONTAINS[c] "IOAccel" OR senderImagePath CONTAINS[c] "Metal" OR subsystem CONTAINS[c] "Metal" OR process == "ReportCrash" OR (process == "kernel" AND (eventMessage CONTAINS[c] "GPU" OR eventMessage CONTAINS[c] "Paravirt" OR eventMessage CONTAINS[c] "memorystatus" OR eventMessage CONTAINS[c] "jetsam" OR eventMessage CONTAINS[c] "low swap"))'
 async function machineLog(fromMs, toMs, file) {
   if (!mac) return null
   const r = await sh('log', ['show', '--start', stamp(fromMs - 2000), '--end', stamp(toMs + 2000), '--style', 'compact', '--info', '--predicate', OSLOG], 120000)
@@ -273,6 +286,12 @@ async function one(base, query, round) {
   const sample = async (why) => {
     const at = Date.now()
     const [list, memory, card] = await Promise.all([processes(), machineMemory(), cardCounters()])
+    if (webkitMode) {
+      const kind = (a) => (/WebKit\.GPU/.test(a) ? 'gpu-process' : /WebKit\.WebContent/.test(a) ? 'renderer' : /WebKit\.Networking/.test(a) ? 'network' : 'browser')
+      const theirs = list.filter((p) => /Playwright\.app|com\.apple\.WebKit\./.test(p.args) && !/ps -axww/.test(p.args)).map((p) => ({ pid: p.pid, kind: kind(p.args), rssMb: Math.round(p.rssKb / 1024), vszMb: Math.round(p.vszKb / 1024), cpu: p.cpu, cpuS: cpuSeconds(p.time) }))
+      samples.push({ at, why, processes: theirs, memory, card })
+      return theirs
+    }
     root ??= list.find((p) => p.args.includes(`--loss295-tag=${tag}`) && !/--type=/.test(p.args))?.pid ?? null
     // The browser and everything begun under it (on some machines its children are begun by a helper of its own).
     const under = new Set(root === null ? [] : [root])
@@ -348,9 +367,10 @@ async function one(base, query, round) {
     const shot = `${tag}.png`
     await page.screenshot({ path: path.join(out, shot), timeout: 20000 }).catch((error) => messages.push({ afterGotoMs: Date.now() - t0, text: `the tool's picture failed: ${String(error?.message ?? error).split('\n')[0]}` }))
     if (dump) await dump
-    const cardText = await cardPage(context, path.join(out, `${tag}-gpu.txt`))
+    const cardText = webkitMode ? '' : await cardPage(context, path.join(out, `${tag}-gpu.txt`))
     let told = null
     try {
+      if (webkitMode) throw new Error('WebKit names none to the driver')
       const cdp = await browser.newBrowserCDPSession()
       told = (await cdp.send('SystemInfo.getProcessInfo')).processInfo
     } catch (error) {
@@ -412,10 +432,11 @@ function line(r) {
 const server = await serve({ dist, port: 0 })
 const file = path.join(out, `${name}.json`)
 const table = path.join(out, `${name}.txt`)
-fs.writeFileSync(table, `item 295, listen ${name}: ${dist}, ${build}, ${local ? 'the installed Chrome with the card' : 'the pinned browser, software'}, nothing of the tool on the card, flags ${extraFlags.join(' ') || 'none of its own'}${plainFlags ? ', WITHOUT the flags of the tree\'s tools (no --ignore-gpu-blocklist, --enable-gpu-rasterization, --disable-hang-monitor, --hide-scrollbars, --mute-audio, nor the three against throttling and the colour profile one; the driver\'s other default switches stay, the whole line is in each load\'s chrome log)' : ''}, window ${viewW}x${viewH} at scale ${scale}${spindumpS ? `, SPINDUMP ${spindumpS} s at the first picture (not a listening load)` : ''}, stay ${stayMs / 1000} s, after a loss ${afterLossMs ? `${afterLossMs / 1000} s` : 'the whole stay'}, ${os.cpus().length} processors, ${Math.round(os.totalmem() / 1048576)} MB, begun ${new Date().toISOString()}\n`)
+fs.writeFileSync(table, `item 295, listen ${name}: ${dist}, ${build}, ${webkitMode ? `the driver's WebKit ${webkit.executablePath().split('/').find((x) => /^webkit-\d+/.test(x)) ?? ''} in a window with the card (the engine of Safari, not Safari itself)` : local ? 'the installed Chrome with the card' : 'the pinned browser, software'}, nothing of the tool on the card, flags ${extraFlags.join(' ') || 'none of its own'}${plainFlags ? ', WITHOUT the flags of the tree\'s tools (no --ignore-gpu-blocklist, --enable-gpu-rasterization, --disable-hang-monitor, --hide-scrollbars, --mute-audio, nor the three against throttling and the colour profile one; the driver\'s other default switches stay, the whole line is in each load\'s chrome log)' : ''}, window ${viewW}x${viewH} at scale ${scale}${spindumpS ? `, SPINDUMP ${spindumpS} s at the first picture (not a listening load)` : ''}, stay ${stayMs / 1000} s, after a loss ${afterLossMs ? `${afterLossMs / 1000} s` : 'the whole stay'}, ${os.cpus().length} processors, ${Math.round(os.totalmem() / 1048576)} MB, begun ${new Date().toISOString()}\n`)
 
 // The card as the browser names it before any page of ours, in a browser of its own.
 try {
+  if (webkitMode) throw new Error('WebKit has no such page; each load names the card by the page\'s own context at its end')
   const b = await begin(`${name}-card`)
   const c = await b.newContext()
   const text = await cardPage(c, path.join(out, `${name}-gpu-before.txt`))
@@ -433,7 +454,7 @@ for (let round = 1; round <= most; round++) {
     if (round > l.count) continue
     const r = await one(server.url, l.query, round)
     results.push(r)
-    if (results.length === 1 && r.agent) fs.appendFileSync(table, `${r.agent} · ${r.cores} processors\n`)
+    if (results.length === 1 && r.agent) fs.appendFileSync(table, `${r.agent} · ${r.cores} processors · the card by the page's own context at the end of the first load: ${r.cardByPage ?? 'not asked (lost) or not named'}\n`)
     const text = `${utc()} ${line(r)}`
     console.log(text)
     fs.appendFileSync(table, `${text}\n`)

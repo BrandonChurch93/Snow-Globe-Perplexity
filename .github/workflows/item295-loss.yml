@@ -4,6 +4,8 @@
 # which only listens: nothing of a tool is on the card. The page is main, untouched (a3320a30, the same src as the
 # 6befeeb0 the trials of item 285 opened), or an older commit of main, or the probe build of this branch, whose only
 # change to main's src is switches that turn a part off (src/core/off295.ts names them).
+# The arm q5-webkit opens the page in the driver's own build of WebKit (the engine of Safari, not Safari itself); the
+# arms named after an image open it in the installed Chrome of another free hosted macOS image.
 # The matrix below names the arms of this push (the arms of the pushes before it are in this file's history): the page, the addresses and how many browsers each gets, how long a
 # load is left, the browser's own switches, and whether the machine's sampler is begun (never in a listening arm).
 # It starts on a push to agent/p6-loss-295 that changes this file, and by hand. It has no timer and never starts on
@@ -29,13 +31,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { arm: q3-parts-a, os: macos-latest, page: '', loads: '6:|5:off=flakes|5:off=veil|5:off=glass|5:off=frost|5:off=dressing|5:off=flakes,veil,glass,frost', stay: 18, after: 3, spindump: 0, flags: '', more: '' }
-          - { arm: q3-parts-b, os: macos-latest, page: '', loads: '5:off=base|5:off=miniature|5:off=arrival|5:off=lamps|5:off=pond|5:off=backdrop|5:off=table', stay: 18, after: 3, spindump: 0, flags: '', more: '' }
-          - { arm: q3-passes, os: macos-latest, page: '', loads: '5:off=mirror|5:off=shadow|5:off=post|5:off=msaa|5:quality=low|5:quality=medium|5:noext=KHR_parallel_shader_compile', stay: 18, after: 3, spindump: 0, flags: '', more: '' }
-          - { arm: q3-after, os: macos-latest, page: '', loads: '5:off=detail|5:off=next|5:off=hidden|5:off=hands|5:off=interface|5:off=sound|5:off=detail,next,hidden,hands,interface,sound', stay: 18, after: 3, spindump: 0, flags: '', more: '' }
-          - { arm: q3-size-small, os: macos-latest, page: '', loads: '6:', stay: 18, after: 3, spindump: 0, flags: '', more: '--viewport 640x360' }
-          - { arm: q3-size-scale2, os: macos-latest, page: '', loads: '6:', stay: 18, after: 3, spindump: 0, flags: '', more: '--scale 2' }
-          - { arm: q3-spring-commands, os: macos-latest, page: '', loads: '2:season=spring', stay: 25, after: 4, spindump: 0, flags: '--enable-gpu-command-logging,--enable-gpu-debugging', more: '' }
+          - { arm: q5-webkit, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:|4:season=spring', stay: 40, after: 5, spindump: 0, flags: '', more: '--webkit' }
+          - { arm: q5-macos-14, os: macos-14, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:|3:season=spring', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q5-macos-15, os: macos-15, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:|3:season=spring', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q5-macos-26, os: macos-26, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:|3:season=spring', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q5-macos-15-intel, os: macos-15-intel, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '8:|3:season=spring', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
     steps:
       - name: the tools of this branch
         continue-on-error: true
@@ -83,6 +83,14 @@ jobs:
           else
             ( cd tools-tree && npm ci --no-audit --no-fund )
           fi
+
+      - name: the driver's WebKit
+        if: contains(matrix.more, '--webkit')
+        continue-on-error: true
+        timeout-minutes: 10
+        shell: bash
+        working-directory: tools-tree
+        run: npx playwright-core install webkit
 
       - name: the loads
         continue-on-error: true
