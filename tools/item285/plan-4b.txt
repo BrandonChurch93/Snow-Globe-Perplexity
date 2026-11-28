@@ -1,0 +1,6 @@
+# draft_renderer_4, second order. Floor 7 alone: a press made one second after the first picture, at low quality, on a
+# page that begins in spring. Each line: arm level start mode name [extra].
+main low spring soon f7-low-main-1
+mend low spring soon f7-low-mend-1
+main low spring soon f7-low-main-2
+mend low spring soon f7-low-mend-2

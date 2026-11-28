@@ -3,13 +3,16 @@
 // the first picture (data-first-picture), the controls, the hand's end (data-made=ready), every stand of the thread and
 // every program linked, with what it is. Then, by mode:
 //   round  Space four times, each once the page says every season is in the GPU's hands and the picture has rested 3 s
-//   menu   the owner's menu opened with its key, then each other season chosen there from the season the page began in,
-//          and that season chosen again in between: every one of the others is gone into for the first time from it
+//   menu   for each other season: the owner's menu opened with its key, the season chosen there by the pointer (the
+//          menu shows it at once, with no shake), 3 s of rest, the menu closed with its key, and Space about 1 s after
+//          that. The order is spring, fall, summer, so that no season is chosen while it is on show; another order is
+//          given as menu:summer,spring,fall
 //   soon   Space once, 1000 ms after the first picture, while the hands still work; then the shake to its end, 6 s more,
 //          and on to the hand's end
 //   rest   no press: the load alone, to the hand's end
 //   first  no press: the first 31 s of the load alone, and the hand's end is not waited for
 // For each press: the programs linked from the press to the landing, the thread's longest stand in it, where it landed.
+// In menu as well, for each choice: the programs linked from the choice to the press that follows, and the longest stand.
 // The last line says ok when every press was taken and landed and the page threw nothing; in round and menu it asks as
 // well that no program was linked from any press to its landing. In soon a press may go to a season still being made,
 // and that season's own programs are then linked while the press waits: they are said, not counted against the walk.
@@ -17,6 +20,7 @@ import fs from 'node:fs'
 import { launch } from '../lib/browser.mjs'
 const [, , url = 'http://localhost:4190/?quality=low', name = 'early-walk', mode = 'round', size = '320x320'] = process.argv
 const [width, height] = size.split('x').map(Number)
+const [kind, order = 'spring,fall,summer'] = mode.split(':')
 const browser = await launch({ extraArgs: (process.env.WALK_ARGS ?? '').split(' ').filter(Boolean) })
 const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1 })
 const page = await context.newPage()
@@ -174,7 +178,7 @@ const landedAndRested = async (sent, restMs, limitMs) => {
 const began = Date.now()
 await page.goto(url, { waitUntil: 'commit' })
 const presses = []
-if (mode === 'soon') {
+if (kind === 'soon') {
   // The press is sent when the page's clock says a second has gone by since the first picture. A thread that stands
   // then takes it when it is free again, as it takes a visitor's.
   for (;;) {
@@ -195,7 +199,7 @@ if (mode === 'soon') {
     await sleep(200)
   }
   await sleep(1000)
-} else if (mode === 'first') {
+} else if (kind === 'first') {
   for (;;) {
     const now = await state()
     if (now && now.first !== null && now.t >= 31000) break
@@ -210,9 +214,9 @@ if (mode === 'soon') {
     await sleep(200)
   }
   console.log(`${stamp()} ${name}: every season is in the GPU's hands, ${Math.round((Date.now() - began) / 1000)} s after the navigation`)
-  if (mode === 'rest') {
+  if (kind === 'rest') {
     await sleep(1000)
-  } else if (mode === 'round') {
+  } else if (kind === 'round') {
     for (let i = 0; i < 4; i++) {
       if (!(await landedAndRested(i, 3000, 600000))) throw new Error(`the picture did not come to rest before press ${i + 1}`)
       await key(SPACE)
@@ -220,11 +224,13 @@ if (mode === 'soon') {
       await sleep(400)
     }
     await landedAndRested(4, 3000, 600000)
-  } else if (mode === 'menu') {
-    await landedAndRested(0, 3000, 600000)
-    await key(M)
-    await page.waitForFunction(() => document.querySelector('[data-menu]') && !document.querySelector('[data-menu]').hidden, null, { timeout: 60000 })
-    await sleep(3000)
+  } else if (kind === 'menu') {
+    // A season chosen in the menu is shown at once: no shake begins. The press that follows is the shake that is measured.
+    const menuIs = (open) =>
+      page.waitForFunction((want) => {
+        const m = document.querySelector('[data-menu]')
+        return m !== null && !m.hidden === want
+      }, open, { timeout: 60000 })
     const read = () =>
       page.evaluate(() =>
         [...document.querySelectorAll('[data-menu] [data-row="season"] button')].map((b) => {
@@ -232,26 +238,44 @@ if (mode === 'soon') {
           return { value: b.getAttribute('data-value'), chosen: b.getAttribute('aria-pressed') === 'true', x: r.x + r.width / 2, y: r.y + r.height / 2 }
         }),
       )
-    const options = await read()
-    const home = options.find((o) => o.chosen)?.value
-    const others = options.filter((o) => o.value !== home).map((o) => o.value)
-    const plan = others.flatMap((s, i) => (i < others.length - 1 ? [s, home] : [s]))
-    console.log(`${stamp()} ${name}: the menu is open on ${home}; the plan ${plan.join(', ')}`)
     let sent = 0
-    for (const value of plan) {
-      const o = (await read()).find((x) => x.value === value)
+    for (const value of order.split(',')) {
+      if (!(await landedAndRested(sent, 3000, 600000))) throw new Error(`the picture did not come to rest before the menu's ${value}`)
+      await key(M)
+      await menuIs(true)
+      await sleep(1500)
+      const options = await read()
+      const o = options.find((x) => x.value === value)
       if (!o) throw new Error(`no season option ${value}`)
+      if (o.chosen) throw new Error(`${value} is on show already: the menu would choose nothing`)
       if (!(o.x > 0 && o.y > 0 && o.x < width && o.y < height)) throw new Error(`the option ${value} is outside the page: ${o.x},${o.y}`)
+      const from = options.find((x) => x.chosen)?.value ?? 'no season'
       await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: o.x, y: o.y, button: 'none', buttons: 0, pointerType: 'mouse' })
       await sleep(500)
       void cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: o.x, y: o.y, button: 'left', buttons: 1, clickCount: 1, pointerType: 'mouse' }).catch(() => undefined)
       await Promise.all([page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null)))), sleep(80)])
       void cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: o.x, y: o.y, button: 'left', buttons: 0, clickCount: 1, pointerType: 'mouse' }).catch(() => undefined)
-      presses.push({ how: `the menu, ${value}` })
+      await page.waitForFunction((v) => document.querySelector(`[data-menu] [data-row="season"] button[data-value="${v}"]`)?.getAttribute('aria-pressed') === 'true', value, { timeout: 60000 })
+      await sleep(3000)
+      await key(M)
+      await menuIs(false)
+      await sleep(500)
+      // Space on a control of the page is that control's own key: the press is a shake only from the page itself.
+      const held = await page.evaluate(() => {
+        const a = document.activeElement
+        if (!a || a === document.body) return ''
+        const what = `${a.tagName.toLowerCase()}${a.getAttribute('data-value') ? ` ${a.getAttribute('data-value')}` : ''}`
+        if (a instanceof HTMLElement) a.blur()
+        return what
+      })
+      console.log(`${stamp()} ${name}: the menu chose ${value} from ${from} and is closed${held ? `; the focus was still on ${held} and was taken off it` : '; the focus is on the page'}`)
+      await sleep(500)
+      await key(SPACE)
+      presses.push({ how: `Space, ${value} chosen in the menu from ${from}` })
       sent++
       await sleep(400)
-      if (!(await landedAndRested(sent, 3000, 600000))) throw new Error(`the picture did not come to rest after the menu's ${value}`)
     }
+    if (!(await landedAndRested(sent, 3000, 600000))) throw new Error('the picture did not come to rest after the last press')
   } else throw new Error(`no mode ${mode}`)
 }
 const got = await page.evaluate(() => ({ ...window.__gl, now: Math.round(performance.now()) }))
@@ -290,7 +314,17 @@ for (const g of stands) {
   const named = Object.entries(kinds).filter(([n]) => n.startsWith('the '))
   say(`    at ${g.from} ms${g.afterFirst === null ? '' : ` (${g.afterFirst >= 0 ? `${g.afterFirst} ms after` : `${-g.afterFirst} ms before`} the first picture)`} for ${g.ms} ms: ${g.links} programs linked in it${named.length ? ` [${named.map(([n]) => n).join('; ')}]` : ''}; waited 100 ms or more in ${g.waits.map((x) => `${x.call} ${x.ms} ms${x.of ? ` (${x.of})` : ''}`).join(', ') || 'no call of the page'}`)
 }
-const taken = mode === 'menu' ? got.downs.filter((d) => d.row === 'season') : got.keys.filter((k) => k.key === ' ')
+const taken = got.keys.filter((k) => k.key === ' ')
+const choices = got.downs
+  .filter((d) => d.row === 'season')
+  .map((d) => {
+    const press = taken.find((k) => k.at > d.at)?.at ?? got.now
+    const links = inside(got.links, (l) => l[0], d.at, press)
+    const longest = got.gaps.filter((g) => g.from + g.ms > d.at && g.from < press).reduce((m, g) => Math.max(m, g.ms), 0)
+    return { value: d.value, at: d.at, toPress: press - d.at, links: links.length, linked: links.map((l) => `@${l[0] - d.at} ${l[2]}`), longest }
+  })
+for (const c of choices)
+  say(`the menu chose ${c.value}: ${c.at} ms after the navigation, ${c.toPress} ms before the press; from the choice to the press ${c.links} programs linked${c.links ? ` (${c.linked.join('; ')})` : ''}; the thread's longest stand ${c.longest} ms`)
 let bad = 0
 const rows = []
 taken.forEach((k, i) => {
@@ -315,7 +349,7 @@ taken.forEach((k, i) => {
   const nextPress = taken[i + 1]?.at ?? got.now
   const after = inside(got.links, (l) => l[0], end, nextPress)
   const into = got.season.filter((s) => s.at >= pressAt && s.at <= end + 2000).pop()?.season ?? null
-  if (!landed || (mode !== 'soon' && links.length)) bad++
+  if (!landed || (kind !== 'soon' && links.length)) bad++
   const row = { press: i + 1, how: presses[i]?.how ?? '', at: pressAt, afterFirst: firstAt === null ? null : pressAt - firstAt, busyAfter: went ? t(went.at) : null, target: target.map((x) => x.season), landedAfter: landed ? t(landed.at) : null, into, links: links.length, linked: links.map((l) => `@${t(l[0])} ${l[2]}`), longest, stood: gaps.length, stoodMs: gaps.reduce((s, g) => s + g.ms, 0), frames: frames.length, linksAfter: after.length, linkedAfter: after.map((l) => l[2]), waits: byName }
   rows.push(row)
   say(`press ${row.press} (${row.how}): ${pressAt} ms after the navigation${row.afterFirst === null ? '' : `, ${row.afterFirst} ms after the first picture`}; Shake busy ${row.busyAfter === null ? 'NEVER' : `${row.busyAfter} ms after`}; target ${row.target.join(' ') || 'none'}; landed ${row.landedAfter === null ? 'NEVER' : `${row.landedAfter} ms after`}${into ? `, in ${into}` : ''}`)
@@ -328,10 +362,11 @@ if (taken.length < want) bad++
 const errors = lines.filter((l) => l.startsWith('error:') || l.startsWith('pageerror:'))
 const warnings = lines.filter((l) => l.startsWith('warning:'))
 if (errors.length) bad++
-if (firstAt === null || (mode !== 'first' && madeAt === null)) bad++
+if (firstAt === null || (kind !== 'first' && madeAt === null)) bad++
+if (kind === 'menu' && choices.length !== want) bad++
 say(`${bad ? 'NOT ' : ''}ok: ${taken.length} of ${want} presses taken; ${rows.filter((r) => r.links).length} with a program linked from the press to the landing, ${rows.filter((r) => r.landedAfter === null).length} not landed; ${errors.length} errors thrown`)
 say(`console: ${errors.length} errors, ${warnings.length} warnings, ${lines.length} lines in all ${JSON.stringify(lines.slice(0, 8))}`)
-const record = { name, url, size, mode, beganAt, endedAt, machine, ext: got.ext, firstAt, shownAt, madeAt, programs: got.links.length, byFirst: got.links.filter((l) => firstAt !== null && l[0] <= firstAt).length, stands, rows, errors, warnings, lines, ok: !bad }
+const record = { name, url, size, mode, beganAt, endedAt, machine, ext: got.ext, firstAt, shownAt, madeAt, programs: got.links.length, byFirst: got.links.filter((l) => firstAt !== null && l[0] <= firstAt).length, stands, choices, rows, errors, warnings, lines, ok: !bad }
 fs.writeFileSync(`${OUT}/${name}.json`, JSON.stringify(record))
 fs.writeFileSync(`${OUT}/${name}.full.json`, JSON.stringify({ ...record, got }))
 fs.writeFileSync(`${OUT}/${name}.txt`, out.join('\n') + '\n')

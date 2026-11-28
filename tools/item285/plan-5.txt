@@ -1,0 +1,9 @@
+# draft_renderer_4, third order. Floor 5 alone: the path through the menu, at low quality, on a page that began in
+# winter (the plain address). Order a chooses spring, fall, summer; order b chooses summer, spring, fall.
+# Each line: arm level start mode name [extra]. The walks marked extra are not begun at or after the minute given.
+main low plain menu f5-low-main-a
+mend low plain menu f5-low-mend-a1
+mend low plain menu f5-low-mend-a2
+mend low plain menu:summer,spring,fall f5-low-mend-b1 extra
+main low plain menu:summer,spring,fall f5-low-main-b extra
+mend low plain menu:summer,spring,fall f5-low-mend-b2 extra
