@@ -9,7 +9,7 @@ import { ROW, inSteps } from '../../scene/steps'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
 import { SAND_COLOUR, sinceLoose } from './base'
-import { SAND_BORN, SAND_GLSL, SAND_LIT, SLAB, SPRINKLE, sandDeep, sandHeight, sandLitAt, sandProud, sandSprinkle, sandSprinkleAt, sandSprinkleRun, sandStrewn } from './slab'
+import { SAND_BORN, SAND_GLSL, SAND_GONE, SAND_LIT, SLAB, SPRINKLE, sandDeep, sandGust, sandHeight, sandLitAt, sandProud, sandSprinkle, sandSprinkleAt, sandSprinkleRun, sandStrewn } from './slab'
 
 const PART = 'arrival-summer'
 const RAD = Math.PI / 180
@@ -82,6 +82,7 @@ const grainUniforms = {
   uSandGrow: { value: 1 },
   uSandLift: { value: -1 },
   uSandFoot: { value: new THREE.Vector2(0, 0) },
+  uSandGust: sandGust,
 }
 
 const VERT_PARS = `
@@ -113,6 +114,7 @@ varying vec4 vGrainLine;
 varying float vGrainRun;
 ${SAND_GLSL}
 ${SAND_BORN}
+${SAND_GONE}
 vec3 fallRoll() {
   float G = ${LOOK.fall.gravity.toFixed(1)};
   float T = aFlight.y;
@@ -242,6 +244,14 @@ if (lies > 0.5) {
   float low = (1.0 - uSandGrow) * (position.y - ${SLAB.liftMm.toFixed(2)}) * (aSeed.y < -0.5 ? 1.0 : clamp(tau / max(aFlight.y, 1e-4), 0.0, 1.0));
   nowAt.y -= low;
   thenAt.y -= low;
+}
+// The leaving (slab.ts, LEAVE): what lies on the table is taken out from the foot by the gust, grain by grain.
+if (uSandGust.x > 0.0 && falls < 0.5) {
+  vec3 gust = sandGust(nowAt.xz, fract(aSeed.x * 61.7 + aSeed.z * 13.3), fract(aSeed.z * 29.9 + aSeed.x * 7.1));
+  vec2 gustWay = dot(nowAt.xz, nowAt.xz) > 0.0 ? normalize(nowAt.xz) : vec2(1.0, 0.0);
+  nowAt += vec3(gustWay.x * gust.x, gust.y, gustWay.y * gust.x);
+  thenAt = nowAt;
+  grown *= gust.z;
 }
 airborne = (tau < aFlight.y && lies < 0.5) || falls > 0.5 ? 1.0 : 0.0;
 vec4 nowV = viewMatrix * modelMatrix * vec4(nowAt, 1.0);

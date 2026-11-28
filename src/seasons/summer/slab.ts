@@ -1,8 +1,8 @@
 import * as THREE from 'three'
-import { MODE, setPresence } from '../../core/materials'
+import { GUST, MODE, setPresence } from '../../core/materials'
 import { ROOM_RIG } from '../../scene/lighting'
 import { inSteps, stepsOf, whole } from '../../scene/steps'
-import { LEAVE_OUT, leaveOut } from '../../shake/change'
+import { SHUTTER_CHANGE, changeRamp, leaveOut } from '../../shake/change'
 import type { KitMoment } from '../kit'
 import * as arrivalPart from './arrival'
 import { sandMaterial } from './base'
@@ -540,21 +540,112 @@ float sandCome(vec2 p, float own, float grow) {
 }
 `
 
-// How the sand leaves the table in a change of season (change.ts, `leaveOut`). It is not thinned where it lies: the heap,
-// the grains on it and the grains round it go out along the table as one piece, away from the foot on the line from the
-// stage's axis through the heap's top, and in every sample the heap is the whole heap a little further out (`update`). The
-// skin's grain is laid where it lay while the heap stood (`uSlabOut.xy`, how far the heap has gone, 0 everywhere but in
-// the leaving), so it goes with the skin. In a frame whose samples join, the heap is moved by the sample's place in its
-// pixel along its way, so that its copies lie at even steps on the picture, and the grain of each copy is drawn out along
-// the way (`uSlabOut.zw`, the reach behind and ahead; `tapsACell` readings a cell, at most `taps`, each pixel and sample
-// at its own places).
-// The single grains of arrival.ts cannot be drawn out from here: every sample draws them whole where the heap is, a row of
-// beads a step apart. Under `loosePx[0]` pixels a step the beads touch and are the line the grain leaves; past it they
-// stand apart, so the grains thin from there and are not drawn past `loosePx[1]`, where the line a grain that small leaves
-// is too faint to see. Past `thinFromMm` the heap thins: the film's frame has lost it by then, and a wider window does not
-// see it stop at `reachMm`.
-const LEAVE = { reachMm: 200, thinFromMm: 150, tapsACell: 6, taps: 32, loosePx: [4, 8] } as const
+// How the sand leaves the table in a change of season. It breaks up where it lies: nothing of it is moved as one piece,
+// so no frame holds the heap's outline away from its place. `run` is the share of the span `surface-leave` that has
+// passed (change.ts, `leaveOut`: 0 at rest and in every change that does not take the sand away), and all of it is a
+// function of that one number, so any frame can be drawn alone:
+// - The heap is cut down (`sandCap`, `sandSlumped`): sand that stood h high stands cap * (1 - exp(-h / cap)) high, and the
+//   cap comes down from far above the peak to nothing at `slumpBy` of the span. So the peak comes down first and the low
+//   sand last, and the heap's shadow is cut with it (`slabShadow`).
+// - Its skin goes in patches (`sandGo`), those by the foot first, as the gust comes out from under the glass: where a
+//   patch has thinned the sand is single grains with the table between them, and then the table.
+// - The single grains on it and round it (arrival.ts) are taken out by that gust (`sandGust`), as the petals and the
+//   leaves are (materials.ts, `GUST`: its reach and its height): each along the line out from the stage's axis, slowly at
+//   first and then fast, lifted a little, those by the foot first and each a little before or after its place by its
+//   own number. A grain thins from `thin` of its way on, and every grain has gone its whole way when the span is over.
+//   A grain is drawn whole in every sample, a row of beads a step apart: under `loosePx[0]` pixels a step the beads
+//   touch and are the line the grain leaves; past it they stand apart, so a grain thins from there and is not drawn
+//   past `loosePx[1]`, where the line a grain that small leaves is too faint to see.
+// The reading of the skin's grain along a way (`uSlabOut`, `tapsACell`, `taps`) belonged to the heap that went out whole.
+// It reads one place now (`uSlabOut` is 0), and the code of the still pictures is as it was.
+export const LEAVE = {
+  slumpBy: 0.85,
+  highMm: 10,
+  flat: 1000,
+  near: [55, 150],
+  spread: 0.6,
+  late: 0.6,
+  soft: 0.4,
+  patchMm: [11, 3.7],
+  own: 0.3,
+  grain: { late: 0.5, own: 0.5, thin: 0.55, up: [0.2, 1.0] },
+  tapsACell: 6,
+  taps: 32,
+  loosePx: [4, 8],
+} as const
 const LEAVE_WAY = [HEAP.cone.x / Math.hypot(HEAP.cone.x, HEAP.cone.z), HEAP.cone.z / Math.hypot(HEAP.cone.x, HEAP.cone.z)] as const
+
+/** The height in mm the heap is cut down to when `run` of its leaving has passed: no cut before it, nothing left from `slumpBy` on. */
+export function sandCap(run: number): number {
+  if (!(run > 0)) return Infinity
+  const u = ease(run / LEAVE.slumpBy)
+  return u >= 1 ? 0 : LEAVE.highMm * (1 / u - 1)
+}
+
+/** What stands of sand `tallMm` high under that cut: the low sand keeps its height longest, the peak comes down first. */
+export function sandSlumped(tallMm: number, capMm: number): number {
+  return capMm === Infinity ? tallMm : capMm > 0 ? capMm * (1 - Math.exp(-tallMm / capMm)) : 0
+}
+
+const step = (a: number, b: number, v: number): number => ease((v - a) / (b - a))
+
+/** How far from the foot a place `mm` from the stage's axis is, 0 to 1: the gust reaches the near places first. */
+const leaveAway = (mm: number): number => step(LEAVE.near[0], LEAVE.near[1], mm)
+
+/** The share of the skin's sand left at a place `mm` from the axis, in a patch whose number is `lot`, when `run` has passed: what `sandGo` gives. */
+export function sandLeft(mm: number, lot: number, own: number, run: number): number {
+  const dies = LEAVE.late * (leaveAway(mm) + (lot + (own - lot) * LEAVE.own - leaveAway(mm)) * LEAVE.spread)
+  return 1 - step(dies, dies + LEAVE.soft, run)
+}
+
+/**
+ * A grain in the gust when `run` has passed: how far out along its line it is (mm), how high (mm) and the share of it
+ * that is left. `a` and `b` are its own numbers, `stepPx` the pixels a sample for a millimetre a share of the span (0
+ * where the samples of a frame are not joined). What `sandGust` gives.
+ */
+export function sandGustAt(mm: number, a: number, b: number, run: number, stepPx = 0): [number, number, number] {
+  const G = LEAVE.grain
+  const start = G.late * (leaveAway(mm) + (b - leaveAway(mm)) * G.own)
+  const q = Math.min(1, Math.max(0, (run - start) / (1 - start)))
+  const reach = GUST.reachOutMm * (0.5 + a)
+  const pace = (2 * reach * q) / (1 - start)
+  const high = G.up[0] + (G.up[1] - G.up[0]) * ((a * 7.3 + b * 3.1) % 1)
+  return [reach * q * q, GUST.heightMm * high * Math.sin((Math.PI / 2) * q), (1 - step(G.thin, 1, q)) * (1 - step(LEAVE.loosePx[0], LEAVE.loosePx[1], pace * stepPx))]
+}
+
+/** `uSandGust`: x the share of the leaving that has passed, y one over the height the heap is cut to (0 for no cut), z the pixels a sample for a millimetre a share. */
+export const sandGust = { value: new THREE.Vector4(0, 0, 0, 0) }
+
+/** What `uSandGust` holds in one sample (`pxPerMm` is a millimetre of the table at the heap, on the picture). */
+export function sandLeaving(leaves: boolean, change: number, sample: { t: number; of?: number; hold?: number } | null, pxPerMm: number): { run: number; flat: number; stepPx: number } {
+  const go = leaveOut(leaves, change, sample, GUST.reachOutMm, 0)
+  const cap = sandCap(go.run)
+  return { run: go.run, flat: cap === Infinity ? 0 : cap > 0 ? Math.min(1 / cap, LEAVE.flat) : LEAVE.flat, stepPx: go.of > 0 ? (SHUTTER_CHANGE / go.of / changeRamp('surface-leave').length) * pxPerMm : 0 }
+}
+
+// For a vertex shader that has `SAND_BORN`: the three laws above.
+export const SAND_GONE = `
+uniform vec4 uSandGust;
+float sandAway(vec2 p) {
+  return smoothstep(${f(LEAVE.near[0])}, ${f(LEAVE.near[1])}, length(p));
+}
+float sandGo(vec2 p, float own) {
+  float lot = 0.65 * sandPatch(p * ${f(1 / LEAVE.patchMm[0])}) + 0.35 * sandPatch(p * ${f(1 / LEAVE.patchMm[1])} + 19.0);
+  float dies = ${f(LEAVE.late)} * mix(sandAway(p), mix(lot, own, ${f(LEAVE.own)}), ${f(LEAVE.spread)});
+  return 1.0 - smoothstep(dies, dies + ${f(LEAVE.soft)}, uSandGust.x);
+}
+float sandSlump(float tall) {
+  return uSandGust.y > 0.0 ? (1.0 - exp(-tall * uSandGust.y)) / uSandGust.y : tall;
+}
+vec3 sandGust(vec2 p, float a, float b) {
+  float start = ${f(LEAVE.grain.late)} * mix(sandAway(p), b, ${f(LEAVE.grain.own)});
+  float q = clamp((uSandGust.x - start) / (1.0 - start), 0.0, 1.0);
+  float reach = ${f(GUST.reachOutMm)} * (0.5 + a);
+  float pace = 2.0 * reach * q / (1.0 - start);
+  float kept = (1.0 - smoothstep(${f(LEAVE.grain.thin)}, 1.0, q)) * (1.0 - smoothstep(${f(LEAVE.loosePx[0])}, ${f(LEAVE.loosePx[1])}, pace * uSandGust.z));
+  return vec3(reach * q * q, ${f(GUST.heightMm)} * mix(${f(LEAVE.grain.up[0])}, ${f(LEAVE.grain.up[1])}, fract(a * 7.3 + b * 3.1)) * sin(1.5707963 * q), kept);
+}
+`
 
 const SLAB_PARS = `
 varying vec3 vSlab;
@@ -697,9 +788,18 @@ const SLAB_RISE = `
 float slabStood = uSandLift < 0.0 ? 0.0 : 1.0 - smoothstep(${f(SLUMP.from)}, ${f(SLUMP.from + SLUMP.seconds)}, uSandLift);
 float slabCut = ${f(SLUMP.steep)} * slabStood * slabStood * slabStood * max(${f(SLAB.footMm)} - length(position.xz), 0.0);
 float slabTall = max(position.y - ${f(SLAB.liftMm)} - slabCut, 0.0);
+if (uSandGust.x > 0.0) slabTall = sandSlump(slabTall);
 transformed.y = ${f(SLAB.liftMm)} + slabTall;
 float slabGrown = clamp((slabTall - ${f(HEAP.cover[0]!)}) / ${f(HEAP.cover[1]! - HEAP.cover[0]!)}, 0.0, 1.0);
 vSlab = vec3(mix(slabGrown * slabGrown * (3.0 - 2.0 * slabGrown), aSlab.x * sandCome(position.xz, 0.5, uSandGrow), step(slabCut, 0.0)), aSlab.yz);
+if (uSandGust.x > 0.0) vSlab.x *= sandGo(position.xz, 0.5);
+`
+// Sand cut down lies flatter by the slope of the cut, and is lit as it lies.
+const SLAB_LEAN = `
+if (uSandGust.x > 0.0) {
+  float slabFlat = exp(-max(position.y - ${f(SLAB.liftMm)}, 0.0) * uSandGust.y);
+  objectNormal = normalize(vec3(objectNormal.x * slabFlat, max(objectNormal.y, 1e-4), objectNormal.z * slabFlat));
+}
 `
 
 // The heap is the stage's sand (base.ts) with the light and the edge of this file put in place of its own.
@@ -723,10 +823,26 @@ function slabSand(): THREE.Material {
     shader.uniforms.uSandGrow = arrivalPart.sandGrow
     shader.uniforms.uSandLift = arrivalPart.sandLift
     shader.uniforms.uSandFoot = arrivalPart.sandFoot
-    shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>\nattribute vec3 aSlab;\nvarying vec3 vSlab;\nuniform float uSandGrow;\nuniform float uSandLift;${SAND_BORN}`).replace('#include <begin_vertex>', `#include <begin_vertex>\n${SLAB_RISE}`)
+    shader.uniforms.uSandGust = sandGust
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', `#include <common>\nattribute vec3 aSlab;\nvarying vec3 vSlab;\nuniform float uSandGrow;\nuniform float uSandLift;${SAND_BORN}${SAND_GONE}`)
+      .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>\n${SLAB_LEAN}`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\n${SLAB_RISE}`)
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>\n${SLAB_PARS}`)
       .replace('#include <opaque_fragment>', `${SLAB_LIGHT}\n#include <opaque_fragment>`)
+  }
+  return m
+}
+
+// The heap's shadow is the shadow of the heap as it stands: the light's own picture of it is cut down with it.
+function slabShadow(): THREE.Material {
+  const m = new THREE.MeshDepthMaterial()
+  m.onBeforeCompile = (shader) => {
+    shader.uniforms.uSandGust = sandGust
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', `#include <common>\n${SAND_BORN}${SAND_GONE}`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\nif (uSandGust.x > 0.0) transformed.y = ${f(SLAB.liftMm)} + sandSlump(max(position.y - ${f(SLAB.liftMm)}, 0.0));`)
   }
   return m
 }
@@ -735,7 +851,9 @@ export async function prepare(): Promise<void> {}
 
 const heaps: THREE.Mesh[] = []
 const strewn: THREE.Mesh[] = []
-const slabOut = { value: new THREE.Vector4() }
+// All four are 0 and stay 0: a vector of four made with no numbers has a 1 in its last place, which would read the grain
+// a millimetre ahead of every place in every picture.
+const slabOut = { value: new THREE.Vector4(0, 0, 0, 0) }
 
 // Made in steps where the page is drawing (src/scene/steps.ts): the same statements in the same order as in one piece,
 // with a place to stop after the pool, after each row of the field and of the skin, and after each lot of grains.
@@ -748,6 +866,7 @@ export const dressing = inSteps(function* (): Generator<void, THREE.Object3D> {
   sand.castShadow = true
   sand.receiveShadow = true
   sand.renderOrder = 3
+  sand.customDepthMaterial = slabShadow()
   heaps.push(sand)
   yield
   const loose = yield* stepsOf(arrivalPart.grains)
@@ -775,32 +894,23 @@ function onPicture(f: KitMoment['frame'], x: number, z: number): [number, number
 export function update(moment: KitMoment): void {
   const grown = arrivalPart.sandGrown(moment)
   const f = moment.frame
-  const s = f.sample
-  // The leaving (`LEAVE`): how far out the sand is drawn in this sample.
-  const go = leaveOut(f.from !== f.to && f.from.season === 'summer', f.change, s, LEAVE.reachMm, LEAVE.thinFromMm)
-  // A millimetre of the way on the picture, in pixels, where the heap's top is now, and so the heap's step a sample.
-  const top = [HEAP.cone.x + go.out * LEAVE_WAY[0], HEAP.cone.z + go.out * LEAVE_WAY[1]] as const
-  const here = onPicture(f, top[0], top[1])
-  const next = onPicture(f, top[0] + LEAVE_WAY[0], top[1] + LEAVE_WAY[1])
-  const mm = [next[0] - here[0], next[1] - here[1]] as const
-  const stepPx = ((go.behind + go.ahead) / (2 * LEAVE_OUT.tent)) * Math.hypot(mm[0], mm[1])
-  // The sample's place in its pixel, taken out along the way once the heap's travel in the frame fills a pixel of itself.
-  const even = Math.min(1, Math.max(0, go.of * stepPx - 1))
-  const slip = s !== null && even > 0 ? (even * (s.px * mm[0] + s.py * mm[1])) / (mm[0] * mm[0] + mm[1] * mm[1]) : 0
-  slabOut.value.set((go.out + slip) * LEAVE_WAY[0], (go.out + slip) * LEAVE_WAY[1], go.behind, go.ahead)
-  const fade = Math.min(1, Math.max(0, (stepPx - LEAVE.loosePx[0]) / (LEAVE.loosePx[1] - LEAVE.loosePx[0])))
-  const loose = 1 - fade * fade * (3 - 2 * fade)
+  // The leaving (`LEAVE`): the sand stays where it lies, and `uSandGust` says how much of its leaving has passed in this
+  // sample. A millimetre of the heap's way out on the picture, in pixels, is taken where the heap's top is.
+  const here = onPicture(f, HEAP.cone.x, HEAP.cone.z)
+  const next = onPicture(f, HEAP.cone.x + LEAVE_WAY[0], HEAP.cone.z + LEAVE_WAY[1])
+  const go = sandLeaving(f.from !== f.to && f.from.season === 'summer', f.change, f.sample, Math.hypot(next[0] - here[0], next[1] - here[1]))
+  sandGust.value.set(go.run, go.flat, go.stepPx, 0)
   for (const heap of heaps) {
     heap.visible = grown > 0 && go.run < 1
     heap.scale.y = Math.max(grown, 1e-3)
-    heap.position.set(slabOut.value.x, SLAB.liftMm * (1 - grown), slabOut.value.y)
-    if (go.run > 0) setPresence(heap.material as THREE.Material, MODE.always, go.kept)
+    heap.position.set(0, SLAB.liftMm * (1 - grown), 0)
+    if (go.run > 0) setPresence(heap.material as THREE.Material, MODE.always, 1)
     heap.updateMatrix()
   }
   for (const grains of strewn) {
-    grains.visible = go.run < 1 && loose > 0
-    grains.position.set(slabOut.value.x, 0, slabOut.value.y)
-    if (go.run > 0) setPresence(grains.material as THREE.Material, MODE.always, go.kept * loose)
+    grains.visible = go.run < 1
+    grains.position.set(0, 0, 0)
+    if (go.run > 0) setPresence(grains.material as THREE.Material, MODE.always, 1)
     grains.updateMatrix()
   }
 }
