@@ -9,7 +9,7 @@ import { ROW, inSteps } from '../../scene/steps'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
 import { SAND_COLOUR, sinceLoose } from './base'
-import { SAND_BORN, SAND_GLSL, SAND_GONE, SAND_LIT, SLAB, SPRINKLE, sandDeep, sandGust, sandHeight, sandLitAt, sandProud, sandSprinkle, sandSprinkleAt, sandSprinkleRun, sandStrewn } from './slab'
+import { LEAVE, SAND_BORN, SAND_GLSL, SAND_GONE, SAND_LIT, SLAB, SPRINKLE, sandDeep, sandGust, sandHeight, sandLitAt, sandProud, sandSprinkle, sandSprinkleAt, sandSprinkleRun, sandStrewn } from './slab'
 
 const PART = 'arrival-summer'
 const RAD = Math.PI / 180
@@ -245,13 +245,29 @@ if (lies > 0.5) {
   nowAt.y -= low;
   thenAt.y -= low;
 }
-// The leaving (slab.ts, LEAVE): what lies on the table is taken out from the foot by the gust, grain by grain.
+// The leaving (slab.ts, LEAVE): what lies on the table is taken out from the foot by the gust, grain by grain. A grain
+// that still lies comes down with the heap under it; one in the air goes its own heading, is a soft disc and keeps the
+// paint and the light of the place it lay in (gustLay).
+float gustPuff = 0.0;
+float gustHides = 1.0;
+vec3 gustLay = nowAt;
 if (uSandGust.x > 0.0 && falls < 0.5) {
-  vec3 gust = sandGust(nowAt.xz, fract(aSeed.x * 61.7 + aSeed.z * 13.3), fract(aSeed.z * 29.9 + aSeed.x * 7.1));
+  float gustTall = nowAt.y - ${SLAB.liftMm.toFixed(2)};
+  if (lies > 0.5 && gustTall > 0.0) nowAt.y = ${SLAB.liftMm.toFixed(2)} + sandSlump(gustTall);
+  float gustA = fract(aSeed.x * 61.7 + aSeed.z * 13.3);
+  float gustB = fract(aSeed.z * 29.9 + aSeed.x * 7.1);
+  vec3 gust = sandGust(nowAt.xz, gustA, gustB);
+  vec3 flight = sandFlight(nowAt.xz, gustA, gustB);
   vec2 gustWay = dot(nowAt.xz, nowAt.xz) > 0.0 ? normalize(nowAt.xz) : vec2(1.0, 0.0);
+  gustWay = mat2(cos(flight.y), sin(flight.y), -sin(flight.y), cos(flight.y)) * gustWay;
+  gustLay = nowAt;
+  gustHides = sandWisp(nowAt.xz);
   nowAt += vec3(gustWay.x * gust.x, gust.y, gustWay.y * gust.x);
   thenAt = nowAt;
   grown *= gust.z;
+  gustPuff = flight.z;
+  // A speck that lies on the heap and has not left is lost in the sand in the air as the gust comes over it.
+  if (lies > 0.5 && gustTall > ${LEAVE.grain.onHeapMm.toFixed(2)} && flight.x <= 0.0) grown *= 1.0 - smoothstep(0.0, ${LEAVE.grain.dim.toFixed(2)}, uSandGust.x);
 }
 airborne = (tau < aFlight.y && lies < 0.5) || falls > 0.5 ? 1.0 : 0.0;
 vec4 nowV = viewMatrix * modelMatrix * vec4(nowAt, 1.0);
@@ -309,8 +325,11 @@ if (falls > 0.5) {
   float lensPull = max(-nowV.z, 1.0) * uGrainFocus.y - 1.0;
   nowV.xy -= uGrainShift * lensPull;
   soft = uGrainFocus.x * abs(lensPull) * alive;
+  // A grain in the gust is that much wider and softer again, and hides that much less (slab.ts, LEAVE).
+  if (gustPuff > 0.0) soft = sqrt(soft * soft + gustPuff * gustPuff) * alive;
   float lensWide = size * size + soft * soft + 2.0 * size * soft * smoothstep(1.0, 3.0, soft / max(size, 1e-10));
   thinner *= size * size / max(lensWide, 1e-10);
+  if (gustPuff > 0.0) thinner *= gustHides;
   soft = sqrt(lensWide) - size;
   size += soft;
   grainV = nowV;
@@ -357,7 +376,8 @@ float dealt = mix(${LOOK.fall.stone.toFixed(3)}, 1.0, face) * exp2(mix(${Math.lo
 float toned = min(dealt, ${LOOK.fall.knee.toFixed(2)}) * pow(max(dealt / ${LOOK.fall.knee.toFixed(2)}, 1.0), ${LOOK.fall.over.toFixed(2)});
 float shady = mix(${LOOK.fall.deep.tone[0].toFixed(3)}, mix(${LOOK.fall.deep.tone[1].toFixed(3)}, ${LOOK.fall.deep.tone[2].toFixed(3)}, face), pow(max(dice, 1e-4), ${LOOK.fall.deep.tone[3].toFixed(3)}));
 vGrainLit = lies > 0.5 ? 1.0 + aSeed.w : falls > 0.5 ? mix(mix(toned, shady, back), 1000.0, drifts) : 1.0;
-float sunlit = mix(1.0, sandBaseShade(grainW.xyz - vec3(uSandFoot.x, 0.0, uSandFoot.y), uGrainKey), uSandDown);
+vec3 grainLay = gustPuff > 0.0 ? (modelMatrix * vec4(gustLay, 1.0)).xyz : grainW.xyz;
+float sunlit = mix(1.0, sandBaseShade(grainLay - vec3(uSandFoot.x, 0.0, uSandFoot.y), uGrainKey), uSandDown);
 vGrainSun = lies > 0.5 ? aFlight.x : 1.0;
 // A grain of the fall in the shade of the stone is as dark as the stone behind it and is all but lost against it.
 if (falls > 0.5) vGrainCover *= mix(${LOOK.fall.shaded.toFixed(2)}, 1.0, sunlit);
@@ -365,6 +385,8 @@ if (falls > 0.5) vGrainCover *= mix(${LOOK.fall.shaded.toFixed(2)}, 1.0, sunlit)
 float kind = (floor(aSeed.x * ${LOOKS.toFixed(1)}) + 0.5) / ${LOOKS.toFixed(1)};
 vGrainLook = falls > 0.5 ? vec4(kind, fract(kind * 91.7), sunlit, alive) : vec4(aSeed.x, fract(aSeed.x * 91.7 + aSeed.z * 13.1), sunlit, alive);
 vGrainLine = line;
+// A grain in the gust says where it lay, so that it is painted as it lay (slab.ts, LEAVE).
+if (gustPuff > 0.0) vGrainLine = vec4(grainLay, 1.0);
 `
 
 const fragment = (): string => `
@@ -382,6 +404,7 @@ varying float vGrainSun;
 varying vec4 vGrainLine;
 varying float vGrainRun;
 uniform vec4 uGrainLens;
+uniform vec4 uSandGust;
 ${SAND_GLSL}
 mat2 grainTurn = mat2(1.0, 0.0, 0.0, 1.0);
 vec2 grainCrumb = vec2(1.0, 0.0);
@@ -498,11 +521,15 @@ void main() {
     float gain = mix(mix(${LOOK.loose.vary[0]!.toFixed(2)}, ${LOOK.loose.vary[1]!.toFixed(2)}, vary), mix(${LOOK.loose.proud.vary[0]!.toFixed(2)}, ${LOOK.loose.proud.vary[1]!.toFixed(2)}, vary), proud);
     float side = mix(1.0, ${LOOK.loose.round[2]!.toFixed(2)} * smoothstep(${LOOK.loose.round[0]!.toFixed(2)}, ${LOOK.loose.round[1]!.toFixed(2)}, ndl), round);
     float back = clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0);
-    float near = mix(0.7, 1.0, clamp((length(vStageWorld.xz) - 55.5) / 13.0, 0.0, 1.0));
-    vec3 paint = albedo * mix(${vec(LOOK.loose.warm)}, vec3(${SAND_LIT.tint.map((x) => x.toFixed(3)).join(', ')}) * sandCrest(vStageWorld.y) * mix(${vec(SAND_LIT.lone)} * ${SAND_LIT.thin[0]!.toFixed(3)}, vec3(1.0), deep), proud);
+    // A grain in the gust (slab.ts, LEAVE) is painted as it lay: vGrainLine holds that place, and a 1 in its last.
+    vec3 lay = uSandGust.x > 0.0 && vGrainLine.w > 0.5 ? vGrainLine.xyz : vStageWorld;
+    float near = mix(0.7, 1.0, clamp((length(lay.xz) - 55.5) / 13.0, 0.0, 1.0));
+    vec3 paint = albedo * mix(${vec(LOOK.loose.warm)}, vec3(${SAND_LIT.tint.map((x) => x.toFixed(3)).join(', ')}) * sandCrest(lay.y) * mix(${vec(SAND_LIT.lone)} * ${SAND_LIT.thin[0]!.toFixed(3)}, vec3(1.0), deep), proud);
     col = sandKnee(sandTone(paint * mix(gain, 1.0, proud), uGrainKeyCol * (vGrainSun * vGrainLook.z * side * (1.0 + ${SAND_LIT.back.toFixed(3)} * back * back)), (dome + uRigCardCol * (${SAND_LIT.card.toFixed(3)} * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0))) * near * sandShade(vGrainSun * vGrainLook.z)) * mix(1.0, gain, proud));
     // One grain in forty of those strewn on the table turns a face to the light and glints.
     col *= mix(1.0, ${LOOK.loose.glint.lit.toFixed(2)}, step(1.5, kind));
+    // Seen whole and many deep in the air, the grains have the tone of the heap's skin (slab.ts, LEAVE).
+    if (uSandGust.x > 0.0 && vGrainLine.w > 0.5) col *= vec3(${LEAVE.grain.paint.map((x) => x.toFixed(3)).join(', ')});
   }
   // Light that has come through sand is the redder the less of it is left.
   if (falls > 0.5 && flies < 0.5) col *= pow(max(vec3(vGrainLit), 1e-3), ${vec(LOOK.fall.redder)}) * mix(${vec(LOOK.fall.warm)}, vec3(1.0), creamy);

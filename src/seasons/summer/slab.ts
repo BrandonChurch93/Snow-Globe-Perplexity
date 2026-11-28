@@ -556,8 +556,24 @@ float sandCome(vec2 p, float own, float grow) {
 //   A grain is drawn whole in every sample, a row of beads a step apart: under `loosePx[0]` pixels a step the beads
 //   touch and are the line the grain leaves; past it they stand apart, so a grain thins from there and is not drawn
 //   past `loosePx[1]`, where the line a grain that small leaves is too faint to see.
-// The reading of the skin's grain along a way (`uSlabOut`, `tapsACell`, `taps`) belonged to the heap that went out whole.
-// It reads one place now (`uSlabOut` is 0), and the code of the still pictures is as it was.
+// - Sand in the air is a soft body and not a bundle of lines (`sandFlight`). A grain that has left its place is drawn as
+//   a soft disc `puffMm` wide by its own number, `puffAt` of that from the first instant and whole at the end of its
+//   way, and it hides the less the wider it is drawn, as a grain out of focus does: so the many are one haze, and no
+//   single one is a line. Each takes its own heading, up to `fan` to either side of the line out, so their ways cross.
+//   It keeps the paint and the light of the place it lay in, so the sand in the air is the sand that lay there. A grain
+//   that lies is a speck over the heap's skin, and the skin is the warmer and the darker of the two (its grit takes
+//   green and blue from it, `SAND_LIT.warm`, and every grain of it shades a pit): seen whole and many deep, the grains
+//   were a grey white cloud over a golden heap. So a grain in the air is painted `paint` of its own colour, which is the
+//   skin's tone. The sand of a patch goes together, a patch more and a patch less (`wisp`, by the skin's own patches),
+//   so the body in the air has wisps and is no even fog, and it hides `dense` of what its sand would. A grain
+//   that still lies comes down with the heap under it. One that lies on the heap (`onHeapMm` and more above the table)
+//   and has not left is lost in the sand in the air as the gust comes over it: by `dim` of the leaving it hides nothing,
+//   so no row of specks stands on the heap's outline against the sand behind it. Sand strewn on the table lies as it
+//   lay until it goes.
+// - The skin's grain is read ahead of its place along the heap's line out (`uSlabOut`, its last place: `sandStream`), up
+//   to `streamMm`, more as the leaving goes on. So where the skin has thinned to single grains each is a soft trail and
+//   not a still dot, and the heap that comes down in a frame is not a row of upright strokes. The first two places of
+//   `uSlabOut`, a way along the table, stay 0: the skin is read where it lies and nothing of it is moved.
 export const LEAVE = {
   slumpBy: 0.85,
   highMm: 10,
@@ -568,7 +584,9 @@ export const LEAVE = {
   soft: 0.4,
   patchMm: [11, 3.7],
   own: 0.3,
-  grain: { late: 0.5, own: 0.5, thin: 0.55, up: [0.2, 1.0] },
+  grain: { late: 0.5, own: 0.5, thin: 0.55, up: [0.2, 1.0], fan: 0.5, puffMm: [1.0, 2.4], puffAt: 0.6, dense: 0.85, wisp: [0.3, 1.0], paint: [0.7, 0.58, 0.4], dim: 0.12, onHeapMm: 0.5 },
+  streamMm: 5,
+  streamBy: 0.35,
   tapsACell: 6,
   taps: 32,
   loosePx: [4, 8],
@@ -613,6 +631,30 @@ export function sandGustAt(mm: number, a: number, b: number, run: number, stepPx
   return [reach * q * q, GUST.heightMm * high * Math.sin((Math.PI / 2) * q), (1 - step(G.thin, 1, q)) * (1 - step(LEAVE.loosePx[0], LEAVE.loosePx[1], pace * stepPx))]
 }
 
+/** The share of its flight that a grain at `mm` from the axis has behind it when `run` has passed (`b` is its own number). */
+export function sandFlown(mm: number, b: number, run: number): number {
+  const G = LEAVE.grain
+  const start = G.late * (leaveAway(mm) + (b - leaveAway(mm)) * G.own)
+  return Math.min(1, Math.max(0, (run - start) / (1 - start)))
+}
+
+/** The turn of a grain's own heading from the line out, in radians: no two grains go the same way. */
+export function sandTurn(a: number, b: number): number {
+  return LEAVE.grain.fan * (2 * ((a * 13.7 + b * 5.9) % 1) - 1)
+}
+
+/** The radius in mm of the soft disc a grain is drawn as when `q` of its flight is behind it: nothing while it lies. */
+export function sandPuff(q: number, a: number): number {
+  if (!(q > 0)) return 0
+  const G = LEAVE.grain
+  return (G.puffMm[0] + (G.puffMm[1] - G.puffMm[0]) * ((a * 3.7 + 0.31) % 1)) * (G.puffAt + (1 - G.puffAt) * Math.min(q, 1))
+}
+
+/** How far ahead of its place, in mm along the heap's line out, the skin's grain is read when `run` has passed: the last place of `uSlabOut`. */
+export function sandStream(run: number): number {
+  return run > 0 ? LEAVE.streamMm * step(0, LEAVE.streamBy, run) : 0
+}
+
 /** `uSandGust`: x the share of the leaving that has passed, y one over the height the heap is cut to (0 for no cut), z the pixels a sample for a millimetre a share. */
 export const sandGust = { value: new THREE.Vector4(0, 0, 0, 0) }
 
@@ -644,6 +686,19 @@ vec3 sandGust(vec2 p, float a, float b) {
   float pace = 2.0 * reach * q / (1.0 - start);
   float kept = (1.0 - smoothstep(${f(LEAVE.grain.thin)}, 1.0, q)) * (1.0 - smoothstep(${f(LEAVE.loosePx[0])}, ${f(LEAVE.loosePx[1])}, pace * uSandGust.z));
   return vec3(reach * q * q, ${f(GUST.heightMm)} * mix(${f(LEAVE.grain.up[0])}, ${f(LEAVE.grain.up[1])}, fract(a * 7.3 + b * 3.1)) * sin(1.5707963 * q), kept);
+}
+// A grain in the air: x the share of its flight behind it, y the turn of its heading from the line out, z the radius of
+// the soft disc it is drawn as (0 while it lies).
+vec3 sandFlight(vec2 p, float a, float b) {
+  float start = ${f(LEAVE.grain.late)} * mix(sandAway(p), b, ${f(LEAVE.grain.own)});
+  float q = clamp((uSandGust.x - start) / (1.0 - start), 0.0, 1.0);
+  float wide = mix(${f(LEAVE.grain.puffMm[0])}, ${f(LEAVE.grain.puffMm[1])}, fract(a * 3.7 + 0.31)) * mix(${f(LEAVE.grain.puffAt)}, 1.0, q);
+  return vec3(q, ${f(LEAVE.grain.fan)} * (2.0 * fract(a * 13.7 + b * 5.9) - 1.0), q > 0.0 ? wide : 0.0);
+}
+// How much of what its sand would hide a grain in the air hides, by the patch of the skin it lay in.
+float sandWisp(vec2 p) {
+  float lot = 0.65 * sandPatch(p * ${f(1 / LEAVE.patchMm[0])}) + 0.35 * sandPatch(p * ${f(1 / LEAVE.patchMm[1])} + 19.0);
+  return ${f(LEAVE.grain.dense)} * mix(${f(LEAVE.grain.wisp[0])}, ${f(LEAVE.grain.wisp[1])}, smoothstep(0.3, 0.7, lot));
 }
 `
 
@@ -900,6 +955,7 @@ export function update(moment: KitMoment): void {
   const next = onPicture(f, HEAP.cone.x + LEAVE_WAY[0], HEAP.cone.z + LEAVE_WAY[1])
   const go = sandLeaving(f.from !== f.to && f.from.season === 'summer', f.change, f.sample, Math.hypot(next[0] - here[0], next[1] - here[1]))
   sandGust.value.set(go.run, go.flat, go.stepPx, 0)
+  slabOut.value.w = sandStream(go.run)
   for (const heap of heaps) {
     heap.visible = grown > 0 && go.run < 1
     heap.scale.y = Math.max(grown, 1e-3)

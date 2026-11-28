@@ -52,7 +52,9 @@ describe("summer's mound as it leaves the table", () => {
     const update = text.slice(text.indexOf('export function update(moment: KitMoment)'))
     expect(update).toContain('heap.position.set(0, SLAB.liftMm * (1 - grown), 0)')
     expect(update).toContain('grains.position.set(0, 0, 0)')
-    expect(update).not.toContain('slabOut')
+    // The skin's grain may be read ahead of its place (W1b: the last place of `uSlabOut`, a reach and no way along the
+    // table). The places that would move the heap are never written.
+    for (const no of ['slabOut.value.x', 'slabOut.value.y', 'slabOut.value.z', 'slabOut.value.set(']) expect(update).not.toContain(no)
     expect(text).not.toContain('slabOut.value.set(')
   })
 
