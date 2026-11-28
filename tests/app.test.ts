@@ -317,6 +317,79 @@ describe('a season that is not loaded yet', () => {
     expect(begun).toEqual([first, asked, ...shakenFrom(asked).filter((season) => season !== first)])
     for (const season of seasons) expect(loader.ready(season)).toBe(season !== bad)
   })
+
+  /** A page whose picture rests or not, as the test says: what the loader is given to wait on. */
+  const picture = () => {
+    let air: Promise<void> | null = null
+    let land: () => void = () => undefined
+    return {
+      rest: (): Promise<void> => air ?? Promise.resolve(),
+      shake: (): void => void (air = new Promise<void>((resolve) => (land = resolve))),
+      lands: (): void => {
+        air = null
+        land()
+      },
+    }
+  }
+
+  it('begins none of the others while the picture does not rest, and all of them in their order once it does', async () => {
+    for (const opens of seasons) {
+      const begun: string[] = []
+      const p = picture()
+      let go: () => void = () => undefined
+      const loader = new SeasonLoader(opens, async (season) => void begun.push(season), undefined, new Promise<void>((resolve) => (go = resolve)), p.rest)
+      await loader.first
+      p.shake()
+      go()
+      for (let i = 0; i < 40; i++) await Promise.resolve()
+      expect(begun, 'in the air').toEqual([opens])
+      p.lands()
+      await loader.all
+      expect(begun).toEqual([opens, ...shakenFrom(opens)])
+    }
+  })
+
+  it('begins the season a press asks for in mid air all the same, and the one after it only when the picture rests again', async () => {
+    const begun: string[] = []
+    const ready: string[] = []
+    const p = picture()
+    const asked = next(first)
+    let end: () => void = () => undefined
+    const loader = new SeasonLoader(
+      first,
+      (season) => {
+        begun.push(season)
+        return season === asked ? new Promise<void>((done) => (end = done)) : Promise.resolve()
+      },
+      (season) => void ready.push(season),
+      undefined,
+      p.rest,
+    )
+    await loader.first
+    p.shake()
+    void loader.want(asked)
+    for (let i = 0; i < 40; i++) await Promise.resolve()
+    expect(begun).toEqual([first, asked])
+    end()
+    for (let i = 0; i < 40; i++) await Promise.resolve()
+    expect(ready, 'the season pressed for is ready in mid air').toEqual([first, asked])
+    expect(begun, 'and nothing is begun behind it there').toEqual([first, asked])
+    p.lands()
+    await loader.all
+    expect(begun).toEqual([first, asked, ...shakenFrom(asked).filter((season) => season !== first)])
+  })
+
+  it('goes on with the others where the page cannot say whether its picture rests', async () => {
+    const begun: string[] = []
+    const loader = new SeasonLoader(first, async (season) => void begun.push(season), undefined, undefined, () => Promise.reject(new Error('no stage')))
+    await loader.all
+    expect(begun).toEqual([first, ...shakenFrom(first)])
+    const thrown = new SeasonLoader(first, async () => undefined, undefined, undefined, () => {
+      throw new Error('no stage')
+    })
+    await thrown.all
+    for (const season of seasons) expect(thrown.ready(season)).toBe(true)
+  })
 })
 
 describe('a season that is loaded and still owed something', () => {

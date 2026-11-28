@@ -79,6 +79,8 @@ export interface Stage {
   awaited?(): boolean
   /** Resolves when every season asked for so far is ready down to the GPU, so that the first frame of it makes nothing. */
   settled?(): Promise<void>
+  /** Resolves with the first frame that finds the picture at rest: no shake in the air, none settling, no press unanswered. What no shake needs waits for it. */
+  rests?(): Promise<void>
   collider(season: string): SdfGrid
   emitters(season: string): Record<string, Emitter[]>
   particleCount(): number

@@ -95,6 +95,8 @@ const nextFrame = (): Promise<void> =>
     else requestAnimationFrame(() => resolve())
   })
 
+const AT_ONCE = (): Promise<void> => Promise.resolve()
+
 /** A page whose frames take longer than this is slow for other reasons, and gains nothing from spreading uploads over frames. */
 const SLOW_FRAME_MS = 100
 let frameAt = 0
@@ -118,9 +120,12 @@ async function turn(): Promise<void> {
  * Fetching and decoding happen off the page's thread; a picture is handed to the GPU between two frames, one picture a frame
  * (see `turn`), so the picture never waits for more than one upload. Safe to call again: pictures of groups prepared later
  * are taken up.
+ *
+ * `rest` is waited for before each picture is handed over: a page gives what says that its picture rests, because a shake
+ * needs no whole picture and its frames are the ones a visitor watches most closely.
  */
-export function loadDetail(assets: Assets): Promise<void> {
-  if (fetching) return fetching.then(() => (owed.length ? loadDetail(assets) : undefined))
+export function loadDetail(assets: Assets, rest: () => Promise<unknown> = AT_ONCE): Promise<void> {
+  if (fetching) return fetching.then(() => (owed.length ? loadDetail(assets, rest) : undefined))
   if (!owed.length) return Promise.resolve()
   let handing: Promise<void> = Promise.resolve()
   const failed: Owed[] = []
@@ -130,7 +135,7 @@ export function loadDetail(assets: Assets): Promise<void> {
       try {
         const bitmap = await decode(await assets.fetchFile(file.path, true))
         assets.release(file.path)
-        handing = handing.then(turn).then(() => {
+        handing = handing.then(turn).then(rest).then(() => {
           const e = textures.get(name)
           if (!e) return bitmap.close()
           const old = e.texture.image as ImageBitmap

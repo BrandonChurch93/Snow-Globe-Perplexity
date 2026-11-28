@@ -793,6 +793,40 @@ describe('a press while the hand of what is hidden works', () => {
   })
 })
 
+describe('the picture at rest, as the stage says it to what belongs to no season', () => {
+  it('rests where no press stands: said at once, and no frame is asked for', async () => {
+    const p = pageOf('winter')
+    p.make('winter', true)
+    await p.rest()
+    const asked = p.waits()
+    let rested = false
+    void p.stage.rests().then(() => (rested = true))
+    await turns()
+    expect(rested).toBe(true)
+    expect(p.waits()).toBe(asked)
+  })
+
+  it('does not rest from a press until the shake has landed and its landing has settled: said with the first frame after that', async () => {
+    const p = pageOf('spring')
+    p.make('spring')
+    p.make('summer')
+    await p.rest()
+
+    const to = p.session.shake()
+    p.stage.expect(to!)
+    let rested = false
+    void p.stage.rests().then(() => (rested = true))
+    await turns()
+    expect(rested, 'at the press, before a frame of the shake is drawn').toBe(false)
+    await p.until(() => !p.session.busy, 0.05)
+    expect(rested, 'in the shake').toBe(false)
+    await p.until(() => p.session.moment(0, 1).sinceLanding + 0.05 >= SETTLE_S, 0.05)
+    expect(rested, 'while the landing settles').toBe(false)
+    await p.frame(0.05)
+    expect(rested).toBe(true)
+  })
+})
+
 describe('a browser that links aside', () => {
   it('is asked for every program first, and the hand goes on when they are linked', async () => {
     const p = pageOf('spring', { linksAside: true })

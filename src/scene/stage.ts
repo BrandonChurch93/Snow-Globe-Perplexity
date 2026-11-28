@@ -58,6 +58,8 @@ const HAND_MS = 4
 const HAND_LAYER = 31
 
 const NOTHING = (): void => undefined
+/** The name of no season: every press holds it. */
+const NO_SEASON = ''
 const NOW = (): number => performance.now()
 
 const materialsOf = (d: Drawn): THREE.Material[] => (Array.isArray(d.material) ? d.material : [d.material])
@@ -281,6 +283,14 @@ export class GlobeStage implements Stage {
       // A hand that ends with its season on show begins the hand of what the season hides: that one too.
       for (let all: Promise<void> | null = null; all !== this.hands.all; ) await (all = this.hands.all)
     })
+  }
+
+  /**
+   * Resolves when the picture rests: at once where no press stands and no shake is in the air, else with the first frame
+   * that finds it so. What belongs to no season waits here, as a season nobody pressed for waits for its turn.
+   */
+  rests(): Promise<void> {
+    return this.wish.holds(NO_SEASON) ? this.turnFor(NO_SEASON).then(NOTHING) : Promise.resolve()
   }
 
   private scratchOf(type: THREE.TextureDataType, samples: number): THREE.WebGLRenderTarget {

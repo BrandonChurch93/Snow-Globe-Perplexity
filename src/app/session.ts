@@ -51,6 +51,7 @@ export class SeasonLoader {
     private readonly load: (season: string, asked: boolean) => Promise<void>,
     private readonly onReady: (season: string) => void = () => undefined,
     after: Promise<void> = Promise.resolve(),
+    private readonly rest: (() => Promise<unknown>) | null = null,
   ) {
     this.from = first
     this.first = this.start(first, true)
@@ -60,13 +61,15 @@ export class SeasonLoader {
 
   /**
    * Each of the others is chosen when its turn comes: a press in between has moved the place the shakes lead on from.
-   * One at a time: a season that was asked for out of its turn is finished before the next begins.
+   * One at a time: a season that was asked for out of its turn is finished before the next begins. And none begins
+   * while a shake is in the air (`rest`): a shake needs the season it leads to and nothing of the one after it.
    */
   private async others(): Promise<void> {
     const turned = new Set<string>()
     for (;;) {
       const begun = [...this.started.values()]
       await Promise.allSettled(begun)
+      if (this.rest) await Promise.resolve().then(this.rest).catch(() => undefined)
       if (this.started.size > begun.length) continue
       const season = shakesFrom(this.from).find((s) => !turned.has(s) && !this.started.has(s))
       if (!season) return

@@ -102,7 +102,10 @@ export function startApp(d: AppDeps): AppBridge {
   // and the `.first.` file of every large one. The whole pictures follow as soon as it is drawn, then the other seasons, one at a
   // time, with their whole pictures at once. A season the visitor asks for before its turn starts at once, from its first files.
   const progressive = d.assets.firstOnly
-  const detail = (): Promise<void> => loadDetail(d.assets).catch(() => undefined)
+  // From a press until the picture rests again nothing is made that the shake does not need: no whole picture is handed
+  // to the GPU and no season is begun but the one pressed for.
+  const rest = (): Promise<void> => d.stage.rests?.() ?? Promise.resolve()
+  const detail = (): Promise<void> => loadDetail(d.assets, rest).catch(() => undefined)
   const loader = new SeasonLoader(
     params.season,
     (season, asked) =>
@@ -112,6 +115,7 @@ export function startApp(d: AppDeps): AppBridge {
       }),
     () => void (ready && detail()),
     progressive ? afterFirstPicture.then(detail) : Promise.resolve(),
+    rest,
   )
   if (progressive) void afterFirstPicture.then(() => (doc.dataset.detail = 'loading')).then(() => loader.all).then(detail).then(() => (doc.dataset.detail = 'ready'))
   void afterFirstPicture
