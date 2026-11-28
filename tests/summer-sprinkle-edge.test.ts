@@ -3,7 +3,14 @@
 // same all the way along, and the veil over them came in over 0.6 mm at that edge. A round base throws a shadow with
 // straight sides, so the line was ruled. That side breaks up like the others now: no line of equal cover is straight,
 // a grain's chance rises nowhere as a step, and the outline of the grains that are laid wanders.
+//
+// Decision 319, W5b. W5 broke the ruled side where it was longest, and the sprinkle still closed to a point: its last
+// stretch before the tip (x 1150 to 1290 of the film's frame at 3840 wide) lay whole between two straight lines that
+// meet, a dense wedge aimed at the base's foot, its underside there as good as ruled. That head is loose now, and it
+// is measured here as the camera sees it (the second block of tests).
 import { describe, expect, it } from 'vitest'
+import { filmCut } from '../src/film/cut'
+import { filmPose } from '../src/film/moves'
 import { GRAIN_ROW, grainRows } from '../src/seasons/summer/arrival'
 import { sandSprinkle, sandSprinkleAt, sandSprinkleRun } from '../src/seasons/summer/slab'
 
@@ -168,5 +175,123 @@ describe("summer's sprinkle beside the foot, on the side of the base's shadow", 
     // The sprinkle still thins out into the shadow: a share of its grains lies behind the ruled edge, as before.
     expect(behind / COUNT).toBeGreaterThan(0.15)
     expect(behind / COUNT).toBeLessThan(0.4)
+  }, 120000)
+})
+
+// The head as the camera sees it. LEAN is how the sprinkle lies to the lens: places of one `s + LEAN * d` stand over
+// one another in the picture. So `u` runs across the picture, less of it further to the right and nearer the base,
+// and at one `u` more of `d` is further up the picture: in the film's frame at 3840 wide a place stands at about
+// x 1186 - 5.6 u. The stretch the review named, x 1150 to 1290, is `u` from 6.5 down to the tip; HEAD is a little
+// more of it, x 1130 on.
+const LEAN = 1.82
+const HEAD = 10
+/** The place on the table that stands at `u` across the picture and `d` mm into the light. */
+const seenAt = (u: number, d: number): [number, number] => sandSprinkleAt(u - LEAN * d, d)
+/** Of a list of numbers, the one that `share` of them lie under. */
+const under = (a: number[], share: number): number => [...a].sort((p, q) => p - q)[Math.min(a.length - 1, Math.floor(a.length * share))]!
+
+// The sprinkle's grains as they are laid (arrival.ts: the last of the rows), each with its place in the picture.
+interface Grain {
+  x: number
+  z: number
+  u: number
+  d: number
+}
+let laidGrains: Grain[] | null = null
+const laid = (): Grain[] => {
+  if (!laidGrains) {
+    const rows = grainRows()
+    const n = rows.data.length / GRAIN_ROW
+    laidGrains = []
+    for (let q = n - 2400; q < n; q++) {
+      const x = rows.data[q * GRAIN_ROW]!
+      const z = rows.data[q * GRAIN_ROW + 2]!
+      const { s, d } = placeOf(x, z)
+      laidGrains.push({ x, z, u: s + LEAN * d, d })
+    }
+  }
+  return laidGrains
+}
+
+describe("summer's sprinkle beside the foot, at its head, the end its grains start at", () => {
+  it('is measured as the camera of the film sees it', () => {
+    // While the globe stands, the base hides most of the head from the hero camera. The film shows it while the globe
+    // is off the table in the shake that takes summer away, and through that shake, up to the end of its swap, its
+    // lens lies along the lean from the head's middle in every frame. 2072 and 2096, the frames the review was held
+    // on, are two of them.
+    const cut = filmCut()
+    const shake = cut.shakes.find((s) => s.from === 'summer')!
+    expect(shake.first).toBeLessThan(2072)
+    expect(shake.swap.last).toBeGreaterThan(2096)
+    const [x, z] = seenAt(0, -5)
+    for (let f = shake.first; f <= shake.swap.last; f++) {
+      const pose = filmPose(cut, f / cut.fps)
+      const to = [pose.position.x - x, pose.position.z - z] as const
+      const lean = -(to[0] * WAY[0]! + to[1] * WAY[1]!) / (to[0] * INTO[0]! + to[1] * INTO[1]!)
+      expect(Math.abs(lean - LEAN)).toBeLessThan(0.02)
+    }
+  })
+
+  it('is loose where its head lay whole', () => {
+    // Before (W5): where the wedge lay, a grain's chance was 0.34 on the average and 0.83 at the most, whole but for
+    // the mottle. Loose grains lie there now: nowhere half of whole, a tenth at the most on the average.
+    let sum = 0
+    let n = 0
+    let most = 0
+    for (let u = -12; u <= 0; u += 0.5) for (let d = -4; d <= 4; d += 0.5) {
+      const c = sandSprinkleRun(...seenAt(u, d))
+      sum += c
+      n++
+      most = Math.max(most, c)
+    }
+    expect(sum / n).toBeLessThan(0.1)
+    expect(most).toBeLessThan(0.5)
+  })
+
+  it('has no straight underside at its head', () => {
+    // The line where a grain's chance comes to half of its most, from below, across the picture, over the stretch
+    // whose underside the review found nearly ruled, x 1150 to 1270 (`u` from 6.5 down to -15). Before (W5) it lay
+    // within 0.49 mm of one straight line all the way (0.22 mm rms) and turned once: the ruled underside. It wanders
+    // now as the lines along the run do, by the same floors.
+    const line: number[] = []
+    for (let u = -15; u <= 6.5 + 1e-9; u += 0.5) {
+      const v: number[] = []
+      for (let d = -16; d <= 20 + 1e-9; d += 0.05) v.push(sandSprinkleRun(...seenAt(u, d)))
+      const most = Math.max(...v)
+      line.push(-16 + 0.05 * v.findIndex((c) => c >= 0.5 * most))
+    }
+    const w = wander(line, 1)
+    expect(w.spread).toBeGreaterThan(5)
+    expect(w.rms).toBeGreaterThan(1)
+    expect(w.turns).toBeGreaterThanOrEqual(4)
+  })
+
+  it('lays a head of loose grains: soft below, thinner than the body, and wide to its end', () => {
+    const g = laid()
+    // Soft below: in every 4 mm across the picture, how far it is from the grain a tenth of them lie under up to the
+    // middle one. Before (W5) 2.6 mm on the average.
+    const soft: number[] = []
+    for (let u = -9; u < 11 - 1e-9; u += 4) {
+      const d = g.filter((p) => p.u >= u && p.u < u + 4).map((p) => p.d)
+      expect(d.length).toBeGreaterThan(20)
+      soft.push(under(d, 0.5) - under(d, 0.1))
+    }
+    expect(soft.reduce((p, q) => p + q, 0) / soft.length).toBeGreaterThan(3.5)
+    // How many grains lie within 2 mm of each grain, itself counted.
+    const near = g.map((p) => g.reduce((c, o) => c + (Math.hypot(o.x - p.x, o.z - p.z) < 2 ? 1 : 0), 0))
+    const about = (keep: (p: Grain) => boolean): number[] => near.filter((_, i) => keep(g[i]!))
+    // No denser than the rest: before (W5) the head held the densest place of the whole sprinkle, 72 grains against
+    // 60 anywhere else.
+    expect(Math.max(...about((p) => p.u < HEAD))).toBeLessThan(Math.max(...about((p) => p.u >= HEAD)))
+    // Thinner than the body: about the middle grain of the last stretch before the tip (`u` under 0) lie at most
+    // seven tenths as many as about the middle grain of the body (`u` from 15 to 45). Before (W5) 41 against 29: the
+    // head was the thickest of it all.
+    expect(under(about((p) => p.u < 0), 0.5)).toBeLessThan(0.7 * under(about((p) => p.u >= 15 && p.u < 45), 0.5))
+    // Wide to its end: the end is where a fiftieth of the grains lie further on, and in the last 4 mm before it the
+    // grains lie over 8 mm across (from the twentieth of them to the nineteenth of twenty). Before (W5) 5.5 mm: it
+    // closed to a point.
+    const end = under(g.map((p) => p.u), 0.02)
+    const last = g.filter((p) => p.u >= end && p.u < end + 4).map((p) => p.d)
+    expect(under(last, 0.95) - under(last, 0.05)).toBeGreaterThan(8)
   }, 120000)
 })

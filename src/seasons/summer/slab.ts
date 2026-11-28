@@ -22,7 +22,7 @@ const HEAP = {
   bank: { mm: [[-180, 0], [-10, 0], [15, 2.0], [40, 5.0], [62, 7.5], [85, 7.5], [105, 3.0], [135, 0], [180, 0]], r: 58, w: 14 },
   skirt: { at: [96, 8], mm: [22, 9], high: 0.7, patch: [0.05, 0.5] },
   lumps: [0.06, 0.22, 0.8],
-  sprinkle: { at: [-63.8, -47.6], lit: [-0.918, -0.396], run: [-12, -2, 22, 78], core: [0.95, 1.1], veil: [0.5, 6.5], edge: { out: [-6.5, 3.5], swing: [0.65, 19, 0.35, 5.3], fray: [2.5, 2.3], soft: [0.6, 2.4, 9.1], veil: [3.5, 3.0, 7.7] } },
+  sprinkle: { at: [-63.8, -47.6], lit: [-0.918, -0.396], run: [-12, -2, 22, 78], core: [0.95, 1.1], veil: [0.5, 6.5], edge: { out: [-6.5, 3.5], swing: [0.65, 19, 0.35, 5.3], fray: [2.5, 2.3], soft: [0.6, 2.4, 9.1], veil: [3.5, 3.0, 7.7] }, head: { lean: 1.82, from: [0, 45], lump: [3.8, 1.9, 0.65], push: 6, soft: 1.2, end: [13, 30], wide: 0.7, ragged: 1.2, cloud: { at: [10, -5], mm: [34, 30, 11.5], tilt: 0.2, power: 2, rim: [0, 1], wob: [0.8, 3] }, loose: [0.6, 0.2, 2.2], start: [5, 3.5, 5] } },
   cover: [0.02, 3.0],
   ragged: { mm: [1.7, 4.3], most: 0.55 },
   spread: { looseMm: 0.25, onHeap: 0.1, thickMm: 1.6 },
@@ -32,7 +32,7 @@ const HEAP = {
 // The light on the sand. The stage's lit material is made for the stone of the base; this takes its paint (every grain's
 // own colour and tilt) and the stage's key, sky and card, and lights the sand as dry sand is lit by a low sun from behind.
 export const SAND_LIT = { tilt: 0.25, ramp: [0.02, 0.26], gain: [0.45, 1.4], sun: 4.3, back: 1.0, sky: [3.6, 5.2, 8.0], card: 0.05, knee: 1.8, high: 3.2, pale: 0.75, tint: [1.0, 0.98, 0.93], thin: [0.5, 0.3, 4.0], lone: [1.0, 0.92, 0.84], speck: 1.8, finer: 1.6, rows: 1080, pit: [0.8, 0.33], pitTint: [1.0, 0.75, 0.5], warm: [0.22, 0.45], lean: [0.15, 0.45], tone: [0.6, 1.25], fade: 0.14, fill: [0.5, 1.0], soft: [0.8, 0.05], cast: [0.3, 0.1, 34], turned: { by: 0.6, low: 0.4, w: [0.6, 0.3], mm: 60, blur: 2.5 }, shade: [1.2, 0.93, 0.74], shadeTo: 0.25, ragged: [0.75, 0.5, 5.3], blur: [1.5, 2.5], unsharp: [0.75, 1.25], small: [0.5, 0.6], crest: { mm: [7.0, 9.5], tint: [0.88, 0.72, 0.6] } }
-export const SPRINKLE = { softMm: 9.0 } as const
+export const SPRINKLE = { softMm: 15.0 } as const
 export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 0.5, skin: 2, bare: 0.0019, x: [-150, 142], z: [-232, 216], heap: { x: [-8, 132], z: [-78, 74] } } as const
 
 const hash = (x: number, y: number, s: number): number => {
@@ -179,15 +179,49 @@ export function sandSprinkle(x: number, z: number): number {
 
 // How thick the sprinkle's core lies along its edge: thinning out toward the base's shadow in single grains, as it
 // does on its other sides, with no step and no corner in a grain's chance.
+//
+// And still it closed to a point (decision 319, W5b). In the hero picture the sprinkle's right end is where its grains
+// start, the end nearest the base's foot. The base hides most of it while the globe stands; the film shows it in the
+// shake that takes summer away, and that shake is taken from the hero camera's place. Its last stretch before that end
+// lay whole between two straight lines, the edge on the shadow's side and the line the grains start on, and those two
+// meet: a wedge aimed at the foot, its underside as good as ruled. It thins out into loose grains now, as sand lies
+// that fell there. `head.lean` is how the sprinkle lies to that camera: places of one `s + lean * d` stand over one
+// another in the picture, so what ends along that measure ends square in the picture, where an end along the edge is
+// the wedge again. Toward the tip, over `head.from` of that measure, lumps of sand (`head.lump`: two sizes in mm and
+// the larger one's share) push the edge in and out, by up to half of `head.push` mm either way, and the grains come in
+// over `head.soft` mm more. The whole sand thins out toward the tip about `head.end[0]`, over `head.wide` times
+// `head.end[1]` mm to either side of it, and a lump of sand does so up to `head.ragged` times half of `head.end[1]` mm
+// sooner or later: it ends lump by lump, and little of it is left where the wedge lay. Loose grains lie there instead,
+// in a patch (`head.cloud`: its middle, then how far it reaches toward the tip, toward the body and across, in mm)
+// that lies over the thinning sand and reaches about as far as the wedge did: `head.loose[0]` of whole at the most and
+// in crumbs of `head.loose[2]` mm, fewer with every millimetre from its middle, its rim further out at one place than
+// at the next, none past it. And the line the grains start on is no line: it lies up to `head.start[0]` mm further on
+// at one place than at the next, in patches of `head.start[1]` mm, and the grains come in over `head.start[2]` mm from
+// it. The room the grains are tried in reaches further behind the edge for it (`SPRINKLE.softMm`).
 export function sandSprinkleRun(x: number, z: number): number {
   const S = HEAP.sprinkle
+  const H = S.head
+  const C = H.cloud
   const ease = (a: number, b: number, v: number): number => {
     const c = Math.min(1, Math.max(0, (v - a) / (b - a)))
     return c * c * (3 - 2 * c)
   }
   const s = (x - S.at[0]!) * S.lit[1]! - (z - S.at[1]!) * S.lit[0]!
-  const d = (x - S.at[0]!) * S.lit[0]! + (z - S.at[1]!) * S.lit[1]! - sprinkleEdge(s, x, z)
-  return (1 / (1 + Math.exp(-d / sprinkleSoft(s)))) * ease(S.run[0]!, S.run[1]!, s) * (1 - ease(S.run[2]!, S.run[3]!, s)) ** 1.3 * (0.55 + 0.45 * noise(x / 5.1 + 3.3, z / 5.1 + 8.8, 37))
+  const into = (x - S.at[0]!) * S.lit[0]! + (z - S.at[1]!) * S.lit[1]!
+  const u = s + H.lean * into
+  const lump = H.lump[2]! * noise(x / H.lump[0]! + 4.3, z / H.lump[0]! + 1.9, 67) + (1 - H.lump[2]!) * noise(x / H.lump[1]! + 8.1, z / H.lump[1]! + 5.7, 71)
+  // 1 at the tip, 0 from `head.from[1]` on, where the edge and its softness are as they were.
+  const head = 1 - ease(H.from[0]!, H.from[1]!, u)
+  const d = into - sprinkleEdge(s, x, z) - H.push * head * (lump - 0.5)
+  const band = (1 / (1 + Math.exp(-d / (sprinkleSoft(s) + H.soft * head)))) * ease(-H.wide, H.wide, (u - H.end[0]!) / H.end[1]! + H.ragged * (lump - 0.5))
+  // How far out from the patch's middle a place lies, 1 at its rim. Toward the tip its middle line leans into the
+  // shadow by `cloud.tilt`, so that it stays between the line the grains start on and the far side of the room they
+  // are tried in.
+  const mid = C.at[1]! + C.tilt * Math.min(u - C.at[0]!, 0)
+  const out = (Math.abs((u - C.at[0]!) / (u > C.at[0]! ? C.mm[1]! : C.mm[0]!)) ** C.power + Math.abs((into - mid) / C.mm[2]!) ** C.power) ** (1 / C.power) + C.wob[0]! * (noise(x / C.wob[1]! + 3.9, z / C.wob[1]! + 2.6, 89) - 0.5)
+  const loose = H.loose[0]! * (1 - ease(C.rim[0]!, C.rim[1]!, out)) * (H.loose[1]! + (1 - H.loose[1]!) * noise(x / H.loose[2]! + 6.6, z / H.loose[2]! + 3.1, 79))
+  const from = S.run[0]! + H.start[0]! * noise(x / H.start[1]! + 1.3, z / H.start[1]! + 9.2, 83)
+  return Math.max(band, loose) * ease(from, from + H.start[2]!, s) * (1 - ease(S.run[2]!, S.run[3]!, s)) ** 1.3 * (0.55 + 0.45 * noise(x / 5.1 + 3.3, z / 5.1 + 8.8, 37))
 }
 
 // The place on the table that lies `s` mm along the edge of the base's shadow and `d` mm into the light from it.
