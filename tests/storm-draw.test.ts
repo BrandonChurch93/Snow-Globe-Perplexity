@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CARD_FRAG_PARS, CARD_VERT, CARD_VERT_PARS } from '../src/particles/draw/cards'
-import { CARD, PIXEL_SIGMA2, SEED_NEAR, SEED_RESTS, SHAPE, STORM_FLOOD, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC, SUMMER_EDGE, lookOf } from '../src/particles/draw/looks'
+import { CARD, PIXEL_SIGMA2, SEED_NEAR, SEED_RESTS, SHAPE, STORM_FLOOD, STORM_LANDING, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC, SUMMER_EDGE, lookOf } from '../src/particles/draw/looks'
 import { seatsOn } from '../src/particles/draw/points'
 import { VERT_MAIN } from '../src/particles/draw/shader'
 import { gridOf } from '../src/scene/layout'
@@ -11,7 +11,7 @@ import { BEHAVIOUR } from '../src/particles/engine/kinds'
 import { innerRadiusMm, lensIor, lensPlace, lensRadiusMm } from '../src/globe/lens'
 import { VEIL_LOOK, veilUniforms } from '../src/core/chunks/veil'
 import type { KitMoment } from '../src/seasons/kit'
-import { STORM, TAKE, comesOfAnother, floodLeft, holdStorm, stormHeld, takePace, veil as summerVeil } from '../src/seasons/summer/veil'
+import { LANDING_BEAT, LANDING_LOOK, STORM, TAKE, TAKE_END_BEAT, comesOfAnother, floodLeft, holdStorm, landingLook, stormHeld, takePace, veil as summerVeil } from '../src/seasons/summer/veil'
 
 const DRAW = join(__dirname, '..', 'src', 'particles', 'draw')
 
@@ -633,6 +633,118 @@ describe('how the storm is drawn', () => {
         expect(lookOf(kind.kind).shape).not.toBe(SHAPE.light)
       }
     }
+  })
+
+  it("decision 222, the see through at the landing: summer's storm is dense while the take over runs and goes over to the look of the landing from the take over's end to the landing, on the shake's own beat, with no step and no corner", () => {
+    const w = config.shake.swapWindow
+    const perBeat = (60 * config.film.fps) / config.film.defaultBpm
+    const beatSeconds = 60 / config.film.defaultBpm
+    const summer = { veil: summerVeil }
+    const other = { veil: {} }
+    const at = (beat: number | null, since: number, from: { veil: unknown } = other, to: { veil: unknown } = summer): number => landingLook({ moment: { beat, sinceLanding: since }, from, to })
+    // the course runs on the take over's own clock: it starts on the frame the take over ends on (1421 of the film, 125 into the shake) and ends on the landing (1440, 144 into it)
+    expect(TAKE_END_BEAT).toBeCloseTo(w.toBeat + (TAKE.fromFrames + TAKE.frames) / perBeat, 12)
+    expect(LANDING_BEAT).toBe(config.shake.liftBeats + config.shake.strokeBeats + config.shake.setDownBeats)
+    expect(Math.round(TAKE_END_BEAT * perBeat)).toBe(125)
+    expect(Math.round(LANDING_BEAT * perBeat)).toBe(144)
+    expect(TAKE_END_BEAT).toBeLessThan(LANDING_BEAT)
+    // dense until the take over's end: nothing of the look of the landing on any frame of the shake up to it, at any point of the shutter, out of another season and in a shake of summer alone
+    for (let i = 0; i <= 125 * 4; i++) {
+      const beat = Math.min(i / 4 / perBeat, TAKE_END_BEAT)
+      expect(at(beat, 11.6 + beat * beatSeconds), `frame ${i / 4}`).toBe(0)
+      expect(at(beat, 40 + beat * beatSeconds, summer, summer), `frame ${i / 4} of summer alone`).toBe(0)
+    }
+    // monotone between, with no step: the largest step of a frame is that of an even ease in and out over the nineteen frames (1.5 nineteenths), and the first and the last frame move least
+    let last = 0
+    let most = 0
+    const steps: number[] = []
+    for (let frame = 125; frame <= 144; frame++) {
+      const v = at(frame / perBeat, 11.6 + (frame / perBeat) * beatSeconds)
+      expect(v, `frame ${frame}`).toBeGreaterThanOrEqual(last)
+      steps.push(v - last)
+      most = Math.max(most, v - last)
+      last = v
+    }
+    expect(most).toBeLessThanOrEqual(1.5 / 19 + 1e-9)
+    expect(steps[1]!).toBeLessThan(0.01)
+    expect(steps[19]!).toBeLessThan(0.01)
+    expect(at(134.5 / perBeat, 12)).toBeCloseTo(0.5, 9)
+    // the look of the landing at the landing, whole, and in the landed state of the still
+    expect(at(LANDING_BEAT, 12)).toBe(1)
+    expect(at(LANDING_BEAT, 12, summer, summer)).toBe(1)
+    expect(at(null, 0, summer, summer)).toBe(1)
+    expect(at(null, config.states.landedSeconds, summer, summer)).toBe(1)
+    // it stands while a storm does and is back at the storm's full numbers before the rest state of the still and before the film shakes summer out, eased both ways
+    expect(LANDING_LOOK.settled[0]).toBeGreaterThanOrEqual(STORM.holdSeconds + STORM.fallSeconds)
+    expect(LANDING_LOOK.settled[1]).toBeGreaterThan(LANDING_LOOK.settled[0])
+    expect(LANDING_LOOK.settled[1]).toBeLessThan(config.states.restSeconds)
+    expect(at(null, LANDING_LOOK.settled[0], summer, summer)).toBe(1)
+    expect(at(null, config.states.restSeconds, summer, summer)).toBe(0)
+    expect(at(null, Infinity, summer, summer)).toBe(0)
+    expect(at(null, -1, summer, summer)).toBe(0)
+    let fell = 1
+    for (let t = 0; t <= 12; t += 1 / config.film.fps) {
+      const v = at(null, t, summer, summer)
+      expect(v).toBeLessThanOrEqual(fell)
+      expect(fell - v).toBeLessThan(0.01)
+      fell = v
+    }
+    // summer leaving: a shake out of summer at rest is dense from its first frame to its last, as it was, so the swap out of summer is hidden as it was
+    for (let frame = 0; frame <= 144; frame++) expect(at(frame / perBeat, 9.6 + (frame / perBeat) * beatSeconds, summer, other), `frame ${frame} of the shake out of summer`).toBe(0)
+    // a shake that starts while the look of the landing stands carries it in with no step and eases it out over its first beat; no other season reads anything of it at any moment
+    for (const since of [0, 0.5, 2, LANDING_LOOK.settled[0], 6, 7]) {
+      expect(at(0, since, summer, other)).toBe(at(null, since, summer, summer))
+      expect(at(0, since, summer, summer)).toBe(at(null, since, summer, summer))
+    }
+    let carried = 1
+    for (let frame = 0; frame <= 36; frame++) {
+      const v = at(frame / perBeat, 1 + (frame / perBeat) * beatSeconds, summer, other)
+      expect(v).toBeLessThanOrEqual(carried)
+      carried = v
+    }
+    expect(carried).toBe(0)
+    for (const beat of [null, 0, 1, 2, 3, 3.5, 3.9, 4]) for (const since of [0, 0.5, 3, 12, Infinity]) expect(at(beat, since, other, other)).toBe(0)
+    // the numbers at the landing are those of the look that was proved see through at the landing (trial C), and each is the thin side of the storm at its full
+    expect(STORM_LANDING).toEqual({
+      line: { stormMist: 0.02, stormPullShare: 0.3, stormScene: 1, stormKeep: 0.6, stormLockShare: 0.55, stormLockRows: 6, stormLockPx: [0.7, 1.8], stormLockSeen: [0.06, 0.25], stormLockHaze: 0.02, stormWhite: 0.5 },
+      hair: { stormScene: 0.92, stormCrown: 0.7, stormSize: 0.7 },
+    })
+    const line = CARD.line
+    const hair = CARD.hair
+    const thin = STORM_LANDING
+    expect(thin.line.stormMist).toBeLessThan(line.stormMist)
+    expect(thin.line.stormPullShare).toBeLessThan(line.stormPullShare)
+    expect(thin.line.stormScene).toBeGreaterThan(line.stormScene)
+    expect(thin.line.stormLockShare).toBeLessThan(line.stormLockShare)
+    expect(thin.line.stormLockRows).toBeLessThan(line.stormLockRows)
+    expect(thin.line.stormLockPx[1]).toBeLessThan(line.stormLockPx[1])
+    expect(thin.line.stormLockSeen[1]).toBeLessThan(line.stormLockSeen[1])
+    expect(thin.line.stormLockHaze).toBeLessThan(line.stormLockHaze)
+    expect(thin.hair.stormScene).toBeGreaterThan(hair.stormScene)
+    expect(thin.hair.stormCrown).toBeGreaterThan(hair.stormCrown)
+    expect(thin.hair.stormSize).toBeLessThan(hair.stormSize)
+    // the draw reads every one of them in a line from the storm at its full (the course at 0) to the look of the landing (at 1), so it is the storm at its full to the last bit until the take over's end
+    const num = (v: number): string => (Number.isInteger(v) ? v.toFixed(1) : String(v))
+    const eased = (full: number, landed: number): string => `mix(${num(full)}, ${num(landed)}, uStormLanding)`
+    for (const text of [eased(line.stormScene, thin.line.stormScene), eased(hair.stormScene, thin.hair.stormScene), eased(hair.stormCrown, thin.hair.stormCrown), eased(hair.stormSize, thin.hair.stormSize)]) expect(CARD_VERT).toContain(text)
+    // a lock's width is taken whole at both ends and goes in a line from the one to the other: the line of the storm at its full stands as it stood
+    expect(CARD_VERT).toContain(`float lockC = min(mix(${num(line.stormLockPx[0])}, ${num(line.stormLockPx[1])}, pow(fract(h2.x * 911.0), ${num(line.stormLockSkew)})) * uPoint.w * deepC, ${num(line.stormLockSlim)} * hlC);`)
+    expect(CARD_VERT).toContain(`lockC = mix(lockC, min(mix(${num(thin.line.stormLockPx[0])}, ${num(thin.line.stormLockPx[1])}, pow(fract(h2.x * 911.0), ${num(line.stormLockSkew)})) * uPoint.w * deepC, ${num(line.stormLockSlim)} * hlC), uStormLanding);`)
+    for (const text of [eased(line.stormLockRows, thin.line.stormLockRows), eased(line.stormLockHaze, thin.line.stormLockHaze), eased(line.stormWhite, thin.line.stormWhite)]) expect(CARD_FRAG_PARS).toContain(text)
+    // how much a hair of a lock is seen is taken whole at both ends in the same way
+    expect(CARD_FRAG_PARS).toContain(`float seenJ = mix(mix(${num(line.stormLockSeen[0])}, ${num(line.stormLockSeen[1])}, fract(hj * 71.0) * fract(hj * 71.0)), mix(${num(thin.line.stormLockSeen[0])}, ${num(thin.line.stormLockSeen[1])}, fract(hj * 71.0) * fract(hj * 71.0)), uStormLanding) * mix(1.0, ${num(line.stormLockSoftSeen)}, softJ) * min(rowsL - ri, 1.0);`)
+    expect(CARD_VERT).toContain(`mix(step(fract(own * 577.0), ${num(line.stormPullShare)}), step(fract(own * 577.0), ${num(thin.line.stormPullShare)}), uStormLanding)`)
+    // nothing comes or leaves between two frames. A stroke the look of the landing has and the full storm has not comes in by its own share
+    expect(CARD_VERT).toContain(`keepC *= mix(step(fract(own * 613.0), ${num(line.stormKeep)}), step(fract(own * 613.0), ${num(thin.line.stormKeep)}), uStormLanding);`)
+    // a sheet the look of the landing does not have is out by half of the way, is a stroke from there, and comes in as one over the other half: its kind turns where nothing of it is seen
+    expect(CARD_VERT).toContain(`fract(own * 523.0) < (uStormLanding < 0.5 ? ${num(line.stormMist)} : ${num(thin.line.stormMist)}) ? 1.0 : 0.0;`)
+    expect(CARD_VERT).toContain(`fract(own * 523.0) >= ${num(thin.line.stormMist)} && fract(own * 523.0) < ${num(line.stormMist)} ? (uStormLanding < 0.5 ? (1.0 - 2.0 * uStormLanding) * (1.0 - 2.0 * uStormLanding) : smoothstep(0.5, 1.0, uStormLanding)) : 1.0;`)
+    expect(CARD_VERT).toContain('keepC *= sheetSeenC;')
+    // a lock the look of the landing does not have stays a lock to the landing and goes over to its one fine stroke by its own share over the whole way; the last rows of a lock go by their own share
+    expect(CARD_VERT).toContain(`fract(h2.x * 733.0) < (uStormLanding < 1.0 ? ${num(line.stormLockShare)} : ${num(thin.line.stormLockShare)})) {`)
+    expect(CARD_FRAG_PARS).toContain(`if (fract(vL3.x * 733.0) >= ${num(thin.line.stormLockShare)}) lit = mix(lit, plainL, uStormLanding);`)
+    expect(CARD_FRAG_PARS).toContain('if (ri < 0.0 || ri >= rowsL) continue;')
+    expect(CARD_FRAG_PARS).toContain('* min(rowsL - ri, 1.0);')
   })
 
   it("the held storm's bank lies low and thin and is the floor the take over's way stands on", () => {

@@ -13,7 +13,7 @@ const frames = (n: number): number => n / WINDOW_FRAMES
 
 const SHUTTER = config.film.shutterDegrees / 360
 /** How far the change number goes while the film's shutter is open. */
-const SHUTTER_CHANGE = frames(SHUTTER)
+export const SHUTTER_CHANGE = frames(SHUTTER)
 
 /**
  * What is outside the glass and stands (the base, the slab, the lights of the backdrop, the light of the room) changes in one

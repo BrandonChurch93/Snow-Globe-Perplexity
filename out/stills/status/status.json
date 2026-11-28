@@ -1,48 +1,47 @@
 {
-  "number": 233,
-  "time": "2026-11-27 23:09 UTC",
+  "number": 238,
+  "time": "2026-11-28 01:08 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 233 · 2026-11-27 23:09 UTC · Phase 6",
-    "Phases 1 to 5 complete. Phase 6 in progress. No decision is needed from Brandon now.",
-    "Brandon's word on the final render is taken (decision 224 holds his words). The release films are drawn at 3840 x 2160 at 60 frames a second on his own Windows computer, on its graphics card. No final render is started in the cloud. One file is being built in the repo that a coding agent on his machine follows alone, start to finish: what to install, a check that reads and prints the real processor and video card and refuses software drawing, a short test at 4K 60 that compares its frames with reference frames drawn here and then stops with a report, the full render that carries on by the same line after any stop, the check of the finished files, and their copy to the Desktop under the four names. A builder started on it at 23:06 UTC (4:06 PM MT) by decision 234. It is proven on GitHub's Windows and macOS test machines before he runs it. Measured by me today: such a test run works for this repo, and the Windows test machine has no graphics card, so Windows is proven there with software drawing and once through Microsoft's software Direct3D, which walks the shader path his NVIDIA card uses. The real card stays unknown until his own short test. The full render cannot start by accident: the tool refuses it until a mark in the repo says the film may be rendered, and I set that mark only on his word.",
-    "Round two closed at 22:50 UTC (3:50 PM MT). Eleven parts are merged for one measuring run of everything together, chain 39, running on a helper since 22:50 UTC: spring's base, summer's air, sand, stone, glass, tree and miniature, fall's scene and base, the change of season's one item, and the controls. Each report was read and its pictures looked at by me before its merge. The numbers are the builders' own until this run measures them together. The run must hold the floors I set, winter unchanged and no season's number against its approved picture under its floor, or the part that breaks one comes out again. Three of its pictures are attached; all three are below the bar.",
-    "Three pieces are not in that run and go into a second run if they are whole and proven. The mend of the petals' rib at film frames 1388 and 1389: drawn at 4K by its builder, the rib is gone (stated), report about 23:30 UTC (4:30 PM MT). Summer's see through swirl at the landing: its builder has the first shape, whole about 00:05 UTC (5:05 PM MT). Fall's air, held by decision 223: its first answer came at 22:59 UTC. Of the rise of 0.201 in things that live for one frame, 0.089 was there before round two's work and 0.112 is round two's (stated); which of its two changes carries the 0.112 comes with the second answer. It is not merged until I have seen its frames side by side at full size.",
-    "The controls' round two is in the run (decision 233). Open item 263 is mended: a capture address works as the plain page on any host but the local ones, and a making that fails keeps its failure readable. Not mended: a stall of 1 to 2 seconds at low quality while a season's particles are written. Its builder has a patch that waits for the run.",
-    "The eleventh publish is not live yet; the live page is still the ninth publish's build. The page's 40 first pictures had to be made again on the mended commit. A helper did that and answered PASS (stated): the check of the pictures against the page's framing passes, and the built page goes live in 9 to 11 seconds at the plain address and at summer at low and at medium quality with no console message. Its sheet is looked at by me and attached. The publish build runs here since 22:58 UTC and a fresh security reviewer, the fourteenth, reads the commit. It goes live when both are through.",
-    "After chain 39: its stills looked at beside the approved pictures, the merge to main, the second run for the three pieces, a publish of round two's head, Preview 07, then the status that gives the live address with stills, says where each season stands and asks whether to move on to the film. No round three without his word.",
-    "Open: summer's see through at the landing (being built), the petals' rib (mend drawn, not merged), fall's air (above), the stall at low quality (patch waits), winter's four items (no builder in round two), a faint saw tooth in the grass left of summer's pond (item 270), the petals' fringe at film frame 680 (not begun), a nudge at film frames 2113 to 2117.",
-    "Sound credits 7,420 of 10,000 (measured from the ledger at 23:08 UTC, 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render and no new preview since Preview 06.",
-    "phase 6: 44.32 h used of its 12.00 h box",
-    "allowance (after the review): 44.32 h used of 12.00 h allowed",
+    "Status 238 · 2026-11-28 01:08 UTC · Phase 6",
+    "Phases 1 to 5 complete. Phase 6 in progress. The decision asked of Brandon in Status 236 at about 5:20 PM MT Friday stands unanswered: move on to the film and the masters, or one more round of looks first. The work goes on in either case and only the freeze waits.",
+    "Chain 41 is on main since 01:00 UTC (6:00 PM MT Friday): summer's see through swirl at the landing. Stated by the helper that ran it, every floor of the order is met: only summer's landing guard moved and equals its builder's, the four shakes measure 0.9694, 0.889, 0.9572 and 0.961 as in chain 40, summer at rest measures 0.8981 as in chain 39, the whole test run 1055 passed and 8 skipped. What I see beside the approved shake picture: tree, cottage glow and lamp posts read through the swirl; the streaks are whiter and coarser than the approved's fine warm swirl and the base is darker and browner than the approved's pale cream. Summer's landing stays below the bar. The live page is still round two (the twelfth publish); the first pictures for the thirteenth publish are being drawn on this head now.",
+    "Preview 07 is finished: rough draft 7 of the film with the prompt opening, 74.5 s, 960x540, 30 frames a second, with sound, drawn by four helpers on a tree whose sources equal chain 41's. In it: fall's darker air, the one smear for each flying petal and leaf, summer's see through swirl. Not in it: spring's glass mend and the patch for the stall at low quality. Measured: 2234 frames, every one of the twelve chunks on the same engine, no page message, no blue, dark or repeated frame in the scan. Two sheets looked at by me at preview size show no fault.",
+    "The final render on his own computer, first run on Windows. Measured by the builder of the one file on a hosted Windows Server 2025 machine with 2 cores and no graphics card, not on his computer: the four install lines run as written in PowerShell in a folder with a space in its name; setup passes with the same engine hash as on Linux; the doctor read the processor, memory, card, Chrome and free disk by itself, drew one film frame at 3840x2160, saw that this machine draws in software and refused, as it must. Finding: Chrome on Windows draws through Direct3D 11, and its shader compiler warns on some of the film's shaders, which still compile and draw. One warning matters: the compiler may leave out the tests for a broken number that guard the glass, the frost and the frame's sum, so one bad sample could spoil a pixel or a block of a master on his card, and the same holds for every Windows visitor of the live page. Whether any frame really differs there is unknown. Decision 249: it is mended now on its own branch (tests the Direct3D compiler cannot leave out, with the eight guard pictures held equal on Linux and the Windows doctor as the proof), and the doctor will print what his card's compiler answers, so the short test on his machine says by itself whether the guards work. No final render is started in the cloud.",
+    "Spring's glass after a shake: its builder states the mend stands on its machine (heads and trails at the landing as at rest, the other seven guards equal); it merged the new main and measures again; its whole report comes about 7:05 PM MT, later than its aim.",
+    "Remaining in phase 6 and what he receives. The thirteenth publish at the same address: chains 40 and 41 live (fall's darker air, the petals' smear, summer's swirl), after the first pictures and the security review. Chain 42: spring's glass, the patch for the stall at low quality if it comes whole, summer's fireflies and the seeds' dots, the petals' weave, the frost line; then a fourteenth publish. The render instructions: one file in the repo and one line to give Claude Code; its builder's own guess for the last report is about 2:00 AM MT Saturday. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order (card loop, judged stills, record round, preview films, proof of the local render, cue sheet, README, last publish, gauntlet) and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last, a fresh reviewer's score against the showcase standard.",
+    "Open, below the bar: summer's landing streaks and base as said above; summer's pond at rest, flat pale plates where the approved has dark water (item 279); fall's storm paler than approved; spring's glass bare after a shake on the live page (mend being measured); spring's fence and trails; the fireflies' flat bars at 4K (item 276); the seeds' lumps of dots at the stills' close camera (item 277); the weave in the petals' smears at film frames 1388 and 1389 (item 278); the frost line at film frame 668 (item 275); the stall at low quality on a software renderer; winter's four small items; fall's near fence and the pumpkin's stepped face (item 272); the petals' fringe at film frame 680; the poster tool that stops on one failed request (item 273).",
+    "Sound credits 7,420 of 10,000 (measured from the ledger at 01:07 UTC: 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render; one new preview, Preview 07.",
+    "phase 6: 46.31 h used of its 12.00 h box",
+    "allowance (after the review): 46.31 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-233-1.jpg",
-      "caption": "The build for the eleventh publish read on a helper machine, the first picture, the live page, summer at low and at medium quality, not live yet",
+      "file": "out/stills/status/status-238-1.jpg",
+      "caption": "Rough draft 7, twenty four frames across the whole film",
+      "w": 1200,
+      "h": 453
+    },
+    {
+      "file": "out/stills/status/status-238-2.jpg",
+      "caption": "Rough draft 7, summer's landing in sixteen frames, the see through swirl",
+      "w": 1200,
+      "h": 678
+    },
+    {
+      "file": "out/stills/status/status-238-3.jpg",
+      "caption": "Summer at the landing on chain 41, approved picture left and build right, on main now, below the bar",
+      "w": 1200,
+      "h": 533
+    },
+    {
+      "file": "out/stills/status/status-238-4.jpg",
+      "caption": "Still: spring rest hero, hd, draft",
       "w": 1200,
       "h": 675
-    },
-    {
-      "file": "out/stills/status/status-233-2.jpg",
-      "caption": "Fall's base, approved picture above, the twelfth step in the middle, round two below, in chain 39, below the bar",
-      "w": 800,
-      "h": 938
-    },
-    {
-      "file": "out/stills/status/status-233-3.jpg",
-      "caption": "Summer's miniature, approved picture above, round two at rest in the middle and just after the landing below, in chain 39, below the bar",
-      "w": 755,
-      "h": 1200
-    },
-    {
-      "file": "out/stills/status/status-233-4.jpg",
-      "caption": "Summer's base after the landing with round two's stone, the low camera above and both cameras below, in chain 39, below the bar",
-      "w": 1200,
-      "h": 1016
     }
   ]
 }

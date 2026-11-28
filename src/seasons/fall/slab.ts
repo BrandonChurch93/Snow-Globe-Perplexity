@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { lightUniforms } from '../../core/chunks/light'
-import { GUST, STAGE_GUST_GLSL, stageShader } from '../../core/materials'
+import { GUST, STAGE_GUST_FRAG_GLSL, STAGE_GUST_GLSL, gustStreaks, gustTwin, stageShader } from '../../core/materials'
 import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
@@ -159,7 +159,11 @@ varying vec4 vLeafOne;
 ${ROOM_GLSL}
 ${SLAB_LIGHT_GLSL}
 ${CANDLE_GLSL}
+${STAGE_GUST_FRAG_GLSL}
 void main() {
+#ifdef STAGE_STREAK
+  if (stageGustElse()) discard;
+#endif
   float c = stageChange();
   if (stageGone(c)) discard;
   vec4 leaf = texture2D(uLeafMap, vLeafUv);
@@ -244,6 +248,7 @@ void main() {
 `
 
 let surface: THREE.Object3D | null = null
+let inAir: ((on: boolean) => void) | null = null
 
 export async function prepare(): Promise<void> {
   await prepareModel(MODEL)
@@ -288,7 +293,9 @@ function makeSurface(): THREE.Group {
   sheet.position.y = 0.04
   sheet.renderOrder = 2
   sheet.frustumCulled = false
-  return new THREE.Group().add(leaves, sheet, cobweb())
+  const group = new THREE.Group().add(leaves, sheet, cobweb())
+  inAir = gustTwin(leaves)
+  return group
 }
 
 export function dressing(): THREE.Object3D {
@@ -301,4 +308,7 @@ export function setSkitter(seconds: number): void {
   leafUniforms.uLeafTime.value.x = seconds
 }
 
-export function update(_moment: KitMoment): void {}
+export function update(moment: KitMoment): void {
+  const f = moment.frame
+  inAir?.(f.from !== f.to && (f.from.season === 'fall' || f.to.season === 'fall') && gustStreaks(f.sample, f.to.season === 'fall'))
+}
