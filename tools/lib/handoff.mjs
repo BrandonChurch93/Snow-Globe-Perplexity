@@ -495,6 +495,13 @@ export const PLAIN_WORDS = [
   ['h264, High, yuv420p, kbps', 'the kind of film file: the picture encoding and its profile, the colour layout, and how many thousand bits a second the sound or the picture takes'],
   ['LOOK', 'a thing for Brandon or the remote team to look at. It is no failure'],
   ['noted', 'a number that is written down and fails nothing'],
+  ['WebGL, largest texture', 'WebGL is the part of Chrome that draws with the graphics card. That line says how large a picture this card can hold and draw at once. The doctor checks it; nothing in it is for Brandon to do'],
+  ['checkpoints', 'of the simulation: the motion of the film worked out ahead and kept at fixed moments, so that a frame in the middle can be drawn without playing the film from its start'],
+  ['nan, +inf, -inf', 'answers in the long line of the maths probe: no number, and endlessly large or small. They are answers of the card, noted for the remote team, and no errors'],
+  ['sha256', 'a sum of 64 signs over one file. Two files with the same sum are the same file, byte for byte'],
+  ['test film: frames, rate', 'the lines that begin with test film say what the short film is, read back from its file: its size, how many pictures it holds (counted, and as the file itself says), 60 pictures a second (60/1), the kind of picture encoding, and the kind and the length of its sound'],
+  ['read with', 'the system command the tool asked for the lines above it. Named for the remote team'],
+  ['awake', 'how the tool keeps this computer from going to sleep while it draws. It asks the system to stay awake and takes that back when it ends. It changes no power setting'],
 ]
 export function plainWordsLines() {
   const width = Math.max(...PLAIN_WORDS.map(([w]) => w.length))

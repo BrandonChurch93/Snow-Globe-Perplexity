@@ -117,7 +117,7 @@ is a stop: give Brandon its report.
 | --- | --- | --- | --- |
 | `setup` | `node tools/handoff.mjs setup` | once more | it is stopped a second time, or it ends in any other `FAIL:` |
 | `doctor` | `node tools/handoff.mjs doctor` | once more | it is stopped a second time, or its `FAIL:` has no row in 1.4 |
-| `test` | `node tools/handoff.mjs test` | once more, and only when it was stopped | it is stopped a second time. A test that ended in any other `FAIL:` is never run again (1.5) |
+| `test` | `node tools/handoff.mjs test` | once more, and only when it was stopped | it is stopped a second time. A test that ended in any other `FAIL:` is not run again, but for the one case 1.5 names, and then only on Brandon's word |
 | `approve` | `node tools/handoff.mjs approve render <his words>` or `node tools/handoff.mjs approve upload <his words>`, with the words Brandon wrote in the chat (2.2, 2.5). It draws nothing and sends nothing | once for each yes of Brandon's, and once more when it was stopped | it is stopped a second time, or its `FAIL:` has no row in 2.2 or 2.5 |
 | `render` | `node tools/handoff.mjs render`. It carries on from the last finished frames | once more after each stop | it is stopped twice with no more frames done in between (every `RUNNING:` line says how many are done), or a row of 2.2 says stop |
 | `check` | `node tools/handoff.mjs check` | once more | it is stopped a second time, or it ends in any other `FAIL:` |
@@ -265,7 +265,15 @@ Good: `PASS: the packages are installed and the build is made, engine <16 signs>
 The 16 signs are the engine hash: a sum over everything that draws the film. `the stamp's` says it is the same
 hash that `render/STAMP.json` in the clone records, so this clone draws the film the references were made from.
 
-Bad: `FAIL:` with the reason. Stop and report.
+The setup works in the background. While it works it answers `RUNNING:`: run the same line again each time,
+until its last line is `PASS:` or `FAIL:`.
+
+Bad, each with the one thing to do:
+
+| the last line says | do this |
+| --- | --- |
+| `FAIL: "setup" was stopped before it ended` (sleep, a restart, a closed window), or your command was cut off | run the same line once more. If it is stopped a second time, stop and report |
+| any other `FAIL:` with the reason | stop and report |
 
 ### 1.4 The doctor: what this machine is
 
@@ -477,6 +485,15 @@ word for word, with the printed path in the place of the three dots: "The short 
 started. Please bring this folder into the build thread: ... Whether the picture or the floor is at fault is
 ruled on there." Then stop and wait.
 
+One thing Brandon may try himself first, and it is his act and not yours. Settings of the NVIDIA app that are
+forced for all programs change what the card draws, and can bring a drawn frame under its floor. If the first
+line of the report names a frame and a number in dB (a drawn frame is too far from its reference), say to him
+also, word for word: "If the NVIDIA app on this computer has 3D settings that are forced for all programs, such
+as image sharpening, antialiasing or anisotropic filtering, you can set them to application controlled, or back
+to their defaults, and tell me. Then I run the short test once more." When he writes that he has done so, run
+`node tools/handoff.mjs test` once more and judge it as the first one. This is the one case in which a failed
+test is run again, and only on his word. It was tried on no test machine: none has an NVIDIA card.
+
 ### 1.6 Report and STOP
 
 Give Brandon the whole text of the report of the test (its path is the line `THE REPORT`) as one block, with its
@@ -497,6 +514,11 @@ one of the four, the render is not started: bring the sheet and the test film in
 If Brandon says he sees one of the four, do not go on to step 2. Whether the render is started is then ruled on
 in the build thread, and you wait for his word after that.
 
+Tell Brandon also what step 2 does first, so that he does not walk away from it. Say to him, word for word:
+"When you tell me to do step 2, the render does not start at once. I first bring the clone up to date and run the
+checks and the short test once more, which takes about as long as it did just now. Then I stop and ask you
+whether the full render may start. No frame of the full render is drawn before you have written yes to that."
+
 If the report holds a line that begins `MORE THAN 10 HOURS`, say that line to Brandon first, before the block.
 The test has passed all the same. Whether a render that long is started on this machine is for the remote team
 to decide, not for you.
@@ -512,6 +534,29 @@ Run step 2 only when Brandon has said to, and only after step 1 passed on this m
 The render takes hours. The report of the short test says how many. Keep the computer on mains power.
 
 ### 2.1 Bring the clone up to date, then check again
+
+First find the clone. You may have been started in the folder that holds it, and not inside it:
+
+```
+node tools/handoff.mjs status
+```
+
+- It ends with `PASS: this is the clone of the film, at ...`: you are inside the clone. Go on with the four lines
+  below. One thing first: if its line `at work` names a word and does not say `nothing`, work is going on here
+  already. Then do not pull, and do what "If you are started in the middle" says.
+- node answers `Cannot find module` with a path that ends in `tools\handoff.mjs` or `tools/handoff.mjs`: you are
+  not inside the clone. Run the line below once, then the status line again, and judge its answer by these rows.
+
+```
+cd Snow-Globe-Perplexity
+```
+
+- The `cd` line fails because there is no such folder: the clone of step 1 is not in the folder you were started
+  in. Stop and tell Brandon so. Do not clone here: step 2 is run in the clone that step 1 passed in.
+- The status line answers `Cannot find module` inside that folder too: the folder is no whole clone. Stop and
+  report. Delete nothing.
+
+Then the four lines, inside the clone:
 
 ```
 git pull --ff-only
@@ -555,6 +600,8 @@ May the full render start now?"
 
 Only when he has written in the chat that it may, copy what he wrote into the line below, in the place of
 `<his words>`. Copy his own words and change none. Leave out every sign that is no letter, no digit and no space.
+The words go on one line, with no quotes around them and one space between them. If he wrote them on two lines,
+join the second line to the first with a space.
 
 ```
 node tools/handoff.mjs approve render <his words>
@@ -597,8 +644,9 @@ graphics card meanwhile, and leave the Chrome windows alone.
 
 Before you run it, tell Brandon, word for word: "The render opens Chrome windows for hours. Please do not minimize
 them, do not lock the screen and do not start a game until I say it is done. If Chrome asks to restart for an
-update, choose later. If you can, pause Windows updates for tonight, so that Windows does not restart the
-computer in the middle. If I stop answering, nothing is lost: start a new agent in this folder and say to it:
+update, choose later. Do not switch off or unplug a monitor while it renders. Do not close and reopen your own
+Chrome windows while it renders. If you can, pause Windows updates for tonight, so that Windows does not restart
+the computer in the middle. If I stop answering, nothing is lost: start a new agent in this folder and say to it:
 Read the file RENDER-ON-YOUR-PC.md in this folder. Do what its part If you are started in the middle says, and
 nothing else."
 
@@ -698,7 +746,10 @@ Bad, each with the one thing to do:
 | a file on the Desktop `could not be written, because another program holds it open` | tell Brandon, word for word: "A film from an earlier run is open in a player on your Desktop. Please close the player and tell me." When he has, run the same line again, once |
 | `the drive of the Desktop ... has ... free, and the four files and their report need ...` | stop and report. Nothing was copied. When Brandon says he has made room on that drive, run the same line again |
 | `left the Desktop folder alone at ... It contains other or changed files: ...` | stop and give Brandon the full folder path and the files the tool named. Do not delete, rename, or replace them |
+| `"deliver" was stopped before it ended`, or your command was cut off | run the same line once more. If it is stopped a second time, stop and report |
 | anything else | stop and report |
+
+This line does its work inside itself and does not answer `RUNNING:`.
 
 The tool writes into the folder `Snow Globe Seasons` only when every file in it is one it delivered there
 itself, known by its sha256. A file of the same name that is not the checked copy is never replaced.
@@ -716,8 +767,9 @@ still name the computer, card, driver, browser and folders outside your home. Yo
 in the records text, and the local approval records are left out." If he says no, go on with 2.6.
 
 Only when he has written yes in the chat, copy what he wrote into the line below, in the place of `<his words>`.
-Copy his own words and change none. Leave out every sign that is no letter, no digit and no space. You never
-write these words for him.
+Copy his own words and change none. Leave out every sign that is no letter, no digit and no space. The words go
+on one line, with no quotes around them and one space between them. If he wrote them on two lines, join the
+second line to the first with a space. You never write these words for him.
 
 ```
 node tools/handoff.mjs approve upload <his words>
@@ -775,6 +827,13 @@ line" is the one that gave the answer. The approve line begins these sentences w
 winget install --id GitHub.cli -e --source winget --accept-package-agreements --accept-source-agreements
 ```
 
+This winget line is judged as those of 1.1 are. It is good when its last line is `Successfully installed`, or
+`No newer package versions are available from the configured sources.` (gh was there already; winget ends with an
+exit code that is not 0 then, and that is no failure). After a good line run the same line of 2.5 again, in the
+same terminal: the tool looks in the places winget installs to, and its answer decides. If it says again that gh
+is not on this machine, do not install a second time: stop and report. A winget line that ends in anything else
+is also a stop and report.
+
 What was tried: sending, carrying on after a cut connection and reading back were run with stand-in files of a
 few bytes, on Linux and on a hosted Windows machine. The refusal for a missing sign in was run on the hosted
 Windows and macOS machines, after a small render there. The refusal for a repo that is not private was run on
@@ -805,7 +864,10 @@ Bad, each with the one thing to do:
 | --- | --- |
 | a file `does not match the last delivery by SHA-256, so the work files stay. Run the delivery again`, or `the last delivery does not name all the checked files` | run the delivery line once more (`node tools/handoff.mjs deliver`), then the clean line. If the tool leaves the folder alone or the delivery still fails, stop and give Brandon the report. Do not remove or replace files yourself |
 | `nothing is deleted before the delivery has passed` | run the line of 2.4, then the clean line |
+| `"clean" was stopped before it ended`, or your command was cut off | run the same line once more. If it is stopped a second time, stop and report |
 | any other `FAIL:` | stop and report. Delete nothing by hand |
+
+This line does its work inside itself and does not answer `RUNNING:`.
 
 ### 2.7 Report
 
@@ -904,9 +966,12 @@ node tools/handoff.mjs doctor
 node tools/handoff.mjs test
 ```
 
-STOP here and report as in 1.6. Then, only on Brandon's word, step 2 as in 2.1 to 2.7:
+STOP here and report as in 1.6. Then, only on Brandon's word, step 2 as in 2.1 to 2.7. It begins, as 2.1 does,
+with the status line that finds the clone. If node answers `Cannot find module` there, you are not inside the
+clone: run `cd Snow-Globe-Perplexity` once and the status line again, and only then the pull.
 
 ```
+node tools/handoff.mjs status
 git pull --ff-only
 node tools/handoff.mjs setup
 node tools/handoff.mjs doctor
@@ -920,8 +985,8 @@ node tools/handoff.mjs upload
 node tools/handoff.mjs clean
 ```
 
-Each approve line is run only with the words Brandon wrote in the chat, as in 2.2 and in 2.5. You never write
-them for him. The two lines of the upload are run only after Brandon has said yes to it, as in 2.5. If he says
-no, leave both out.
+Each approve line is run only with the words Brandon wrote in the chat, as in 2.2 and in 2.5: on one line, with
+no quotes around them. You never write them for him. The two lines of the upload are run only after Brandon has
+said yes to it, as in 2.5. If he says no, leave both out.
 
 Keep the MacBook on its charger and its lid open for the whole render.

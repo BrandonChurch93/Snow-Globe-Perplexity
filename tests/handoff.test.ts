@@ -2669,3 +2669,297 @@ describe('order 312, the join: the two parts on one head, and a run that nobody 
     expect(text).toContain('A green run there means only that the machines ran. The verdicts named here are read from the table of the run or from the reports of its jobs, never from its colour.')
   })
 })
+
+describe("order 326: the clone is found before the pull, and Brandon's words are taken with or without quotes", () => {
+  const md = fs.readFileSync(rel('RENDER-ON-YOUR-PC.md'), 'utf8')
+  const text = md.replace(/\s+/g, ' ')
+  const help = (f: string) => rel('.github', 'handoff-proof', f)
+  const src = (...p: string[]) => fs.readFileSync(rel(...p), 'utf8').replace(/\r\n/g, '\n')
+  const fences = (part: string) => [...part.matchAll(/```[a-z]*\n([\s\S]*?)```/g)].map((m) => m[1].trim().split('\n').map((l) => l.trim()))
+  const tool = rel('tools', 'handoff.mjs')
+  const PROOF_WORDS = 'Approval for hosted proof only'
+  const temporary = (name: string) => fs.mkdtempSync(path.join(os.tmpdir(), name))
+  const rowsOf = (out: string) => fs.readFileSync(path.join(out, 'results.tsv'), 'utf8').trim().split('\n').map((l) => l.split('\t'))
+
+  // MUST 1, the file
+  it('begins step 2.1 with the line that finds the clone, on Windows and on macOS, before any pull', () => {
+    const win = md.slice(md.indexOf('### 2.1 Bring the clone up to date'), md.indexOf('### 2.2 '))
+    const blocks = fences(win)
+    expect(blocks[0]).toEqual(['node tools/handoff.mjs status'])
+    expect(blocks[1]).toEqual(['cd Snow-Globe-Perplexity'])
+    expect(blocks[2]).toEqual(['git pull --ff-only', 'node tools/handoff.mjs setup', 'node tools/handoff.mjs doctor', 'node tools/handoff.mjs test'])
+    const said = win.replace(/\s+/g, ' ')
+    expect(said).toContain('It ends with `PASS: this is the clone of the film, at ...`: you are inside the clone. Go on with the four lines below.')
+    expect(said).toContain('node answers `Cannot find module` with a path that ends in `tools\\handoff.mjs` or `tools/handoff.mjs`: you are not inside the clone. Run the line below once, then the status line again')
+    expect(said).toContain('The `cd` line fails because there is no such folder: the clone of step 1 is not in the folder you were started in. Stop and tell Brandon so. Do not clone here')
+    expect(said).toContain('The status line answers `Cannot find module` inside that folder too: the folder is no whole clone. Stop and report. Delete nothing.')
+    expect(said).toContain('if its line `at work` names a word and does not say `nothing`, work is going on here already. Then do not pull')
+    // the line the tool prints is the line the file names
+    expect(L.statusLines({ clone: 'c', engineHere: 'e', engineBuilt: 'e', engineStamp: 'e', released: false, plan: { stage: 's', next: '', why: 'w' } })).toContain('at work     nothing')
+    const mac = md.slice(md.indexOf('## macOS: the fallback'))
+    const step2 = fences(mac).find((b) => b.includes('git pull --ff-only'))!
+    expect(step2.slice(0, 2)).toEqual(['node tools/handoff.mjs status', 'git pull --ff-only'])
+    expect(mac.replace(/\s+/g, ' ')).toContain('It begins, as 2.1 does, with the status line that finds the clone. If node answers `Cannot find module` there, you are not inside the clone: run `cd Snow-Globe-Perplexity` once and the status line again, and only then the pull.')
+    // every pull of the file comes after a status line: nowhere is it the first line an agent is given for step 2
+    const all = fences(md)
+    for (const [i, b] of all.entries()) {
+      if (!b.includes('git pull --ff-only')) continue
+      const before = [...all.slice(0, i).flat(), ...b.slice(0, b.indexOf('git pull --ff-only'))].slice(-2)
+      expect(before, b.join(' | ')).toContain('node tools/handoff.mjs status')
+    }
+  })
+
+  // MUST 1, the proof: the small jobs begin step 2 in the outer folder
+  it('begins step 2 of the proof in the outer folder in both flows, and the verdict wants those three rows', () => {
+    const sh = src('.github', 'handoff-proof', 'flow.sh')
+    const ps = src('.github', 'handoff-proof', 'flow.ps1')
+    const inOrder = (flow: string, marks: string[]) => {
+      let at = -1
+      for (const m of marks) {
+        const next = flow.indexOf(m, at + 1)
+        expect(next, m).toBeGreaterThan(at)
+        at = next
+      }
+    }
+    inOrder(sh, ['line test 0 test\n', 'cd "$ROOT" || exit 1\n', "ONCE=1 line status-step2-outside 1 status 'Cannot find module'\n  [ \"$LAST_OK\" = yes ] || exit 1\n", 'line cd-step2 0 cd\n  [ "$LAST_OK" = yes ] || exit 1\n',
+      "ONCE=1 line status-step2 0 status '^PASS: this is the clone of the film'\n  [ \"$LAST_OK\" = yes ] || exit 1\n", "line pull 0 pull 'Already up to date'\n"])
+    inOrder(ps, ["Line 'test' '0' 'test'\n", 'Set-Location -LiteralPath $Root\n', "Line 'status-step2-outside' '1' 'status' 'Cannot find module' -Once\n  if (-not $script:LastOk) { exit 1 }\n", "Line 'cd-step2' '0' 'cd'\n  if (-not $script:LastOk) { exit 1 }\n",
+      "Line 'status-step2' '0' 'status' '(?m)^PASS: this is the clone of the film' -Once\n  if (-not $script:LastOk) { exit 1 }\n", "Line 'pull' '0' 'pull' 'Already up to date'\n"])
+    const out = temporary('handoff 326 verdict ')
+    try {
+      const r = spawnSync(process.execPath, [help('verdict.mjs'), out, 'job-x', ''], { encoding: 'utf8', env: { ...process.env, PROOF_MODE: 'small', GITHUB_STEP_SUMMARY: '' } })
+      for (const name of ['status-step2-outside', 'cd-step2', 'status-step2']) expect(r.stdout, name).toContain(`  - ${name}: never ran (the job stopped before it)`)
+      const uhd = spawnSync(process.execPath, [help('verdict.mjs'), out, 'job-x', ''], { encoding: 'utf8', env: { ...process.env, PROOF_MODE: 'uhd', GITHUB_STEP_SUMMARY: '' } })
+      expect(uhd.stdout).not.toContain('status-step2')
+    } finally {
+      fs.rmSync(out, { recursive: true, force: true })
+    }
+  })
+
+  it.skipIf(process.platform === 'win32')('runs those rows through the Bash runner from an outer folder: no module there, the cd line, then the clone is found', () => {
+    const root = temporary('handoff 326 outer ')
+    try {
+      const clone = path.join(root, 'Snow-Globe-Perplexity')
+      const out = path.join(root, 'proof-out')
+      fs.mkdirSync(path.join(clone, 'tools'), { recursive: true })
+      fs.mkdirSync(out)
+      fs.writeFileSync(path.join(clone, 'tools', 'handoff.mjs'), "console.log('PASS: this is the clone of the film, at ' + process.cwd())\n")
+      const guide = path.join(clone, 'RENDER-ON-YOUR-PC.md')
+      fs.writeFileSync(guide, ['```', 'node tools/handoff.mjs status', '```', '', '```', 'cd Snow-Globe-Perplexity', '```', '', '```', 'git pull --ff-only', '```', ''].join('\n'))
+      fs.writeFileSync(path.join(out, 'clone-path.txt'), clone)
+      const script = ['HELP="$1"', '. "$HELP/proof.sh"', 'cd "$ROOT" || exit 9', "ONCE=1 line status-step2-outside 1 status 'Cannot find module'", '[ "$LAST_OK" = yes ] || exit 1', 'line cd-step2 0 cd', '[ "$LAST_OK" = yes ] || exit 1',
+        "ONCE=1 line status-step2 0 status '^PASS: this is the clone of the film'", '[ "$LAST_OK" = yes ] || exit 1', 'pwd -P'].join('\n')
+      const ran = spawnSync('bash', ['-c', script, 'proof', rel('.github', 'handoff-proof')], { cwd: clone, encoding: 'utf8', env: { ...process.env, ROOT: root, PROOF_GUIDE: guide, PROOF_GUIDE_SOURCE: 'clone', PROOF_OUT: out, PROOF_BRANCH: '', HANDOFF_TEST: '' } })
+      expect(ran.status, ran.stdout + ran.stderr).toBe(0)
+      expect(ran.stdout.trim().split('\n').at(-1)).toBe(fs.realpathSync(clone))
+      const rows = rowsOf(out)
+      expect(rows.map((r) => [r[0], r[1], r[2], r[4]])).toEqual([
+        ['status-step2-outside', 'node tools/handoff.mjs status', '1', 'yes'],
+        ['cd-step2', 'cd Snow-Globe-Perplexity', '0', 'yes'],
+        ['status-step2', 'node tools/handoff.mjs status', '0', 'yes'],
+      ])
+      expect(fs.readFileSync(path.join(out, 'status-step2-outside.out.txt'), 'utf8')).toContain('Cannot find module')
+      // a pull given there, as the file had it before, is what stopped the agent: exit 128 and no row for it
+      const pull = spawnSync('git', ['pull', '--ff-only'], { cwd: root, encoding: 'utf8', env: { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(root) } })
+      expect(pull.status).toBe(128)
+      expect(pull.stderr).toContain('not a git repository')
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  // MUST 2, the tool
+  it('takes words that came inside quotes, as one item, like words that came one by one, and writes the same record of them', () => {
+    const one = A.approveArgs(['approve', 'render', 'Yes start it'])
+    expect(one).toEqual({ what: 'render', words: 'Yes start it' })
+    expect(one).toEqual(A.approveArgs(['approve', 'render', 'Yes', 'start', 'it']))
+    expect(A.approveArgs(['approve', 'upload', 'yes send them'])).toEqual(A.approveArgs(['approve', 'upload', 'yes', 'send', 'them']))
+    expect(A.approveArgs(['approve', 'render', 'Yes start', 'it now'])).toEqual({ what: 'render', words: 'Yes start it now' })
+    expect(L.argProblem(['approve', 'render', 'Yes start it'])).toBe('')
+    expect(L.argProblem(['approve', 'upload', 'yes send them'])).toBe('')
+    // the record and the printed block are made of the words that were read, so they are the same for both
+    const words = (argv: string[]) => (A.approveArgs(argv) as { words: string }).words
+    const yes = (said: string) =>
+      A.renderApproval({
+        words: said,
+        time: '2026-11-28T11:00:00.000Z',
+        machine: 'm1',
+        identity: { engineHash: HASH, renderer: 'a card', driver: 'a driver', chrome: '147.0.7727.15' },
+        test: { time: '2026-11-28T10:00:00.000Z', report: { path: 'report-test.txt', sha256: SHA('r') }, film: { path: 'test film.mp4', sha256: SHA('f') }, sheet: { path: 'sheet.jpg', sha256: SHA('s') } },
+        projection: { seconds: 43200, procs: 2 },
+        disk: { needBytes: 40 * 1024 ** 3, freeBytes: 500 * 1024 ** 3 },
+        longRun: A.longRunLines({ projectionSeconds: 43200 }),
+        look: [],
+      })
+    const quoted = yes(words(['approve', 'render', 'Yes start it']))
+    const plain = yes(words(['approve', 'render', 'Yes', 'start', 'it']))
+    expect(quoted).toEqual(plain)
+    expect(quoted.record.words).toBe('Yes start it')
+    expect(quoted.lines[0]).toBe('WHAT THIS YES COVERS. Brandon\'s words, as they were copied into the line: "Yes start it"')
+  })
+
+  it('joins words with a line break or a tab inside one item to one line, with one space between them', () => {
+    expect(A.approveArgs(['approve', 'render', 'Yes\nstart it'])).toEqual({ what: 'render', words: 'Yes start it' })
+    expect(A.approveArgs(['approve', 'render', 'Yes', 'start\r\nit\n'])).toEqual({ what: 'render', words: 'Yes start it' })
+    expect(A.approveArgs(['approve', 'upload', '  yes \t send   them  '])).toEqual({ what: 'upload', words: 'yes send them' })
+    expect(L.argProblem(['approve', 'render', 'Yes\nstart it'])).toBe('')
+    // white space alone is no word of his
+    expect(L.argProblem(['approve', 'render', ' \n '])).toContain('it was given none. The agent never writes these words for him')
+  })
+
+  it('still refuses a sign that is not allowed, inside quotes too: FAIL, exit code 1, and nothing is written', () => {
+    expect(L.argProblem(['approve', 'render', 'Yes, start it'])).toContain('letters, digits and spaces only, and "Yes," is not')
+    expect(L.argProblem(['approve', 'upload', 'yes; rm -rf x'])).toContain('letters, digits and spaces only, and "yes;" is not')
+    expect(L.argProblem(['approve', 'render', 'yes --force'])).toContain('letters, digits and spaces only, and "--force" is not')
+    expect(L.argProblem(['approve', 'render', 'yes\n$(date)'])).toContain('letters, digits and spaces only, and "$(date)" is not')
+    const H = rel('out', 'work', 'handoff')
+    const state = () => (fs.existsSync(H) ? fs.readdirSync(H).sort().map((n) => { const s = fs.statSync(path.join(H, n)); return `${n} ${s.size} ${s.mtimeMs}` }) : null)
+    const before = state()
+    for (const argv of [['approve', 'render', 'Yes; start it'], ['approve', 'upload', 'yes, send them'], ['approve', 'render', 'Yes', 'start it?']]) {
+      const r = spawnSync(process.execPath, [tool, ...argv], { cwd: rel(), encoding: 'utf8', env: { ...process.env, HANDOFF_TEST: '' } })
+      expect(r.status, argv.join(' ')).toBe(1)
+      const last = r.stdout.trim().split('\n').at(-1)!
+      expect(last).toMatch(new RegExp(`^FAIL: the words after "approve ${argv[1]}" are letters, digits and spaces only, and "[^" ]+" is not`))
+      expect(r.stdout).not.toContain('WHAT THIS YES COVERS')
+    }
+    expect(state()).toEqual(before)
+  })
+
+  // MUST 2, the file
+  it('says in the file how the words go into the line: one line, no quotes, one space, a second line joined to the first', () => {
+    const rule = 'The words go on one line, with no quotes around them and one space between them. If he wrote them on two lines, join the second line to the first with a space.'
+    const render = md.slice(md.indexOf("### 2.2 Brandon's yes"), md.indexOf('### 2.3 ')).replace(/\s+/g, ' ')
+    const upload = md.slice(md.indexOf('### 2.5 '), md.indexOf('### 2.6 ')).replace(/\s+/g, ' ')
+    for (const part of [render, upload]) {
+      expect(part).toContain('Leave out every sign that is no letter, no digit and no space. ' + rule)
+      expect(part.indexOf(rule)).toBeLessThan(part.indexOf('node tools/handoff.mjs approve '))
+    }
+    expect(md.slice(md.indexOf('## macOS: the fallback')).replace(/\s+/g, ' ')).toContain('Each approve line is run only with the words Brandon wrote in the chat, as in 2.2 and in 2.5: on one line, with no quotes around them.')
+    // the line itself is as it was: the place for his words carries no quotes
+    for (const w of ['render', 'upload']) expect(md).toContain(`\nnode tools/handoff.mjs approve ${w} <his words>\n`)
+    expect(md).not.toMatch(/approve (render|upload) ["']/)
+  })
+
+  // MUST 2, the proof
+  it('gives the proof words inside quotes on one row of each flow, and the verdict wants such a row to have passed', async () => {
+    const G = await import('../.github/handoff-proof/guide-lines.mjs')
+    const commands = G.guideCommands(md)
+    for (const w of ['render', 'upload']) {
+      const plain = G.planGuideLine(commands, `approve-${w}`, 'clone')
+      const quoted = G.planGuideLine(commands, `approve-${w}-quoted`, 'clone')
+      expect(plain.actual).toBe(`node tools/handoff.mjs approve ${w} ${PROOF_WORDS}`)
+      expect(quoted.actual).toBe(`node tools/handoff.mjs approve ${w} "${PROOF_WORDS}"`)
+      expect(quoted.original).toBe(plain.original)
+      expect(quoted.change).toContain('inside double quotes, as one item')
+      expect(plain.change).not.toContain('quotes')
+    }
+    expect(() => G.planGuideLine(commands, 'status-quoted', 'clone')).toThrow('unknown guide command selector')
+    expect(() => G.planGuideLine(commands, 'approve-render-quoted', 'clone', { words: 'yes" ; echo' })).toThrow('letters, digits and spaces')
+    const sh = src('.github', 'handoff-proof', 'flow.sh')
+    const ps = src('.github', 'handoff-proof', 'flow.ps1')
+    expect(sh).toContain('approve_render approve-render-after-mid-test approve-render-quoted\n')
+    expect(ps).toContain("Approve-Render 'approve-render-after-mid-test' 'approve-render-quoted'\n")
+    expect(sh).toContain("line approve-upload-refuses 1 approve-upload-quoted 'is not signed in on this machine'\n")
+    expect(ps).toContain("Line 'approve-upload-refuses' '1' 'approve-upload-quoted' 'is not signed in on this machine'\n")
+    // the record of the yes given inside quotes is read back and held against the proof words
+    expect(sh).toContain(`[ "$recorded" = '${PROOF_WORDS}' ] || note 'PROBLEM: the words given inside quotes were not recorded as the same words given one by one'`)
+    expect(ps).toContain(`if ($Recorded -cne '${PROOF_WORDS}') { Note 'PROBLEM: the words given inside quotes were not recorded as the same words given one by one' }`)
+    // the verdict of a small job: a problem while no quoted row passed, none of that kind when one did
+    const clone = temporary('handoff 326 clone ')
+    const out = temporary('handoff 326 out ')
+    try {
+      fs.writeFileSync(path.join(clone, 'RENDER-ON-YOUR-PC.md'), ['```', 'node tools/handoff.mjs approve render <his words>', 'node tools/handoff.mjs approve upload <his words>', '```', ''].join('\n'))
+      fs.writeFileSync(path.join(out, 'clone-path.txt'), clone)
+      const fixture = G.guideCommands(fs.readFileSync(path.join(clone, 'RENDER-ON-YOUR-PC.md'), 'utf8'))
+      const row = (name: string, selector: string, code: string, want: string) => {
+        const plan = G.planGuideLine(fixture, selector, 'clone')
+        fs.appendFileSync(path.join(out, 'results.tsv'), [name, plan.actual, code, want, 'yes', '1', 'made up for this test', JSON.stringify(plan)].join('\t') + '\n')
+      }
+      const verdict = () => spawnSync(process.execPath, [help('verdict.mjs'), out, 'job-x', ''], { encoding: 'utf8', env: { ...process.env, PROOF_MODE: 'small', PROOF_BRANCH: '', GITHUB_STEP_SUMMARY: '' } }).stdout
+      const R = '  - approve render: no line passed with the words inside quotes'
+      const U = '  - approve upload: no line ran as wanted with the words inside quotes'
+      row('approve-render-before-first', 'approve-render', '0', '0')
+      row('approve-upload-before-deliver', 'approve-upload', '1', '1')
+      let said = verdict()
+      expect(said).toContain(R)
+      expect(said).toContain(U)
+      row('approve-render-after-mid-test', 'approve-render-quoted', '0', '0')
+      row('approve-upload-refuses', 'approve-upload-quoted', '1', '1')
+      said = verdict()
+      expect(said).not.toContain(R)
+      expect(said).not.toContain(U)
+      expect(said).toContain(`line   node tools/handoff.mjs approve render "${PROOF_WORDS}"   (changed for this proof: replaced <his words> with proof-only words inside double quotes`)
+      expect(said).not.toContain('does not match the guide or a permitted proof substitution')
+    } finally {
+      fs.rmSync(clone, { recursive: true, force: true })
+      fs.rmSync(out, { recursive: true, force: true })
+    }
+  })
+
+  it.skipIf(process.platform === 'win32')('hands the quoted proof words to the tool as one item through the Bash runner', () => {
+    const clone = temporary('handoff 326 quoted ')
+    const out = temporary('handoff 326 quoted out ')
+    try {
+      fs.mkdirSync(path.join(clone, 'tools'))
+      fs.writeFileSync(path.join(clone, 'tools', 'handoff.mjs'), 'console.log(JSON.stringify(process.argv.slice(2)))\n')
+      const guide = path.join(clone, 'RENDER-ON-YOUR-PC.md')
+      fs.writeFileSync(guide, ['```', 'node tools/handoff.mjs approve render <his words>', '```', ''].join('\n'))
+      const script = 'HELP="$1"; . "$HELP/proof.sh"; line quoted 0 approve-render-quoted; line plain 0 approve-render'
+      const ran = spawnSync('bash', ['-c', script, 'proof', rel('.github', 'handoff-proof')], { cwd: clone, encoding: 'utf8', env: { ...process.env, PROOF_GUIDE: guide, PROOF_GUIDE_SOURCE: 'clone', PROOF_OUT: out, PROOF_BRANCH: '' } })
+      expect(ran.status, ran.stdout + ran.stderr).toBe(0)
+      expect(JSON.parse(fs.readFileSync(path.join(out, 'quoted.out.txt'), 'utf8'))).toEqual(['approve', 'render', PROOF_WORDS])
+      expect(JSON.parse(fs.readFileSync(path.join(out, 'plain.out.txt'), 'utf8'))).toEqual(['approve', 'render', ...PROOF_WORDS.split(' ')])
+      // and the tool reads both as the same words
+      const read = (f: string) => A.approveArgs(JSON.parse(fs.readFileSync(path.join(out, f), 'utf8')))
+      expect(read('quoted.out.txt')).toEqual({ what: 'render', words: PROOF_WORDS })
+      expect(read('quoted.out.txt')).toEqual(read('plain.out.txt'))
+    } finally {
+      fs.rmSync(clone, { recursive: true, force: true })
+      fs.rmSync(out, { recursive: true, force: true })
+    }
+  })
+
+  // SHOULD, the words alone
+  it('tells Brandon at 1.6 what step 2 does first, and says RUNNING and the one retry where they apply', () => {
+    const report = md.slice(md.indexOf('### 1.6 Report and STOP'), md.indexOf('## Step 2')).replace(/\s+/g, ' ')
+    expect(report).toContain('"When you tell me to do step 2, the render does not start at once. I first bring the clone up to date and run the checks and the short test once more, which takes about as long as it did just now. Then I stop and ask you whether the full render may start. No frame of the full render is drawn before you have written yes to that."')
+    const setup = md.slice(md.indexOf('### 1.3 Setup'), md.indexOf('### 1.4 '))
+    expect(setup.replace(/\s+/g, ' ')).toContain('While it works it answers `RUNNING:`: run the same line again each time, until its last line is `PASS:` or `FAIL:`.')
+    expect(setup).toContain('| `FAIL: "setup" was stopped before it ended` (sleep, a restart, a closed window), or your command was cut off | run the same line once more. If it is stopped a second time, stop and report |')
+    const deliver = md.slice(md.indexOf('### 2.4 Deliver'), md.indexOf('### 2.5 '))
+    expect(deliver).toContain('| `"deliver" was stopped before it ended`, or your command was cut off | run the same line once more. If it is stopped a second time, stop and report |')
+    const clean = md.slice(md.indexOf('### 2.6 Clean up'), md.indexOf('### 2.7 '))
+    expect(clean).toContain('| `"clean" was stopped before it ended`, or your command was cut off | run the same line once more. If it is stopped a second time, stop and report |')
+    for (const part of [deliver, clean]) expect(part).toContain('This line does its work inside itself and does not answer `RUNNING:`.')
+    // the rows say what the one table of stops says
+    const stops = md.slice(md.indexOf('### Stop and recovery, one rule'), md.indexOf('## If you are started in the middle'))
+    for (const w of ['setup', 'deliver', 'clean']) expect(stops).toMatch(new RegExp('\\| `' + w + '` \\| `node tools/handoff\\.mjs ' + w + '`[^|]*\\| once more'))
+  })
+
+  it('says how the winget line of gh is judged, and names the three things that can stop a render of hours', () => {
+    const upload = md.slice(md.indexOf('### 2.5 '), md.indexOf('### 2.6 ')).replace(/\s+/g, ' ')
+    expect(upload).toContain('This winget line is judged as those of 1.1 are.')
+    expect(upload).toContain('(gh was there already; winget ends with an exit code that is not 0 then, and that is no failure). After a good line run the same line of 2.5 again, in the same terminal: the tool looks in the places winget installs to, and its answer decides.')
+    expect(upload).toContain('do not install a second time: stop and report')
+    expect(text).toContain('Do not switch off or unplug a monitor while it renders. Do not close and reopen your own Chrome windows while it renders.')
+    const test = md.slice(md.indexOf('### 1.5 The short test'), md.indexOf('### 1.6 ')).replace(/\s+/g, ' ')
+    expect(test).toContain('you can set them to application controlled, or back to their defaults, and tell me. Then I run the short test once more."')
+    expect(test).toContain('This is the one case in which a failed test is run again, and only on his word. It was tried on no test machine: none has an NVIDIA card.')
+    // the rule that a failed test is not run again to see whether it passes stands as it stood
+    expect(test).toContain('Change no floor and no file. Do not run the test again to see whether it passes.')
+    expect(md).toContain('A test that ended in any other `FAIL:` is not run again, but for the one case 1.5 names, and then only on Brandon\'s word |')
+  })
+
+  it("glosses, in the report's own list of words, the lines a reader named as jargon", () => {
+    const words = new Map(L.PLAIN_WORDS.map(([w, m]: string[]) => [w, m]))
+    for (const term of ['WebGL, largest texture', 'checkpoints', 'nan, +inf, -inf', 'sha256', 'test film: frames, rate', 'read with', 'awake']) expect(words.get(term), term).toMatch(/\S{3}/)
+    expect(words.get('sha256')).toContain('the same file, byte for byte')
+    expect(words.get('awake')).toContain('It changes no power setting')
+    // the list keeps its width: no new term is longer than the longest that stood there
+    expect(Math.max(...L.PLAIN_WORDS.map(([w]: string[]) => w.length))).toBe('WebGL renderer, ANGLE (...)'.length)
+    // each gloss names a line the report prints
+    const work = src('tools', 'lib', 'handoff-work.mjs')
+    for (const printed of ['largest texture ${gl.maxTexture}', 'the checkpoints of the simulation are made', 'ctx.say(`read with  ${machine.readWith}`)', 'ctx.say(`awake: ${awake.how}', "'test film: frames'"]) expect(work, printed).toContain(printed)
+    for (const line of L.plainWordsLines()) expect(line).not.toMatch(/[\u2014!]/)
+  })
+})

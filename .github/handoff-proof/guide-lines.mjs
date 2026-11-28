@@ -39,9 +39,13 @@ export function guideCommands(markdown) {
   return commands
 }
 
+/** The two approve selectors may end in this: the proof words are then given inside double quotes, as one item. */
+const QUOTED = /^(approve-(?:render|upload))-quoted$/
+
 export function chooseGuideLine(commands, key, optional = false) {
   // The two guarded render rows keep their readable selector, not a separately executed line.
   if (key === 'node tools/handoff.mjs render') key = 'render'
+  key = key.replace(QUOTED, '$1')
   const handoffWord = key.replace(/^approve-/, 'approve[ \\t]+')
   const match = selectors.get(key) ?? (handoff.has(key) ? new RegExp('^node +tools/handoff\\.mjs[ \\t]+' + handoffWord + '(?=[ \\t]|$)') : null)
   if (!match) throw new Error(`unknown guide command selector: ${key}`)
@@ -68,12 +72,17 @@ export function planGuideLine(commands, selector, source, { branch = '', words =
       change = `replaced branch ${writtenBranch} with ${branch} to prove the branch of this job`
     }
   }
-  if (selector === 'approve-render' || selector === 'approve-upload') {
+  const quoted = QUOTED.test(selector)
+  if (selector === 'approve-render' || selector === 'approve-upload' || quoted) {
     if (!/^[A-Za-z0-9]+(?: +[A-Za-z0-9]+)*$/.test(words)) throw new Error('the proof approval must be words made of letters, digits and spaces')
     const slot = /(<(?:his )?words>|&lt;(?:his )?words&gt;)$/.exec(original)
     if (!slot) throw new Error('the guide approval line has no words placeholder')
-    actual = original.slice(0, slot.index) + words
-    change = `replaced ${slot[0]} with proof-only words to exercise the hosted approval guard`
+    // The file says the words go without quotes. An agent may put them inside quotes all the same, and then they
+    // reach the tool as one item: the quoted rows of the proof give them so, and the tool must take them alike.
+    actual = original.slice(0, slot.index) + (quoted ? `"${words}"` : words)
+    change = quoted
+      ? `replaced ${slot[0]} with proof-only words inside double quotes, as one item, to prove that the tool takes quoted words like unquoted ones`
+      : `replaced ${slot[0]} with proof-only words to exercise the hosted approval guard`
   }
   return { selector, source, original, actual, change, ...(selector === 'clone' ? { branch } : {}) }
 }

@@ -105,13 +105,20 @@ function Read-GuideGuard([string]$Selector) {
 }
 $RenderGuard = Read-GuideGuard 'approve-render'
 $UploadGuard = Read-GuideGuard 'approve-upload'
-function Approve-Render([string]$Name) {
+# Approve-Render NAME [SELECTOR]: the approve line with the proof words. With the selector approve-render-quoted the
+# words are given inside double quotes, as one item, and the record of the yes must hold the same words
+function Approve-Render([string]$Name, [string]$How = 'approve-render') {
   if (-not $RenderGuard) { return }
-  Line $Name '0' 'approve-render' 'the full render is approved on this machine' -AlsoOk 'is new since the test'
+  Line $Name '0' $How 'the full render is approved on this machine' -AlsoOk 'is new since the test'
   if ($script:LastCode -eq 1 -and $script:LastOk) {
-    Line "$Name-retry" '0' 'approve-render' 'the full render is approved on this machine'
+    Line "$Name-retry" '0' $How 'the full render is approved on this machine'
   }
   if (-not $script:LastOk) { exit 1 }
+  if ($How -eq 'approve-render-quoted') {
+    $Recorded = (Get-Content -Raw 'out/work/handoff/approval-render.json' | ConvertFrom-Json).words
+    Note "the yes that was given inside quotes, as one item, is recorded with the words: $Recorded"
+    if ($Recorded -cne 'Approval for hosted proof only') { Note 'PROBLEM: the words given inside quotes were not recorded as the same words given one by one' }
+  }
 }
 
 if ($env:PROOF_MODE -eq 'small') {
@@ -124,7 +131,18 @@ if ($env:PROOF_MODE -eq 'small') {
   Note (node (Join-Path $Help 'failed-test.mjs') . there small)
   Line 'test' '0' 'test'
   Note (node (Join-Path $Help 'failed-test.mjs') . gone)
-  # step 2 begins with these four lines
+  # Step 2 may be begun by a new agent in the outer folder, where the clone lies as a folder. So the proof goes
+  # there and does what 2.1 says first: the status line (node must answer Cannot find module), the cd line, and
+  # the status line again, which must find the clone. Only then the pull.
+  Set-Location -LiteralPath $Root
+  Note "step 2 is begun in the outer folder: $((Get-Location).Path)"
+  Line 'status-step2-outside' '1' 'status' 'Cannot find module' -Once
+  if (-not $script:LastOk) { exit 1 }
+  Line 'cd-step2' '0' 'cd'
+  if (-not $script:LastOk) { exit 1 }
+  Line 'status-step2' '0' 'status' '(?m)^PASS: this is the clone of the film' -Once
+  if (-not $script:LastOk) { exit 1 }
+  # then its four lines
   Line 'pull' '0' 'pull' 'Already up to date'
   if (-not $script:LastOk) { exit 1 }
   Line 'setup-again' '0' 'setup'
@@ -169,7 +187,7 @@ if ($env:PROOF_MODE -eq 'small') {
   Note "finished chunks of film B on disk before the test in the middle of the render: $(@(Get-ChildItem -Path 'out/master/test/film-b' -Filter '*.mp4' -ErrorAction SilentlyContinue).Count)"
   Line 'test-in-mid-render' '0' 'test' 'is kept and not drawn again'
   if (-not $script:LastOk) { exit 1 }
-  Approve-Render 'approve-render-after-mid-test'
+  Approve-Render 'approve-render-after-mid-test' 'approve-render-quoted'
   $Cal2 = (Get-Content -Raw 'out/work/master/calibration.json' | ConvertFrom-Json).sha256
   $Twice = (Get-Content -Raw 'out/work/handoff/test.json' | ConvertFrom-Json).calibration.twice.line
   Note "the kept calibration picture before the test in the middle of the render: $Cal1; after it: $Cal2. The second drawing of that test: $Twice"
@@ -188,7 +206,8 @@ if ($env:PROOF_MODE -eq 'small') {
   Line 'deliver' '0' 'deliver'
   node (Join-Path $Help 'after.mjs') $env:PROOF_OUT
   if ($UploadGuard) {
-    Line 'approve-upload-refuses' '1' 'approve-upload' 'is not signed in on this machine'
+    # the words inside quotes here too: the refusal must be the one about the sign in, not one about the words
+    Line 'approve-upload-refuses' '1' 'approve-upload-quoted' 'is not signed in on this machine'
     if (-not $script:LastOk) { exit 1 }
     Line 'upload-refuses' '1' 'upload' 'the upload is not approved on this machine'
   } else {

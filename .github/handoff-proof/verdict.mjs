@@ -80,13 +80,24 @@ if (['small', 'uhd', 'installs'].includes(mode)) {
   if (job.startsWith('macos-')) expect.add('brew-version')
 }
 if (mode === 'small') {
+  // step 2 is begun in the outer folder: the status line there, the cd line, the status line again (2.1)
+  expect.add('status-step2-outside').add('cd-step2').add('status-step2')
   try {
     if (chooseGuideLine(written.clone, 'approve-render', true)) {
       expect.add('render-refuses-unapproved').add('approve-render-before-first').add('approve-render-after-mid-test')
+      // one yes is given inside quotes, as one item: the tool must take it like words given one by one
+      if (!rows.some((r) => r.evidence?.selector === 'approve-render-quoted' && r.ok && r.code === '0')) {
+        problems.push('approve render: no line passed with the words inside quotes')
+      }
       if (rows.some((r) => r.name === 'test-after-update')) expect.add('approve-render-after-update')
       for (const r of rows) if (r.name.startsWith('test-after-real-update-')) expect.add(r.name.replace(/^test-/, 'approve-render-'))
     }
-    if (chooseGuideLine(written.clone, 'approve-upload', true)) expect.add('approve-upload-before-deliver').add('approve-upload-refuses')
+    if (chooseGuideLine(written.clone, 'approve-upload', true)) {
+      expect.add('approve-upload-before-deliver').add('approve-upload-refuses')
+      if (!rows.some((r) => r.evidence?.selector === 'approve-upload-quoted' && r.ok)) {
+        problems.push('approve upload: no line ran as wanted with the words inside quotes')
+      }
+    }
   } catch (e) {
     problems.push(e.message)
   }

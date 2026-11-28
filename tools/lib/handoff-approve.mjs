@@ -16,13 +16,15 @@ export const approveLine = (what) => `node tools/handoff.mjs approve ${what} <hi
 
 /**
  * What the approve line was given: which yes it is, and Brandon's words. The words are letters, digits and spaces
- * only, so that the line means the same in every terminal and needs no quoting.
+ * only, so that the line means the same in every terminal and needs no quoting. Every item is split on white
+ * space first: words that came inside quotes, as one item, or with a line break between them, are the same words
+ * as those that came one by one, and make the same record.
  * @param {string[]} argv the arguments of the tool, beginning with "approve"
  * @returns {{ problem: string } | { what: string, words: string }}
  */
 export function approveArgs(argv) {
   const what = argv[1]
-  const words = argv.slice(2)
+  const words = argv.slice(2).flatMap((item) => String(item).split(/\s+/)).filter(Boolean)
   const usage = `The two approve lines are: ${approveLine('render')} and ${approveLine('upload')}, with the words Brandon wrote in the chat in the place of <his words>`
   if (!APPROVE_KINDS.includes(what)) return { problem: `approve wants the word render or the word upload after it, and was given "${argv.slice(1).join(' ')}". ${usage}` }
   if (!words.length) return { problem: `the approve line carries the words Brandon wrote in the chat, copied after "approve ${what}", and it was given none. The agent never writes these words for him. ${usage}` }
