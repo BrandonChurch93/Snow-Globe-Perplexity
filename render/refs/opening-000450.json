@@ -1,0 +1,40 @@
+{
+  "what": "opening",
+  "frame": 450,
+  "name": "the opening while the prompt is typed",
+  "engineHash": "22b2ad3ea80cf9c7",
+  "samples": 0,
+  "pack": "665ac47671ead473d999f38848f854408e3a83b92459ecb66413e87120acec77",
+  "renderer": "none: read from the opening pack, never drawn",
+  "browser": "",
+  "half": {
+    "file": "opening-000450-half.webp",
+    "sha256": "a1beaa758db62b25604d26e574cb27e3ac71dbb6eab6dec6a0ab498269a45281",
+    "bytes": 44952,
+    "width": 1920,
+    "height": 1080
+  },
+  "cuts": [
+    {
+      "name": "prompt",
+      "x": 520,
+      "y": 900,
+      "w": 960,
+      "h": 540,
+      "file": "opening-000450-cut-prompt.webp",
+      "sha256": "9cba39bf6f2db7647897fbd0601fe2105b5847c86822cfd1fe441ef76ee3cc0c",
+      "bytes": 14412
+    },
+    {
+      "name": "send",
+      "x": 2400,
+      "y": 900,
+      "w": 960,
+      "h": 540,
+      "file": "opening-000450-cut-send.webp",
+      "sha256": "3d803ff4bf23eaa71342f7ff3d544ba3bcc40f97230100c55a1f192bfe11c85a",
+      "bytes": 15164
+    }
+  ],
+  "glass": []
+}

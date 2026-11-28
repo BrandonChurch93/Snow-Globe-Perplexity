@@ -1,0 +1,155 @@
+# Proves RENDER-ON-YOUR-PC.md on real Windows and macOS machines: the lines of the file, exactly as written, in
+# Windows PowerShell and in Git Bash, in a folder with a space in its name, from a plain git clone.
+# It runs only on a push to agent/p6-handoff and by hand. It never runs on main.
+# Every job ends green whatever happens: a red run sends a mail. The verdict of each job is the last step of its log
+# and the file verdict.txt of its artifact. It uses no secret.
+name: handoff proof
+
+on:
+  push:
+    branches:
+      - agent/p6-handoff
+  workflow_dispatch:
+
+concurrency:
+  group: handoff-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    name: ${{ matrix.id }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # the whole handoff in small, stopped once and carried on, in Windows PowerShell
+          - id: windows-powershell-small
+            os: windows-latest
+            shell: powershell
+            mode: small
+            switches: software,small,tones,fast-watch
+            refusal: 'yes'
+            expect: clone,setup,doctor-refuses-software,doctor,test,render-first-call,render-carries-on,render-again,check,deliver,clean
+          # the same in Git Bash
+          - id: windows-gitbash-small
+            os: windows-latest
+            shell: bash
+            mode: small
+            switches: software,small,tones,fast-watch
+            refusal: 'yes'
+            expect: clone,setup,doctor-refuses-software,doctor,test,render-first-call,render-carries-on,render-again,check,deliver,clean
+          # the same on the newest LTS of Node
+          - id: windows-newest-lts-small
+            os: windows-latest
+            shell: powershell
+            node: lts
+            mode: small
+            switches: software,small,tones,fast-watch
+            refusal: 'yes'
+            expect: clone,setup,doctor-refuses-software,doctor,test,render-first-call,render-carries-on,render-again,check,deliver,clean
+          # the four winget lines of the file, then setup and the doctor with what they installed
+          - id: windows-winget-lines
+            os: windows-latest
+            shell: powershell
+            mode: installs
+            switches: ''
+            refusal: 'yes'
+            expect: winget-git,winget-node,winget-ffmpeg,winget-chrome,clone,setup,doctor-refuses-software
+          # frames at 3840 x 2160 at the masters' tier against the references, whatever Chrome draws with by itself
+          - id: windows-3840
+            os: windows-latest
+            shell: powershell
+            mode: uhd
+            switches: software,refs=film-b:120+film-b:720,stretch=720-721/1
+            refusal: 'yes'
+            expect: clone,setup,doctor-refuses-software,doctor,test,render-refuses-unreleased
+          # the same with Direct3D 11 asked for by name, the shader path of a Windows graphics card
+          - id: windows-3840-direct3d11
+            os: windows-latest
+            shell: powershell
+            mode: uhd
+            switches: software,tones,angle=d3d11,refs=film-b:120+film-b:720,stretch=720-721/1
+            refusal: 'yes'
+            expect: clone,setup,doctor-refuses-software,doctor,test,render-refuses-unreleased
+          # the fallback: macOS, Metal
+          - id: macos-small
+            os: macos-latest
+            shell: bash
+            mode: small
+            switches: small,tones,fast-watch
+            refusal: 'no'
+            expect: clone,setup,doctor,test,render-first-call,render-carries-on,render-again,check,deliver,clean
+          - id: macos-3840
+            os: macos-latest
+            shell: bash
+            mode: uhd
+            switches: tones,refs=film-b:120+film-b:720+loop:0,stretch=720-721/1
+            refusal: 'no'
+            expect: clone,setup,doctor,test,render-refuses-unreleased
+    env:
+      PROOF_BRANCH: ${{ github.ref_name }}
+      PROOF_MODE: ${{ matrix.mode }}
+      PROOF_SWITCHES: ${{ matrix.switches }}
+      PROOF_REFUSAL: ${{ matrix.refusal }}
+      # A push whose message holds [proof small] leaves the 3840 jobs out, [proof 3840] leaves the others out:
+      # the job still starts, does nothing and ends green.
+      PROOF_LEFT_OUT: ${{ (contains(github.event.head_commit.message, '[proof small]') && matrix.mode == 'uhd') || (contains(github.event.head_commit.message, '[proof 3840]') && matrix.mode != 'uhd') }}
+    steps:
+      # The helpers only, beside the clone under test. The film's clone is made by the flow with a plain git clone.
+      - name: left out of this push
+        if: env.PROOF_LEFT_OUT == 'true'
+        continue-on-error: true
+        shell: bash
+        run: echo "VERDICT of ${{ matrix.id }}, left out of this push by its message"
+
+      - name: the helpers of the proof
+        if: env.PROOF_LEFT_OUT != 'true'
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          path: _proof
+          sparse-checkout: .github
+
+      - name: the newest LTS of Node
+        if: env.PROOF_LEFT_OUT != 'true' && matrix.node == 'lts'
+        continue-on-error: true
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: the lines of the file, in Windows PowerShell
+        if: env.PROOF_LEFT_OUT != 'true' && matrix.shell == 'powershell'
+        continue-on-error: true
+        timeout-minutes: 320
+        shell: powershell
+        run: '& "$env:GITHUB_WORKSPACE\_proof\.github\handoff-proof\flow.ps1"'
+
+      - name: the lines of the file, in bash
+        if: env.PROOF_LEFT_OUT != 'true' && matrix.shell == 'bash'
+        continue-on-error: true
+        timeout-minutes: 320
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/flow.sh"
+
+      - name: the verdict
+        if: always() && env.PROOF_LEFT_OUT != 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          node "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/after.mjs" "$RUNNER_TEMP/proof-out" last || true
+          node "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/verdict.mjs" "$RUNNER_TEMP/proof-out" "${{ matrix.id }}" "${{ matrix.expect }}"
+
+      - name: the reports
+        if: always() && env.PROOF_LEFT_OUT != 'true'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.id }}
+          path: ${{ runner.temp }}/proof-out
+          if-no-files-found: warn
+          retention-days: 14

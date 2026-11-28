@@ -1,0 +1,584 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { spawnSync } from 'node:child_process'
+import { describe, expect, it } from 'vitest'
+import * as L from '../tools/lib/handoff.mjs'
+import { planProblems } from '../tools/lib/handoff-stamp.mjs'
+import { rel, readJson } from '../tools/lib/paths.mjs'
+
+// The render handoff: the parts that need no browser. What is drawn is proven on real machines by
+// .github/workflows/handoff-proof.yml; here are the rules those runs follow.
+
+type Stamp = Record<string, unknown> & { releasedForFinalRender: boolean; engineHash: string; stillToDraw?: string[] }
+const HASH = '0123456789abcdef'
+const SHA = (c: string) => c.repeat(64)
+const stamp = (over: Partial<Stamp> = {}): Stamp => ({
+  version: 1,
+  releasedForFinalRender: true,
+  engineHash: HASH,
+  references: [{ what: 'film-b', frame: 120 }],
+  sound: { 'film-a': SHA('a'), 'film-b': SHA('b') },
+  opening: { files: { 'opening.bin': SHA('c'), 'manifest.json': SHA('d') } },
+  frames: { 'film-b': 3600, loop: 480, opening: 867, 'film-a': 4467 },
+  ...over,
+})
+const goodRun = { engineHash: HASH, doctor: { pass: true, why: '' }, test: { pass: true, engineHash: HASH, machine: 'm1', small: false }, sound: [{ ok: true, why: '' }], freeGb: 500, needGb: 20, machine: 'm1' }
+const NVIDIA = { name: 'NVIDIA GeForce RTX 5080' }
+const RADEON = { name: 'AMD Radeon(TM) Graphics' }
+
+describe('the names of the delivered files', () => {
+  it('are the four names of the order, with the size in them', () => {
+    expect(L.deliveryNames(3840, 2160)).toEqual({
+      'film-a': 'Snow Globe Seasons - With Prompt - 3840x2160.mp4',
+      'film-b': 'Snow Globe Seasons - Without Prompt - 3840x2160.mp4',
+      loop: 'Snow Globe Seasons - Portfolio Looping Video - 3840x2160.mp4',
+      still: 'Snow Globe Seasons - Portfolio Screenshot - 3840x2160.png',
+    })
+    expect(L.testFilmName(3840, 2160)).toBe('Snow Globe Seasons - Test - 3840x2160.mp4')
+    expect(L.deliveryFolder()).toBe('Snow Globe Seasons')
+  })
+  it('gives a run of the tool tests another folder, so that it never passes for the film', () => {
+    expect(L.deliveryFolder(true)).not.toBe(L.deliveryFolder(false))
+  })
+  it('knows no fifth file', () => {
+    expect(() => L.deliveryName('poster', 3840, 2160)).toThrow()
+  })
+})
+
+describe('the command line', () => {
+  it('takes one word and nothing else', () => {
+    for (const w of ['setup', 'doctor', 'test', 'render', 'check', 'deliver', 'clean']) expect(L.argProblem([w])).toBe('')
+    expect(L.argProblem([])).not.toBe('')
+    expect(L.argProblem(['render', '--force'])).toContain('one word')
+    expect(L.argProblem(['render', '--procs', '4'])).toContain('one word')
+    expect(L.argProblem(['shutdown'])).toContain('one word')
+    expect(L.argProblem(['test', 'render'])).toContain('one word')
+  })
+  it('lets the background worker and the stamp through', () => {
+    expect(L.argProblem(['render', '--worker'])).toBe('')
+    expect(L.argProblem(['stamp', '--only', 'film-b:120'])).toBe('')
+  })
+  it('reads the test switches from one variable and refuses a word it does not know', () => {
+    const t = L.testSwitches('software, small,tones,angle=d3d11,refs=film-b:120+loop:0,stretch=720-721/1,fast-watch')
+    expect(t).toMatchObject({ software: true, small: true, tones: true, angle: 'd3d11', refs: 'film-b:120+loop:0', stretch: '720-721/1', fastWatch: true, linux: false, inline: false })
+    expect(L.anyTestSwitch(t)).toBe(true)
+    expect(L.anyTestSwitch(L.testSwitches(''))).toBe(false)
+    expect(L.anyTestSwitch(L.testSwitches(undefined))).toBe(false)
+    expect(() => L.testSwitches('released')).toThrow(/no switch/)
+    expect(() => L.testSwitches('angle=d3d11 --no-sandbox')).toThrow(/no switch/)
+    expect(() => L.testSwitches('small=yes')).toThrow(/no switch/)
+  })
+  it('ends every command with PASS, FAIL or RUNNING on one line', () => {
+    expect(L.verdictLine('PASS', 'all\n  good')).toBe('PASS: all good')
+    expect(L.verdictLine('FAIL', 'no')).toBe('FAIL: no')
+    expect(() => L.verdictLine('MAYBE', 'x')).toThrow()
+    expect(L.EXIT).toEqual({ PASS: 0, FAIL: 1, RUNNING: 3 })
+  })
+})
+
+describe('what draws', () => {
+  const soft = [
+    'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)',
+    'ANGLE (Mesa, Vulkan 1.4.335 (llvmpipe (LLVM 21.1.8 256 bits) (0x00000000)), llvmpipe)',
+    'ANGLE (Microsoft, Microsoft Basic Render Driver Direct3D11 vs_5_0 ps_5_0, D3D11)',
+    'ANGLE (Unknown, lavapipe, Vulkan)',
+    'Google SwiftShader',
+    'D3D11 WARP adapter',
+    'Mesa OffScreen',
+    'Some Software Rasterizer',
+  ]
+  it('names software by every name it goes under', () => {
+    for (const r of soft) expect(L.softwareName(r), r).not.toBe('')
+  })
+  it('takes no card for software', () => {
+    for (const r of ['ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 (0x00002C02) Direct3D11 vs_5_0 ps_5_0, D3D11)', 'ANGLE (AMD, AMD Radeon(TM) Graphics (0x000013C0) Direct3D11 vs_5_0 ps_5_0, D3D11)', 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Pro, Unspecified Version)', 'ANGLE (Intel, Intel(R) UHD Graphics 770 (0x00004680) Direct3D11 vs_5_0 ps_5_0, D3D11)', 'Warpaint 3000']) expect(L.softwareName(r), r).toBe('')
+  })
+  it('refuses software by name, and lets it through only by the switch of the tests', () => {
+    const v = L.drawVerdict({ renderer: soft[0], cards: [NVIDIA] })
+    expect(v).toMatchObject({ ok: false, software: true })
+    expect(v.why).toContain('swiftshader')
+    expect(L.drawVerdict({ renderer: soft[0], cards: [NVIDIA], allowSoftware: true })).toMatchObject({ ok: true, software: true })
+  })
+  it('wants the NVIDIA card where a machine has one beside a built in card', () => {
+    expect(L.wantedCard([RADEON, NVIDIA])).toEqual({ vendor: 'NVIDIA', name: NVIDIA.name })
+    expect(L.wantedCard([RADEON])).toEqual({ vendor: 'AMD', name: RADEON.name })
+    expect(L.wantedCard([{ name: 'Apple M4 Pro' }])?.vendor).toBe('Apple')
+    expect(L.wantedCard([{ name: 'Microsoft Hyper-V Video' }])).toBeNull()
+    expect(L.wantedCard([])).toBeNull()
+  })
+  it('fails a page that draws on the small card of a machine with a large one', () => {
+    const v = L.drawVerdict({ renderer: 'ANGLE (AMD, AMD Radeon(TM) Graphics (0x000013C0) Direct3D11 vs_5_0 ps_5_0, D3D11)', cards: [RADEON, NVIDIA] })
+    expect(v.ok).toBe(false)
+    expect(v.software).toBe(false)
+    expect(v.why).toContain('NVIDIA GeForce RTX 5080')
+  })
+  it('passes the NVIDIA card, the Apple card, and a machine whose cards have no known maker', () => {
+    expect(L.drawVerdict({ renderer: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 (0x00002C02) Direct3D11 vs_5_0 ps_5_0, D3D11)', cards: [RADEON, NVIDIA] }).ok).toBe(true)
+    expect(L.drawVerdict({ renderer: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Pro, Unspecified Version)', cards: [{ name: 'Apple M4 Pro' }] }).ok).toBe(true)
+    expect(L.drawVerdict({ renderer: 'ANGLE (Intel, Intel(R) UHD Graphics 770, D3D11)', cards: [{ name: 'Intel(R) UHD Graphics 770' }] }).ok).toBe(true)
+  })
+  it('fails a page with no WebGL', () => {
+    expect(L.drawVerdict({ renderer: '', cards: [NVIDIA] }).ok).toBe(false)
+    expect(L.drawVerdict({ renderer: 'no WebGL', cards: [] }).ok).toBe(false)
+  })
+})
+
+describe('where the machine is, and its tools', () => {
+  it('lets Windows and macOS through and refuses a Linux layer inside Windows', () => {
+    expect(L.placeProblem({ platform: 'win32' })).toBe('')
+    expect(L.placeProblem({ platform: 'darwin' })).toBe('')
+    expect(L.placeProblem({ platform: 'linux', release: '5.15.153.1-microsoft-standard-WSL2' })).toContain('WSL')
+    expect(L.placeProblem({ platform: 'linux', env: { WSL_DISTRO_NAME: 'Ubuntu' } })).toContain('WSL')
+    expect(L.placeProblem({ platform: 'linux', procVersion: 'Linux version 5.10 (Microsoft@Microsoft.com)' })).toContain('WSL')
+  })
+  it('refuses the Linux layer even with the switch that lets the tool tests run on Linux', () => {
+    expect(L.placeProblem({ platform: 'linux', env: { WSL_INTEROP: '/run/WSL/1_interop' }, allowLinux: true })).toContain('WSL')
+    expect(L.placeProblem({ platform: 'linux', release: '6.1.0' })).not.toBe('')
+    expect(L.placeProblem({ platform: 'linux', release: '6.1.0', allowLinux: true })).toBe('')
+  })
+  it('takes the Node versions the build takes', () => {
+    for (const v of ['v20.19.0', 'v20.20.2', 'v22.12.0', 'v22.23.5', 'v24.1.0', 'v26.0.0']) expect(L.nodeOk(v), v).toBe(true)
+    for (const v of ['v18.20.0', 'v20.18.3', 'v22.11.0', 'v21.7.0', '', 'node']) expect(L.nodeOk(v), v).toBe(false)
+  })
+  it('reads the version of an ffmpeg build, numbered or dated', () => {
+    expect(L.ffmpegVersion('ffmpeg version 8.0.1-full_build-www.gyan.dev Copyright (c) 2000-2025 the FFmpeg developers')).toMatchObject({ numbers: [8, 0, 1], dated: false })
+    expect(L.ffmpegVersion('ffmpeg version n7.1 Copyright')).toMatchObject({ numbers: [7, 1, 0], dated: false })
+    expect(L.ffmpegVersion('ffmpeg version 2025-11-20-git-abcdef-full_build Copyright')?.dated).toBe(true)
+    expect(L.ffmpegVersion('ffprobe version 6.1.1 Copyright')).toMatchObject({ numbers: [6, 1, 1] })
+    expect(L.ffmpegVersion('command not found')).toBeNull()
+    expect(L.atLeast([6, 1, 1], L.LEAST.ffmpeg)).toBe(false)
+    expect(L.atLeast([7, 0, 0], L.LEAST.ffmpeg)).toBe(true)
+    expect(L.atLeast(null, L.LEAST.git)).toBe(false)
+  })
+  it('gives the exact install line of each tool for Windows and for macOS', () => {
+    expect(L.installLine('git', 'win32')).toMatch(/^winget install --id Git\.Git -e /)
+    expect(L.installLine('node', 'win32')).toMatch(/^winget install --id OpenJS\.NodeJS\.LTS -e /)
+    expect(L.installLine('ffmpeg', 'win32')).toMatch(/^winget install --id Gyan\.FFmpeg -e /)
+    expect(L.installLine('chrome', 'win32')).toMatch(/^winget install --id Google\.Chrome -e /)
+    for (const t of ['git', 'node', 'ffmpeg', 'chrome'] as const) expect(L.installLine(t, 'darwin')).toMatch(/^brew install /)
+  })
+  it('finds a tool in the first folder that holds it, and reads the path variable under any spelling', () => {
+    const has = (p: fs.PathLike) => String(p) === path.join('b', 'ffmpeg.exe')
+    expect(L.findIn(['a', 'b', 'c'], ['ffmpeg.exe', 'ffmpeg'], has)).toBe(path.join('b', 'ffmpeg.exe'))
+    expect(L.findIn(['a'], ['ffmpeg'], has)).toBe('')
+    expect(L.pathDirs({ Path: 'C:\\a;C:\\b b;' }, 'win32')).toEqual(['C:\\a', 'C:\\b b'])
+    expect(L.pathDirs({ PATH: '/usr/bin:/opt/homebrew/bin' }, 'darwin')).toEqual(['/usr/bin', '/opt/homebrew/bin'])
+  })
+})
+
+describe('the gate of the full render', () => {
+  it('refuses while the stamp is not released, before anything else and in the words of the order', () => {
+    const r = L.renderRefusals({ ...goodRun, stamp: stamp({ releasedForFinalRender: false }) })
+    expect(r).toEqual(['the film is not released for its final render yet; step 1 only'])
+    // nothing else can open it: not a passed doctor and test, and no missing field either
+    expect(L.renderRefusals({ stamp: stamp({ releasedForFinalRender: false }), engineHash: 'ffffffffffffffff', doctor: null, test: null, sound: [], freeGb: 0, needGb: 0 })).toEqual([L.NOT_RELEASED])
+  })
+  it('takes only true for released', () => {
+    for (const v of ['true', 1, 'yes', null]) {
+      const r = L.renderRefusals({ ...goodRun, stamp: stamp({ releasedForFinalRender: v as unknown as boolean }) })
+      expect(r.length).toBeGreaterThan(0)
+    }
+  })
+  it('refuses a stamp that still lacks references, released or not', () => {
+    const r = L.renderRefusals({ ...goodRun, stamp: stamp({ stillToDraw: ['film-b:675'] }) })
+    expect(r).toHaveLength(1)
+    expect(r[0]).toContain(L.NOT_RELEASED)
+    expect(r[0]).toContain('film-b:675')
+  })
+  it('lets a released stamp through when everything holds', () => {
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp() })).toEqual([])
+  })
+  it('refuses on another engine hash, a failed doctor, a missing, failed or foreign test, a wrong mix and a full disk', () => {
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), engineHash: 'ffffffffffffffff' }).join(' ')).toContain('the stamp was made for')
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), doctor: { pass: false, why: 'chrome is missing' } }).join(' ')).toContain('chrome is missing')
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: null }).join(' ')).toContain('has not been run')
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: { ...goodRun.test, pass: false } }).join(' ')).toContain('did not pass')
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: { ...goodRun.test, engineHash: 'ffffffffffffffff' } }).join(' ')).toContain('Run step 1 again')
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: { ...goodRun.test, machine: 'm2' } }).join(' ')).toContain('another machine')
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), test: { ...goodRun.test, small: true } }).join(' ')).toContain("tool's own tests")
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), sound: [{ ok: false, why: 'the sound of film-a is not here' }] })).toEqual(['the sound of film-a is not here'])
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp(), freeGb: 10, needGb: 20 }).join(' ')).toContain('needs 20 GB')
+  })
+  it('refuses a stamp that is not whole and says what it lacks', () => {
+    expect(L.stampProblems(null)).toEqual(['render/STAMP.json is not a stamp'])
+    expect(L.stampProblems(stamp())).toEqual([])
+    expect(L.stampProblems(stamp({ engineHash: 'short' })).join(' ')).toContain('engine hash')
+    expect(L.stampProblems(stamp({ frames: { 'film-b': 3600, loop: 480, opening: 867, 'film-a': 4466 } })).join(' ')).toContain('do not add up')
+    expect(L.stampProblems(stamp({ releasedForFinalRender: 'false' as unknown as boolean })).join(' ')).toContain('released')
+    expect(L.renderRefusals({ ...goodRun, stamp: stamp({ references: [] }) })[0]).toContain('Nothing was drawn')
+  })
+  it('lets the small run of the tool tests past the release and nothing else', () => {
+    const closed = stamp({ releasedForFinalRender: false })
+    expect(L.renderRefusals({ ...goodRun, stamp: closed, small: true, test: { ...goodRun.test, small: true } })).toEqual([])
+    expect(L.renderRefusals({ ...goodRun, stamp: closed, small: true, test: null }).join(' ')).toContain('has not been run')
+  })
+  it('judges a mix by its sha256', () => {
+    expect(L.soundVerdict('film-a', 'audio/final/film-a.wav', '', SHA('a'))).toMatchObject({ ok: false })
+    expect(L.soundVerdict('film-a', 'audio/final/film-a.wav', '', SHA('a')).why).toContain('not in the public repo')
+    expect(L.soundVerdict('film-a', 'audio/final/film-a.wav', SHA('b'), SHA('a')).ok).toBe(false)
+    expect(L.soundVerdict('film-a', 'audio/final/film-a.wav', SHA('a'), SHA('a')).ok).toBe(true)
+  })
+})
+
+describe('the tracked stamp of this branch', () => {
+  const file = rel('render', 'STAMP.json')
+  const s = readJson(file) as Stamp & { references: { what: string; frame: number; half: { file: string; sha256: string; width: number; height: number }; cuts: { file: string; sha256: string; w: number; h: number }[]; glass: unknown[] }[]; sound: Record<string, string>; opening: { files: Record<string, string>; folder: string; commit: string }; delivery: { names: Record<string, string>; folder: string; test: string }; frames: Record<string, number>; floors: Record<string, number>; samples: Record<string, [number, number][]> }
+  it('is whole, and is not released: only /root sets that', () => {
+    expect(L.stampProblems(s)).toEqual([])
+    expect(s.releasedForFinalRender).toBe(false)
+    expect(L.renderRefusals({ ...goodRun, engineHash: s.engineHash, test: { ...goodRun.test, engineHash: s.engineHash }, stamp: s })[0]).toContain(L.NOT_RELEASED)
+  })
+  it('names the two final mixes by the sha256 of the order', () => {
+    expect(s.sound['film-a']).toBe('883ee8bd67c284161d0156b0e10fcc7dc79be5c0526423809174e456544b5515')
+    expect(s.sound['film-b']).toBe('3edd8ff579404fce8d62a041b2172306a6b26eb9a31d59e0b90d82315337bf23')
+  })
+  it('holds the opening pack by the sha256 of its two tracked files', () => {
+    expect(s.opening.commit).toBe('e44b7e51f656d15a4bfd9199eeeeb3c83c1bc69c')
+    for (const name of ['opening.bin', 'manifest.json']) expect(L.sha256File(rel(s.opening.folder, name)), name).toBe(s.opening.files[name])
+    expect(s.opening.folder.startsWith('public')).toBe(false)
+  })
+  it('holds every reference file it names, lossless, and no file near the size GitHub refuses', () => {
+    let total = 0
+    for (const r of s.references) {
+      expect(r.half.width).toBe(1920)
+      expect(r.half.height).toBe(1080)
+      for (const f of [r.half, ...r.cuts]) {
+        const p = rel('render', 'refs', f.file)
+        expect(L.sha256File(p), f.file).toBe(f.sha256)
+        const size = fs.statSync(p).size
+        expect(size).toBeLessThan(45e6)
+        total += size
+      }
+      for (const c of r.cuts) expect([c.w, c.h]).toEqual([960, 540])
+      if (r.what !== 'opening') expect(r.glass.length).toBeGreaterThan(0)
+    }
+    expect(total).toBeLessThanOrEqual(40e6)
+    for (const d of ['render', 'render/refs', 'render/opening-pack']) for (const n of fs.readdirSync(rel(d))) expect(fs.statSync(rel(d, n)).size, n).toBeLessThan(45e6)
+  })
+  it('names the delivered files and the frame counts of the order', () => {
+    expect(s.delivery.names).toEqual(L.deliveryNames(3840, 2160))
+    expect(s.delivery.folder).toBe('Snow Globe Seasons')
+    expect(s.frames).toEqual({ 'film-b': 3600, loop: 480, opening: 867, 'film-a': 4467 })
+    expect(L.countsOf(s.samples['film-b'])).toHaveLength(3600)
+    expect(L.countsOf(s.samples.loop)).toHaveLength(480)
+  })
+  it('agrees with its plan', () => {
+    const plan = readJson(rel('render', 'PLAN.json'))
+    expect(planProblems(plan, { width: 3840, height: 2160 })).toEqual([])
+    expect(s.sound).toEqual(plan.sound)
+    expect(s.floors).toEqual(plan.floors)
+    const made = s.references.map((r) => `${r.what}:${r.frame}`)
+    const wanted = (plan.frames as { what: string; frame: number }[]).map((f) => `${f.what}:${f.frame}`)
+    expect([...made, ...(s.stillToDraw ?? [])].sort()).toEqual([...wanted].sort())
+  })
+})
+
+describe('the plan of the stamp', () => {
+  const plan = () => JSON.parse(fs.readFileSync(rel('render', 'PLAN.json'), 'utf8'))
+  const format = { width: 3840, height: 2160 }
+  it('refuses a box outside the picture, a frame named twice and a frame with no glass region', () => {
+    const a = plan()
+    a.frames[0].cuts[0].x = 3000
+    expect(planProblems(a, format).join(' ')).toContain('does not lie inside')
+    const b = plan()
+    b.frames.push({ ...b.frames[0] })
+    expect(planProblems(b, format).join(' ')).toContain('named twice')
+    const c = plan()
+    c.frames[0].glass = []
+    expect(planProblems(c, format).join(' ')).toContain('no glass region')
+    const d = plan()
+    d.sound['film-a'] = 'x'
+    expect(planProblems(d, format).join(' ')).toContain('sha256')
+    expect(planProblems(null, format)).toHaveLength(1)
+  })
+})
+
+describe('the plan of a render and of what a second run still has to do', () => {
+  it('cuts chunks as the master tool does', () => {
+    expect(L.chunkLines(0, 89, 30)).toEqual([{ first: 0, last: 29 }, { first: 30, last: 59 }, { first: 60, last: 89 }])
+    expect(L.chunkLines(0, 479, 30)).toHaveLength(16)
+    expect(L.chunkLines(0, 3599, 30)).toHaveLength(120)
+    expect(L.chunkLines(0, 866, 30).at(-1)).toEqual({ first: 840, last: 866 })
+    expect(L.chunkFile('film-b', { first: 30, last: 59 })).toBe('film-b-000030-000059')
+  })
+  it('makes batches of whole chunks', () => {
+    const b = L.batchesOf(3600, 30, 6)
+    expect(b).toHaveLength(20)
+    expect(b[0]).toEqual({ first: 0, last: 179 })
+    expect(b.at(-1)).toEqual({ first: 3420, last: 3599 })
+    expect(L.batchesOf(480, 30, 6).at(-1)).toEqual({ first: 360, last: 479 })
+  })
+  it('draws nothing again that is finished, and carries on in the batch that was stopped', () => {
+    const finished = new Set(['film-b:0', 'film-b:30', 'film-b:60', 'film-b:90', 'film-b:120', 'film-b:150', 'film-b:180'])
+    const done = (what: string, c: { first: number }) => finished.has(`${what}:${c.first}`)
+    const [b, loop] = L.resumePlan({ parts: [{ what: 'film-b', first: 0, last: 3599 }, { what: 'loop', first: 0, last: 479 }], chunkFrames: 30, batchChunks: 6, done })
+    expect(b.finished).toBe(7)
+    expect(b.framesDone).toBe(210)
+    expect(b.batches).toHaveLength(19)
+    expect(b.batches[0]).toEqual({ first: 180, last: 359 })
+    expect(loop.finished).toBe(0)
+    expect(loop.batches).toHaveLength(3)
+    const all = L.resumePlan({ parts: [{ what: 'loop', first: 0, last: 479 }], chunkFrames: 30, batchChunks: 6, done: () => true })
+    expect(all[0].batches).toEqual([])
+    expect(all[0].framesDone).toBe(480)
+  })
+  it('cuts the stretch of the short test into the chunks one process and two processes draw', () => {
+    const s = L.stretchPlan('', { first: 660, last: 779 }, 30)
+    expect(s).toMatchObject({ first: 660, last: 779, size: 30 })
+    expect(s.one).toEqual([{ first: 660, last: 689 }, { first: 690, last: 719 }])
+    expect(s.two).toEqual([{ first: 720, last: 749 }, { first: 750, last: 779 }])
+    const t = L.stretchPlan('720-721/1', { first: 660, last: 779 }, 30)
+    expect(t.size).toBe(1)
+    expect(t.one).toEqual([{ first: 720, last: 720 }])
+    expect(t.two).toEqual([{ first: 721, last: 721 }])
+    expect(() => L.stretchPlan('700-779', { first: 660, last: 779 }, 30)).toThrow(/whole chunks/)
+  })
+  it('keeps the sample count of every frame short and reads it back', () => {
+    const counts = [24, 24, 96, 96, 96, 81, 24]
+    const runs = L.runsOf(counts)
+    expect(runs).toEqual([[24, 2], [96, 3], [81, 1], [24, 1]])
+    expect(L.countsOf(runs)).toEqual(counts)
+    expect(L.tally(counts)).toEqual({ 24: 3, 96: 3, 81: 1 })
+    expect(L.tally(counts, 2, 4)).toEqual({ 96: 3 })
+  })
+})
+
+describe('time, processes and disk', () => {
+  it('fits the cost of a frame and of a sample', () => {
+    const frames = [24, 24, 48, 96, 96].map((samples) => ({ samples, seconds: 0.5 + samples * 0.05 }))
+    const c = L.fitCost(frames)!
+    expect(c.each).toBeCloseTo(0.5, 6)
+    expect(c.perSample).toBeCloseTo(0.05, 6)
+    expect(c.counts).toBe(3)
+    const one = L.fitCost([{ samples: 24, seconds: 2.4 }, { samples: 24, seconds: 2.4 }])!
+    expect(one).toMatchObject({ each: 0, counts: 1 })
+    expect(one.perSample).toBeCloseTo(0.1, 9)
+    expect(L.fitCost([])).toBeNull()
+    // a fit that would make a frame cost less than nothing puts everything on the samples
+    const odd = L.fitCost([{ samples: 24, seconds: 1 }, { samples: 96, seconds: 9 }])!
+    expect(odd.each).toBe(0)
+    expect(odd.perSample).toBeGreaterThan(0)
+  })
+  it('uses two processes only when they pay and the memory holds them', () => {
+    expect(L.procsRule({ one: 1, two: 1.6, memoryHolds: 15 }).procs).toBe(2)
+    expect(L.procsRule({ one: 1, two: 1.3, memoryHolds: 2 }).procs).toBe(2)
+    expect(L.procsRule({ one: 1, two: 1.29, memoryHolds: 15 }).procs).toBe(1)
+    expect(L.procsRule({ one: 1, two: 1.9, memoryHolds: 1 }).procs).toBe(1)
+    expect(L.procsRule({ one: 1, two: 0, memoryHolds: 15 }).procs).toBe(1)
+    expect(L.procsRule({ one: 0, two: 2, memoryHolds: 15 }).procs).toBe(1)
+    for (const r of [L.procsRule({ one: 1, two: 1.6, memoryHolds: 15 }), L.procsRule({ one: 1, two: 1.1, memoryHolds: 15 }), L.procsRule({ one: 1, two: 1.9, memoryHolds: 1 })]) expect(r.why.length).toBeGreaterThan(20)
+  })
+  it('projects the hours of film B and the loop from the samples of every frame', () => {
+    const p = L.projection({ counts: { 24: 1000, 96: 2000 }, cost: { each: 1, perSample: 0.1 }, gain: 2, encodeSeconds: 600, startSeconds: 20, batches: 10, chunkSeconds: 3, chunks: 100 })
+    expect(p.frames).toBe(3000)
+    const draw = (1000 * (1 + 2.4) + 2000 * (1 + 9.6) + 300) / 2
+    expect(p.drawSeconds).toBeCloseTo(draw, 6)
+    expect(p.seconds).toBeCloseTo(draw + 600 + 200, 6)
+    expect(L.TOO_LONG_HOURS).toBe(10)
+  })
+  it('plans the disk at its fullest', () => {
+    const d = L.diskPlan({ chunkBytes: 27e6, frames: { 'film-b': 3600, loop: 480, opening: 867 }, chunkFrames: 30, pngBytes: 16e6, procs: 2, finalBytes: [500e6, 500e6, 400e6, 30e6], spare: 3 * 1024 ** 3 })
+    expect(d.chunks).toBe(120 + 16 + 29)
+    expect(d.intermediates).toBe(165 * 27e6)
+    expect(d.inFlight).toBe(16e6 * 30 * 2)
+    expect(d.copies).toBe(d.finals)
+    expect(d.total).toBe(d.intermediates + d.inFlight + d.finals + d.encodeRoom + d.copies + d.spare)
+    expect(L.gb(d.total)).toBeGreaterThan(9)
+    expect(L.gb(d.total)).toBeLessThan(20)
+  })
+  it('says a length in seconds, minutes or hours', () => {
+    expect(L.hoursText(42)).toBe('42 s')
+    expect(L.hoursText(600)).toBe('10.0 min')
+    expect(L.hoursText(4 * 3600)).toBe('4.0 h')
+  })
+  it('writes a heartbeat line with the frames done and left, the pace and the expected end', () => {
+    const line = L.heartbeatLine({ done: 1200, total: 4947, secondsAFrame: 2.5, leftSeconds: 9000, now: new Date(2026, 0, 1, 10, 0, 0).getTime(), phase: 'film-b frames 1200 to 1379' })
+    expect(line).toBe('heartbeat: film-b frames 1200 to 1379, 1200 of 4947 frames done, 3747 left, 2.50 s a frame, expected end about 12:30 (2.5 h from now)')
+    expect(L.heartbeatLine({ done: 0, total: 10, secondsAFrame: 0, leftSeconds: 0 })).toContain('no pace yet')
+    expect(L.secondsLeft([24, 96, 24], (i: number) => i === 0, { each: 1, perSample: 0.1 }, 2)).toBeCloseTo((1 + 9.6 + 1 + 2.4) / 2, 9)
+  })
+})
+
+describe('the measures of a picture', () => {
+  const W = 64
+  const Hh = 32
+  const picture = (f: (x: number, y: number, c: number) => number) => {
+    const b = Buffer.alloc(W * Hh * 3)
+    for (let y = 0; y < Hh; y++) for (let x = 0; x < W; x++) for (let c = 0; c < 3; c++) b[(y * W + x) * 3 + c] = Math.max(0, Math.min(255, Math.round(f(x, y, c))))
+    return b
+  }
+  const scene = picture((x, y, c) => 128 + 100 * Math.sin(x / 9 + c) * Math.cos(y / 7))
+  it('halves by the mean of each 2 x 2 block, rounded half up', () => {
+    const b = Buffer.from([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 10, 20, 30, 10, 20, 30, 10, 20, 31, 11, 21, 31])
+    // two pictures of 2 x 2 side by side would be 4 x 2; this is one of 4 x 2: blocks (0,1 | 10,10) and (2,3 | 10,11)
+    const h = L.half(b, 4, 2)
+    expect([h.width, h.height]).toEqual([2, 1])
+    expect([...h.data]).toEqual([5, 10, 15, 7, 12, 17])
+    expect(L.half(scene, W, Hh).data).toHaveLength((W / 2) * (Hh / 2) * 3)
+  })
+  it('cuts a box out of a picture', () => {
+    const cut = L.crop(scene, W, { x: 10, y: 4, w: 16, h: 8 })
+    expect(cut).toHaveLength(16 * 8 * 3)
+    expect(cut[0]).toBe(scene[(4 * W + 10) * 3])
+    expect(cut[cut.length - 1]).toBe(scene[(11 * W + 25) * 3 + 2])
+  })
+  it('measures PSNR, and says identical pictures are identical', () => {
+    expect(L.psnr(scene, scene)).toEqual({ psnr: Infinity, maxDiff: 0 })
+    const off = Buffer.from(scene)
+    for (let i = 0; i < off.length; i++) off[i] = Math.min(255, off[i] + 2)
+    const p = L.psnr(scene, off)
+    expect(p.maxDiff).toBe(2)
+    expect(p.psnr).toBeGreaterThan(41)
+    expect(p.psnr).toBeLessThan(43)
+    expect(() => L.psnr(scene, scene.subarray(3))).toThrow()
+  })
+  it('has a coarser measure that forgives a shift of one pixel and does not forgive another picture', () => {
+    const shifted = picture((x, y, c) => 128 + 100 * Math.sin((x - 1) / 9 + c) * Math.cos(y / 7))
+    const other = picture((x, y, c) => 128 + 100 * Math.sin(x / 4 + c) * Math.cos(y / 3))
+    const fine = L.psnr(scene, shifted).psnr
+    const coarse = L.coarsePsnr(scene, shifted, W, Hh)
+    expect(coarse).toBeGreaterThan(fine + 0.5)
+    expect(L.coarsePsnr(scene, other, W, Hh)).toBeLessThan(coarse - 8)
+    expect(L.coarsePsnr(scene, scene, W, Hh)).toBe(Infinity)
+    expect(L.blockMeans(scene, W, Hh)).toHaveLength((W / 8) * (Hh / 8) * 3)
+  })
+  it('catches a glass that came out white', () => {
+    const box = { x: 16, y: 8, w: 32, h: 16 }
+    const good = L.glassStats(scene, W, box)
+    const white = Buffer.from(scene)
+    for (let y = box.y; y < box.y + box.h; y++) for (let x = box.x; x < box.x + box.w; x++) white.fill(255, (y * W + x) * 3, (y * W + x) * 3 + 3)
+    const bad = L.glassStats(white, W, box)
+    expect(bad.meanLuma).toBeCloseTo(1, 9)
+    expect(bad.nearWhite).toBe(1)
+    expect(good.meanLuma).toBeGreaterThan(0.2)
+    expect(good.meanLuma).toBeLessThan(0.8)
+    expect(good.nearWhite).toBeLessThan(0.1)
+  })
+  it('refuses a flat picture and a picture of the wrong size', () => {
+    expect(L.pictureProblem(Buffer.alloc(W * Hh * 3, 7), W, Hh)).toContain('flat')
+    expect(L.pictureProblem(Buffer.alloc(W * Hh * 3, 255), W, Hh)).toContain('flat')
+    expect(L.pictureProblem(scene, W, Hh)).toBe('')
+    expect(L.pictureProblem(scene.subarray(3), W, Hh)).toContain('bytes')
+  })
+  it('compares a frame with its reference: whole, cuts and glass, each against its floor', () => {
+    const floors = { psnrWhole: 40, coarseWhole: 42, psnrCut: 38, coarseCut: 40, glassLuma: 0.02, glassWhite: 0.01 }
+    const cutBox = { name: 'middle', x: 16, y: 8, w: 32, h: 16 }
+    const glassBox = { name: 'glass', x: 16, y: 8, w: 32, h: 16 }
+    const ref = { half: L.half(scene, W, Hh), cuts: [{ ...cutBox, data: L.crop(scene, W, cutBox) }], glass: [{ ...glassBox, ...L.glassStats(scene, W, glassBox) }] }
+    const same = L.compareFrame({ here: scene, width: W, height: Hh, ref, floors })
+    expect(same.pass).toBe(true)
+    expect(same.rows.map((r) => r.check)).toEqual(['a picture', 'whole picture, half size', 'whole picture, blocks', 'cut middle, full size', 'cut middle, blocks', 'glass glass, mean luma', 'glass glass, near white'])
+    const white = Buffer.from(scene)
+    for (let y = 8; y < 24; y++) for (let x = 16; x < 48; x++) white.fill(255, (y * W + x) * 3, (y * W + x) * 3 + 3)
+    const bad = L.compareFrame({ here: white, width: W, height: Hh, ref, floors })
+    expect(bad.pass).toBe(false)
+    expect(bad.rows.filter((r) => !r.pass).map((r) => r.check)).toContain('glass glass, near white')
+    const flat = L.compareFrame({ here: Buffer.alloc(W * Hh * 3), width: W, height: Hh, ref, floors })
+    expect(flat.pass).toBe(false)
+    expect(flat.rows).toHaveLength(1)
+  })
+  it('writes a table with ok, FAILS and noted', () => {
+    const text = L.tableText([{ check: 'a', found: 'x', wanted: 'x', pass: true }, { check: 'b', found: 'y', wanted: 'z', pass: false }, { check: 'c', found: 'w', wanted: '', pass: null }])
+    expect(text.split('\n')).toHaveLength(5)
+    expect(text).toMatch(/a\s+x\s+x\s+ok/)
+    expect(text).toMatch(/b\s+y\s+z\s+FAILS/)
+    expect(text).toMatch(/c\s+w\s+noted/)
+  })
+})
+
+describe('the work in the background', () => {
+  const job = { id: 'render-1', cmd: 'render', state: 'running', pid: 100 }
+  it('starts when nothing runs, follows what runs, and shows a result nobody has seen', () => {
+    expect(L.jobStep({ job: null, cmd: 'render', alive: false, age: 0 })).toEqual({ do: 'start' })
+    expect(L.jobStep({ job, cmd: 'render', alive: true, age: 5 })).toEqual({ do: 'follow' })
+    expect(L.jobStep({ job: { ...job, state: 'done' }, cmd: 'render', alive: false, age: 5 })).toEqual({ do: 'show' })
+    expect(L.jobStep({ job: { ...job, state: 'done', shown: true }, cmd: 'render', alive: false, age: 5 })).toEqual({ do: 'start' })
+  })
+  it('does not start a second long command beside a running one', () => {
+    const s = L.jobStep({ job, cmd: 'check', alive: true, age: 5 })
+    expect(s.do).toBe('busy')
+    expect(s.why).toContain('node tools/handoff.mjs render')
+  })
+  it('carries on after a stop: a job whose process is gone, or that gave no sign for too long, is started again', () => {
+    expect(L.jobStep({ job, cmd: 'render', alive: false, age: 30 })).toMatchObject({ do: 'start', stopped: true })
+    expect(L.jobStep({ job, cmd: 'render', alive: true, age: L.STALE_SECONDS + 1 })).toMatchObject({ do: 'start', stopped: true })
+    expect(L.jobStep({ job, cmd: 'check', alive: false, age: 30 })).toMatchObject({ do: 'start', stopped: false })
+  })
+})
+
+describe('the handoff file and the tools it names', () => {
+  const md = fs.readFileSync(rel('RENDER-ON-YOUR-PC.md'), 'utf8')
+  const blocks = [...md.matchAll(/```[a-z]*\n([\s\S]*?)```/g)].map((m) => m[1])
+  const lines = blocks.flatMap((b) => b.split('\n')).map((l) => l.trim()).filter(Boolean)
+  const commands = lines.filter((l) => /^(node|git|winget|brew|cd) /.test(l))
+  it('holds commands, and each is one of the few kinds the order allows', () => {
+    expect(commands.length).toBeGreaterThan(10)
+    for (const c of commands) expect(c, c).toMatch(/^(node tools\/handoff\.mjs (setup|doctor|test|render|check|deliver|clean)|winget install --id (Git\.Git|OpenJS\.NodeJS\.LTS|Gyan\.FFmpeg|Google\.Chrome) -e --source winget --accept-package-agreements --accept-source-agreements|brew install (git|node|ffmpeg)|brew install --cask google-chrome|git clone --filter=blob:none --single-branch --branch \S+ https:\/\/github\.com\/BrandonChurch93\/Snow-Globe-Perplexity\.git Snow-Globe-Perplexity|cd Snow-Globe-Perplexity|git pull --ff-only|node --version|git --version)$/)
+  })
+  it('gives the same winget lines the doctor prints', () => {
+    for (const t of ['git', 'node', 'ffmpeg', 'chrome'] as const) expect(md).toContain(L.installLine(t, 'win32'))
+  })
+  it('never calls npm, npx, a shell or a switch of the tests', () => {
+    for (const c of commands) {
+      expect(c).not.toMatch(/\bnpm\b|\bnpx\b|\bbash\b|\bsudo\b|&&|\|/)
+      expect(c).not.toMatch(/--(?!version|id|source|accept|filter|single|branch|cask|ff-only)[a-z]/)
+    }
+    expect(md).not.toContain(L.TEST_VARIABLE)
+    expect(md).not.toMatch(/HANDOFF_/)
+  })
+  it('names every word of the tool, and no word the tool does not have', () => {
+    const words = new Set(commands.map((c) => /^node tools\/handoff\.mjs (\S+)$/.exec(c)?.[1]).filter(Boolean))
+    expect([...words].sort()).toEqual([...L.COMMANDS].sort())
+  })
+  it('is written in plain signs: no em dash, no exclamation point, only signs of the keyboard', () => {
+    for (const f of ['RENDER-ON-YOUR-PC.md', 'render/README.md', 'tools/handoff.mjs', 'tools/lib/handoff.mjs', 'tools/lib/handoff-work.mjs', 'tools/lib/handoff-machine.mjs', 'tools/lib/handoff-stamp.mjs', '.github/workflows/handoff-proof.yml']) {
+      const text = fs.readFileSync(rel(f), 'utf8')
+      expect(text.includes('\u2014') || text.includes('\u2013'), `${f} holds a dash that is no hyphen`).toBe(false)
+      if (f.endsWith('.md')) expect(/!(?!\[)/.test(text), `${f} holds an exclamation point`).toBe(false)
+    }
+  })
+  it('tells the agent the rules at the top and the two stops', () => {
+    const head = md.slice(0, 4000)
+    expect(head).toMatch(/do not edit/i)
+    expect(head).toMatch(/do not commit/i)
+    expect(md).toMatch(/STOP/)
+    expect(md).toContain(L.NOT_RELEASED)
+    expect(md).toContain('RUNNING')
+  })
+})
+
+describe('the tool on the command line', () => {
+  const tool = rel('tools', 'handoff.mjs')
+  const run = (args: string[], env: Record<string, string> = {}) => spawnSync(process.execPath, [tool, ...args], { cwd: rel(), encoding: 'utf8', env: { ...process.env, HANDOFF_TEST: '', ...env } })
+  it('refuses a second word or a switch, with FAIL as its last line and exit code 1', () => {
+    for (const args of [['render', '--force'], ['test', '--samples', '2'], [], ['help']]) {
+      const r = run(args)
+      expect(r.status).toBe(1)
+      expect(r.stdout.trim().split('\n').at(-1)).toMatch(/^FAIL: this tool takes one word and nothing else/)
+    }
+  })
+  it('refuses a test switch it does not know', () => {
+    const r = run(['doctor'], { HANDOFF_TEST: 'released' })
+    expect(r.status).toBe(1)
+    expect(r.stdout.trim().split('\n').at(-1)).toMatch(/^FAIL: HANDOFF_TEST holds released/)
+  })
+  it('never starts npm, npx or a .cmd by a bare name, and never calls which, ldd, df, cp, rm or bash', () => {
+    for (const f of ['tools/handoff.mjs', 'tools/lib/handoff.mjs', 'tools/lib/handoff-work.mjs', 'tools/lib/handoff-machine.mjs', 'tools/lib/handoff-stamp.mjs']) {
+      const text = fs.readFileSync(rel(f), 'utf8')
+      const calls = [...text.matchAll(/\b(?:spawn|spawnSync|execFile|execFileSync|execSync|exec)\(\s*(['"`])([^'"`]+)\1/g)].map((m) => m[2])
+      for (const c of calls) expect(['git', 'ffmpeg', 'ffprobe', 'sysctl', 'sw_vers', 'system_profiler', 'pmset', 'caffeinate', 'pkill', 'pgrep'], `${f} starts ${c}`).toContain(path.posix.basename(c))
+      expect(text).not.toMatch(/shell:\s*true/)
+    }
+  })
+})
+
+describe('the root .gitattributes', () => {
+  it('keeps git from changing a line ending on any machine', () => {
+    expect(fs.readFileSync(rel('.gitattributes'), 'utf8').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))).toEqual(['* -text'])
+  })
+  it('is honoured by git for the files the engine hash is made from', () => {
+    const r = spawnSync('git', ['check-attr', 'text', '--', 'src/main.ts', 'config/showcase.json', 'package-lock.json'], { cwd: rel(), encoding: 'utf8' })
+    if (r.status !== 0) return
+    for (const l of r.stdout.trim().split('\n')) expect(l).toMatch(/: text: unset$/)
+  })
+})

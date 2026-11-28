@@ -1,0 +1,55 @@
+{
+  "what": "film-b",
+  "frame": 720,
+  "name": "spring in storm, just landed",
+  "engineHash": "22b2ad3ea80cf9c7",
+  "samples": 24,
+  "travelPx": 7.27,
+  "seconds": 194.8,
+  "png": {
+    "sha256": "f17322d88ac124453935021fb8cb76789456bd44f85e16912136fcafc4d7007c",
+    "bytes": 12745745
+  },
+  "renderer": "ANGLE (Mesa, Vulkan 1.4.335 (llvmpipe (LLVM 21.1.8 256 bits) (0x00000000)), llvmpipe)",
+  "browser": "147.0.7727.15",
+  "half": {
+    "file": "film-b-000720-half.webp",
+    "sha256": "d8f69876a735d4eddf99b8180796911d41af0e7e094f61df8bce1c00d0589db5",
+    "bytes": 1585158,
+    "width": 1920,
+    "height": 1080
+  },
+  "cuts": [
+    {
+      "name": "glass",
+      "x": 1440,
+      "y": 600,
+      "w": 960,
+      "h": 540,
+      "file": "film-b-000720-cut-glass.webp",
+      "sha256": "3ee4dd9fe44e6b72fade277d11a72fec8cd1fcba898017ffa0183b281937db81",
+      "bytes": 416008
+    },
+    {
+      "name": "base",
+      "x": 1440,
+      "y": 1440,
+      "w": 960,
+      "h": 540,
+      "file": "film-b-000720-cut-base.webp",
+      "sha256": "b2d86761beee1b46217fe5379090a1717e724a6d1bba89aaaacddbf9759f78df",
+      "bytes": 554836
+    }
+  ],
+  "glass": [
+    {
+      "name": "middle",
+      "x": 1420,
+      "y": 330,
+      "w": 1000,
+      "h": 960,
+      "meanLuma": 0.715485,
+      "nearWhite": 0.004127
+    }
+  ]
+}

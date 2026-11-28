@@ -312,6 +312,18 @@ export function headerRefFrames(file) {
   return m ? Number(m[1]) : null
 }
 
+/**
+ * A file's path as a value inside a filter graph. A path of plain characters, as every path of a cloud machine is,
+ * comes back as it is. A Windows path (C:\\Users\\...) or one with a space or a quote is written so that the graph reads
+ * it whole: forward slashes, the colon and the quote escaped for the filter, the whole in quotes for the graph.
+ */
+export function filterPath(file, platform = process.platform) {
+  const p = platform === 'win32' ? file.replace(/\\/g, '/') : file
+  if (!/[\\:'\[\],;= ]/.test(p)) return p
+  const forFilter = p.replace(/\\/g, '\\\\').replace(/:/g, '\\:').replace(/'/g, "\\'")
+  return `'${forFilter.replace(/'/g, "'\\''")}'`
+}
+
 /** The luma PSNR of every frame of a file, in dB, against PNGs (made into video as the encoder is fed) or against other files decoded in order. */
 export async function framePsnr({ file, files = null, parts = null, fps, pixFmt = 'yuv420p', frames = null }) {
   const stats = path.join(tmpDir(), `psnr-${process.pid}-${path.basename(file)}.txt`)
@@ -320,7 +332,7 @@ export async function framePsnr({ file, files = null, parts = null, fps, pixFmt 
   const other = files ? ['-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', 'pipe:0'] : ['-f', 'concat', '-safe', '0', '-i', list]
   const made = files ? `${TO_VIDEO},format=${pixFmt},${SET_TAGS},${place}` : `${SET_TAGS},${place}`
   try {
-    await ffmpeg(['-i', file, ...other, '-lavfi', `[0:v]${SET_TAGS},${place}[a];[1:v]${made}[b];[a][b]psnr=stats_file=${stats}:shortest=1`, ...(frames ? ['-frames:v', String(frames)] : []), '-an', '-f', 'null', '-'], files ? feedFiles(files) : null)
+    await ffmpeg(['-i', file, ...other, '-lavfi', `[0:v]${SET_TAGS},${place}[a];[1:v]${made}[b];[a][b]psnr=stats_file=${filterPath(stats)}:shortest=1`, ...(frames ? ['-frames:v', String(frames)] : []), '-an', '-f', 'null', '-'], files ? feedFiles(files) : null)
     return readPsnr(stats)
   } finally {
     fs.rmSync(stats, { force: true })
@@ -336,14 +348,26 @@ export function keyFrames(file) {
   return packets.sort((a, b) => a.pts - b.pts).map((p, i) => (p.key ? i : -1)).filter((i) => i >= 0)
 }
 
-export function toolVersions() {
+/** The x264 inside an ffmpeg, read from the line the encoder writes into what it encodes: for systems without which and ldd. */
+let coreSeen = null
+export function x264FromEncode(bin = 'ffmpeg') {
+  if (coreSeen !== null) return coreSeen
+  const r = spawnSync(bin, ['-v', 'error', '-nostdin', '-f', 'lavfi', '-i', 'color=c=black:s=64x64:r=1', '-frames:v', '1', '-c:v', 'libx264', '-f', 'h264', '-'], { encoding: 'latin1', maxBuffer: 1 << 22, windowsHide: true })
+  const m = !r.error && r.status === 0 ? /x264 - core (\d+)/.exec(r.stdout) : null
+  coreSeen = m ? `core ${m[1]}` : 'unknown'
+  return coreSeen
+}
+
+export function toolVersions(platform = process.platform) {
   const v = spawnSync('ffmpeg', ['-version'], { encoding: 'utf8' })
-  const ffmpegVersion = v.status === 0 ? (v.stdout.split('\n')[0] ?? '').replace(/^ffmpeg version\s+/, '').replace(/\s+Copyright.*$/, '') : 'unknown'
+  const ffmpegVersion = v.status === 0 ? (v.stdout.split(/\r?\n/)[0] ?? '').replace(/^ffmpeg version\s+/, '').replace(/\s+Copyright.*$/, '') : 'unknown'
   let x264 = 'unknown'
-  const which = spawnSync('which', ['ffmpeg'], { encoding: 'utf8' })
-  const ldd = which.status === 0 ? spawnSync('ldd', [which.stdout.trim()], { encoding: 'utf8' }) : null
-  const lib = ldd && ldd.status === 0 ? /libx264\.so\.(\d+)/.exec(ldd.stdout) : null
-  if (lib) x264 = `core ${lib[1]}`
+  if (platform === 'linux') {
+    const which = spawnSync('which', ['ffmpeg'], { encoding: 'utf8' })
+    const ldd = which.status === 0 ? spawnSync('ldd', [which.stdout.trim()], { encoding: 'utf8' }) : null
+    const lib = ldd && ldd.status === 0 ? /libx264\.so\.(\d+)/.exec(ldd.stdout) : null
+    if (lib) x264 = `core ${lib[1]}`
+  } else if (v.status === 0) x264 = x264FromEncode()
   return { ffmpeg: ffmpegVersion, x264 }
 }
 

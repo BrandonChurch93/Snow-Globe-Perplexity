@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "about": "What the stamp of the render handoff is made from. Written by hand; node tools/handoff.mjs stamp reads it and writes STAMP.json and refs/. Boxes are in pixels of the 3840 x 2160 picture. See README.md beside this file.",
+  "frames": [
+    { "what": "film-b", "frame": 120, "name": "winter at rest",
+      "cuts": [ { "name": "house", "x": 1290, "y": 780, "w": 960, "h": 540 }, { "name": "frost", "x": 1020, "y": 90, "w": 960, "h": 540 } ],
+      "glass": [ { "name": "middle", "x": 1370, "y": 300, "w": 1100, "h": 1000 } ] },
+    { "what": "film-b", "frame": 675, "name": "the change at its peak",
+      "cuts": [ { "name": "core", "x": 1440, "y": 660, "w": 960, "h": 540 }, { "name": "rim", "x": 1080, "y": 180, "w": 960, "h": 540 } ],
+      "glass": [ { "name": "middle", "x": 1440, "y": 480, "w": 960, "h": 840 } ] },
+    { "what": "film-b", "frame": 720, "name": "spring in storm, just landed",
+      "cuts": [ { "name": "glass", "x": 1440, "y": 600, "w": 960, "h": 540 }, { "name": "base", "x": 1440, "y": 1440, "w": 960, "h": 540 } ],
+      "glass": [ { "name": "middle", "x": 1420, "y": 330, "w": 1000, "h": 960 } ] },
+    { "what": "film-b", "frame": 1000, "name": "spring at rest",
+      "cuts": [ { "name": "house", "x": 1200, "y": 180, "w": 960, "h": 540 }, { "name": "base", "x": 1440, "y": 1200, "w": 960, "h": 540 } ],
+      "glass": [ { "name": "middle", "x": 1200, "y": 120, "w": 1440, "h": 720 } ] },
+    { "what": "film-b", "frame": 1440, "name": "summer in storm, just landed",
+      "cuts": [ { "name": "glass", "x": 1440, "y": 560, "w": 960, "h": 540 }, { "name": "base", "x": 1440, "y": 1440, "w": 960, "h": 540 } ],
+      "glass": [ { "name": "middle", "x": 1440, "y": 360, "w": 960, "h": 900 } ] },
+    { "what": "film-b", "frame": 1720, "name": "summer at rest",
+      "cuts": [ { "name": "lanterns", "x": 1680, "y": 900, "w": 960, "h": 540 }, { "name": "house", "x": 960, "y": 1140, "w": 960, "h": 540 } ],
+      "glass": [ { "name": "middle", "x": 1200, "y": 240, "w": 1440, "h": 960 } ] },
+    { "what": "film-b", "frame": 2160, "name": "fall in storm, just landed",
+      "cuts": [ { "name": "glass", "x": 1440, "y": 660, "w": 960, "h": 540 }, { "name": "base", "x": 1440, "y": 1500, "w": 960, "h": 540 } ],
+      "glass": [ { "name": "middle", "x": 1440, "y": 420, "w": 960, "h": 900 } ] },
+    { "what": "film-b", "frame": 2440, "name": "fall at rest",
+      "cuts": [ { "name": "house", "x": 1380, "y": 660, "w": 960, "h": 540 }, { "name": "base", "x": 1440, "y": 1380, "w": 960, "h": 540 } ],
+      "glass": [ { "name": "middle", "x": 1440, "y": 300, "w": 960, "h": 840 } ] },
+    { "what": "film-b", "frame": 2880, "name": "winter in storm, just landed",
+      "cuts": [ { "name": "glass", "x": 1440, "y": 660, "w": 960, "h": 540 }, { "name": "base", "x": 1440, "y": 1440, "w": 960, "h": 540 } ],
+      "glass": [ { "name": "middle", "x": 1440, "y": 360, "w": 960, "h": 900 } ] },
+    { "what": "loop", "frame": 0, "name": "the first frame of the loop, which is also the screenshot",
+      "cuts": [ { "name": "house", "x": 1320, "y": 900, "w": 960, "h": 540 }, { "name": "frost", "x": 1200, "y": 240, "w": 960, "h": 540 } ],
+      "glass": [ { "name": "middle", "x": 1440, "y": 420, "w": 960, "h": 840 } ] },
+    { "what": "opening", "frame": 450, "name": "the opening while the prompt is typed",
+      "cuts": [ { "name": "prompt", "x": 520, "y": 900, "w": 960, "h": 540 }, { "name": "send", "x": 2400, "y": 900, "w": 960, "h": 540 } ] }
+  ],
+  "test": {
+    "stretch": { "first": 660, "last": 779, "landing": 720, "why": "two seconds of film B across the landing of spring at frame 720: the end of the change out of winter, the landing and the first second of the storm. Its frames hold 24 to 99 samples, so the 24 and the 96 sample frames are both timed." }
+  },
+  "floors": { "psnrWhole": 30, "coarseWhole": 30, "psnrCut": 30, "coarseCut": 30, "glassLuma": 0.05, "glassWhite": 0.05 },
+  "floorsFrom": "NOT SET YET: these are stand in floors until the pictures of three renderers are measured.",
+  "sound": {
+    "film-a": "883ee8bd67c284161d0156b0e10fcc7dc79be5c0526423809174e456544b5515",
+    "film-b": "3edd8ff579404fce8d62a041b2172306a6b26eb9a31d59e0b90d82315337bf23"
+  },
+  "opening": { "branch": "agent/p6-opening-master", "commit": "e44b7e51f656d15a4bfd9199eeeeb3c83c1bc69c", "path": "out/opening-master" },
+  "disk": { "chunkMb": 27, "pngMb": 16, "finalMb": { "film-a": 500, "film-b": 500, "loop": 400, "still": 30 } }
+}

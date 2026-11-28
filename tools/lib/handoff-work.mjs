@@ -1,0 +1,1221 @@
+// The work behind each command of the render handoff. tools/handoff.mjs calls these; tools/lib/handoff.mjs holds the
+// rules they follow and tools/lib/handoff-machine.mjs what they read from the machine. Nothing here draws by itself:
+// every picture is drawn by tools/master.mjs or tools/shutter-frame.mjs, and every film is encoded by tools/master.mjs.
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { spawn, spawnSync } from 'node:child_process'
+import { rel, readJson, writeJson } from './paths.mjs'
+import { engineHash } from './hashes.mjs'
+import * as L from './handoff.mjs'
+import * as X from './handoff-machine.mjs'
+
+export const STAMP_DIR = rel('render')
+export const STAMP_FILE = rel('render', 'STAMP.json')
+export const PLAN_FILE = rel('render', 'PLAN.json')
+export const PACK_DIR = rel('render', 'opening-pack')
+export const REFS_DIR = rel('render', 'refs')
+const WIN = process.platform === 'win32'
+const short = (p) => path.relative(rel(), p).split(path.sep).join('/') || '.'
+const mb = (bytes) => `${(bytes / 1e6).toFixed(1)} MB`
+const round = (x, d = 2) => Math.round(x * 10 ** d) / 10 ** d
+const sum = (list) => list.reduce((a, b) => a + b, 0)
+
+export const readStamp = () => {
+  try {
+    return readJson(STAMP_FILE)
+  } catch {
+    return null
+  }
+}
+const readOr = (file, fallback = null) => {
+  try {
+    return readJson(file)
+  } catch {
+    return fallback
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Children. Every child is a program by its full path or a name the system finds as an .exe: never npm, npx or a
+// .cmd by a bare name, and never a shell.
+
+/** The tools a run has started and not seen end, by process number: a later run ends what a stopped one left behind. */
+function trackChild(ctx, pid, on) {
+  if (!ctx.H || !pid) return
+  const f = path.join(ctx.H, 'children.json')
+  const list = readOr(f, []).filter((p) => p !== pid)
+  if (on) list.push(pid)
+  try {
+    fs.mkdirSync(ctx.H, { recursive: true })
+    fs.writeFileSync(f, JSON.stringify(list))
+  } catch {}
+}
+
+export function runFile(ctx, file, args, onLine = null) {
+  return new Promise((resolve) => {
+    const t0 = Date.now()
+    let child
+    try {
+      // on macOS and Linux a tool leads a process group of its own, so that it can be ended with all it started
+      child = spawn(file, args, { cwd: rel(), stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, env: process.env, detached: !WIN })
+    } catch (e) {
+      return resolve({ code: -1, tail: [e.message], seconds: 0 })
+    }
+    trackChild(ctx, child.pid, true)
+    const tail = []
+    let rest = ''
+    const line = (l) => {
+      if (!l) return
+      tail.push(l)
+      if (tail.length > 80) tail.shift()
+      ctx.note(`  | ${l}`)
+      onLine?.(l)
+    }
+    const take = (d) => {
+      const lines = (rest + d).split(/\r?\n/)
+      rest = lines.pop() ?? ''
+      lines.forEach(line)
+    }
+    child.stdout.on('data', take)
+    child.stderr.on('data', take)
+    child.on('error', (e) => resolve({ code: -1, tail: [...tail, e.message], seconds: (Date.now() - t0) / 1000 }))
+    child.on('close', (code) => {
+      line(rest)
+      trackChild(ctx, child.pid, false)
+      resolve({ code, tail, seconds: (Date.now() - t0) / 1000 })
+    })
+  })
+}
+export const runTool = (ctx, tool, args, onLine = null) => {
+  ctx.note(`> node tools/${tool} ${args.join(' ')}`)
+  return runFile(ctx, process.execPath, [rel('tools', tool), ...args], onLine)
+}
+const lastLines = (r, n = 12) => r.tail.slice(-n).join('\n')
+/** The sentence a failed tool ended with: its own last line that starts with its name, or its last line. */
+const whyOf = (r) => {
+  const own = [...r.tail].reverse().find((l) => /^(\[\d+\] )?(master|shutter-frame|simcache): /.test(l) || /^Error: /.test(l))
+  return (own ?? r.tail[r.tail.length - 1] ?? `it ended with code ${r.code}`).replace(/^(\[\d+\] )?/, '')
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Modes. The tool's own tests draw small and in software; a real run never does.
+
+export function modeOf(ctx, cfg) {
+  const small = ctx.T.small
+  const master = Object.values(cfg.formats).find((f) => f.id === cfg.deliver.master.format)
+  const format = small ? cfg.formats.preview : master
+  // On the Linux machines of the tool's own tests there is no installed Chrome and no card: the pinned browser draws.
+  const local = !(ctx.T.linux && process.platform === 'linux')
+  return {
+    small,
+    local,
+    format,
+    master,
+    fps: cfg.film.fps,
+    chunk: small ? 6 : cfg.deliver.master.chunkFrames,
+    // what a tool is told beside its range
+    draw: [...(small ? ['--format', format.id, '--samples', '2', '--chunk', '6'] : []), ...(local ? ['--local'] : [])],
+    names: cfg.deliver.master.names,
+  }
+}
+
+const loadCfg = () => readJson(rel('config', 'showcase.json'))
+
+/** The Chrome switches of every local run: the graphics card by name, and what a test asked for. */
+export function setChromeSwitches(ctx) {
+  const extra = ['--force_high_performance_gpu', ...(ctx.T.angle ? [`--use-angle=${ctx.T.angle}`] : [])]
+  process.env.SHOWCASE_LOCAL_ARGS = extra.join(' ')
+  return extra
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The doctor.
+
+const GL_FACTS = () => {
+  const gl = document.createElement('canvas').getContext('webgl2')
+  if (!gl) return null
+  const e = gl.getExtension('WEBGL_debug_renderer_info')
+  return {
+    vendor: String(gl.getParameter(e ? e.UNMASKED_VENDOR_WEBGL : gl.VENDOR)),
+    renderer: String(gl.getParameter(e ? e.UNMASKED_RENDERER_WEBGL : gl.RENDERER)),
+    version: String(gl.getParameter(gl.VERSION)),
+    shading: String(gl.getParameter(gl.SHADING_LANGUAGE_VERSION)),
+    maxTexture: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+    maxRenderbuffer: gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),
+    maxViewport: Array.from(gl.getParameter(gl.MAX_VIEWPORT_DIMS)),
+    maxSamples: gl.getParameter(gl.MAX_SAMPLES),
+    maxDrawBuffers: gl.getParameter(gl.MAX_DRAW_BUFFERS),
+    max3d: gl.getParameter(gl.MAX_3D_TEXTURE_SIZE),
+    floatBuffer: !!gl.getExtension('EXT_color_buffer_float'),
+    floatLinear: !!gl.getExtension('OES_texture_float_linear'),
+  }
+}
+
+/** Opens the browser as the render will, on the build's own page at the render's size, and draws one picture of one sample. */
+async function readPage(ctx, mode) {
+  const { Session, cfg, formatById } = await import('./page.mjs')
+  const { Run } = await import('./frames.mjs')
+  const sharp = (await import('sharp')).default
+  const session = await Session.open({ local: mode.local, what: 'handoff doctor', say: ctx.note })
+  try {
+    const run = new Run(session, { by: 'handoff', looks: false, say: ctx.note })
+    const track = { kind: 'film', name: 'film-b', format: formatById(mode.format.id), tier: 'samples-1', assets: 'full', fps: cfg.film.fps, step: 1 }
+    const t0 = Date.now()
+    const page = await run.page(track)
+    const loadSeconds = (Date.now() - t0) / 1000
+    const gl = await page.evaluate(GL_FACTS)
+    const caps = await page.evaluate(() => window.showcase.dev.caps()).catch(() => null)
+    let picture = null
+    let drawProblem = ''
+    try {
+      const t1 = Date.now()
+      const png = await run.frame(track, page, 0)
+      const rgb = await sharp(png).removeAlpha().raw().toBuffer()
+      picture = { seconds: (Date.now() - t1) / 1000, bytes: png.length, problem: L.pictureProblem(rgb, mode.format.width, mode.format.height) }
+    } catch (e) {
+      drawProblem = e.message
+    }
+    const lost = await page.evaluate(() => window.__contextLost).catch(() => null)
+    return { browser: session.browserVersion, gl, caps, picture, drawProblem, loadSeconds, lost, errors: [...page.errors] }
+  } finally {
+    await session.close().catch(() => {})
+  }
+}
+
+/** The renderer and the browser's version alone, from a blank page: what is read again before every render process. */
+export async function readRenderer(mode) {
+  const { launch } = await import('./browser.mjs')
+  const browser = await launch({ local: mode.local })
+  try {
+    const page = await browser.newPage()
+    const gl = await page.evaluate(GL_FACTS)
+    return { browser: browser.version(), renderer: gl ? gl.renderer : 'no WebGL', vendor: gl ? gl.vendor : '' }
+  } finally {
+    await browser.close().catch(() => {})
+  }
+}
+
+export function diskNeed(stamp, mode, measured = null, procs = 2) {
+  const d = { ...(stamp?.disk ?? {}), ...(measured ?? {}) }
+  const scale = mode.small ? 0.02 : 1
+  const frames = mode.small ? { 'film-b': 18, loop: 12, opening: 12 } : { 'film-b': stamp.frames['film-b'], loop: stamp.frames.loop, opening: stamp.frames.opening }
+  return L.diskPlan({
+    chunkBytes: (d.chunkMb ?? 27) * 1e6 * scale,
+    frames,
+    chunkFrames: mode.chunk,
+    pngBytes: (d.pngMb ?? 30) * 1e6 * scale,
+    procs,
+    finalBytes: [d.finalMb?.['film-a'] ?? 500, d.finalMb?.['film-b'] ?? 500, d.finalMb?.loop ?? 400, d.finalMb?.still ?? 30].map((m) => m * 1e6 * scale),
+    deliverOnSameDrive: true,
+    spare: 3 * 1024 ** 3,
+  })
+}
+
+export async function doctor(ctx, { draw = true } = {}) {
+  const rows = []
+  const row = (check, found, wanted, pass) => rows.push({ check, found, wanted, pass })
+  const out = { pass: false, why: '', rows, time: new Date().toISOString() }
+  const done = (why) => {
+    ctx.tables?.push({ title: 'the doctor', rows })
+    out.pass = rows.every((r) => r.pass !== false)
+    out.why = out.pass ? why : rows.filter((r) => r.pass === false).map((r) => r.why ?? `${r.check}: ${r.found}`).join('. ')
+    return out
+  }
+  const fail = (check, found, wanted, why) => rows.push({ check, found, wanted, pass: false, why })
+
+  // where this is
+  let procVersion = ''
+  try {
+    procVersion = fs.readFileSync('/proc/version', 'utf8')
+  } catch {}
+  const place = L.placeProblem({ platform: process.platform, release: os.release(), env: process.env, procVersion, allowLinux: ctx.T.linux })
+  if (place) {
+    fail('the place', `${process.platform} ${os.release()}`, 'Windows or macOS itself', place)
+    return done('')
+  }
+
+  // the machine, read now
+  let machine
+  try {
+    machine = X.readMachine()
+  } catch (e) {
+    fail('the machine', 'could not be read', 'processor, memory and video cards read from the system', `the machine could not be read: ${e.message}`)
+    return done('')
+  }
+  out.machine = machine
+  ctx.say(`system     ${machine.os}${machine.model ? `, ${machine.model}` : ''}`)
+  ctx.say(`processor  ${machine.processor.name}, ${machine.processor.cores || '?'} cores, ${machine.processor.threads} threads`)
+  ctx.say(`memory     ${L.gb(machine.memoryBytes).toFixed(1)} GB`)
+  if (!machine.cards.length) ctx.say('video card  the system names none')
+  for (const c of machine.cards) ctx.say(`video card ${c.name}${c.driverVersion ? `, driver ${c.driverVersion}` : ''}${c.driverDate ? ` of ${c.driverDate}` : ''}${c.memoryBytes ? `, ${L.gb(c.memoryBytes).toFixed(1)} GB (${c.memoryFrom})` : ''}`)
+  ctx.say(`power      ${machine.power}`)
+  ctx.say(`desktop    ${machine.desktop}`)
+  ctx.say(`read with  ${machine.readWith}`)
+  if (machine.onBattery) row('power', machine.power, 'mains power for a render of hours', null)
+
+  // the tools
+  const tools = X.readTools()
+  out.tools = tools
+  const plat = process.platform
+  const need = (tool, ok, found, wanted) => {
+    if (ok) return row(tool, found, wanted, true)
+    const line = L.installLine(tool === 'ffprobe' ? 'ffmpeg' : tool, plat)
+    fail(tool, found, wanted, `${tool} ${found}. Install it with this line, then run the doctor again: ${line} . ${L.NEW_TERMINAL}`)
+  }
+  need('node', L.nodeOk(tools.node.version), `${tools.node.version} at ${tools.node.file}`, L.NODE_WANTED)
+  row('npm', tools.npm.version ? `${tools.npm.version}, ${tools.npm.from}` : 'not found beside this node', 'the npm that came with this node', tools.npm.version ? true : false)
+  need('git', tools.git.runs && L.atLeast(L.versionOf(tools.git.version), L.LEAST.git), tools.git.runs ? `${tools.git.version} at ${tools.git.file} (${tools.git.from})` : 'is missing', `git ${L.LEAST.git.join('.')} or newer`)
+  const ff = L.ffmpegVersion(tools.ffmpeg.version)
+  const ffOk = tools.ffmpeg.runs && ff && (ff.dated || L.atLeast(ff.numbers, L.LEAST.ffmpeg)) && tools.ffmpeg.libx264 && tools.ffmpeg.aac
+  need('ffmpeg', ffOk, tools.ffmpeg.runs ? `${ff?.text ?? tools.ffmpeg.version} at ${tools.ffmpeg.file} (${tools.ffmpeg.from}), libx264 ${tools.ffmpeg.libx264 ? 'yes' : 'NO'}, aac ${tools.ffmpeg.aac ? 'yes' : 'NO'}` : 'is missing', `ffmpeg ${L.LEAST.ffmpeg[0]} or newer with libx264 and aac`)
+  const fp = L.ffmpegVersion(tools.ffprobe.version)
+  need('ffprobe', tools.ffprobe.runs && !!fp, tools.ffprobe.runs ? `${fp?.text ?? tools.ffprobe.version} at ${tools.ffprobe.file}` : 'is missing', 'ffprobe, which comes with ffmpeg')
+  // the Linux machines of the tool's own tests have no Chrome: the pinned browser draws there, and only there
+  if (ctx.T.linux && plat === 'linux') row('chrome', "not looked for: the pinned browser of the tool's own tests draws", 'Google Chrome, installed', null)
+  else need('chrome', !!tools.chrome.file, tools.chrome.file ? `at ${tools.chrome.file}` : 'is missing', 'Google Chrome, installed')
+
+  // the clone, the stamp and the build
+  const stamp = readStamp()
+  out.stamp = stamp ? { engineHash: stamp.engineHash, released: stamp.releasedForFinalRender === true } : null
+  const bad = L.stampProblems(stamp)
+  if (bad.length) fail('the stamp', bad.join('; '), 'render/STAMP.json, whole', `the stamp is not whole: ${bad.join('; ')}. The clone is damaged or not at the commit of the handoff`)
+  const hash = engineHash()
+  out.engineHash = hash
+  const git = (args) => {
+    const r = spawnSync('git', args, { cwd: rel(), encoding: 'utf8', windowsHide: true })
+    return r.status === 0 ? r.stdout.trim() : ''
+  }
+  out.commit = git(['rev-parse', 'HEAD'])
+  const edited = git(['status', '--porcelain', '--untracked-files=no']).split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+  ctx.say(`clone      ${rel()} at commit ${out.commit ? out.commit.slice(0, 12) : 'not read'}${edited.length ? `, ${edited.length} tracked ${edited.length === 1 ? 'file is' : 'files are'} changed: ${edited.slice(0, 6).join(', ')}` : ', no tracked file changed'}`)
+  if (!bad.length) {
+    if (hash === stamp.engineHash) row('engine hash', hash, `${stamp.engineHash}, the stamp's`, true)
+    else fail('engine hash', hash, `${stamp.engineHash}, the stamp's`, `the engine here is ${hash} and the stamp was made for ${stamp.engineHash}: ${L.hashCause()}${edited.length ? `. Changed here: ${edited.slice(0, 6).join(', ')}` : ''}`)
+  }
+  const built = readOr(rel('dist', 'build.json'))
+  const hasModules = fs.existsSync(rel('node_modules', 'playwright-core')) && fs.existsSync(rel('node_modules', 'sharp'))
+  if (!hasModules || built?.engineHash !== hash) fail('the build', !hasModules ? 'the packages are not installed' : built ? `made for engine ${built.engineHash}` : 'not made', 'made by setup for this engine', 'the build is not made for this engine yet. Run this line first, then the doctor again: node tools/handoff.mjs setup')
+
+  // the disk
+  const cfg = loadCfg()
+  const mode = modeOf(ctx, cfg)
+  out.mode = { small: mode.small, local: mode.local, format: mode.format.id, width: mode.format.width, height: mode.format.height }
+  const free = X.freeBytes(rel())
+  out.freeBytes = free
+  if (!bad.length) {
+    const plan = diskNeed(stamp, mode, readOr(path.join(ctx.H, 'test.json'))?.disk ?? null)
+    out.diskNeedBytes = plan.total
+    const text = `${L.gb(free).toFixed(1)} GB free on the drive of the clone`
+    const want = `${L.gb(plan.total).toFixed(1)} GB: ${plan.chunks} chunks ${L.gb(plan.intermediates).toFixed(1)}, frames in work ${L.gb(plan.inFlight).toFixed(1)}, the files ${L.gb(plan.finals).toFixed(1)}, room to encode ${L.gb(plan.encodeRoom).toFixed(1)}, the copies ${L.gb(plan.copies).toFixed(1)}, spare ${L.gb(plan.spare).toFixed(1)}`
+    if (free >= plan.total) row('free disk', text, want, true)
+    else fail('free disk', text, want, `${text}, and the render needs ${L.gb(plan.total).toFixed(1)} GB at its fullest. Make room on that drive, or clone onto a drive with more`)
+  }
+
+  // the browser, opened as the render opens it
+  if (rows.some((r) => r.pass === false)) return done('')
+  const switches = setChromeSwitches(ctx)
+  let seen
+  try {
+    seen = await readPage(ctx, mode)
+  } catch (e) {
+    fail('the browser', 'could not open the page of the build', 'Chrome, in a window, on the page of the build', `Chrome could not open the page of the build: ${String(e.message).split('\n')[0]}`)
+    return done('')
+  }
+  out.page = seen
+  out.switches = switches
+  const gl = seen.gl
+  ctx.say(`browser    ${mode.local ? 'Google Chrome' : 'the pinned browser of the tool tests'} ${seen.browser}, in a window, with ${switches.join(' ')}`)
+  ctx.say(`WebGL      vendor: ${gl?.vendor ?? 'none'}`)
+  ctx.say(`WebGL      renderer: ${gl?.renderer ?? 'none'}`)
+  if (gl) ctx.say(`WebGL      ${gl.version}; largest texture ${gl.maxTexture}, largest render buffer ${gl.maxRenderbuffer}, largest view ${gl.maxViewport.join(' x ')}, ${gl.maxSamples} samples, ${gl.maxDrawBuffers} draw buffers, float buffers ${gl.floatBuffer ? 'yes' : 'no'}`)
+  if (mode.local) need('chrome version', L.atLeast(L.versionOf(seen.browser), L.LEAST.chrome), seen.browser, `Chrome ${L.LEAST.chrome[0]} or newer`)
+  const verdict = L.drawVerdict({ renderer: gl?.renderer ?? '', cards: machine.cards, allowSoftware: ctx.T.software })
+  out.renderer = gl?.renderer ?? ''
+  out.software = verdict.software
+  const wanted = L.wantedCard(machine.cards)
+  if (verdict.ok) row('what draws', gl?.renderer ?? '', wanted ? `the ${wanted.vendor} card (${wanted.name})` : 'a graphics card, not software', verdict.software ? null : true)
+  else fail('what draws', gl?.renderer ?? 'nothing', wanted ? `the ${wanted.vendor} card (${wanted.name})` : 'a graphics card, not software', `${verdict.why}${verdict.software ? '' : `. Chrome was started with ${switches.join(' ')} and still drew on the other card. What is left is a setting of the system that this tool does not touch: on Windows, Settings > System > Display > Graphics, add Google Chrome and choose High performance; then run the doctor again`}`)
+  if (verdict.ok && verdict.software) ctx.say(`NOTE       ${verdict.why}`)
+  if (gl) {
+    const side = Math.max(mode.master.width, mode.master.height)
+    const fits = gl.maxTexture >= side && gl.maxRenderbuffer >= side && Math.min(...gl.maxViewport) >= Math.min(mode.master.width, mode.master.height)
+    if (fits) row('size', `textures to ${gl.maxTexture}, render buffers to ${gl.maxRenderbuffer}`, `${mode.master.width} x ${mode.master.height} and more`, true)
+    else fail('size', `textures to ${gl.maxTexture}, render buffers to ${gl.maxRenderbuffer}`, `${mode.master.width} x ${mode.master.height} and more`, `this card draws no picture of ${mode.master.width} x ${mode.master.height}: its largest texture is ${gl.maxTexture}`)
+  }
+  if (seen.errors.length) fail('page messages', `${seen.errors.length} ${seen.errors.length === 1 ? 'message' : 'messages'}`, 'none', `the page wrote ${seen.errors.length === 1 ? 'an error' : 'errors'} while it loaded and drew (a shader that does not compile shows here). In full:\n${seen.errors.join('\n')}`)
+  else row('page messages', 'none', 'none', true)
+  if (seen.drawProblem) fail('one picture', 'not drawn', 'one picture of one sample, drawn and read back', `the page could not draw its first picture: ${seen.drawProblem}`)
+  else if (draw && seen.picture) {
+    if (seen.picture.problem) fail('one picture', seen.picture.problem, 'a picture that is not flat', `the first picture came back wrong: ${seen.picture.problem}`)
+    else row('one picture', `film B frame 0 at ${mode.format.width} x ${mode.format.height}, 1 sample, drawn and read back in ${seen.picture.seconds.toFixed(1)} s (${mb(seen.picture.bytes)} as a PNG); the page loaded in ${seen.loadSeconds.toFixed(1)} s`, 'drawn, read back, not flat', true)
+  }
+  if (seen.lost) fail('graphics context', `lost ${seen.lost} ${seen.lost === 1 ? 'time' : 'times'}`, 'never lost', `the graphics context of the page was lost ${seen.lost} ${seen.lost === 1 ? 'time' : 'times'} while one picture was drawn. The card or its driver gave up`)
+  return done(`this machine can draw the film: ${gl?.renderer ?? ''}, Chrome ${seen.browser}, engine ${hash}, ${L.gb(free).toFixed(0)} GB free`)
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Setup: the packages and the build, with this node alone.
+
+export async function setup(ctx) {
+  if (!L.nodeOk(process.version)) return { pass: false, why: `this is Node ${process.version}, and the build needs ${L.NODE_WANTED}. Install it with this line, open a new terminal and run setup again: ${L.installLine('node', process.platform)}` }
+  X.readTools()
+  const npm = X.npmCli()
+  if (!npm) return { pass: false, why: `npm was not found beside ${process.execPath}. Node is installed without its npm: install Node again with: ${L.installLine('node', process.platform)}` }
+  ctx.say(`installing the packages the lock file names (npm ci, with ${short(npm) === npm ? npm : npm})`)
+  const ci = await runFile(ctx, process.execPath, [npm, 'ci', '--no-audit', '--no-fund'])
+  if (ci.code !== 0) return { pass: false, why: `the packages could not be installed (npm ci ended with code ${ci.code}). Its last lines:\n${lastLines(ci)}` }
+  ctx.say(`packages installed in ${L.hoursText(ci.seconds)}`)
+  // the build, as package.json writes it, each step started by this node
+  const steps = String(readJson(rel('package.json')).scripts?.build ?? '').split('&&').map((s) => s.trim().split(/\s+/))
+  const bin = { tsc: rel('node_modules', 'typescript', 'bin', 'tsc'), vite: rel('node_modules', 'vite', 'bin', 'vite.js') }
+  const known = steps.length > 0 && steps.every((s) => (s[0] === 'node' && s[1]) || bin[s[0]])
+  if (!known) {
+    ctx.say('building (npm run build)')
+    const r = await runFile(ctx, process.execPath, [npm, 'run', 'build'])
+    if (r.code !== 0) return { pass: false, why: `the build failed (npm run build ended with code ${r.code}). Its last lines:\n${lastLines(r)}` }
+  } else {
+    for (const s of steps) {
+      const args = s[0] === 'node' ? [rel(s[1]), ...s.slice(2)] : [bin[s[0]], ...s.slice(1)]
+      ctx.say(`building: ${s.join(' ')}`)
+      const r = await runFile(ctx, process.execPath, args)
+      if (r.code !== 0) return { pass: false, why: `the build failed at "${s.join(' ')}" (code ${r.code}). Its last lines:\n${lastLines(r)}` }
+    }
+  }
+  const hash = engineHash()
+  const built = readOr(rel('dist', 'build.json'))
+  if (built?.engineHash !== hash) return { pass: false, why: `the build ended and dist/build.json ${built ? `names engine ${built.engineHash}` : 'is not there'}, where the source is ${hash}` }
+  const stamp = readStamp()
+  const bad = L.stampProblems(stamp)
+  if (bad.length) return { pass: false, why: `the build is made (engine ${hash}), and the stamp is not whole: ${bad.join('; ')}` }
+  ctx.say(`engine hash here   ${hash}`)
+  ctx.say(`engine hash stamp  ${stamp.engineHash}`)
+  if (stamp.engineHash !== hash) return { pass: false, why: `the build is made, and its engine is ${hash} where the stamp was made for ${stamp.engineHash}: ${L.hashCause()}` }
+  return { pass: true, why: `the packages are installed and the build is made, engine ${hash}, the stamp's` }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Pictures.
+
+async function rgbOfFile(file) {
+  const sharp = (await import('sharp')).default
+  const { data, info } = await sharp(file).removeAlpha().raw().toBuffer({ resolveWithObject: true })
+  return { data, width: info.width, height: info.height }
+}
+
+/** The pictures of one reference of the stamp, decoded. */
+export async function loadReference(ref) {
+  const check = (f) => {
+    const file = path.join(REFS_DIR, f.file)
+    if (!fs.existsSync(file)) throw new Error(`the reference picture ${short(file)} is not in the clone`)
+    if (L.sha256File(file) !== f.sha256) throw new Error(`the reference picture ${short(file)} is not the one the stamp names`)
+    return file
+  }
+  const half = await rgbOfFile(check(ref.half))
+  const cuts = []
+  for (const c of ref.cuts ?? []) cuts.push({ ...c, data: (await rgbOfFile(check(c))).data })
+  return { half, cuts, glass: ref.glass ?? [] }
+}
+
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/**
+ * The contact sheet: for every reference frame the reference beside what this machine drew, whole at half size and
+ * then each cut at full size. One JPEG.
+ */
+export async function contactSheet(items, file, title) {
+  const sharp = (await import('sharp')).default
+  const TW = 960
+  const TH = 540
+  const PAD = 12
+  const BAR = 44
+  const width = PAD * 3 + TW * 2
+  const parts = []
+  let y = PAD
+  const text = (label, top, size = 24) => parts.push({ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width - PAD * 2}" height="${BAR}"><text x="0" y="${Math.round(BAR * 0.68)}" font-family="Arial, Helvetica, sans-serif" font-size="${size}" fill="#f2f2f2">${esc(label)}</text></svg>`), left: PAD, top })
+  text(title, y, 28)
+  y += BAR
+  text('left: the reference          right: what this machine drew', y, 20)
+  y += BAR
+  const tile = async (rgb, w, h) => (w === TW && h === TH ? rgb : sharp(rgb, { raw: { width: w, height: h, channels: 3 } }).resize(TW, TH, { fit: 'contain', background: '#101010' }).raw().toBuffer())
+  for (const it of items) {
+    text(it.label, y)
+    y += BAR
+    for (const pair of it.pairs) {
+      parts.push({ input: await tile(pair.ref, pair.w, pair.h), raw: { width: TW, height: TH, channels: 3 }, left: PAD, top: y })
+      parts.push({ input: await tile(pair.here, pair.w, pair.h), raw: { width: TW, height: TH, channels: 3 }, left: PAD * 2 + TW, top: y })
+      y += TH
+      text(pair.label, y, 18)
+      y += Math.round(BAR * 0.8)
+    }
+    y += PAD
+  }
+  fs.mkdirSync(path.dirname(file), { recursive: true })
+  await sharp({ create: { width, height: y + PAD, channels: 3, background: '#101010' } }).composite(parts).jpeg({ quality: 82, chromaSubsampling: '4:2:0', mozjpeg: true }).toFile(file)
+  return { file, bytes: fs.statSync(file).size, width, height: y + PAD }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The short test.
+
+const FRAME_LINE = /^(\S+) frame (\d+), .*?: travel ([\d.]+) px, (\d+) samples, ([\d.]+) s .*sha256 ([0-9a-f]{64}), (.+)$/
+
+function chunkRecords(dir, what) {
+  const out = []
+  let names = []
+  try {
+    names = fs.readdirSync(path.join(dir, what)).filter((n) => n.endsWith('.json'))
+  } catch {}
+  for (const n of names.sort()) {
+    const r = readOr(path.join(dir, what, n))
+    if (r && r.what === what && Number.isInteger(r.first)) out.push({ ...r, file: path.join(dir, what, n.replace(/\.json$/, '.mp4')) })
+  }
+  return out.sort((a, b) => a.first - b.first)
+}
+
+async function fillSimcache(ctx, mode, whats) {
+  const t0 = Date.now()
+  for (let i = 0; i < 40; i++) {
+    const r = await runTool(ctx, 'simcache.mjs', [...whats, ...(mode.local ? ['--local'] : [])])
+    if (r.code !== 0) return { ok: false, why: `the checkpoints of the simulation could not be made: ${whyOf(r)}` }
+    if (r.tail.some((l) => /complete for engine/.test(l))) return { ok: true, seconds: (Date.now() - t0) / 1000 }
+  }
+  return { ok: false, why: 'the checkpoints of the simulation were not complete after 40 runs' }
+}
+
+async function calibrate(ctx, mode) {
+  const r = await runTool(ctx, 'master.mjs', ['--calibrate', ...(mode.local ? ['--local'] : [])])
+  if (r.code !== 0) return { ok: false, why: `the calibration picture could not be drawn: ${whyOf(r)}` }
+  const c = readOr(rel('out', 'work', 'master', 'calibration.json'))
+  return c ? { ok: true, seconds: c.seconds, sha256: c.sha256 } : { ok: false, why: 'the calibration picture left no record' }
+}
+
+function calibrationValid(mode, hash) {
+  const c = readOr(rel('out', 'work', 'master', 'calibration.json'))
+  return !!c && c.engineHash === hash && c.renderer === (mode.local ? 'card' : c.renderer)
+}
+
+async function makeSound(ctx, file, kind, seconds, { from = null, offset = 0 } = {}) {
+  fs.mkdirSync(path.dirname(file), { recursive: true })
+  const d = seconds.toFixed(6)
+  const args =
+    kind === 'mix'
+      ? ['-v', 'error', '-nostdin', '-y', '-ss', offset.toFixed(6), '-t', d, '-i', from, '-c:a', 'copy', file]
+      : kind === 'tone'
+        ? // two channels of noise that share nothing: the one made up sound that takes the bits a real mix takes
+          ['-v', 'error', '-nostdin', '-y', '-f', 'lavfi', '-i', `anoisesrc=color=white:sample_rate=48000:amplitude=0.25:duration=${d}:seed=7`, '-f', 'lavfi', '-i', `anoisesrc=color=white:sample_rate=48000:amplitude=0.25:duration=${d}:seed=11`, '-filter_complex', '[0:a][1:a]amerge=inputs=2[a]', '-map', '[a]', '-c:a', 'pcm_s16le', file]
+        : ['-v', 'error', '-nostdin', '-y', '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=48000', '-t', d, '-c:a', 'pcm_s16le', file]
+  const r = await runFile(ctx, 'ffmpeg', args)
+  return r.code === 0 && fs.existsSync(file)
+}
+
+/** The two final mixes against the stamp. */
+export function soundState(stamp) {
+  return ['film-a', 'film-b'].map((k) => {
+    const file = rel('audio', 'final', `${k}.wav`)
+    return { ...L.soundVerdict(k, `audio/final/${k}.wav`, fs.existsSync(file) ? L.sha256File(file) : '', stamp.sound[k]), file }
+  })
+}
+
+export async function shortTest(ctx) {
+  const rows = []
+  const row = (check, found, wanted, pass) => rows.push({ check, found, wanted, pass })
+  const result = { pass: false, why: '', rows, time: new Date().toISOString() }
+  const fail = (why) => {
+    result.pass = false
+    result.why = why
+    return result
+  }
+  const doc = await doctor(ctx)
+  if (!doc.pass) return fail(`the doctor does not pass, so nothing was drawn: ${doc.why}`)
+  const stamp = readStamp()
+  const { cfg } = await import('./page.mjs')
+  const { machineId } = await import('./browser.mjs')
+  const { probeStreams } = await import('./encode.mjs')
+  const { procsMemoryHolds } = await import('./master.mjs')
+  const mode = modeOf(ctx, cfg)
+  const hash = engineHash()
+  const T = path.join(ctx.H, 'test')
+  fs.rmSync(T, { recursive: true, force: true })
+  fs.mkdirSync(T, { recursive: true })
+  // the test's own chunks and films: nothing of a real render lives in these two folders
+  fs.rmSync(rel('out', 'master', 'test'), { recursive: true, force: true })
+  fs.rmSync(rel('out', 'work', 'master', 'test'), { recursive: true, force: true })
+  Object.assign(result, { engineHash: hash, machine: machineId(), small: mode.small, software: doc.software === true, renderer: doc.renderer, browser: doc.page.browser, width: mode.format.width, height: mode.format.height, switches: { ...ctx.T } })
+  const counts = { 'film-b': L.countsOf(stamp.samples?.['film-b']), loop: L.countsOf(stamp.samples?.loop) }
+  const refs = stamp.references.filter((r) => !ctx.T.refs || ctx.T.refs.split('+').includes(`${r.what}:${r.frame}`))
+  const stretch = L.stretchPlan(ctx.T.stretch || (mode.small ? '708-731/6' : ''), stamp.test.stretch, mode.chunk)
+  const size = stretch.size
+  const memoryHolds = mode.small ? 2 : procsMemoryHolds(os.totalmem())
+
+  // how long, said before anything is drawn
+  ctx.say(`the short test: ${refs.length} reference ${refs.length === 1 ? 'frame' : 'frames'} and film B frames ${stretch.first} to ${stretch.last} at ${mode.format.width} x ${mode.format.height}, ${mode.small ? "small and in few samples, a run of the tool's own tests" : "the masters' tier"}`)
+  const cal = await calibrate(ctx, mode)
+  if (!cal.ok) return fail(cal.why)
+  const tierSamples = cfg.tiers.review.samplesPerFrame
+  const perSampleGuess = (cal.seconds / tierSamples) * ((mode.format.width * mode.format.height) / (cfg.formats.hd.width * cfg.formats.hd.height))
+  const samplesAhead = mode.small ? (refs.length + stretch.last - stretch.first + 1) * 2 : sum(refs.filter((r) => r.what !== 'opening').map((r) => r.samples)) + sum(counts['film-b'].slice(stretch.first, stretch.last + 1))
+  const guess = samplesAhead * perSampleGuess
+  result.calibration = { seconds: cal.seconds, sha256: cal.sha256 }
+  ctx.say(`the calibration picture took ${cal.seconds} s. By that, the test draws ${samplesAhead} samples in about ${L.hoursText(guess)} (a rough guess before anything is measured)`)
+  if (guess > 20 * 60) ctx.say(`THIS MACHINE IS SLOW: the short test will take about ${L.hoursText(guess)}. It goes on by itself and nothing needs doing meanwhile`)
+
+  const sim = await fillSimcache(ctx, mode, ['film', 'loop'])
+  if (!sim.ok) return fail(sim.why)
+  ctx.say(`the checkpoints of the simulation are made (${L.hoursText(sim.seconds)})`)
+
+  // (a) the reference frames
+  const sheet = []
+  const timed = []
+  const drawnDir = path.join(T, 'frames')
+  const sharp = (await import('sharp')).default
+  for (const what of ['film-b', 'loop']) {
+    const list = refs.filter((r) => r.what === what)
+    if (!list.length) continue
+    const seen = new Map()
+    const r = await runTool(ctx, 'shutter-frame.mjs', ['--what', what, '--frames', list.map((x) => x.frame).join(','), '--out', short(drawnDir), ...(mode.small ? ['--format', mode.format.id, '--tier', 'samples-2'] : []), ...(mode.local ? ['--local'] : [])], (l) => {
+      const m = FRAME_LINE.exec(l)
+      if (m) {
+        seen.set(Number(m[2]), { samples: Number(m[4]), seconds: Number(m[5]), file: rel(m[7]) })
+        ctx.say(`drawn: ${what} frame ${m[2]}, ${m[4]} samples, ${m[5]} s`)
+      }
+    })
+    if (r.code !== 0) return fail(`the reference frames of ${what} could not be drawn: ${whyOf(r)}`)
+    for (const ref of list) {
+      const got = seen.get(ref.frame)
+      if (!got || !fs.existsSync(got.file)) return fail(`${what} frame ${ref.frame} was not drawn: the tool named no file for it`)
+      timed.push({ what, frame: ref.frame, samples: got.samples, seconds: got.seconds })
+      const here = await rgbOfFile(got.file)
+      const loaded = await loadReference(ref)
+      const name = `${what} frame ${ref.frame}${ref.name ? ` (${ref.name})` : ''}`
+      if (mode.small) {
+        // a small picture of few samples is no match for the reference: the numbers are noted and hold nothing
+        const quarter = L.half(loaded.half.data, loaded.half.width, loaded.half.height)
+        const bad = L.pictureProblem(here.data, here.width, here.height)
+        row(`${name}: a picture`, bad || 'it holds a picture', 'no flat or empty frame', !bad)
+        if (!bad && quarter.width === here.width) row(`${name}: whole picture, small`, `${L.psnr(here.data, quarter.data).psnr.toFixed(2)} dB, blocks ${L.coarsePsnr(here.data, quarter.data, here.width, here.height).toFixed(2)} dB`, 'noted only: a small draft against the reference', null)
+        continue
+      }
+      if (got.samples !== ref.samples) row(`${name}: samples`, `${got.samples}`, `${ref.samples}, as the reference was drawn`, false)
+      const c = L.compareFrame({ here: here.data, width: here.width, height: here.height, ref: loaded, floors: stamp.floors })
+      for (const x of c.rows) row(`${name}: ${x.check}`, x.found, x.wanted, x.pass)
+      ;(result.frames ??= []).push({ what, frame: ref.frame, samples: got.samples, seconds: got.seconds, ...c.numbers, pass: c.pass })
+      const h = L.half(here.data, here.width, here.height)
+      sheet.push({ label: `${name}, ${got.samples} samples: whole ${Number.isFinite(c.numbers.psnrWhole) ? c.numbers.psnrWhole.toFixed(2) : 'identical'} dB${c.pass ? '' : '   FAILS'}`, pairs: [{ label: 'the whole picture at half size', ref: loaded.half.data, here: h.data, w: h.width, h: h.height }, ...loaded.cuts.map((cut, k) => ({ label: `cut ${cut.name} at full size, x ${cut.x} y ${cut.y}: ${Number.isFinite(c.numbers.cuts[k].psnr) ? c.numbers.cuts[k].psnr.toFixed(2) : 'identical'} dB`, ref: cut.data, here: L.crop(here.data, here.width, cut), w: cut.w, h: cut.h }))] })
+    }
+  }
+  // the opening is never drawn: its reference frame is read from the pack and must be the same picture
+  const { openPack } = await import('./openingpack.mjs')
+  let pack = null
+  for (const ref of refs.filter((r) => r.what === 'opening')) {
+    pack ??= await openPack(PACK_DIR)
+    const here = await pack.frame(ref.frame)
+    const loaded = await loadReference(ref)
+    const c = L.compareFrame({ here, width: pack.width, height: pack.height, ref: loaded, floors: stamp.floors })
+    for (const x of c.rows) row(`opening frame ${ref.frame}, read from the pack: ${x.check}`, x.found, x.wanted, x.pass)
+    const h = L.half(here, pack.width, pack.height)
+    sheet.push({ label: `opening frame ${ref.frame}, read from the pack and never drawn here`, pairs: [{ label: 'the whole picture at half size', ref: loaded.half.data, here: h.data, w: h.width, h: h.height }, ...loaded.cuts.map((cut) => ({ label: `cut ${cut.name} at full size, x ${cut.x} y ${cut.y}`, ref: cut.data, here: L.crop(here, pack.width, cut), w: cut.w, h: cut.h }))] })
+  }
+
+  // one chunk of the opening from the pack, as the full render takes it
+  let openingSeconds = null
+  if (!mode.small) {
+    const o = await runTool(ctx, 'master.mjs', ['--what', 'opening', '--first', '0', '--last', String(mode.chunk - 1), '--chunk', String(mode.chunk), '--pack', PACK_DIR])
+    if (o.code !== 0) return fail(`a chunk of the opening could not be made from the pack: ${whyOf(o)}`)
+    openingSeconds = o.seconds / mode.chunk
+    row('the opening pack', `frames 0 to ${mode.chunk - 1} made into a chunk in ${o.seconds.toFixed(1)} s`, 'read from the pack and encoded, never drawn', true)
+  }
+
+  // (b) the stretch across the landing, in chunks, through the master tool
+  const range = (list) => ['--what', 'film-b', '--first', String(list[0].first), '--last', String(list[list.length - 1].last)]
+  const size6 = ['--chunk', String(size)]
+  const drawArgs = mode.small ? ['--format', mode.format.id, '--samples', '2', ...size6] : size6
+  const local = mode.local ? ['--local'] : []
+  const watch = (l) => {
+    const m = /^(?:\[\d+\] )?finished (\S+):/.exec(l)
+    if (m) ctx.say(`chunk ${m[1]} is finished`)
+  }
+  const one = await runTool(ctx, 'master.mjs', [...range(stretch.one), ...drawArgs, ...local], watch)
+  if (one.code !== 0) return fail(`the stretch could not be drawn with one process: ${whyOf(one)}`)
+  let two = null
+  if (stretch.two.length) {
+    const procs = memoryHolds >= 2 ? ['--procs', '2'] : []
+    two = await runTool(ctx, 'master.mjs', [...range(stretch.two), ...drawArgs, ...local, ...procs], watch)
+    if (two.code !== 0) return fail(`the stretch could not be drawn with ${procs.length ? 'two processes' : 'one process'}: ${whyOf(two)}`)
+    two.procs = procs.length ? 2 : 1
+  }
+  const records = chunkRecords(rel('out', 'master', 'test'), 'film-b')
+  if (records.length !== stretch.chunks.length) return fail(`the stretch should be ${stretch.chunks.length} chunks on disk and is ${records.length}`)
+  const wrong = records.filter((r) => L.softwareName(r.graphics) && !ctx.T.software)
+  if (wrong.length) return fail(`a chunk of the stretch was drawn in software ("${wrong[0].graphics}")`)
+  row('the stretch', `${records.length} chunks of ${size} frames, frames ${stretch.first} to ${stretch.last}, every one verified against its PNGs (least ${Math.min(...records.map((r) => r.verify?.psnr?.least ?? 0))} dB)`, 'drawn in chunks, each verified', records.every((r) => r.verify?.ok === true))
+  const flat = sum(records.map((r) => (r.flatFrames ?? []).length))
+  const nan = sum(records.map((r) => r.notNumber?.total ?? 0))
+  row('no flat frame, no value that is no number', `${flat} flat, ${nan} values that are no number`, 'none', flat === 0 && nan === 0)
+
+  // the test film, through the encode of the masters
+  const frames = stretch.last - stretch.first + 1
+  const seconds = frames / mode.fps
+  const mixes = soundState(stamp)
+  const soundFile = path.join(T, 'sound.wav')
+  let soundLine
+  const b = mixes.find((s) => s.which === 'film-b')
+  if (b.ok && (await makeSound(ctx, soundFile, 'mix', seconds, { from: b.file, offset: stretch.first / mode.fps }))) soundLine = 'The test film carries its own piece of the final mix of film B.'
+  else if (ctx.T.tones && (await makeSound(ctx, soundFile, 'tone', seconds))) soundLine = "The test film carries a made up sound, by a switch of the tool's own tests."
+  else if (await makeSound(ctx, soundFile, 'silence', seconds)) soundLine = `The test film is silent: ${fs.existsSync(b.file) ? 'audio/final/film-b.wav is here and is not the final mix the stamp names' : 'the two final mixes are not in this clone (they are not in the public repo)'}, so it carries a track of silence. The full render needs both mixes.`
+  else return fail('no sound could be made for the test film: ffmpeg wrote no wav')
+  ctx.say(soundLine)
+  result.sound = soundLine
+  const targetMb = Math.max(0.05, round(cfg.deliver.master.final.targetMb['film-b'] * (frames / stamp.frames['film-b']), 3))
+  // the encode cuts its chunk lines as the stretch was cut
+  const enc = await runTool(ctx, 'master.mjs', ['--encode', 'film-b', '--test', '--gaps', '--sound', soundFile, '--target-mb', String(targetMb), ...(size !== cfg.deliver.master.chunkFrames ? size6 : [])])
+  let made = rel('out', 'work', 'master', 'test', mode.names['film-b'])
+  let madeRecord = readOr(`${made}.json`)
+  // The encoder proves its film as it proves a master. One of its checks cannot hold for two seconds: the bit rate of
+  // the sound, which a piece of silence or a quiet piece of the mix does not reach. That one is noted here, and held
+  // by the full render, whose films carry their whole mixes. Every other check is held.
+  const SOUND_RATE = 'sound bit rate'
+  let rateNote = ''
+  if (!fs.existsSync(made)) {
+    const unproven = made.replace(/\.mp4$/, '.unproven.mp4')
+    const u = readOr(`${unproven}.json`)
+    const failing = (u?.proof ?? []).filter((x) => x.pass === false)
+    if (fs.existsSync(unproven) && failing.length === 1 && failing[0].check === SOUND_RATE) {
+      made = unproven
+      madeRecord = u
+      rateNote = `the sound takes ${failing[0].found} where a whole mix takes ${failing[0].wanted}`
+    }
+  }
+  if (!fs.existsSync(made) || !madeRecord || (!rateNote && (enc.code !== 0 || madeRecord.passed !== true))) return fail(`the test film could not be encoded and proven: ${whyOf(enc)}`)
+  const s = probeStreams(made)
+  const v = s.video[0] ?? {}
+  const a = s.audio[0] ?? null
+  const V = cfg.deliver.master.video
+  row('test film: size', `${v.width} x ${v.height}`, `${mode.format.width} x ${mode.format.height}`, v.width === mode.format.width && v.height === mode.format.height)
+  row('test film: frames', `${madeRecord.frames} (the container says ${v.nb_frames})`, `${frames}`, madeRecord.frames === frames && Number(v.nb_frames) === frames)
+  row('test film: rate', `${v.r_frame_rate}`, `${mode.fps}/1`, v.r_frame_rate === `${mode.fps}/1`)
+  row('test film: pixel format', `${v.pix_fmt}`, V.pixFmt, v.pix_fmt === V.pixFmt)
+  row('test film: codec, profile, level', `${v.codec_name}, ${v.profile}, ${v.level}`, `h264, ${V.profile}, ${Math.round(Number(V.level) * 10)}`, v.codec_name === 'h264' && String(v.profile).toLowerCase() === V.profile && Number(v.level) === Math.round(Number(V.level) * 10))
+  row('test film: sound', a ? `${a.codec_name}, ${a.sample_rate} Hz, ${a.channels} channels, ${Number(a.duration).toFixed(3)} s` : 'none', `aac, ${seconds.toFixed(3)} s`, !!a && a.codec_name === 'aac' && Math.abs(Number(a.duration) - seconds) < 0.05)
+  row("test film: the encoder's own proof", rateNote ? `${madeRecord.proof.length - 1} of ${madeRecord.proof.length} checks hold; ${rateNote}, which a piece of two seconds cannot show` : `${madeRecord.proof.filter((p) => p.pass === false).length} of ${madeRecord.proof.length} checks fail`, 'none fails but the bit rate of a short piece of sound', rateNote ? null : madeRecord.passed === true)
+  const testName = L.testFilmName(mode.format.width, mode.format.height)
+  const kept = path.join(T, testName)
+  fs.copyFileSync(made, kept)
+  let onDesktop = ''
+  try {
+    fs.mkdirSync(doc.machine.desktop, { recursive: true })
+    onDesktop = path.join(doc.machine.desktop, testName)
+    fs.copyFileSync(made, onDesktop)
+    row('test film: on the Desktop', onDesktop, 'copied there', L.sha256File(onDesktop) === madeRecord.sha256)
+  } catch (e) {
+    row('test film: on the Desktop', `not copied (${e.message})`, 'copied there', false)
+  }
+  result.testFilm = { file: onDesktop || kept, bytes: fs.statSync(made).size, sha256: madeRecord.sha256, frames, seconds }
+
+  // (c) time, processes and disk
+  const first = stretch.one.map((c) => records.find((r) => r.first === c.first))
+  // the first frame of a chunk also pays for what the chunk starts with, so it is measured apart
+  const timedFrames = first.flatMap((r) => r.frameSamples.map((n, i) => ({ samples: n, seconds: r.frameSeconds[i], head: i === 0 })))
+  const inside = timedFrames.filter((f) => !f.head)
+  const fitFrames = inside.length >= 4 ? inside : timedFrames
+  const cost = L.fitCost(fitFrames) ?? { each: 0, perSample: 0, frames: 0, counts: 0 }
+  const heads = inside.length >= 4 ? timedFrames.filter((f) => f.head) : []
+  const chunkStart = heads.length ? Math.max(0, sum(heads.map((f) => f.seconds - cost.each - cost.perSample * f.samples)) / heads.length) : 0
+  let gainMeasured = 0
+  if (two && two.procs === 2) {
+    const later = stretch.two.map((c) => records.find((r) => r.first === c.first))
+    const alone = sum(later.flatMap((r) => r.frameSamples.map((n) => cost.each + cost.perSample * n))) + chunkStart * later.length
+    const wall = Math.max(...[0, 1].map((w) => sum(later.filter((_, i) => i % 2 === w).flatMap((r) => r.frameSeconds))))
+    gainMeasured = wall > 0 && later.length >= 2 ? alone / wall : 0
+  }
+  const rule = L.procsRule({ one: cost.perSample > 0 ? 1 : 0, two: gainMeasured, memoryHolds })
+  const gain = rule.procs === 2 ? gainMeasured : 1
+  const by = (n) => fitFrames.filter((f) => f.samples === n)
+  const at = (n) => (by(n).length ? `${(sum(by(n).map((f) => f.seconds)) / by(n).length).toFixed(2)} s measured on ${by(n).length} frames` : `${(cost.each + cost.perSample * n).toFixed(2)} s by the fit`)
+  const chunkBytes = sum(records.map((r) => r.bytes)) / records.length
+  const pngBytes = timed.length ? Math.max(...timed.map((t) => fs.statSync(path.join(drawnDir, fs.readdirSync(drawnDir).find((n) => n.startsWith(`${t.what}-${String(t.frame).padStart(6, '0')}`)))).size)) : 0
+  const disk = mode.small ? null : { chunkMb: round((chunkBytes * (mode.chunk / size)) / 1e6, 1), ...(pngBytes ? { pngMb: round(pngBytes / 1e6, 1) } : {}) }
+  const plan = diskNeed(stamp, mode, disk, rule.procs)
+  const free = X.freeBytes(rel())
+  row('free disk for the full render', `${L.gb(free).toFixed(1)} GB free`, `${L.gb(plan.total).toFixed(1)} GB at its fullest, with the chunks as large as the test's`, free >= plan.total)
+  const encodePerFrame = madeRecord.encodeSeconds / frames
+  const all = stamp.frames['film-a'] + stamp.frames['film-b'] + stamp.frames.loop
+  const batches = Math.ceil(stamp.frames['film-b'] / (mode.chunk * BATCH_CHUNKS)) + Math.ceil(stamp.frames.loop / (mode.chunk * BATCH_CHUNKS))
+  const proj = mode.small ? null : L.projection({ counts: { ...addTally(L.tally(counts['film-b']), L.tally(counts.loop)) }, cost, gain, encodeSeconds: encodePerFrame * all + (openingSeconds ?? 0) * stamp.frames.opening, startSeconds: 20, batches, chunkSeconds: chunkStart, chunks: Math.ceil(stamp.frames['film-b'] / mode.chunk) + Math.ceil(stamp.frames.loop / mode.chunk) })
+  Object.assign(result, { cost: { each: round(cost.each, 3), perSample: round(cost.perSample, 4), frames: cost.frames, chunkStart: round(chunkStart, 2) }, gainMeasured: round(gainMeasured, 2), procs: rule.procs, procsWhy: rule.why, memoryHolds, disk, diskNeedBytes: plan.total, timed, projection: proj })
+  ctx.say(`time: a frame of 24 samples takes ${at(24)}, a frame of 96 samples ${at(96)} (the fit: ${cost.each.toFixed(2)} s a frame and ${cost.perSample.toFixed(3)} s a sample, from ${cost.frames} frames drawn by one process${chunkStart > 0 ? `, and ${chunkStart.toFixed(1)} s more at the start of each chunk` : ''})`)
+  ctx.say(`processes: ${rule.why}. The full render uses --procs ${rule.procs}`)
+  if (proj) {
+    ctx.say(`projection: film B and the loop are ${proj.frames} frames, ${L.hoursText(proj.drawSeconds)} of drawing with ${rule.procs} ${rule.procs === 1 ? 'process' : 'processes'}, ${L.hoursText(proj.startSeconds)} of starting browsers, ${L.hoursText(proj.encodeSeconds)} for the opening and the three encodes: ${L.hoursText(proj.seconds)} in all`)
+    ctx.say(`disk: at its fullest the full render holds ${L.gb(plan.total).toFixed(1)} GB (chunks of ${disk.chunkMb} MB), and ${L.gb(free).toFixed(1)} GB is free`)
+    if (proj.seconds > L.TOO_LONG_HOURS * 3600) ctx.say(`MORE THAN ${L.TOO_LONG_HOURS} HOURS: the full render is projected at ${L.hoursText(proj.seconds)} on this machine. Say so in the report; whether it is started is decided by the one who released the film`)
+  }
+
+  // (d) the contact sheet
+  if (sheet.length) {
+    const file = path.join(T, 'contact-sheet.jpg')
+    const made2 = await contactSheet(sheet, file, `${L.TITLE}: the short test on ${doc.renderer}`)
+    result.sheet = { file, bytes: made2.bytes }
+    ctx.say(`contact sheet: ${file} (${mb(made2.bytes)})`)
+    try {
+      const to = path.join(doc.machine.desktop, `${L.TITLE} - Test - Contact Sheet.jpg`)
+      fs.copyFileSync(file, to)
+      result.sheet.onDesktop = to
+    } catch {}
+  }
+  ctx.say(`test film: ${onDesktop || kept} (${mb(fs.statSync(made).size)}, ${frames} frames)`)
+
+  // the test's chunks leave the folder a later encode reads
+  fs.renameSync(rel('out', 'master', 'test'), path.join(T, 'chunks'))
+  fs.rmSync(rel('out', 'work', 'master', 'test'), { recursive: true, force: true })
+  result.pass = rows.every((r) => r.pass !== false)
+  result.why = result.pass ? `the short test passed on ${doc.renderer}: ${refs.length} reference ${refs.length === 1 ? 'frame' : 'frames'} and ${frames} frames of film B${proj ? `, the full render is projected at ${L.hoursText(proj.seconds)} with --procs ${rule.procs}` : ''}. Stop here` : `the short test did not pass: ${rows.filter((r) => r.pass === false).map((r) => `${r.check} is ${r.found}, wanted ${r.wanted}`).slice(0, 4).join('; ')}`
+  return result
+}
+
+function addTally(a, b) {
+  const out = { ...a }
+  for (const [k, n] of Object.entries(b)) out[k] = (out[k] ?? 0) + n
+  return out
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The full render.
+
+export const BATCH_CHUNKS = 6
+
+const finalsDir = (mode) => (mode.small ? rel('out', 'work', 'master', 'test') : rel('out', 'deliver'))
+const chunksDir = (mode) => (mode.small ? rel('out', 'master', 'test') : rel('out', 'master'))
+// Rows of the encoder's own proof that say how well a whole film came out. A draft of a dozen small frames cannot
+// hold them, so the small run of the tool's own tests notes them and goes on. A real render holds every row.
+const DRAFT_ROWS = ['sound bit rate', "the loop against film B's best hold", 'the wrap']
+const proven = (rec, mode) => rec?.passed === true || (mode.small === true && Array.isArray(rec?.draftNoted))
+/** Small run only: takes a file whose proof failed on draft rows alone, and names those rows in its record. */
+function draftAccept(which, mode) {
+  if (!mode.small) return null
+  const files = finalFiles(mode)
+  const unproven = files[which].replace(/\.mp4$/, '.unproven.mp4')
+  const u = readOr(`${unproven}.json`)
+  const failing = (u?.proof ?? []).filter((x) => x.pass === false).map((x) => x.check)
+  if (!u || !fs.existsSync(unproven) || !failing.length || failing.some((c) => !DRAFT_ROWS.includes(c))) return null
+  fs.renameSync(unproven, files[which])
+  fs.writeFileSync(`${files[which]}.json`, `${JSON.stringify({ ...u, draftNoted: failing }, null, 2)}\n`)
+  fs.rmSync(`${unproven}.json`, { force: true })
+  if (which === 'loop') {
+    const png = path.join(chunksDir(mode), 'loop', 'frame-000000.png')
+    if (fs.existsSync(png)) fs.copyFileSync(png, files.still)
+  }
+  return failing
+}
+export const finalFiles = (mode) => ({
+  'film-a': path.join(finalsDir(mode), mode.names['film-a']),
+  'film-b': path.join(finalsDir(mode), mode.names['film-b']),
+  loop: path.join(finalsDir(mode), mode.names.loop),
+  still: path.join(finalsDir(mode), mode.small ? `test-${mode.names.still}` : mode.names.still),
+})
+
+/** The parts the render draws, in order. The tool's own tests take short ranges. */
+function renderParts(stamp, mode) {
+  if (mode.small) return [{ what: 'film-b', first: 0, last: 17 }, { what: 'loop', first: 0, last: 11 }, { what: 'opening', first: 0, last: 11 }]
+  return [{ what: 'film-b', first: 0, last: stamp.frames['film-b'] - 1 }, { what: 'loop', first: 0, last: stamp.frames.loop - 1 }, { what: 'opening', first: 0, last: stamp.frames.opening - 1 }]
+}
+
+const chunkDone = (mode) => (what, c) => {
+  const stem = path.join(chunksDir(mode), what, L.chunkFile(what, c))
+  return fs.existsSync(`${stem}.json`) && fs.existsSync(`${stem}.mp4`)
+}
+
+/** A small pack of the opening for the tool's own tests, made from the real one: every frame, at the small size. */
+async function smallPack(ctx, mode) {
+  const dir = path.join(ctx.H, 'small-pack')
+  const { openPack, buildPack, hasPack, PACK_FILES } = await import('./openingpack.mjs')
+  if (hasPack(dir)) return dir
+  const sharp = (await import('sharp')).default
+  const pack = await openPack(PACK_DIR)
+  const made = buildPack({ width: mode.format.width, height: mode.format.height, fps: pack.fps })
+  let last = null
+  let lastSmall = null
+  for (let i = 0; i < pack.frameCount; i++) {
+    const rgb = await pack.frame(i)
+    if (!last || !last.equals(rgb)) {
+      lastSmall = await sharp(rgb, { raw: { width: pack.width, height: pack.height, channels: 3 } }).resize(mode.format.width, mode.format.height, { kernel: 'nearest' }).raw().toBuffer()
+      last = rgb
+    }
+    await made.add(lastSmall)
+  }
+  const out = await made.finish(pack.states ?? [], pack.background ?? null)
+  fs.mkdirSync(dir, { recursive: true })
+  fs.writeFileSync(path.join(dir, PACK_FILES.bin), out.bin)
+  fs.writeFileSync(path.join(dir, PACK_FILES.manifest), out.manifest)
+  return dir
+}
+
+export async function fullRender(ctx) {
+  const stamp = readStamp()
+  const cfg = loadCfg()
+  const mode = modeOf(ctx, cfg)
+  const hash = engineHash()
+  const fail = (why, extra = {}) => ({ pass: false, why, ...extra })
+  // the gate comes before anything else is read or drawn
+  const gate = L.renderRefusals({ stamp, engineHash: hash, doctor: { pass: true }, test: { pass: true, engineHash: hash }, sound: [], small: mode.small })
+  if (gate.length) return fail(gate[0], { refused: true })
+  const doc = await doctor(ctx)
+  const { machineId } = await import('./browser.mjs')
+  const test = readOr(path.join(ctx.H, 'test.json'))
+  let sound = soundState(stamp)
+  const tones = mode.small && ctx.T.tones
+  if (tones) sound = []
+  else if (mode.small) return fail("a small run of the tool's own tests needs its made up sound", { refused: true })
+  const procs = mode.small ? 2 : (test?.procs ?? 1)
+  const need = diskNeed(stamp, mode, test?.disk ?? null, procs)
+  const parts = renderParts(stamp, mode)
+  const done = chunkDone(mode)
+  const planNow = L.resumePlan({ parts, chunkFrames: mode.chunk, batchChunks: BATCH_CHUNKS, done })
+  // what is already drawn needs no room again
+  const share = 1 - sum(planNow.map((p) => p.framesDone)) / sum(planNow.map((p) => p.frames))
+  const refusals = L.renderRefusals({ stamp, engineHash: hash, doctor: doc, test, sound, freeGb: L.gb(X.freeBytes(rel())), needGb: L.gb(need.spare + (need.total - need.spare) * share), small: mode.small, machine: machineId() })
+  if (refusals.length) return fail(`the full render is refused, and nothing was drawn: ${refusals.join('. ')}`, { refused: true, refusals })
+  if (!mode.small && test.software) return fail('the short test here was drawn in software, so no full render starts on this machine', { refused: true })
+
+  const state = readOr(path.join(ctx.H, 'render-state.json'), { sessions: [] })
+  const open = state.sessions.filter((s) => !s.end)
+  for (const s of open) Object.assign(s, { end: s.last ?? s.start, how: 'stopped before it ended' })
+  const session = { start: new Date().toISOString(), last: new Date().toISOString(), framesAtStart: sum(planNow.map((p) => p.framesDone)) }
+  state.sessions.push(session)
+  const saveState = () => writeJson(path.join(ctx.H, 'render-state.json'), state)
+  saveState()
+  if (state.sessions.length > 1) ctx.say(`carrying on: this is start ${state.sessions.length} of the render. ${sum(planNow.map((p) => p.framesDone))} frames are finished in chunks on disk and are not drawn again`)
+  const awake = await X.keepAwake(process.pid)
+  ctx.say(`awake: ${awake.how}${awake.pid ? ` (process ${awake.pid})` : ''}`)
+  state.awake = awake.how
+  const end = (result) => {
+    Object.assign(session, { end: new Date().toISOString(), how: result.pass ? 'finished' : `stopped: ${String(result.why).split('\n')[0].slice(0, 200)}` })
+    saveState()
+    awake.stop()
+    return result
+  }
+
+  // progress, for the heartbeat
+  const total = sum(parts.map((p) => p.last - p.first + 1))
+  const counts = { 'film-b': L.countsOf(stamp.samples?.['film-b']), loop: L.countsOf(stamp.samples?.loop) }
+  const cost = test?.cost?.perSample > 0 ? test.cost : null
+  const gain = procs === 2 ? Math.max(1, test?.gainMeasured ?? 1) : 1
+  const drawn = { session: 0, t0: Date.now() }
+  let inBatch = 0
+  let phase = 'starting'
+  const framesDone = () => sum(L.resumePlan({ parts, chunkFrames: mode.chunk, batchChunks: BATCH_CHUNKS, done }).map((p) => p.framesDone))
+  let base = framesDone()
+  const beat = () => {
+    const doneNow = Math.min(total, base + inBatch)
+    const pace = drawn.session > 0 ? (Date.now() - drawn.t0) / 1000 / drawn.session : 0
+    let left = (total - doneNow) * pace
+    if (cost && !mode.small) {
+      const plan = L.resumePlan({ parts, chunkFrames: mode.chunk, batchChunks: BATCH_CHUNKS, done })
+      left = 0
+      for (const p of plan) {
+        const list = counts[p.what]
+        const share2 = 1 - p.framesDone / p.frames
+        if (list?.length) left += ((sum(list.map((n) => cost.each + cost.perSample * n)) + (cost.chunkStart ?? 0) * p.chunks) * share2) / gain
+        else left += p.frames * share2 * (test.projection ? test.projection.encodeSeconds / (stamp.frames['film-a'] + stamp.frames['film-b'] + stamp.frames.loop + stamp.frames.opening) : 0.5)
+      }
+      left = Math.max(0, left - inBatch * pace) + (test.projection?.encodeSeconds ?? 0)
+    }
+    return { line: L.heartbeatLine({ done: doneNow, total, secondsAFrame: pace, leftSeconds: left, phase }), done: doneNow, left: total - doneNow, pace, leftSeconds: left }
+  }
+  ctx.heartbeat = () => {
+    const b2 = beat()
+    session.last = new Date().toISOString()
+    saveState()
+    return { phase, framesDone: b2.done, framesLeft: b2.left, secondsAFrame: round(b2.pace, 3), expectedEnd: b2.leftSeconds > 0 ? new Date(Date.now() + b2.leftSeconds * 1000).toISOString() : null, line: b2.line }
+  }
+  ctx.heartbeatLine = () => beat().line
+
+  if (!calibrationValid(mode, hash)) {
+    const cal = await calibrate(ctx, mode)
+    if (!cal.ok) return end(fail(cal.why))
+  }
+  const expected = { renderer: test?.renderer ?? doc.renderer, browser: test?.browser ?? doc.page.browser }
+  const guard = async () => {
+    const free = X.freeBytes(rel())
+    const floor = need.spare + need.inFlight
+    if (free < floor) return `only ${L.gb(free).toFixed(1)} GB of disk is free and the next chunks need ${L.gb(floor).toFixed(1)} GB. Nothing drawn is lost: make room and run the same line again`
+    let seen
+    try {
+      seen = await readRenderer(mode)
+    } catch (e) {
+      return `Chrome could not be opened before the next chunks: ${String(e.message).split('\n')[0]}`
+    }
+    const v = L.drawVerdict({ renderer: seen.renderer, cards: doc.machine.cards, allowSoftware: ctx.T.software })
+    if (!v.ok) return `before the next chunks ${v.why}. Nothing drawn is lost`
+    if (seen.renderer !== expected.renderer) return `before the next chunks the page draws on "${seen.renderer}", and the short test passed on "${expected.renderer}". Nothing drawn is lost`
+    if (seen.browser !== expected.browser) return `Chrome is now version ${seen.browser}, and the short test passed on ${expected.browser}: the browser was updated. Nothing drawn is lost, and no chunk is drawn by another browser than the one that was tested`
+    return ''
+  }
+
+  const packDir = mode.small ? await smallPack(ctx, mode) : PACK_DIR
+  for (const part of parts) {
+    const plan = L.resumePlan({ parts: [part], chunkFrames: mode.chunk, batchChunks: BATCH_CHUNKS, done })[0]
+    ctx.say(`${part.what}: ${plan.finished} of ${plan.chunks} chunks are finished, ${plan.batches.length} ${plan.batches.length === 1 ? 'batch' : 'batches'} to draw`)
+    for (const b2 of plan.batches) {
+      phase = `${part.what} frames ${b2.first} to ${b2.last}`
+      const engine = part.what !== 'opening'
+      if (engine) {
+        const stop = await guard()
+        if (stop) return end(fail(stop))
+      }
+      base = framesDone()
+      inBatch = 0
+      const args = ['--what', part.what, '--first', String(b2.first), '--last', String(b2.last), ...(engine ? [...mode.draw, ...(procs > 1 ? ['--procs', String(procs)] : [])] : [...(mode.small ? ['--format', mode.format.id, '--chunk', '6'] : []), '--pack', packDir])]
+      const r = await runTool(ctx, 'master.mjs', args, (l) => {
+        if (/ · frame \d+ · /.test(l)) {
+          inBatch++
+          drawn.session++
+        }
+        const m = /^(?:\[\d+\] )?finished (\S+):/.exec(l)
+        if (m) ctx.note(`finished ${m[1]}`)
+      })
+      if (r.code !== 0) return end(fail(`the render stopped at ${part.what} frames ${b2.first} to ${b2.last}: ${whyOf(r)}\nNothing drawn is lost: the same line carries on from the last finished frame`))
+      // every chunk of the batch says what drew it
+      for (const c of L.chunkLines(b2.first, b2.last, mode.chunk)) {
+        const rec = readOr(path.join(chunksDir(mode), part.what, `${L.chunkFile(part.what, c)}.json`))
+        if (!rec) return end(fail(`the chunk ${L.chunkFile(part.what, c)} left no record`))
+        if (!engine) continue
+        if (L.softwareName(rec.graphics) && !ctx.T.software) return end(fail(`the chunk ${L.chunkFile(part.what, c)} was drawn in software ("${rec.graphics}"). It must be drawn again on the card: report this`))
+        if (rec.graphics !== expected.renderer) return end(fail(`the chunk ${L.chunkFile(part.what, c)} was drawn on "${rec.graphics}", not on "${expected.renderer}" as the short test was`))
+      }
+      inBatch = 0
+      base = framesDone()
+      ctx.say(beat().line)
+    }
+  }
+
+  // every chunk is here: the three encodes, unchanged, and the screenshot
+  phase = 'checking the chunks'
+  if (!mode.small) {
+    const col = await runTool(ctx, 'master.mjs', ['--collect', path.join(ctx.H, 'collect'), '--no-branches'])
+    if (col.code !== 0) return end(fail(`the chunks are drawn and their check before the encode fails: ${whyOf(col)}\n${lastLines(col, 8)}`))
+  }
+  const files = finalFiles(mode)
+  const tonesDir = path.join(ctx.H, 'tones')
+  for (const which of ['film-b', 'film-a', 'loop']) {
+    phase = `encoding ${which}`
+    const rec = readOr(`${files[which]}.json`)
+    const current = (rec?.chunks ?? []).every((c) => readOr(path.join(chunksDir(mode), c.what, `${L.chunkFile(c.what, c)}.json`))?.sha256 === c.sha256)
+    if (proven(rec, mode) && current && rec.chunks?.length && fs.existsSync(files[which]) && fs.statSync(files[which]).size === rec.bytes) {
+      ctx.say(`${which} is encoded and proven already (${mb(rec.bytes)})`)
+      continue
+    }
+    ctx.say(`encoding ${which}`)
+    let extra = []
+    if (mode.small) {
+      extra = ['--test', '--gaps', '--target-mb', '2', '--chunk', String(mode.chunk)]
+      if (which !== 'loop') {
+        const tone = path.join(tonesDir, `${which}.wav`)
+        if (!fs.existsSync(tone) && !(await makeSound(ctx, tone, 'tone', 2))) return end(fail('a made up sound could not be written'))
+        extra.push('--sound', tone)
+      }
+    }
+    const r = await runTool(ctx, 'master.mjs', ['--encode', which, ...extra])
+    let after = readOr(`${files[which]}.json`)
+    let noted = null
+    if (r.code !== 0 || after?.passed !== true) {
+      noted = draftAccept(which, mode)
+      if (!noted) return end(fail(`${which} could not be encoded and proven: ${whyOf(r)}\n${lastLines(r, 10)}`))
+      after = readOr(`${files[which]}.json`)
+    }
+    ctx.say(`${which}: ${after.frames} frames, ${mb(after.bytes)}, ${noted ? `taken as a small draft of the tool's own tests, with these rows of the encoder's proof noted and not held: ${noted.join(', ')}` : 'proven'}`)
+  }
+  if (!fs.existsSync(files.still)) return end(fail(`the screenshot ${short(files.still)} was not written by the encode of the loop`))
+  phase = 'finished'
+  return end({ pass: true, why: `the two films, the loop and the screenshot are made in ${short(finalsDir(mode))}. Next: node tools/handoff.mjs check` })
+}
+
+/** The hours the render took, its starts and its stops, from the state the render keeps. */
+export function renderHistory(H) {
+  const state = readOr(path.join(H, 'render-state.json'), { sessions: [] })
+  const seconds = sum(state.sessions.map((s) => Math.max(0, (Date.parse(s.end ?? s.last ?? s.start) - Date.parse(s.start)) / 1000)))
+  return { starts: state.sessions.length, stops: state.sessions.filter((s) => s.how && s.how !== 'finished').length, seconds, sessions: state.sessions, awake: state.awake ?? '' }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Check, deliver, clean.
+
+/** A program run to its end without holding up this process: its output as bytes, what it wrote as errors, its code. */
+function runBytes(file, args) {
+  return new Promise((resolve) => {
+    let child
+    try {
+      child = spawn(file, args, { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
+    } catch (e) {
+      return resolve({ code: -1, out: Buffer.alloc(0), err: e.message })
+    }
+    const out = []
+    let err = ''
+    child.stdout.on('data', (d) => out.push(d))
+    child.stderr.on('data', (d) => (err = (err + d).slice(-4000)))
+    child.on('error', (e) => resolve({ code: -1, out: Buffer.concat(out), err: e.message }))
+    child.on('close', (code) => resolve({ code, out: Buffer.concat(out), err }))
+  })
+}
+
+async function decodeWhole(file) {
+  const r = await runBytes('ffmpeg', ['-v', 'error', '-nostdin', '-i', file, '-f', 'null', '-'])
+  const said = r.err.trim()
+  return { ok: r.code === 0 && !said, said: said.split(/\r?\n/).slice(0, 3).join(' / ') }
+}
+
+/** The steps of a loop from frame to frame and across its seam, on small grey pictures: mean absolute difference in levels of 255. */
+async function seamSteps(file) {
+  const w = 320
+  const h = 180
+  const r = await runBytes('ffmpeg', ['-v', 'error', '-nostdin', '-i', file, '-map', '0:v:0', '-vf', `scale=${w}:${h}:flags=area,format=gray`, '-f', 'rawvideo', '-'])
+  if (r.code !== 0) return null
+  const n = Math.floor(r.out.length / (w * h))
+  if (n < 3) return null
+  const step = (a, b) => {
+    let s = 0
+    const A = a * w * h
+    const B = b * w * h
+    for (let i = 0; i < w * h; i++) s += Math.abs(r.out[A + i] - r.out[B + i])
+    return s / (w * h)
+  }
+  const steps = []
+  for (let i = 1; i < n; i++) steps.push(step(i - 1, i))
+  const sorted = [...steps].sort((a, b) => a - b)
+  return { frames: n, seam: step(n - 1, 0), median: sorted[Math.floor(sorted.length / 2)], most: sorted[sorted.length - 1] }
+}
+
+export async function check(ctx) {
+  const { cfg } = await import('./page.mjs')
+  const { probeStreams, probe } = await import('./encode.mjs')
+  const sharp = (await import('sharp')).default
+  X.readTools()
+  const stamp = readStamp()
+  const mode = modeOf(ctx, cfg)
+  const files = finalFiles(mode)
+  const rows = []
+  const row = (check2, found, wanted, pass) => rows.push({ check: check2, found, wanted, pass })
+  const V = cfg.deliver.master.video
+  const out = { pass: false, why: '', rows, small: mode.small, files: {}, time: new Date().toISOString() }
+  const records = {}
+  for (const which of ['film-a', 'film-b', 'loop']) {
+    const file = files[which]
+    const label = L.deliveryName(which, mode.format.width, mode.format.height)
+    if (!fs.existsSync(file)) {
+      row(`${which}: the file`, 'not there', short(file), false)
+      continue
+    }
+    const rec = readOr(`${file}.json`)
+    records[which] = rec
+    const sha = L.sha256File(file)
+    out.files[which] = { file, name: label, bytes: fs.statSync(file).size, sha256: sha }
+    row(`${which}: its record`, proven(rec, mode) && rec.sha256 === sha ? (rec.draftNoted ? `a small draft of the tool's own tests, these rows noted and not held: ${rec.draftNoted.join(', ')}` : 'proven by the encode, and the file is the one its record names') : 'no proven record of this file', "the encode's proof, of this very file", proven(rec, mode) && rec.sha256 === sha)
+    const s = probeStreams(file)
+    const v = s.video[0] ?? {}
+    const a = s.audio[0] ?? null
+    const counted = probe(file).frames
+    const wantFrames = mode.small ? (rec?.frames ?? 0) : stamp.frames[which]
+    row(`${which}: codec, profile, level`, `${v.codec_name}, ${v.profile}, ${v.level}`, `h264, ${V.profile}, ${Math.round(Number(V.level) * 10)}`, v.codec_name === 'h264' && String(v.profile).toLowerCase() === V.profile && Number(v.level) === Math.round(Number(V.level) * 10))
+    row(`${which}: pixel format`, `${v.pix_fmt}`, V.pixFmt, v.pix_fmt === V.pixFmt)
+    row(`${which}: size`, `${v.width} x ${v.height}`, `${mode.format.width} x ${mode.format.height}`, v.width === mode.format.width && v.height === mode.format.height)
+    row(`${which}: rate`, `${v.r_frame_rate} (mean ${v.avg_frame_rate})`, `${mode.fps}/1`, v.r_frame_rate === `${mode.fps}/1` && v.avg_frame_rate === `${mode.fps}/1`)
+    row(`${which}: frames`, `${counted} decoded and counted, ${v.nb_frames} in the container`, `exactly ${wantFrames}`, counted === wantFrames && Number(v.nb_frames) === wantFrames)
+    const seconds = wantFrames / mode.fps
+    if (which === 'loop') row('loop: sound', a ? `${a.codec_name}` : 'none', 'none', !a)
+    else row(`${which}: sound`, a ? `${a.codec_name}, ${a.sample_rate} Hz, ${a.channels} channels, ${Number(a.duration).toFixed(3)} s` : 'none', `aac, as long as the picture (${seconds.toFixed(3)} s)`, !!a && a.codec_name === 'aac' && Math.abs(Number(a.duration) - seconds) < 0.05)
+    const dec = await decodeWhole(file)
+    row(`${which}: whole decode`, dec.ok ? 'every frame and the sound decode, no error' : `the decoder wrote: ${dec.said || 'an error'}`, 'no error', dec.ok)
+    row(`${which}: size on disk`, mb(out.files[which].bytes), which === 'loop' ? 'noted' : `at most ${cfg.deliver.master.final.targetMb[which]} MB`, which === 'loop' || mode.small ? null : out.files[which].bytes <= cfg.deliver.master.final.targetMb[which] * 1e6)
+    if (!mode.small && which !== 'loop') {
+      const mix = rel('audio', 'final', `${which}.wav`)
+      row(`${which}: its mix`, rec?.sound?.sha256 === stamp.sound[which] ? `the final mix the stamp names (${stamp.sound[which].slice(0, 12)})` : `sha256 ${String(rec?.sound?.sha256).slice(0, 12)}`, `sha256 ${stamp.sound[which].slice(0, 12)}`, rec?.sound?.sha256 === stamp.sound[which] && fs.existsSync(mix))
+    }
+    if (which === 'loop') {
+      const seam = await seamSteps(file)
+      if (!seam) row('loop: the seam', 'could not be measured', 'the step from the last frame back to the first', false)
+      else row('loop: the seam', `the step from the last frame to the first is ${seam.seam.toFixed(3)} levels; inside the loop the median step is ${seam.median.toFixed(3)} and the largest ${seam.most.toFixed(3)}`, mode.small ? 'noted only: a dozen frames of the loop do not close a loop' : 'at most twice the largest step inside the loop, or under half a level', mode.small ? null : seam.seam <= Math.max(seam.most * 2, 0.5))
+    }
+  }
+  // the screenshot is the loop's frame 0, the very PNG its chunk names
+  const still = files.still
+  const loopFirst = readOr(path.join(chunksDir(mode), 'loop', `${L.chunkFile('loop', { first: 0, last: mode.chunk - 1 })}.json`))
+  if (!fs.existsSync(still)) row('screenshot: the file', 'not there', short(still), false)
+  else {
+    const sha = L.sha256File(still)
+    const meta = await sharp(still).metadata()
+    out.files.still = { file: still, name: L.deliveryName('still', mode.format.width, mode.format.height), bytes: fs.statSync(still).size, sha256: sha }
+    row('screenshot: size', `${meta.width} x ${meta.height}, ${meta.format}`, `${mode.format.width} x ${mode.format.height}, png`, meta.width === mode.format.width && meta.height === mode.format.height && meta.format === 'png')
+    row('screenshot: is frame 0 of the loop', sha === loopFirst?.still?.sha256 ? `the PNG the loop's first chunk names (${sha.slice(0, 12)})` : `sha256 ${sha.slice(0, 12)}, the chunk names ${String(loopFirst?.still?.sha256).slice(0, 12)}`, "the very PNG of the loop's frame 0", sha === loopFirst?.still?.sha256)
+    const direct = records.loop?.psnr?.seam?.firstAgainstItsPng
+    row("screenshot: against the loop film's first frame", typeof direct === 'number' ? `${direct.toFixed(2)} dB in luma` : 'not measured', 'noted', null)
+  }
+  // film B inside film A is made of the same chunks as film B itself
+  const ofA = (records['film-a']?.chunks ?? []).filter((c) => c.what === 'film-b').map((c) => c.sha256)
+  const ofB = (records['film-b']?.chunks ?? []).map((c) => c.sha256)
+  const onDisk = (records['film-b']?.chunks ?? []).map((c) => {
+    const f = path.join(chunksDir(mode), 'film-b', `${L.chunkFile('film-b', c)}.mp4`)
+    return fs.existsSync(f) ? L.sha256File(f) : ''
+  })
+  const sameChunks = ofA.length > 0 && ofA.length === ofB.length && ofA.every((x, i) => x === ofB[i])
+  row('film B inside film A', sameChunks ? `the same ${ofB.length} chunks, by sha256, in the same order` : `film A names ${ofA.length} chunks of film B, film B names ${ofB.length}, and they differ`, 'the same source chunks in both films', sameChunks)
+  row('the chunks on disk', `${onDisk.filter((x, i) => x === ofB[i]).length} of ${ofB.length} are the files both films were made from`, 'every one', ofB.length > 0 && onDisk.every((x, i) => x === ofB[i]))
+  const openingFrames = sum((records['film-a']?.chunks ?? []).filter((c) => c.what === 'opening').map((c) => c.last - c.first + 1))
+  row('the opening inside film A', `${openingFrames} frames from the pack`, mode.small ? 'noted' : `${stamp.frames.opening}`, mode.small ? null : openingFrames === stamp.frames.opening)
+  out.pass = rows.every((r) => r.pass !== false)
+  out.why = out.pass ? `the two films, the loop and the screenshot pass every check (${rows.filter((r) => r.pass === true).length} checks). Next: node tools/handoff.mjs deliver` : `${rows.filter((r) => r.pass === false).length} of the checks fail: ${rows.filter((r) => r.pass === false).map((r) => `${r.check} is ${r.found}`).slice(0, 4).join('; ')}`
+  return out
+}
+
+export async function deliver(ctx, reportText) {
+  const cfg = loadCfg()
+  const mode = modeOf(ctx, cfg)
+  const checked = readOr(path.join(ctx.H, 'check.json'))
+  if (!checked?.pass) return { pass: false, why: 'the check has not passed here, so nothing is delivered. Run: node tools/handoff.mjs check' }
+  if (checked.small !== mode.small) return { pass: false, why: 'the check that passed was of another kind of run than this one. Run: node tools/handoff.mjs check' }
+  const machine = X.readMachine()
+  const folder = path.join(machine.desktop, L.deliveryFolder(mode.small))
+  fs.mkdirSync(folder, { recursive: true })
+  const rows = []
+  const files = []
+  for (const kind of L.KINDS) {
+    const f = checked.files[kind]
+    if (!f || !fs.existsSync(f.file) || fs.statSync(f.file).size !== f.bytes) return { pass: false, why: `${kind} is not the file that was checked any more (${f ? short(f.file) : 'not named'}). Run the check again` }
+    const to = path.join(folder, L.deliveryName(kind, mode.format.width, mode.format.height))
+    ctx.say(`copying ${path.basename(to)} (${mb(f.bytes)})`)
+    fs.copyFileSync(f.file, to)
+    const sha = L.sha256File(to)
+    rows.push({ check: path.basename(to), found: `${mb(f.bytes)}, sha256 ${sha}`, wanted: 'the checked file, byte for byte', pass: sha === f.sha256 })
+    files.push({ kind, file: to, bytes: f.bytes, sha256: sha })
+  }
+  const pass = rows.every((r) => r.pass)
+  const report = path.join(folder, `${L.TITLE} - Render Report.txt`)
+  fs.writeFileSync(report, reportText({ machine, mode, checked, files, rows, folder }))
+  return { pass, why: pass ? `the four files and the report are in ${folder}. Next: node tools/handoff.mjs clean` : 'a copy on the Desktop is not the file that was checked', rows, folder, files, report, small: mode.small }
+}
+
+export function clean(ctx) {
+  const delivered = readOr(path.join(ctx.H, 'deliver.json'))
+  if (!delivered?.pass) return { pass: false, why: 'nothing is deleted before the delivery has passed. Run: node tools/handoff.mjs deliver' }
+  for (const f of delivered.files) if (!fs.existsSync(f.file) || fs.statSync(f.file).size !== f.bytes) return { pass: false, why: `${f.file} is not on the Desktop any more, so the work files stay. Run the delivery again` }
+  const before = X.freeBytes(rel())
+  const gone = []
+  const drop = (p) => {
+    if (!fs.existsSync(p)) return
+    fs.rmSync(p, { recursive: true, force: true })
+    gone.push(short(p))
+  }
+  drop(rel('out', 'master'))
+  drop(rel('out', 'deliver'))
+  let names = []
+  try {
+    names = fs.readdirSync(rel('out', 'work'))
+  } catch {}
+  for (const n of names) if (n !== 'handoff') drop(rel('out', 'work', n))
+  // the reports stay, and so does what the doctor, the short test and the delivery found; the state of the render goes
+  const keep = (n) => /^report-.*\.txt$/.test(n) || ['doctor.json', 'test.json', 'deliver.json', 'job.json', 'job-seen.json'].includes(n)
+  for (const n of fs.readdirSync(ctx.H)) if (!keep(n)) drop(path.join(ctx.H, n))
+  const after = X.freeBytes(rel())
+  return { pass: true, why: `the work files are deleted and ${L.gb(Math.max(0, after - before)).toFixed(1)} GB of disk is regained (${L.gb(after).toFixed(1)} GB free now). The delivered files on the Desktop, the reports and the clone itself stay`, gone, regainedBytes: Math.max(0, after - before), rows: gone.map((g) => ({ check: g, found: 'deleted', wanted: 'a work folder of the render, which git does not track', pass: true })) }
+}
+
+export { short, mb, round, sum, readOr, loadCfg, rgbOfFile }

@@ -514,9 +514,10 @@ function holdLock(what) {
   })
 }
 
-function fillSimcache(what) {
+function fillSimcache(what, local = false) {
   for (let i = 0; i < 40; i++) {
-    const r = spawnSync(process.execPath, [rel('tools', 'simcache.mjs'), what === 'loop' ? 'loop' : 'film'], { cwd: rel(), encoding: 'utf8', maxBuffer: 1 << 26 })
+    // a --local run has the installed Chrome and no pinned one (Windows, macOS), so the checkpoints are made by the same browser
+    const r = spawnSync(process.execPath, [rel('tools', 'simcache.mjs'), what === 'loop' ? 'loop' : 'film', ...(local ? ['--local'] : [])], { cwd: rel(), encoding: 'utf8', maxBuffer: 1 << 26 })
     if (r.status !== 0) throw new Error(`the checkpoints could not be made: ${(r.stderr || r.stdout).trim().split('\n').slice(-2).join(' ')}`)
     if (/complete for engine/.test(r.stdout)) return
   }
@@ -527,7 +528,7 @@ async function withWorkers(ctx, shipper, count) {
   if (!ctx.standIn) {
     requireBuild()
     say(`making the checkpoints first, so that ${ctx.procs} processes never write the same one`)
-    fillSimcache(ctx.what)
+    fillSimcache(ctx.what, ctx.local)
     holdLock(`master ${process.argv.slice(2).join(' ')}`)
   }
   const asked = await source(ctx, false)

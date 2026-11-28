@@ -44,9 +44,13 @@ export function findBrowser() {
   throw new Error(`no browser found. Looked in: ${candidates.join(', ')}. Set SHOWCASE_CHROME to a Chrome ${pin.version} binary.`)
 }
 
+// More switches for the installed Chrome of a --local run, separated by spaces: the render handoff names the graphics
+// card there (--force_high_performance_gpu). Unset, as on every cloud machine, nothing is added.
+export const localArgs = (env = process.env) => String(env.SHOWCASE_LOCAL_ARGS ?? '').split(/\s+/).filter(Boolean)
+
 export async function launch({ local = false, headless = true, extraArgs = [] } = {}) {
   if (local) {
-    return chromium.launch({ channel: 'chrome', headless: false, args: [...COMMON_FLAGS, '--ignore-gpu-blocklist', '--enable-gpu-rasterization', ...extraArgs] })
+    return chromium.launch({ channel: 'chrome', headless: false, args: [...COMMON_FLAGS, '--ignore-gpu-blocklist', '--enable-gpu-rasterization', ...localArgs(), ...extraArgs] })
   }
   const soft = softwareRenderer()
   return chromium.launch({ executablePath: findBrowser(), headless, args: [...soft.flags, ...COMMON_FLAGS, ...extraArgs], ...(soft.env ? { env: soft.env } : {}) })
