@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 265 · 2026-11-28 12:58 UTC
+Status 266 · 2026-11-28 13:21 UTC
 
-- `out/stills/status/status-265-1.jpg`: Summer's sand mound leaving the table, film frames 2100 to 2116 at draft, the main branch above and the second what-if below, not on main
-- `out/stills/status/status-265-2.jpg`: Film frame 2109 at 1920 wide at three times with the second what-if, the mound as a soft haze, not on main
-- `out/stills/status/status-265-3.jpg`: Fall after its landing at draft, the main branch left and the what-if branch right with the leaves' first what-if, being reworked, not on main
-- `out/stills/status/status-265-4.jpg`: Still: summer rest hero, hd, draft
+- `out/stills/status/status-266-1.jpg`: Summer's sand mound leaving at 4K at own size, film frames 2107 to 2110, the main branch above and the second what-if below in each pair, not on main
+- `out/stills/status/status-266-2.jpg`: Film frame 2108 whole, drawn at 4K and shown at 1600 wide, the main branch above and the second what-if below, not on main
+- `out/stills/status/status-266-3.jpg`: Still: spring landed hero, hd, draft
+- `out/stills/status/status-266-4.jpg`: Still: spring rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-28 12:58 UTC
-clock: phase 6, tick of 19.9 minutes
-phase 6: 58.16 h used of its 12.00 h box
-allowance (after the review): 58.16 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 58.16 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-28 13:21 UTC
+clock: phase 6, tick of 22.3 minutes
+phase 6: 58.53 h used of its 12.00 h box
+allowance (after the review): 58.53 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 58.53 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
