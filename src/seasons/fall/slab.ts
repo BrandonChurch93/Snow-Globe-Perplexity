@@ -96,6 +96,9 @@ vec3 leafPlace = vec3(leafAt.x + leafOff.x, max(leafOff.y + leafUp, 0.03), leafA
 vec4 leafW = modelMatrix * vec4(leafPlace, 1.0);
 vec4 leafV = viewMatrix * leafW;
 gl_Position = projectionMatrix * leafV;
+#ifdef STAGE_STREAK
+gl_Position = stageGustSeen(gl_Position);
+#endif
 vStageWorld = leafW.xyz;
 vStageLocal = (uGlobeInv * leafW).xyz;
 vStageAux = vec3(0.0, -leafV.z, length(leafV.xyz));
@@ -310,5 +313,5 @@ export function setSkitter(seconds: number): void {
 
 export function update(moment: KitMoment): void {
   const f = moment.frame
-  inAir?.(f.from !== f.to && (f.from.season === 'fall' || f.to.season === 'fall') && gustStreaks(f.sample, f.to.season === 'fall'))
+  inAir?.(f.from !== f.to && (f.from.season === 'fall' || f.to.season === 'fall') && gustStreaks(f.sample, f.to.season === 'fall', f.blurMm, f.pose.focusMm))
 }

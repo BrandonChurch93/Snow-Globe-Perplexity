@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { GUST_FLIGHT, GUST_LAST_DOWN, GUST_STREAK, gustStreaks } from '../src/core/materials'
+import { GUST_FLIGHT, GUST_LAST_DOWN, GUST_STREAK, gustLensPoint, gustStreaks } from '../src/core/materials'
 import type { Sample } from '../src/core/sampler'
 import { changeRamp, SHUTTER_CHANGE } from '../src/shake/change'
 
@@ -51,6 +51,45 @@ describe('the scatter in the air, drawn in parts', () => {
         expect(Math.min(...seen)).toBeGreaterThanOrEqual(Math.floor(even) - 2)
         expect(Math.max(...seen)).toBeLessThanOrEqual(Math.ceil(even) + 2)
       }
+    }
+  })
+
+  it('sees the first part of a sample from the sample\'s own point of the lens', () => {
+    for (const [lu, lv] of [[0.3, -0.4], [-0.7, 0.1], [0, 0], [0.05, 0.99]] as const) {
+      const [u, v] = gustLensPoint(lu, lv, 0)
+      expect(u).toBeCloseTo(lu, 12)
+      expect(v).toBeCloseTo(lv, 12)
+    }
+  })
+
+  it('sees the parts of one sample from every turn and every ring of the lens, all within it', () => {
+    for (const [lu, lv] of [[0.3, -0.45], [-0.7, 0.15], [0.02, 0.01], [0.6, 0.79]] as const) {
+      const far = lu * lu + lv * lv
+      const turns = new Set<number>()
+      const rings = new Set<number>()
+      for (let part = 0; part < GUST_STREAK.parts; part++) {
+        const [u, v] = gustLensPoint(lu, lv, part)
+        const r2 = u * u + v * v
+        expect(r2).toBeLessThan(1)
+        const turn = (((Math.atan2(v, u) - Math.atan2(lv, lu)) / (2 * Math.PI)) % 1 + 1) % 1
+        turns.add(Math.round(turn * GUST_STREAK.parts) % GUST_STREAK.parts)
+        rings.add(Math.round((((r2 - far) % 1) + 1) % 1 * GUST_STREAK.parts) % GUST_STREAK.parts)
+      }
+      expect(turns.size).toBe(GUST_STREAK.parts)
+      expect(rings.size).toBe(GUST_STREAK.parts)
+    }
+  })
+
+  it('keeps the mean of the lens points of a sample near the middle of the lens', () => {
+    for (const [lu, lv] of [[0.3, -0.4], [-0.7, 0.1], [0.6, 0.79], [0.1, 0.1]] as const) {
+      let mu = 0
+      let mv = 0
+      for (let part = 0; part < GUST_STREAK.parts; part++) {
+        const [u, v] = gustLensPoint(lu, lv, part)
+        mu += u / GUST_STREAK.parts
+        mv += v / GUST_STREAK.parts
+      }
+      expect(Math.hypot(mu, mv)).toBeLessThan(0.2)
     }
   })
 })
