@@ -1,0 +1,41 @@
+# draft_renderer_2. Floor 4 at low from the plain address, spring and summer. Floor 6 from the same loads, with one load
+# more of main for each start, and then four short loads more of each branch for each start, turn about.
+# Each line: arm level start mode name [extra].
+main low spring round f4-low-spring-main
+mend low spring round f4-low-spring-mend-1
+mend low spring round f4-low-spring-mend-2
+main low spring rest f6-low-spring-main-2
+main low plain round f4-low-plain-main
+mend low plain round f4-low-plain-mend-1
+mend low plain round f4-low-plain-mend-2
+main low plain rest f6-low-plain-main-2
+main low summer round f4-low-summer-main
+mend low summer round f4-low-summer-mend-1
+mend low summer round f4-low-summer-mend-2
+main low summer rest f6-low-summer-main-2
+main low spring first f6-low-spring-main-3
+mend low spring first f6-low-spring-mend-3
+main low spring first f6-low-spring-main-4
+mend low spring first f6-low-spring-mend-4
+main low spring first f6-low-spring-main-5
+mend low spring first f6-low-spring-mend-5
+main low spring first f6-low-spring-main-6
+mend low spring first f6-low-spring-mend-6
+main low plain first f6-low-plain-main-3
+mend low plain first f6-low-plain-mend-3
+main low plain first f6-low-plain-main-4
+mend low plain first f6-low-plain-mend-4
+main low plain first f6-low-plain-main-5
+mend low plain first f6-low-plain-mend-5
+main low plain first f6-low-plain-main-6
+mend low plain first f6-low-plain-mend-6
+main low summer first f6-low-summer-main-3
+mend low summer first f6-low-summer-mend-3
+main low summer first f6-low-summer-main-4
+mend low summer first f6-low-summer-mend-4
+main low summer first f6-low-summer-main-5
+mend low summer first f6-low-summer-mend-5
+main low summer first f6-low-summer-main-6
+mend low summer first f6-low-summer-mend-6
+mend high spring round hi-spring-mend extra
+main high spring round hi-spring-main extra

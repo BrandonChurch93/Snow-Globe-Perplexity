@@ -1,0 +1,23 @@
+# draft_renderer_3. Floor 4 at medium from the plain address and spring. Then floor 4 at low from fall, and floor 6 for
+# fall from the same loads, with one load more of main and then four short loads more of each branch, turn about.
+# Each line: arm level start mode name [extra].
+main medium spring round f4-medium-spring-main
+mend medium spring round f4-medium-spring-mend-1
+mend medium spring round f4-medium-spring-mend-2
+main medium plain round f4-medium-plain-main
+mend medium plain round f4-medium-plain-mend-1
+mend medium plain round f4-medium-plain-mend-2
+main low fall round f4-low-fall-main
+mend low fall round f4-low-fall-mend-1
+mend low fall round f4-low-fall-mend-2
+main low fall rest f6-low-fall-main-2
+main low fall first f6-low-fall-main-3
+mend low fall first f6-low-fall-mend-3
+main low fall first f6-low-fall-main-4
+mend low fall first f6-low-fall-mend-4
+main low fall first f6-low-fall-main-5
+mend low fall first f6-low-fall-mend-5
+main low fall first f6-low-fall-main-6
+mend low fall first f6-low-fall-mend-6
+mend high plain round hi-plain-mend extra
+main high plain round hi-plain-main extra

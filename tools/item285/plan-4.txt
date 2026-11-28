@@ -1,0 +1,20 @@
+# draft_renderer_4. Floor 4 at medium from summer and fall. Then floor 5, the path through the menu, at low from the
+# plain address. Then floor 7, a press made one second after the first picture on a page that begins in spring.
+# Each line: arm level start mode name [extra].
+main medium summer round f4-medium-summer-main
+mend medium summer round f4-medium-summer-mend-1
+mend medium summer round f4-medium-summer-mend-2
+main medium fall round f4-medium-fall-main
+mend medium fall round f4-medium-fall-mend-1
+mend medium fall round f4-medium-fall-mend-2
+main low plain menu f5-low-main
+mend low plain menu f5-low-mend-1
+mend low plain menu f5-low-mend-2
+main low spring soon f7-low-main-1
+mend low spring soon f7-low-mend-1
+main low spring soon f7-low-main-2
+mend low spring soon f7-low-mend-2
+mend high summer round hi-summer-mend extra
+main high summer round hi-summer-main extra
+mend high fall round hi-fall-mend extra
+main high fall round hi-fall-main extra
