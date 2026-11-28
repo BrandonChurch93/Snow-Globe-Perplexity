@@ -187,7 +187,7 @@ async function readPage(ctx, mode) {
     let shaderFile = ''
     if (shaders) {
       shaderFile = path.join(ctx.H, 'shader-messages-doctor.txt')
-      fs.writeFileSync(shaderFile, S.shaderList(shaders, [`${L.TITLE}: what the shader compiler wrote, program by program`, `written   ${new Date().toISOString()}`, `drawn by  ${gl?.renderer ?? 'nothing'}`, `browser   ${session.browserVersion}`, `page      the build's own page, film B frame 0 at ${mode.format.width} x ${mode.format.height}, one sample`, '']))
+      fs.writeFileSync(shaderFile, S.shaderList(shaders, [`${L.TITLE}: what the shader compiler wrote, program by program`, `written   ${new Date().toISOString()}`, `drawn by  ${gl?.renderer ?? 'nothing'}`, `browser   ${session.browserVersion}`, `page      the build's own page, film B frame 0 at ${mode.format.width} x ${mode.format.height}, one sample`, ''], { srcDir: rel('src') }))
       fs.rmSync(path.join(ctx.H, 'shaders-doctor'), { recursive: true, force: true })
       S.writeShaders(shaders, path.join(ctx.H, 'shaders-doctor'))
     }
@@ -288,7 +288,7 @@ export async function doctor(ctx, { draw = true } = {}) {
   need('git', tools.git.runs && L.atLeast(L.versionOf(tools.git.version), L.LEAST.git), tools.git.runs ? `${tools.git.version} at ${tools.git.file} (${tools.git.from})` : 'is missing', `git ${L.LEAST.git.join('.')} or newer`)
   const ff = L.ffmpegVersion(tools.ffmpeg.version)
   const ffOk = tools.ffmpeg.runs && ff && (ff.dated || L.atLeast(ff.numbers, L.LEAST.ffmpeg)) && tools.ffmpeg.libx264 && tools.ffmpeg.aac
-  need('ffmpeg', ffOk, tools.ffmpeg.runs ? `${ff?.text ?? tools.ffmpeg.version} at ${tools.ffmpeg.file} (${tools.ffmpeg.from}), libx264 ${tools.ffmpeg.libx264 ? 'yes' : 'NO'}, aac ${tools.ffmpeg.aac ? 'yes' : 'NO'}` : 'is missing', `ffmpeg ${L.LEAST.ffmpeg[0]} or newer with libx264 and aac`)
+  need('ffmpeg', ffOk, tools.ffmpeg.runs ? `${ff?.text ?? tools.ffmpeg.version} at ${tools.ffmpeg.file} (${tools.ffmpeg.from}), the picture encoder libx264 ${tools.ffmpeg.libx264 ? 'yes' : 'NO'}, the sound encoder aac ${tools.ffmpeg.aac ? 'yes' : 'NO'}` : 'is missing', `ffmpeg ${L.LEAST.ffmpeg[0]} or newer with the picture encoder libx264 and the sound encoder aac`)
   const fp = L.ffmpegVersion(tools.ffprobe.version)
   need('ffprobe', tools.ffprobe.runs && !!fp, tools.ffprobe.runs ? `${fp?.text ?? tools.ffprobe.version} at ${tools.ffprobe.file}` : 'is missing', 'ffprobe, which comes with ffmpeg')
   // the Linux machines of the tool's own tests have no Chrome: the pinned browser draws there, and only there
@@ -814,6 +814,10 @@ async function shortTestOnce(ctx) {
 
   // how long, said before anything is drawn
   ctx.say(`the short test: ${refs.length} reference ${refs.length === 1 ? 'frame' : 'frames'} and film B frames ${stretch.first} to ${stretch.last} at ${mode.format.width} x ${mode.format.height}, ${mode.small ? "small and in few samples, a run of the tool's own tests" : "the masters' tier"}`)
+  // what this stamp holds to compare with, counted from the stamp itself
+  for (const l of L.referencesLines(stamp)) ctx.say(l)
+  result.references = { kept: stamp.references.map((r) => `${r.what}:${r.frame}`), stillToDraw: [...(stamp.stillToDraw ?? [])], compared: refs.map((r) => `${r.what}:${r.frame}`) }
+  result.where = []
   // the calibration picture: drawn once for a build on this machine and kept, never replaced by a test
   const cal = await keptCalibration(ctx, mode, hash, renderParts(stamp, mode))
   if (!cal.ok) return fail(cal.why)
@@ -847,7 +851,7 @@ async function shortTestOnce(ctx) {
   }
   if (walk) {
     const file = path.join(ctx.H, 'shader-messages-test.txt')
-    fs.writeFileSync(file, S.shaderList(walk.seen, S.walkHead(walk, [`${L.TITLE}: what the shader compiler wrote, program by program, across the film`, `written   ${new Date().toISOString()}`, `engine    ${hash}`])))
+    fs.writeFileSync(file, S.shaderList(walk.seen, S.walkHead(walk, [`${L.TITLE}: what the shader compiler wrote, program by program, across the film`, `written   ${new Date().toISOString()}`, `engine    ${hash}`]), { srcDir: rel('src') }))
     fs.rmSync(path.join(ctx.H, 'shaders-test'), { recursive: true, force: true })
     S.writeShaders(walk.seen, path.join(ctx.H, 'shaders-test'))
     const brief = S.briefLogs(walk.seen)
@@ -961,6 +965,7 @@ async function shortTestOnce(ctx) {
     result.sheet = { file, bytes: made2.bytes }
     ctx.say(`contact sheet: ${file} (${mb(made2.bytes)})`)
     const sheetName = `${L.TITLE} - Test - Contact Sheet.jpg`
+    let sheetProblem = ''
     try {
       const to = path.join(doc.machine.desktop, sheetName)
       fs.copyFileSync(file, to)
@@ -973,8 +978,13 @@ async function shortTestOnce(ctx) {
         fs.copyFileSync(file, beside)
         result.sheet.onDesktop = beside
         look.push(`the sheet of pictures of an earlier test, "${sheetName}" on the Desktop, is held open by another program and was left as it is. The sheet of this test is beside it as "${path.basename(beside)}"`)
-      } catch {}
+      } catch (e2) {
+        sheetProblem = String(e2?.message ?? e2).split('\n')[0]
+      }
     }
+    // a preview that is not where the reader is sent is a failure of the test, and it is said which one
+    row('sheet of pictures: on the Desktop', result.sheet.onDesktop ?? `not copied (${sheetProblem}); it is in the clone as ${file}`, 'copied there', !!result.sheet.onDesktop)
+    result.where.push({ label: 'THE SHEET OF PICTURES', path: result.sheet.onDesktop ?? file })
   }
 
   // one chunk of the opening from the pack, as the full render takes it
@@ -1013,7 +1023,7 @@ async function shortTestOnce(ctx) {
   // what drew is read again from the record of every chunk: a test that drew nothing, or drew elsewhere, is no proof of the card
   const drewOn = [...new Set(records.map((r) => String(r.graphics ?? '')))]
   result.drewOn = drewOn
-  row('what drew the chunks, by their own records', drewOn.map((g) => g || 'a record names nothing').join(' | '), doc.renderer, drewOn.length === 1 && drewOn[0] === doc.renderer)
+  row('the same card drew every piece of the test film', drewOn.map((g) => g || 'a record names nothing').join(' | '), doc.renderer, drewOn.length === 1 && drewOn[0] === doc.renderer)
   row('the stretch', `${records.length} chunks of ${size} frames, frames ${stretch.first} to ${stretch.last}, every one verified against its PNGs (least ${Math.min(...records.map((r) => r.verify?.psnr?.least ?? 0))} dB)`, 'drawn in chunks, each verified', records.every((r) => r.verify?.ok === true))
   const flat = sum(records.map((r) => (r.flatFrames ?? []).length))
   const nan = sum(records.map((r) => r.notNumber?.total ?? 0))
@@ -1023,10 +1033,17 @@ async function shortTestOnce(ctx) {
   const frames = stretch.last - stretch.first + 1
   const seconds = frames / mode.fps
   const mixes = soundState(stamp)
+  // both final mixes against the stamp, one line each: after a plain pass the render never refuses for a mix
+  for (const m of mixes) {
+    const name = m.which === 'film-a' ? 'film A' : 'film B'
+    ctx.say(`the final mix of ${name}: ${m.ok ? `audio/final/${m.which}.wav is here and is the one the stamp names (sha256 ${stamp.sound[m.which]})` : m.why}`)
+    row(`the final mix of ${name}`, m.ok ? `here, sha256 ${stamp.sound[m.which]}` : fs.existsSync(m.file) ? 'here, and not the one the stamp names' : 'not in this clone', 'noted here; the full render needs the mix the stamp names, by its sha256', null)
+  }
+  result.mixes = mixes.map((m) => ({ which: m.which, ok: m.ok, why: m.why }))
   const soundFile = path.join(T, 'sound.wav')
   let soundLine
   const b = mixes.find((s) => s.which === 'film-b')
-  if (b.ok && (await makeSound(ctx, soundFile, 'mix', seconds, { from: b.file, offset: stretch.first / mode.fps }))) soundLine = 'The test film carries its own piece of the final mix of film B.'
+  if (b.ok && (await makeSound(ctx, soundFile, 'mix', seconds, { from: b.file, offset: stretch.first / mode.fps }))) soundLine = `The test film carries its own piece of the final mix of film B (audio/final/film-b.wav, sha256 ${stamp.sound['film-b']}).`
   else if (ctx.T.tones && (await makeSound(ctx, soundFile, 'tone', seconds))) soundLine = "The test film carries a made up sound, by a switch of the tool's own tests."
   else if (await makeSound(ctx, soundFile, 'silence', seconds)) soundLine = `The test film is silent: ${fs.existsSync(b.file) ? 'audio/final/film-b.wav is here and is not the final mix the stamp names' : 'the two final mixes are not in this clone (they are not in the public repo)'}, so it carries a track of silence. The full render needs both mixes.`
   else return fail('no sound could be made for the test film: ffmpeg wrote no wav')
@@ -1085,7 +1102,9 @@ async function shortTestOnce(ctx) {
   } catch (e) {
     row('test film: on the Desktop', `not copied (${e.message})`, 'copied there', false)
   }
-  result.testFilm = { file: onDesktop || kept, bytes: fs.statSync(made).size, sha256: madeRecord.sha256, frames, seconds }
+  const filmThere = !!onDesktop && fs.existsSync(onDesktop)
+  result.testFilm = { file: filmThere ? onDesktop : kept, bytes: fs.statSync(made).size, sha256: madeRecord.sha256, frames, seconds }
+  result.where.unshift({ label: 'THE TEST FILM', path: result.testFilm.file })
 
   // (c) time, processes and disk
   const first = stretch.one.map((c) => records.find((r) => r.first === c.first))
@@ -1106,7 +1125,7 @@ async function shortTestOnce(ctx) {
   const rule = L.procsRule({ one: cost.perSample > 0 ? 1 : 0, two: gainMeasured, memoryHolds })
   const gain = rule.procs === 2 ? gainMeasured : 1
   const by = (n) => fitFrames.filter((f) => f.samples === n)
-  const at = (n) => (by(n).length ? `${(sum(by(n).map((f) => f.seconds)) / by(n).length).toFixed(2)} s measured on ${by(n).length} frames` : `${(cost.each + cost.perSample * n).toFixed(2)} s by the fit`)
+  const at = (n) => (by(n).length ? `${(sum(by(n).map((f) => f.seconds)) / by(n).length).toFixed(2)} s measured on ${by(n).length} frames` : `${(cost.each + cost.perSample * n).toFixed(2)} s by the time estimate`)
   const chunkBytes = sum(records.map((r) => r.bytes)) / records.length
   const pngBytes = timed.length ? Math.max(...timed.map((t) => fs.statSync(path.join(drawnDir, fs.readdirSync(drawnDir).find((n) => n.startsWith(`${t.what}-${String(t.frame).padStart(6, '0')}`)))).size)) : 0
   const disk = mode.small ? null : { chunkMb: round((chunkBytes * (mode.chunk / size)) / 1e6, 1), ...(pngBytes ? { pngMb: round(pngBytes / 1e6, 1) } : {}) }
@@ -1118,21 +1137,24 @@ async function shortTestOnce(ctx) {
   const batches = Math.ceil(stamp.frames['film-b'] / (mode.chunk * BATCH_CHUNKS)) + Math.ceil(stamp.frames.loop / (mode.chunk * BATCH_CHUNKS))
   const proj = mode.small ? null : L.projection({ counts: { ...addTally(L.tally(counts['film-b']), L.tally(counts.loop)) }, cost, gain, encodeSeconds: encodePerFrame * all + (openingSeconds ?? 0) * stamp.frames.opening, startSeconds: 20, batches, chunkSeconds: chunkStart, chunks: Math.ceil(stamp.frames['film-b'] / mode.chunk) + Math.ceil(stamp.frames.loop / mode.chunk) })
   Object.assign(result, { cost: { each: round(cost.each, 3), perSample: round(cost.perSample, 4), frames: cost.frames, chunkStart: round(chunkStart, 2) }, gainMeasured: round(gainMeasured, 2), procs: rule.procs, procsWhy: rule.why, memoryHolds, disk, diskNeedBytes: plan.total, timed, projection: proj })
-  ctx.say(`time: a frame of 24 samples takes ${at(24)}, a frame of 96 samples ${at(96)} (the fit: ${cost.each.toFixed(2)} s a frame and ${cost.perSample.toFixed(3)} s a sample, from ${cost.frames} frames drawn by one process${chunkStart > 0 ? `, and ${chunkStart.toFixed(1)} s more at the start of each chunk` : ''})`)
-  ctx.say(`processes: ${rule.why}. The full render uses --procs ${rule.procs}`)
+  ctx.say(`time: a frame of 24 samples takes ${at(24)}, a frame of 96 samples ${at(96)} (the time estimate: ${cost.each.toFixed(2)} s a frame and ${cost.perSample.toFixed(3)} s a sample, from ${cost.frames} frames drawn by one process${chunkStart > 0 ? `, and ${chunkStart.toFixed(1)} s more at the start of each chunk` : ''})`)
+  ctx.say(`workers (drawing processes side by side): ${rule.why}. The full render uses ${rule.procs} ${rule.procs === 1 ? 'worker' : 'workers'}`)
   if (proj) {
     ctx.say(`projection: film B and the loop are ${proj.frames} frames, ${L.hoursText(proj.drawSeconds)} of drawing with ${rule.procs} ${rule.procs === 1 ? 'process' : 'processes'}, ${L.hoursText(proj.startSeconds)} of starting browsers, ${L.hoursText(proj.encodeSeconds)} for the opening and the three encodes: ${L.hoursText(proj.seconds)} in all`)
     ctx.say(`disk: at its fullest the full render holds ${L.gb(plan.total).toFixed(1)} GB (chunks of ${disk.chunkMb} MB), and ${L.gb(free).toFixed(1)} GB is free`)
     if (proj.seconds > L.TOO_LONG_HOURS * 3600) ctx.say(`MORE THAN ${L.TOO_LONG_HOURS} HOURS: the full render is projected at ${L.hoursText(proj.seconds)} on this machine. Say so in the report; whether it is started is decided by the one who released the film`)
   }
 
-  ctx.say(`test film: ${onDesktop || kept} (${mb(fs.statSync(made).size)}, ${frames} frames)`)
+  ctx.say(`test film: ${result.testFilm.file} (${mb(fs.statSync(made).size)}, ${frames} frames)`)
 
   // the test's chunks leave the folder a later encode reads
   fs.renameSync(rel('out', 'master', 'test'), path.join(T, 'chunks'))
   fs.rmSync(rel('out', 'work', 'master', 'test'), { recursive: true, force: true })
   result.pass = rows.every((r) => r.pass !== false)
-  result.why = result.pass ? `the short test passed on ${doc.renderer}: ${refs.length} reference ${refs.length === 1 ? 'frame' : 'frames'} and ${frames} frames of film B${proj ? `, the full render is projected at ${L.hoursText(proj.seconds)} with --procs ${rule.procs}` : ''}${look.length ? `. ${look.length} ${look.length === 1 ? 'thing is' : 'things are'} marked LOOK in the report for the remote team` : ''}. Stop here` : `the short test did not pass: ${rows.filter((r) => r.pass === false).map((r) => `${r.check} is ${r.found}, wanted ${r.wanted}`).slice(0, 4).join('; ')}`
+  // a picture that passed is not yet a render that can start: what stands in its way is said in the same sentence
+  const notReady = L.notReadyReasons({ stamp, sound: mixes, tones: ctx.T.tones === true, small: mode.small })
+  result.notReady = notReady
+  result.why = result.pass ? `${notReady.length ? 'the picture passed' : 'the short test passed'} on ${doc.renderer}: ${refs.length} reference ${refs.length === 1 ? 'frame' : 'frames'} and ${frames} frames of film B${proj ? `, the full render is projected at ${L.hoursText(proj.seconds)} with ${rule.procs} ${rule.procs === 1 ? 'worker' : 'workers'}` : ''}${look.length ? `. ${look.length} ${look.length === 1 ? 'thing is' : 'things are'} marked LOOK in the report for the remote team` : ''}${notReady.length ? `, and the render is not ready: ${notReady.join('; ')}` : ''}. No full render was started. Stop here` : `the short test did not pass: ${rows.filter((r) => r.pass === false).map((r) => `${r.check} is ${r.found}, wanted ${r.wanted}`).slice(0, 4).join('; ')}. No full render was started`
   return result
 }
 
