@@ -1,5 +1,6 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import sharp from 'sharp'
+import { build, loadConfigFromFile, type Plugin } from 'vite'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { config } from '../src/config'
 import { reveal } from '../src/app/app'
@@ -2255,5 +2256,222 @@ describe('where the page puts a picture of the first still', () => {
       expect(shown.length).toBeGreaterThan(table.stills.length / 2)
       expect([...meant].sort()).toEqual(shown.map((s) => s[0]).sort())
     }, 600_000)
+  })
+})
+
+describe('the tints of the controls', () => {
+  const sheets = ['src/ui/ui.module.css', 'src/ui/menu.module.css'].map((file) => ({ file, text: readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '') }))
+  /** Every rule of a sheet, those inside a media query among them, as its selector and what it declares. */
+  const rules = (text: string): { selector: string; body: string }[] => [...text.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selector: m[1]!.trim().replace(/\s+/g, ' '), body: m[2]! }))
+  /** What a rule fades: the name at the head of each part of its transition, and how the part says to fade it. */
+  const fades = (body: string): { what: string; how: string }[] =>
+    [...body.matchAll(/(?:^|;)\s*transition(?:-property)?\s*:([^;]*)/g)].flatMap((m) =>
+      m[1]!.split(/,(?![^()]*\))/).map((part) => {
+        const [, what = '', how = ''] = /^\s*(var\([^)]*\)|\S+)\s*([\s\S]*?)\s*$/.exec(part) ?? []
+        return { what, how: how.replace(/\s+/g, ' ') }
+      }),
+    )
+  const INSTEAD = 'var(--colour-instead, background-color)'
+  const numberOf = (text: string, selector: string, name: string): number => {
+    const said = rules(text)
+      .filter((r) => r.selector.split(',').map((s) => s.trim()).includes(selector))
+      .map((r) => new RegExp(`(?:^|;)\\s*${name}\\s*:\\s*([\\d.]+)\\s*(?:;|$)`).exec(r.body)?.[1])
+      .filter((v) => v !== undefined)
+    return said.length === 1 ? Number(said[0]) : Number.NaN
+  }
+
+  // A browser hands a fading background colour to its compositor, which then builds pictures of its own between the page's
+  // frames. A frame that answers a press waits for them, and where a frame is slow that wait is long.
+  it('fades no background colour where a number can fade, and nothing without a name', () => {
+    for (const { file, text } of sheets) {
+      const all = rules(text).flatMap((r) => fades(r.body).map((f) => `${file} ${r.selector}: ${f.what}`))
+      expect(all.length).toBeGreaterThan(0)
+      expect(all.filter((line) => /: (background(-color)?|all|[\d.].*)$/.test(line))).toEqual([])
+      expect(all.filter((line) => /: var\(/.test(line) && !line.endsWith(`: ${INSTEAD}`))).toEqual([])
+    }
+  })
+
+  it('fades each tint as a number the sheet itself has named', () => {
+    const want = [['--tint', '--warmth'], ['--wash']]
+    sheets.forEach(({ text }, i) => {
+      const names = [...new Set(rules(text).flatMap((r) => fades(r.body)).map((f) => f.what).filter((what) => what.startsWith('--')))].sort()
+      expect(names).toEqual(want[i])
+      for (const name of names) {
+        const named = rules(text).filter((r) => r.selector === `@property ${name}`)
+        expect(named).toHaveLength(1)
+        expect(named[0]!.body).toMatch(/syntax:\s*'<number>'/)
+        expect(named[0]!.body).toMatch(/inherits:\s*false/)
+        expect(named[0]!.body).toMatch(/initial-value:\s*0\s*;/)
+      }
+    })
+  })
+
+  // A browser that knows no registration cannot fade a number, and there the tint would step. In such a browser the name
+  // below has no value, so the list falls back to the colour; in one that knows it, the name stands for no property at all.
+  it('fades the colour itself only where no number can fade, for as long and along the same curve', () => {
+    for (const { text } of sheets) {
+      const named = rules(text).filter((r) => r.selector === '@property --colour-instead')
+      expect(named).toHaveLength(1)
+      expect(named[0]!.body).toMatch(/syntax:\s*'<custom-ident>'/)
+      expect(named[0]!.body).toMatch(/inherits:\s*false/)
+      expect(named[0]!.body).toMatch(/initial-value:\s*no-property\s*;/)
+      expect(text).not.toMatch(/--colour-instead\s*:/)
+      let lists = 0
+      for (const r of rules(text)) {
+        const list = fades(r.body)
+        const numbers = list.filter((f) => f.what.startsWith('--'))
+        const colour = list.filter((f) => f.what === INSTEAD)
+        if (numbers.length === 0) {
+          expect(`${r.selector}: ${colour.length}`).toBe(`${r.selector}: 0`)
+          continue
+        }
+        lists += 1
+        expect(`${r.selector}: ${colour.length}`).toBe(`${r.selector}: 1`)
+        expect([...new Set(numbers.map((f) => f.how))]).toEqual([colour[0]!.how])
+        expect(colour[0]!.how).toMatch(/^[\d.]+s ease$/)
+      }
+      expect(lists).toBeGreaterThan(0)
+    }
+  })
+
+  it('keeps every tint where it stood', () => {
+    const [ui, menu] = sheets.map((s) => s.text)
+    const shake = (selector: string): number => numberOf(ui!, selector, '--tint')
+    expect([shake('.shake'), shake('.shake[data-press]'), shake(".shake[aria-disabled='true']"), shake(".shake:hover:not([aria-disabled='true'])")]).toEqual([0.46, 0.62, 0.34, 0.56])
+    expect([numberOf(ui!, '.shake::before', '--warmth'), numberOf(ui!, '.shake[data-press]::before', '--warmth')]).toEqual([0, 0.13])
+    expect([numberOf(ui!, '.disc', '--warmth'), numberOf(ui!, '.mark[data-press] .disc', '--warmth')]).toEqual([0, 0.17])
+    expect([numberOf(ui!, '.sound .disc', '--tint'), numberOf(ui!, '.sound[data-press] .disc', '--tint')]).toEqual([0.46, 0.62])
+    expect([numberOf(menu!, '.option', '--wash'), numberOf(menu!, ".option[aria-pressed='true']", '--wash'), numberOf(menu!, '.option:active', '--wash')]).toEqual([0, 0.1, 0.16])
+    const painted = (text: string, selector: string): string => rules(text).find((r) => r.selector === selector)?.body ?? ''
+    expect(painted(ui!, '.shake')).toMatch(/background: rgb\(var\(--glass\) \/ var\(--tint\)\);/)
+    expect(painted(ui!, '.shake::before')).toMatch(/background-color: rgb\(var\(--glow\) \/ var\(--warmth\)\);/)
+    expect(painted(ui!, '.disc')).toMatch(/background-color: rgb\(var\(--glow\) \/ var\(--warmth\)\);/)
+    expect(painted(ui!, '.sound .disc')).toMatch(/background: rgb\(var\(--glass\) \/ var\(--tint\)\);/)
+    expect(painted(menu!, '.option')).toMatch(/background: rgb\(var\(--line\) \/ var\(--wash\)\);/)
+    // no state paints a plain colour over the tint it fades
+    for (const text of [ui!, menu!])
+      for (const r of rules(text)) {
+        if (!/^\.(shake|option)(?![\w-])/.test(r.selector) || /::(before|after)|\.(word|arcs|globe)|svg|focus-visible/.test(r.selector)) continue
+        if (r.selector === '.shake' || r.selector === '.option') continue
+        expect(`${r.selector} {${/(?:^|;)\s*background(-color)?\s*:/.test(r.body) ? ' background' : ''} }`).toBe(`${r.selector} { }`)
+      }
+  })
+})
+
+describe('the tints of the controls in the sheet as the build makes it', () => {
+  type Rule = { under: string[]; selector: string; body: string }
+  let rules: Rule[] = []
+
+  const plain = (text: string): string => text.replace(/\._([A-Za-z][\w-]*?)_[0-9a-z]{1,5}_\d+(?![\w-])/g, '.$1')
+  /** Every rule of a built sheet under the conditions it stands in, its classes named as the source names them. */
+  const read = (text: string, under: string[] = []): Rule[] => {
+    const out: Rule[] = []
+    let from = 0
+    for (let open = text.indexOf('{'); open >= 0; open = text.indexOf('{', from)) {
+      let depth = 1
+      let end = open + 1
+      for (; end < text.length && depth > 0; end++) depth += text[end] === '{' ? 1 : text[end] === '}' ? -1 : 0
+      const head = text.slice(from, open).trim()
+      const inner = text.slice(open + 1, end - 1)
+      if (/^@(media|supports|layer|container)\b/.test(head)) out.push(...read(inner, [...under, head]))
+      else out.push({ under, selector: plain(head), body: inner })
+      from = end
+    }
+    return out
+  }
+  const said = (body: string): Record<string, string> => Object.fromEntries(body.split(';').filter((d) => d.includes(':')).map((d) => [d.slice(0, d.indexOf(':')).trim(), d.slice(d.indexOf(':') + 1).trim().replace(/'/g, '"')]))
+  /** A list of fades as a browser reads it: what fades, for how long, along which curve. A part that names no curve fades along ease. */
+  const fades = (list: string): string[] =>
+    list.split(/,(?![^()]*\))/).map((part) => {
+      const [what = '', long = '', ...curve] = part.trim().split(/\s+(?![^()]*\))/)
+      return `${what} ${/^[\d.]+s$/.test(long) ? `${Math.round(Number.parseFloat(long) * 1000)}ms` : long} ${curve.join(' ').replace(/\s+/g, '') || 'ease'}`
+    })
+  const listOf = (selector: string): string => {
+    const found = rules.filter((r) => r.under.length === 0 && r.selector === selector && said(r.body).transition !== undefined)
+    return found.length === 1 ? said(found[0]!.body).transition! : `${found.length} rules of ${selector} with a list of fades`
+  }
+  /** The fades of the tinted controls as the build of main made them before a tint was a number. */
+  const BEFORE: Record<string, string[]> = {
+    '.shake': ['opacity var(--fade) ease-out', 'transform 160ms cubic-bezier(.2,.7,.2,1)', 'background-color 250ms ease', 'box-shadow 250ms ease', 'color 250ms ease'],
+    '.shake:before': ['opacity 300ms ease', 'background-color 300ms ease'],
+    '.disc': ['background-color 300ms ease', 'box-shadow 300ms ease', 'transform 160ms cubic-bezier(.2,.7,.2,1)'],
+    '.option': ['color 150ms ease', 'background-color 150ms ease'],
+  }
+  const NUMBERS = ['--tint', '--warmth', '--wash']
+  const NAME = '--colour-instead'
+
+  // The build's own plugins make the asset index and the colliders, which no sheet passes through, so they are left out.
+  // The interface is asked for as the app asks for it, by an import that waits, or the build drops it as unused.
+  beforeAll(async () => {
+    const own = (await loadConfigFromFile({ command: 'build', mode: 'production' }, 'vite.config.ts'))!.config
+    const ASK = 'the-interface-as-the-app-asks-for-it'
+    const ask: Plugin = { name: 'ask', resolveId: (id) => (id === ASK ? `\0${ASK}` : null), load: (id) => (id === `\0${ASK}` ? "export const asked = import('/src/ui/index.ts')" : null) }
+    const made = await build({ configFile: false, logLevel: 'silent', base: own.base, define: own.define, css: own.css, plugins: [ask], build: { ...own.build, write: false, rollupOptions: { ...own.build?.rollupOptions, input: ASK } } })
+    const files = (Array.isArray(made) ? made : [made]).flatMap((m) => ('output' in m ? m.output : []))
+    const sheet = files.flatMap((f) => (f.type === 'asset' && f.fileName.endsWith('.css') ? [String(f.source)] : [])).join('')
+    rules = read(sheet)
+  }, 120000)
+
+  it('reads the sheet the interface ships with', () => {
+    for (const selector of ['.ui', '.shake', '.shake:before', '.disc', '.sound .disc', '.option', '.menu']) expect(rules.filter((r) => r.selector === selector).length, selector).toBeGreaterThan(0)
+  })
+
+  // A browser that knows no registration drops the rule that registers a name. The name then has no value, the list takes
+  // what stands after its comma, and a number it cannot fade steps at once under a colour that fades as it always did.
+  it('fades the colour as before in a browser that cannot fade a number', () => {
+    expect(rules.filter((r) => !r.selector.startsWith('@property') && said(r.body)[NAME] !== undefined).map((r) => r.selector)).toEqual([])
+    const texts = (readdirSync('src', { recursive: true }) as string[]).map((f) => `src/${f.replace(/\\/g, '/')}`).filter((f) => /\.(ts|css|html|json)$/.test(f))
+    expect([...texts, 'index.html'].filter((f) => readFileSync(f, 'utf8').includes(NAME)).sort()).toEqual(['src/ui/menu.module.css', 'src/ui/ui.module.css'])
+    for (const [selector, before] of Object.entries(BEFORE)) {
+      const without = fades(listOf(selector).replace(new RegExp(`var\\(${NAME},([^()]*)\\)`, 'g'), (_, instead: string) => instead.trim()))
+      expect(without.filter((f) => !f.startsWith('--')), selector).toEqual(before)
+    }
+  })
+
+  it('fades the number and no colour in a browser that can', () => {
+    for (const name of NUMBERS) {
+      const named = rules.filter((r) => r.selector === `@property ${name}`).map((r) => said(r.body))
+      expect(named.length, name).toBeGreaterThan(0)
+      for (const n of named) expect(n, name).toEqual({ syntax: '"<number>"', inherits: 'false', 'initial-value': '0' })
+    }
+    const named = rules.filter((r) => r.selector === `@property ${NAME}`).map((r) => said(r.body))
+    expect(named.length).toBeGreaterThan(0)
+    for (const n of named) expect(n).toEqual({ syntax: '"<custom-ident>"', inherits: 'false', 'initial-value': 'no-property' })
+    for (const [selector, before] of Object.entries(BEFORE)) {
+      const colour = before.find((f) => f.startsWith('background-color '))!
+      const how = colour.slice('background-color'.length)
+      const withName = fades(listOf(selector).replace(new RegExp(`var\\(${NAME},[^()]*\\)`, 'g'), 'no-property'))
+      const numbers = withName.filter((f) => f.startsWith('--'))
+      expect(numbers.length, selector).toBeGreaterThan(0)
+      for (const n of numbers) expect(NUMBERS.map((name) => `${name}${how}`), selector).toContain(n)
+      expect(withName.filter((f) => f.startsWith('no-property')), selector).toEqual([`no-property${how}`])
+      expect(withName.filter((f) => !f.startsWith('--') && !f.startsWith('no-property')), selector).toEqual(before.filter((f) => f !== colour))
+    }
+  })
+
+  // A number without a registration is inherited, so a rule that paints with one sets it too: a control then takes no tint
+  // from the control around it, whether the browser registers the number or not.
+  it('paints each tint with a number its own rule sets', () => {
+    let painted = 0
+    for (const r of rules) {
+      if (r.selector.startsWith('@property')) continue
+      for (const name of NUMBERS) {
+        if (!r.body.includes(`var(${name})`)) continue
+        painted += 1
+        expect(Number(said(r.body)[name]), `${r.selector} ${name}`).toBeGreaterThanOrEqual(0)
+      }
+    }
+    expect(painted).toBeGreaterThanOrEqual(5)
+  })
+
+  it('fades nothing where less motion is asked for, as before', () => {
+    const still = 'transition:none!important;animation:none!important'
+    const line = (r: Rule): string => `${r.under.join(' ')} ${r.selector}{${r.body}}`.trim()
+    const asked = rules.filter((r) => r.under.some((u) => u.includes('prefers-reduced-motion')))
+    expect(asked.map(line)).toEqual([`@media (prefers-reduced-motion:reduce) .ui,.ui *,.ui :before,.ui :after{${still}}`])
+    const told = rules.filter((r) => r.selector.includes('[data-reduced]'))
+    expect(told.map(line)).toEqual([`.ui[data-reduced],.ui[data-reduced] *,.ui[data-reduced] :before,.ui[data-reduced] :after{${still}}`])
+    const stronger = rules.filter((r) => !asked.includes(r) && !told.includes(r) && /(?:^|;)(transition|animation)[\w-]*:[^;]*!important/.test(r.body))
+    expect(stronger.map(line)).toEqual([])
   })
 })
