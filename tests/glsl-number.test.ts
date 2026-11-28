@@ -155,6 +155,100 @@ describe('shader arithmetic: the test for a broken number', () => {
   })
 
   /**
+   * The step drops a broken sample, so the mean alone would hide it from the count the masters are gated by. A tally
+   * kept apart from the mean holds a mark for every value that broke in any sample of the picture, and the count reads
+   * both. The tally's pass reads the sample alone: a whole pixel it throws away, of a broken one it writes the marks, and
+   * the card keeps the greater of the mark written and the mark that stands there. Read here as the texts stand, for one
+   * value of one pixel: the count says of every list of samples what the mean said of it before it had its guard.
+   */
+  it('still counts a broken sample that the mean left out, by a tally kept apart from the mean', () => {
+    const accumulator = readFileSync(join('src', 'core', 'accumulator.ts'), 'utf8')
+    const from = accumulator.indexOf('\nconst TALLY = `uniform sampler2D uSample;\nout vec4 o;\n')
+    expect(from).toBeGreaterThan(accumulator.indexOf('\nconst MEAN = '))
+    const tally = accumulator.slice(from, accumulator.indexOf('}`\n', from))
+    expect(bare(tally)).toEqual([])
+    // One value's mark, by the shared tests on the bits: 1 what is not a number, 2 plus infinite, 3 minus infinite, 0 none.
+    // The sign is read by a shift: the text sets no number against the bits for the sign's sake.
+    const mark = tally.match(/^float tallyOf\(float v\) \{ return (.*); \}$/m)?.[1] ?? ''
+    expect(mark).toBe('numberNan(v) ? 1.0 : (numberInf(v) ? 2.0 + float(floatBitsToUint(v) >> 31) : 0.0)')
+    // The pass reads the sample once and nothing else, throws a whole pixel away and writes the marks of a broken one.
+    expect(tally).toContain('void main() {\n  vec4 s = texelFetch(uSample, ivec2(gl_FragCoord.xy), 0);\n  if (!numberBroken(s)) discard;\n  o = vec4(tallyOf(s.r), tallyOf(s.g), tallyOf(s.b), tallyOf(s.a)) / 255.0;\n')
+    expect(tally.match(/\buniform\b/g)).toHaveLength(1)
+    expect(tally.match(/\btexelFetch\(/g)).toHaveLength(1)
+    // After the mean's step it reads the texture that step has just read, into one target of a byte a value. The marks are
+    // wiped at a picture's first sample; the card keeps the greater mark for this one draw; then all is put back.
+    expect(accumulator).toContain('    this.pass.render(this.gfx.renderer, to)\n    const tally = this.tally\n')
+    expect(accumulator).toContain(
+      [
+        '      tally.pass.material.uniforms.uSample.value = u.uSample.value',
+        '      renderer.setRenderTarget(tally.marks)',
+        '      if (this.count === 0) gl.clearBufferfv(gl.COLOR, 0, [0, 0, 0, 0])',
+        '      const auto = renderer.autoClear',
+        '      renderer.autoClear = false',
+        '      gl.enable(gl.BLEND)',
+        '      gl.blendEquation(gl.MAX)',
+        '      tally.pass.render(renderer, tally.marks)',
+        '      gl.blendEquation(gl.FUNC_ADD)',
+        '      gl.disable(gl.BLEND)',
+        '      renderer.autoClear = auto',
+        '      renderer.setRenderTarget(to)',
+        '    }\n    this.flip = 1 - this.flip\n',
+      ].join('\n'),
+    )
+    expect(accumulator).toContain('    const marks = (): THREE.WebGLRenderTarget =>\n      new THREE.WebGLRenderTarget(width, height, {\n        type: THREE.UnsignedByteType,\n        format: THREE.RGBAFormat,\n')
+    expect(accumulator).toContain("this.tally = this.precision === 'byte' ? null : { marks: marks(), pass: new Pass(TALLY, { uSample: { value: null } }) }")
+    // The count takes a value that is broken in the mean or marked in the tally, and names the mark where there is one.
+    expect(accumulator).toContain('        if (whole && mark === 0) continue\n        invalid++\n')
+    expect(accumulator).toContain('mark !== 0 ? markKind(mark) : half ? halfKind(v) : floatKind(v))')
+    expect(accumulator).toContain("const markKind = (m: number): OddKind => (m === 2 ? 'plus infinite' : m === 3 ? 'minus infinite' : 'no number')")
+    const bits = (x: number) => new Uint32Array(new Float32Array([x]).buffer)[0]!
+    // In the shader the bits are unsigned and the shift fills with zeros: here that is >>>.
+    const marked = new Function('numberNan', 'numberInf', 'floatBitsToUint', 'float', 'v', `return ${mark.replace('>> 31', '>>> 31')}`) as (nan: (x: number) => boolean, inf: (x: number) => boolean, bits: (x: number) => number, float: (x: number) => number, v: number) => number
+    const markOf = (v: number) => marked(Number.isNaN, (x) => Math.abs(x) === Infinity, bits, Number, v)
+    expect([1, 0, -0, -3.5, NaN, -NaN, Infinity, -Infinity].map(markOf)).toEqual([0, 0, 0, 0, 1, 1, 2, 3])
+    const step = MEAN_STEP_GLSL.match(/\{ return (.*); \}\n$/)?.[1]
+    const broken = (x: number) => !Number.isFinite(x)
+    const guarded = new Function('numberBroken', 'm', 's', 'w', `return ${step}`) as (broken: (x: number) => boolean, m: number, s: number, w: number) => number
+    /** One value through the samples of a frame: the mean with its guard, and the mark the target holds after each pass. */
+    const now = (samples: number[]): { counted: number; mark: number } => {
+      let m = 0
+      // The target is cleared once a picture.
+      let kept = 0
+      samples.forEach((s, i) => {
+        m = i === 0 ? s : guarded(broken, m, s, 1 / (i + 1))
+        // `if (!numberBroken(s)) discard;` and, of what is written, the greater of it and what stands there.
+        if (broken(s)) kept = Math.max(kept, markOf(s))
+      })
+      return { counted: broken(m) || kept !== 0 ? 1 : 0, mark: kept }
+    }
+    /** The count as it was when the mean had no guard: a broken sample stayed in the mean to the frame's end. */
+    const before = (samples: number[]): number => (broken(samples.reduce((m, s, i) => (i === 0 ? s : m + (s - m) * (1 / (i + 1))), 0)) ? 1 : 0)
+    const lists = [[2, 4, 6, 8], [2], [0, 0, 0], [2, 4, NaN, 8], [2, 4, Infinity, 8], [2, 4, 6, -Infinity], [NaN, 4, 6, 8], [NaN, Infinity, 6, 8], [NaN, NaN], [NaN], [Infinity, -Infinity, 1], [2, NaN, 4, NaN, 6], [NaN, -Infinity], [-Infinity, NaN, 3]]
+    for (const list of lists) expect(now(list).counted, JSON.stringify(list)).toBe(before(list))
+    expect(lists.map((list) => now(list).counted)).toEqual([0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+    // The kind named is the greatest mark met, whatever the order of the samples.
+    expect(lists.map((list) => now(list).mark)).toEqual([0, 0, 0, 1, 2, 3, 1, 2, 1, 1, 3, 1, 3, 3])
+  })
+
+  /**
+   * The tally's draw switches the card's blending on with the rule "the greater", by the card's own calls, and puts it
+   * back to off and "the sum". That is how the mean's step left it only while no material of the build asks for another
+   * rule: three.js sets the sum for each of its own ways of blending, and a material of the build's own names its rule.
+   */
+  it('leaves the card with the one blend rule the build ever asks for, the sum', () => {
+    let read = 0
+    for (const file of files('src', '.ts')) {
+      const text = readFileSync(file, 'utf8')
+      read++
+      expect(/\b(?:Subtract|ReverseSubtract|Min|Max)Equation\b/.test(text), file).toBe(false)
+      for (const m of text.matchAll(/\bblendEquation(?:Alpha)?\s*[:=]\s*([\w.]+)/g)) expect(m[1], file).toBe('THREE.AddEquation')
+      const calls = [...text.matchAll(/\bgl\.blendEquation(?:Separate)?\(([^)]*)\)/g)].map((m) => m[1])
+      expect(calls, file).toEqual(file.endsWith(join('core', 'accumulator.ts')) ? ['gl.MAX', 'gl.FUNC_ADD'] : [])
+    }
+    expect(read).toBeGreaterThan(150)
+  })
+
+  /**
    * Under Direct3D only a shader that asks isnan() is built with the strict rules for numbers. The probe's second
    * shader asks it nowhere, as the build's own shaders, and takes its broken values from a uniform's bits.
    */
