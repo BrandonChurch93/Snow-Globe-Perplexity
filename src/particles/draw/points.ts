@@ -12,7 +12,7 @@ import { filmCut } from '../../film/cut'
 import { filmTimeline, globePoseAt, prerollSeconds, type Timeline } from '../../film/timeline'
 import { flickerOf, gridInfo } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
-import { landingLook } from '../../seasons/summer/veil'
+import { landingLook, veil as summerVeil } from '../../seasons/summer/veil'
 import type { GlobePose } from '../../shake/table'
 import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SEED_RESTS, SETTLE_SHOWN, SHAPE, STORM_BLOOM, lookOf, SEED_NEAR } from './looks'
 import { BEHAVIOUR } from '../engine/kinds'
@@ -35,30 +35,36 @@ const TAU = 2 * Math.PI
 const samePose = (a: GlobePose, b: GlobePose): boolean => a.x === b.x && a.y === b.y && a.z === b.z && a.tiltX === b.tiltX && a.tiltZ === b.tiltZ && (a.twist ?? 0) === (b.twist ?? 0)
 
 /**
- * How a light of the storm rides with the ball through one exposure of the film (looks.ts, CARD.glow, `stormRideBy`): null
- * where it does not. In a frame of the film the ball travels a little inside the shutter while it is set down and while it
- * rocks after the landing, and every sample of the frame draws the ball where it stands at that sample's moment. A light
- * of the storm is one short streak, held near its place at the middle of the exposure against its own path; carried with
- * the ball from sample to sample it stood as a band of lines side by side (seen at the landing of shake 2 at 3840). So the
- * light is held against the ball's travel as well: in every sample it is drawn at its place in the ball as the ball stands
- * at the middle of the exposure.
+ * How a light of the storm rides with the ball through one exposure of the film: null where it does not. In a frame of
+ * the film the ball travels inside the shutter, through the whole of a shake and while it rocks after the landing, and
+ * every sample of the frame draws the ball where it stands at that sample's moment. A light of the storm is one short
+ * streak, held near its place at the middle of the exposure against its own path; carried with the ball from sample to
+ * sample it stood as a band of lines side by side (seen at the landing of shake 2 at 3840), and where the ball travels far
+ * as a flat square in the lawn (open item 289, seen in the masters at film frames 1408 and 2072). So the light is held
+ * against the ball's travel as well: in every sample it is drawn at its place in the ball as the ball stands at the
+ * middle of the exposure.
  *
- * `share` is how much of that hold stands: none up to the take over's end, so the take over's frames are as they were to
- * the last bit, whole once the storm has gone `stormRideBy` of the way to the look of the landing (summer's own course,
- * veil.ts `landingLook`), and whole after the landing for as long as that look stands; it rises by degrees, so no light
- * sharpens between two frames. `mid` is the ball's pose at the middle of the exposure. `move` is how far this sample's
- * moment was moved from its share of the shutter (film/motion.ts, `evenSet`): the light's own hold reads the share, so the
- * light stood off by that much of its own path, and is put back by it.
+ * `storm` is the draw's own level of the storm at the sample (the shader's uStorm.x). `share` is how much of the hold
+ * stands: the storm's own ease (looks.ts, CARD.hair, `stormEase`; the shader's easeC), by which a light's streak comes. So
+ * the hold is whole wherever the storm is whole, in every frame of a shake in which summer's lights are drawn, and where a
+ * storm rises while the ball travels already (the lift of a shake out of summer at rest, where the level is first above
+ * nothing three frames after the ball has started) it comes with the streak by degrees and no light sharpens between two
+ * frames. Where the ball stands as it stands at the middle of the exposure there is nothing to hold, so at rest it is
+ * nothing by itself. `mid` is the ball's pose at the middle of the exposure. `move` is how far this sample's moment was
+ * moved from its share of the shutter (film/motion.ts, `evenSet`): the light's own hold reads the share, so the light
+ * stood off by that much of its own path, and is put back by it.
  *
  * It reads the film's own timeline: a sample says its moment and the ball's pose at it, and not where the ball stands half
  * a shutter on. It answers only for a sample of the film's frames (a moment on the film's timeline whose pose is the
- * timeline's own at that time): never for the app, a still, the loop or a picture drawn in one sample.
+ * timeline's own at that time) while summer is one of the moment's two seasons, the light being summer's alone: never for
+ * the app, a still, the loop, a view or a picture drawn in one sample.
  */
-export function lightRide(film: Timeline, f: { sample: { t: number } | null; view: string; live: boolean; moment: { time: number; period: number | null; beat: number | null; sinceLanding: number }; globe: GlobePose; from: { veil: unknown }; to: { veil: unknown } }): { share: number; mid: GlobePose; move: number } | null {
+export function lightRide(film: Timeline, f: { sample: { t: number } | null; view: string; live: boolean; moment: { time: number; period: number | null }; globe: GlobePose; from: { veil: unknown }; to: { veil: unknown } }, storm: number): { share: number; mid: GlobePose; move: number } | null {
   const time = f.moment.time
   if (f.sample === null || f.view !== '' || f.live || f.moment.period !== null || !(time >= prerollSeconds)) return null
-  const look = Math.min(1, Math.max(0, landingLook(f) / CARD.glow.stormRideBy))
-  const share = look * look * (3 - 2 * look)
+  if (f.from.veil !== summerVeil && f.to.veil !== summerVeil) return null
+  const ease = Math.min(1, Math.max(0, storm / CARD.hair.stormEase))
+  const share = ease * ease * (3 - 2 * ease)
   if (!(share > 0) || !samePose(globePoseAt(film, time), f.globe)) return null
   const open = prerollSeconds + Math.floor((time - prerollSeconds) * config.film.fps + 1e-6) / config.film.fps
   const mid = globePoseAt(film, open + 0.5 * SHUTTER_SEC)
@@ -530,7 +536,7 @@ export class ParticleDraw {
   private ride(f: StageFrame): void {
     const u = this.uniforms
     const hold = u.uMidHold!.value as THREE.Vector2
-    const ride = f.sample !== null && f.view === '' && !f.live && f.moment.period === null && f.moment.time >= prerollSeconds ? lightRide((this.film ??= filmTimeline(filmCut())), f) : null
+    const ride = f.sample !== null && f.view === '' && !f.live && f.moment.period === null && f.moment.time >= prerollSeconds ? lightRide((this.film ??= filmTimeline(filmCut())), f, this.storm) : null
     if (!ride) {
       hold.set(0, 0)
       return
