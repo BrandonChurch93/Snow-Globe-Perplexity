@@ -1,44 +1,46 @@
 {
-  "number": 274,
-  "time": "2026-11-28 16:22 UTC",
+  "number": 275,
+  "time": "2026-11-28 16:36 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 274 · 2026-11-28 16:22 UTC · Phase 6",
+    "Status 275 · 2026-11-28 16:36 UTC · Phase 6",
     "Phases 1 to 5 complete. Phase 6 in progress. Three words are asked of Brandon and all three still stand. One: move on to the film and the masters, or one more round of looks first, asked in Status 236 at about 5:20 PM MT Friday. Two: take the level line's mend, yes or no, asked in Status 262. Three: take the two what-ifs that both fresh reviewers say to take, fall's lit faces going out before winter's base comes and summer's sand mound breaking up as it leaves, yes or no. The work goes on in any case and only the freeze waits.",
-    "Since Status 273 at 9:09 AM MT: decision 320 is in the log. The sound's warm start is not taken. Its builder's push report is read whole: the call that starts the sound early also starts the browser's camera service, MEASURED by it in 4 of 4 browsers, and it READ reports of camera notices after such a call on Windows and Android. A snow globe does not wake a camera to answer its first press sooner, and its builder advised the same. The branch is kept and not offered. The first press with sound keeps its wait, 0.10 to 0.17 seconds on the builder's machine and 0.25 to 0.57 seconds on a hosted Mac, MEASURED by it, on a real machine UNKNOWN, and that goes into the final list of what is not verified.",
-    "Why a hosted Mac drops the drawing (item 295): the finder's first run of four arms is finished, run 46158910756, every number MEASURED by it. Plain winter lost the drawing in 4 of 12 loads, winter at low quality in 9 of 12, spring in none of 12. Every loss is Chrome ending its own graphics process after the Mac's hosted graphics driver stood still for about five seconds while it let go of memory. It is not a shortage of memory. New: the standstill is not winter's. Spring has it in 12 of 12 loads, but before its first picture, behind the still picture, so nothing is lost there, and winter has it after its first picture is shown. First readings of the next run say builds of Thursday and Friday lose it too, so no late change brought it. Whether a visitor's real card ever does this is UNKNOWN. The whole report is due 10:24 AM MT.",
-    "Two more what-ifs are ordered on branches of their own, nothing on main. First picture: the storm in the four shakes at draft, three frames each. At film frames 632 and 2072 the right half of the glass stands clear for a tenth of a second and the firs and the tree show dark through it (the bottom row was drawn on the what-if branch). Read from the code by the what-ifs' builder: the thin haze is thrown to one wall with the liquid and the far wall keeps a hundredth of it. The approved shake pictures of winter and summer show the storm filling the whole glass. The what-if puts a floor under that throw. Second picture: summer's lawn at the lower right of the glass over film frames 1396 to 1439 at draft. Each thin yellow green stroke is a firefly, and in the 4K masters each one stands as a flat square while the globe travels (Stills 321, 359 and 362, open item 289). The what-if holds each light in place through the exposure in every film frame, and it comes from the builder who made that hold for the landing. Three helper machines are drawing ten frames of the main branch at 4K as the masters draw them, so each what-if is shown before and after by the same tool.",
-    "Corrected in decision 320: when the drawing is lost during a held shake, the still that is laid is of the season last drawn, as the mend's own spec says. An hour ago I had taken its builder's other choice, and the fresh critic was right.",
-    "Open and awaited, by my orders' limits in Mountain Time. The leaves' rework by 9:50 AM and the sprinkle's tip by 10:40 AM from the what-ifs' builder. The hosted Mac report at 10:24 AM. The lost drawing's mend: what holds the context back by 10:30 AM, the ten must items by 11:45 AM, then a second fresh reviewer of another model family before anything merges. The render handoff's hosted proof on Windows, macOS and Linux, run 46161915190, is still running; after it a cold reader of a third model family, then the merge and the one line for Claude Code. The fireflies' what-if by 11:50 AM and the veil's by 1:45 PM.",
-    "Remaining in phase 6 and what he receives. The render instructions: one file in the repo and one line to give Claude Code, after the steps above. The what-ifs, each shown before and after at 4K with the reviewers' words. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last the fresh review and BUILD COMPLETE. Sound credits 7,420 of 10,000 (measured from the ledger at 9:22 AM MT Saturday, 52 rows, the last call 10:47 PM MT Wednesday).",
-    "phase 6: 61.55 h used of its 12.00 h box",
-    "allowance (after the review): 61.55 h used of 12.00 h allowed",
+    "Since Status 274 at 9:23 AM MT: decision 321 is in the log. The leaves' third rework is pushed and its own builder says it is not done. First picture: six places in fall's landing at 4K at own size, the main branch left, the second rework in the middle, the third right. Each lifted leaf's smear now fades toward both ends and keeps its tones, and places 3 to 6 read as soft leaves. At places 1 and 2, the big smear before the left gold foot, the lower edge is still one ruled line, and where it crosses the foot's highlight there are grains, 57 pixels against 15 before, MEASURED by its builder and stated as not curable in its files. Ruled: its own plan stands. It mends the edge as one more step on top, due about 10:12 AM MT, then reworks the sand mound's second answer, due about 10:50 AM MT. Nothing of it is offered to Brandon before a fresh reviewer has read it, and the grains are a named cost to weigh then. The smear in motion is not seen yet.",
+    "The fireflies' what-if has its plan and its first before frames. Second and third pictures: film frames 2040 and 1424 at 4K as the masters draw them on the main branch, cut at own size, drawn by a helper machine (calibration equal, 24 samples each). While the globe travels the yellow green lights stand as short flat bars with square ends, like cut strips of paper. That is open item 289 and the what-if is for exactly this. Its builder MEASURED along the film's timeline where the hold of a light against the globe's travel may stand: through the whole take over into summer, through the swap out of summer, and at the lift out of summer it comes in over six frames, so no light jumps between two frames. One change in the draw's code, no shader text. Because it now also changes frames inside the take over into summer, four more before frames are being drawn there. Its report is due 11:50 AM MT.",
+    "Why a hosted Mac drops the drawing (item 295): the finder's second run is finished, run 46159901534, every number MEASURED by it on hosted Macs. Wednesday's build lost the drawing in 0 of 12 loads though the hosted card stands still there too. Thursday's lost it in 10 of 12, Friday's in 8 of 12, an early Saturday build in 9 of 12. So it came in between Wednesday's and Thursday's builds. One candidate, a likeness in time and not a proof: the commit that laid the still picture under the canvas and fades the canvas in at the first picture. Two runs test exactly that and wait for hosted Macs. Ruled out by measure: Chrome's watchdog, the test tools' flags, the machine's memory and the card's memory. A kernel report of one lost load shows the hosted card waiting on its host. No ruling yet. Whether a real Mac, a real Windows card or a phone ever does this is UNKNOWN. The report is due 10:24 AM MT.",
+    "The sound's warm start: its builder sent five corrections to its own report. None changes the ruling of decision 320. It stays not taken and not offered, and the first press with sound keeps its wait.",
+    "The render handoff's hosted proof, run 46161915190, READ at 9:36 AM MT: both macOS jobs and four of the eight Windows jobs have ended, four Windows jobs still run. A job's colour is not a verdict. I read the proof's verdict table when the builder's report comes, then a cold reader of a third model family reads the one file, then the merge and the one line for Claude Code. No cloud final render is started.",
+    "One line went to Partner at 9:31 AM MT: the three words above wait on Brandon, nothing blocks, the late pieces go on meanwhile and nothing of look goes onto the main branch without his word.",
+    "Open and awaited, by my orders' limits in Mountain Time. The leaves' edge about 10:12 AM and the mound's second answer about 10:50 AM. Four more before frames by 10:15 AM and the other seven by 10:40 AM. The hosted Mac report at 10:24 AM. The lost drawing's mend: what holds the context back by 10:30 AM (its fifth hosted run 46165376349 waits for Macs), the ten must items by 11:45 AM, then a second fresh reviewer of another model family before anything merges. The fireflies' what-if by 11:50 AM and the veil's by 1:45 PM.",
+    "Remaining in phase 6 and what he receives. The render instructions: one file in the repo and one line to give Claude Code, after the steps above. The what-ifs, each shown before and after at 4K with the reviewers' words. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last the fresh review and BUILD COMPLETE. Sound credits 7,420 of 10,000 (measured from the ledger at 9:36 AM MT Saturday, 52 rows, the last call 10:47 PM MT Wednesday).",
+    "phase 6: 61.79 h used of its 12.00 h box",
+    "allowance (after the review): 61.79 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-274-1.jpg",
-      "caption": "The storm in the four shakes at draft, three frames each, a half of the glass standing clear at film frames 632 and 2072, a finding, a what-if ordered",
-      "w": 1056,
+      "file": "out/stills/status/status-275-1.jpg",
+      "caption": "Fall's leaves at the landing at 4K at own size, six places in film frames 2162, 2163 and 2170, the main branch left, the second rework in the middle, the third right, not done, not on main",
+      "w": 907,
       "h": 1200
     },
     {
-      "file": "out/stills/status/status-274-2.jpg",
-      "caption": "Summer's lawn through the take over at draft, film frames 1396 to 1439, the fireflies' strokes that stand as flat squares in the 4K masters, a what-if ordered",
+      "file": "out/stills/status/status-275-2.jpg",
+      "caption": "Summer's fireflies in the lift out of summer at 4K at own size, film frame 2040 on the main branch, flat bars with square ends, the before of a what-if",
       "w": 1200,
-      "h": 557
+      "h": 1200
     },
     {
-      "file": "out/stills/status/status-274-3.jpg",
-      "caption": "Still: summer rest hero, hd, draft",
-      "w": 1200,
-      "h": 675
+      "file": "out/stills/status/status-275-3.jpg",
+      "caption": "Summer's fireflies before the landing at 4K at own size, film frame 1424 on the main branch, flat bars with square ends, the before of a what-if",
+      "w": 1000,
+      "h": 700
     },
     {
-      "file": "out/stills/status/status-274-4.jpg",
-      "caption": "Still: spring landed hero, hd, draft",
+      "file": "out/stills/status/status-275-4.jpg",
+      "caption": "Still: spring rest hero, hd, draft",
       "w": 1200,
       "h": 675
     }
