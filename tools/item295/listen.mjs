@@ -19,6 +19,9 @@
 // default switches stay (none of them names the card). --viewport WxH and --scale N set the window and its pixel ratio.
 // --spindump N: at the first picture the machine's own sampler (spindump, as root) is begun for N s on the browser's
 // graphics process. That is a tool beside the card, so such loads are never counted with the listening ones.
+// --spindump-at MS begins that sampler MS after the address was asked for instead. --hide-canvas S: a style of the tool
+// keeps the canvas out of sight (opacity 0, as the page keeps it before its first picture) until S s after the first
+// picture. Such loads are named so and never counted with the listening ones.
 // --local opens the installed Chrome in a window with the machine's graphics card, with the flags of every tool of
 // this tree; without it the pinned browser draws with the software renderer.
 // It writes <out>/<name>.json, <name>.txt, and for each load <tag>.png, <tag>-chrome.log, <tag>-gpu.txt and what the
@@ -44,6 +47,11 @@ const stayMs = Number(str('stay', '150')) * 1000
 const afterLossMs = Number(str('after-loss', '0')) * 1000
 const limitMs = Number(str('limit', '200')) * 1000
 const spindumpS = Number(str('spindump', '0'))
+// --spindump-at MS: the sampler begins MS after the address was asked for instead of at the first picture (a season whose
+// standstill falls before its first picture). --hide-canvas S: the tool keeps the canvas as the page keeps it before its
+// first picture (opacity 0, no fade) until S s after the first picture, then lets go. Both are tools beside the page.
+const spindumpAtMs = Number(str('spindump-at', '-1'))
+const hideCanvasS = Number(str('hide-canvas', '0'))
 const oslog = str('oslog', 'lost')
 // --webkit: the driver's own build of WebKit in a window instead of Chrome (the engine of Safari; it is not Safari itself).
 // It has no chrome://gpu and names no processes to the driver: its processes are found by their names.
@@ -328,17 +336,51 @@ async function one(base, query, round) {
     })
     page.on('crash', () => messages.push({ afterGotoMs: Date.now() - t0, text: 'the page crashed (its process went)' }))
     await page.addInitScript(early)
+    if (hideCanvasS > 0) {
+      await page.addInitScript(() => {
+        const put = () => {
+          if (document.getElementById('__listen_hide') || !document.documentElement) return
+          const st = document.createElement('style')
+          st.id = '__listen_hide'
+          st.textContent = 'canvas{opacity:0 !important;transition:none !important}'
+          document.documentElement.appendChild(st)
+        }
+        put()
+        document.addEventListener('DOMContentLoaded', put)
+      })
+      notes.push(`the tool keeps the canvas at opacity 0 until ${hideCanvasS} s after the first picture`)
+    }
     await page.goto(`${base}${query === '' ? '' : `?${query}`}`, { waitUntil: 'commit' })
     let endedBy = 'the limit'
     let firstAt = null
     let dump = null
+    let shownAt = null
     while (Date.now() - t0 < limitMs + stayMs) {
       await sleep(250)
-      const s = await page.evaluate(() => ({ first: document.documentElement.dataset.firstPicture ?? null, lost: window.__listen?.lost.length ?? 0 })).catch(() => null)
+      if (spindumpS > 0 && spindumpAtMs >= 0 && mac && dump === null && Date.now() - t0 >= spindumpAtMs) {
+        const own = await sample('the sampler begun').catch(() => [])
+        const gpu = own.find((p) => p.kind === 'gpu-process')?.pid
+        if (gpu) {
+          const file = path.join(out, `${tag}-spindump.txt`)
+          notes.push(`spindump begun on the graphics process ${gpu} ${Date.now() - t0} ms after the address was asked for, for ${spindumpS} s`)
+          dump = sh('sudo', ['-n', 'spindump', String(gpu), String(spindumpS), '10', '-file', file, '-noProcessingWhileSampling'], (spindumpS + 240) * 1000).then((r) => notes.push(`spindump ended ${r.ok ? 'well' : `badly: ${r.err.slice(0, 300)}`}`))
+        }
+      }
+      // While the page's own thread waits for the card this question waits with it; the 2 s samples go on beside it.
+      const s = await Promise.race([
+        page.evaluate(() => ({ first: document.documentElement.dataset.firstPicture ?? null, lost: window.__listen?.lost.length ?? 0 })).catch(() => null),
+        sleep(4000).then(() => null),
+      ])
+      if (hideCanvasS > 0 && firstAt !== null && shownAt === null && Date.now() - firstAt >= hideCanvasS * 1000) {
+        shownAt = Date.now()
+        const pageAt = await page.evaluate(() => (document.getElementById('__listen_hide')?.remove(), Math.round(performance.now()))).catch(() => null)
+        notes.push(`the tool let the canvas into sight ${shownAt - firstAt} ms after the first picture (page clock ${pageAt})`)
+        await sample('the canvas let into sight').catch(() => undefined)
+      }
       if (s?.first === '1' && firstAt === null) {
         firstAt = Date.now()
         const own = await sample('the first picture').catch(() => [])
-        if (spindumpS > 0 && mac) {
+        if (spindumpS > 0 && spindumpAtMs < 0 && mac) {
           const gpu = own.find((p) => p.kind === 'gpu-process')?.pid
           if (gpu) {
             const file = path.join(out, `${tag}-spindump.txt`)
