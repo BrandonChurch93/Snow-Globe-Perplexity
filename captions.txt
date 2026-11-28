@@ -331,3 +331,15 @@ Item 275, the 3840 proof: film frames 667 and 668 at two times. Left origin main
 
 108-item275-3840-film-667-668-the-afters-own-level-runs-4x-before-left-after-right.jpg
 Item 275, the 3840 proof: the runs the after alone has, at four times (667: x 2520 to 2659; 668: x 2630 to 2769; y 1896 to 1931). Left origin main 4580676e, right the proof head 7e94aaf2. The tick marks rows 1911/1912. In 667 the end of the image after the mend is a comb of short level streaks, light and dark by turns, not a clean fade. In 668 one faint light streak lies three rows under the old line.
+
+109-item275-3840-film-620-667-668-whole-frames-made-400-wide-before-left-after-right.jpg
+Item 275, the 3840 proof: film frames 620, 667 and 668 whole, each made smaller from 3840 to 400 px wide as a phone's feed shows it. Left origin main 4580676e, right the proof head 7e94aaf2. At this size I can tell no before from its after.
+
+110-item275-3840-film-668-the-run-4x-before-after-and-plain-frost-with-the-image-zone-off.jpg
+Item 275, the 3840 proof, whose run is it: film frame 668 at four times (x 2652 to 2737, y 1896 to 1931). Left origin main 4580676e, middle the proof head 7e94aaf2, right a trial that was never committed: the proof head with the foot's image zone switched off altogether (engine 6b1c7d89d665c176, errors [], 80 samples), so plain frost with no image in it. The tick marks rows 1911/1912. The run the after alone has on rows 1914/1915 (53 px by 8.8 levels) stands in the plain frost in the same place, longer and stronger (61 px by 9.6 levels): it is the leaving frost's own streak, which the before's flat dark hid.
+
+111-item275-3840-film-619-620-621-the-place-as-it-is-before-left-after-right.jpg
+Item 275, the 3840 proof with all seven frames standing: film frames 619 (31 samples), 620 (46) and 621 (49), 3840 by 2160, final tier, the foot up and the frost lying; the right end of the foot's image as it is (x 2080 to 2639, y 1830 to 2009). Left origin main 4580676e as `/root` named it (engine fc272474aa83fe51 in the record), right the proof head 7e94aaf2, that main with the commit bfbf6ac6 (engine 29b8ddd5edda71ac in the record); drawn by `/root`'s helpers, errors [] in each record. The tick marks rows 1911/1912, the table's line. Before: in each frame a level edge on the tick, 44 or 45 px by 60.2, 62.5 and 62.6 levels at the judge's 6 levels. After: none in any of the three; over the before's columns the step is 3.3, 2.5 and 4.8 levels against 53.2, 53.7 and 62.6. The place does not move between the three frames.
+
+112-item275-3840-film-619-620-621-the-place-2x-before-left-after-right.jpg
+Item 275, the 3840 proof: film frames 619, 620 and 621 at two times (x 2400 to 2679, y 1872 to 1951). Left origin main 4580676e, right the proof head 7e94aaf2. The tick marks rows 1911/1912. Before: in each frame the dark wedge of the foot's image ends in a flat level top on the tick. After: in each it ends in a grainy, frayed edge; the three afters look alike, and no finger of grain was found that differs between them. Right of the place the frost's heap shows square texels in both pictures alike; that is not the mend's.

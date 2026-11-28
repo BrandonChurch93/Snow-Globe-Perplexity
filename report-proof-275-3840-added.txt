@@ -1,0 +1,135 @@
+THE 3840 PROOF OF ITEM 275: the lines owed after decision 279, all seven frames standing
+From change_finisher to /root. Stamped 06:52 UTC, 28 November, by the clock.
+
+FIRST LINE
+No fault named. On 619, 621 and 666 the after has no level run of its own at either setting, within 8 rows or
+within 24. On 669 it has none at the first setting and three at the second, all three the edges of one glint
+that the before holds too, a little weaker. 667 with the zone off at 3840: all four of the after's runs stand in
+the plain frost. One new fact on a thing you have already named and left: the light streak three rows under the
+old line is one streak that stands in both 667 and 668, and the plain frost has it in both frames.
+
+NOT DONE AND NOT SEEN
+- Nothing was played. Every picture is a single frame; "from one frame to the next" is measured and looked at on
+  neighbouring stills, not seen moving.
+- 669 with the zone off at 3840 is not drawn yet. I am drawing it now of my own accord (begun 06:44:49 UTC on a
+  detached checkout of the proof head, the one line never committed; agent/p6-change is not moved and stays at
+  bfbf6ac6). Its lines go to the looks branch; I write to you again only if they name a fault.
+- Of the runs both pictures have I looked at 619's two at the first setting (the lower edge of the foot's gold
+  rim at the left) and not at each of 669's 33.
+- No fresh reviewer: I may not start agents. The pass was my own.
+
+HEADS AND RECORDS (each record's errors read first)
+- Before: agent/p6-looks-275-before at 757feaa1c3471c3aeaf0dddc8a8912416da3818a. After: agent/p6-looks-275-after
+  at 8f2763d824044a6bacc076e938fb6f195c3ca86d. All fourteen records: errors []; before engine fc272474aa83fe51,
+  after 29b8ddd5edda71ac; uhd, final, assets full, 3840 by 2160. The three frames of my first report are the same
+  files as then (the same sha256).
+- Samples, the same on both sides: 619 has 31, 621 has 49, 666 has 60, 669 has 81.
+- sha256, first 16: before 619 b30144009c0544ac, 621 e0dfaecc683af1ec, 666 b9d6be944f9799a4, 669 c4887961beb3e82b;
+  after 619 0af3eecd7e14e4da, 621 186da0f2bc7cf85c, 666 37f307d6843c77a8, 669 40cc432b6d3d3598.
+
+THE JUDGE AT 3840 (MEASURED; rows 1904/1905 to 1919/1920, the whole width; "after alone" is new with the mend)
+619  6 levels, 40 px: before alone 1 (rows 1911/1912, x 2530 to 2573, 44 px, 60.2 levels). After alone: none.
+     Both: 2, the lower edge of the foot's gold rim at the left (looked at).
+     3 levels, 28 px: before alone 3 (51 px by 53.2; 31 px by 40.4; 30 px by 7.8). After alone: none. Both: 19.
+     On the old line, x 2529 to 2579: 53.2 levels before, 51 of 51 columns the same way; 3.3 after, 28 of 51.
+621  6 levels, 40 px: before alone 1 (rows 1911/1912, x 2529 to 2573, 45 px, 62.6). After alone: none. Both: 0.
+     3 levels, 28 px: before alone 2 (45 px by 62.6; 31 px by 37.0). After alone: none. Both: 13.
+     On the old line, x 2529 to 2573: 62.6 before, 45 of 45; 4.8 after, 28 of 45.
+666  6 levels, 40 px: before alone 1 (rows 1911/1912, x 2534 to 2579, 46 px, 34.5). After alone: none. Both: 0.
+     3 levels, 28 px: before alone 2 (50 px by 32.2; 31 px by 37.8). After alone: none. Both: 17.
+     On the old line, x 2533 to 2582: 32.2 before, 50 of 50; 1.1 after, 24 of 50.
+669  The two files differ by 11.6 levels at the most, and by more than 2 levels at both ends of the foot's image
+     (x 806 to 1135 and x 2721 to 3029).
+     6 levels, 40 px: before alone 1 (rows 1904/1905, x 2895 to 2942, 48 px, 7.7: the upper edge of a bright glint
+     that both pictures hold; the after steps 6.0 there, 48 of 48 columns the same way). After alone: none.
+     Both: 33.
+     3 levels, 28 px: before alone 4, the old line at both ends. Right: rows 1911/1912, x 2942 to 3010, 69 px by
+     6.2; rows 1910/1911, 44 px by 4.7. Left: rows 1911/1912, x 837 to 885, 49 px by 4.5; rows 1910/1911, 41 px
+     by 4.2. AFTER ALONE 3, all on that one glint, x 2896 to 2940: rows 1907/1908, 31 px by 10.3; rows 1906/1907,
+     28 px by 9.3; rows 1914/1915, 40 px by 4.6. The before steps the same way in every one of those columns, by
+     7.0, 7.0 and 3.3 levels; its own runs over 3 levels there are 24, 25 and 13 px long, under the judge's 28.
+     Both: 53.
+     On the old line: right end 6.2 before, 69 of 69 columns; 0.2 after, 35 of 69. Left end 4.5 before, 49 of
+     49; 0.3 after, 32 of 49. (Over your window, x 2500 to 2800, I read what you read: 11.0, 11.8, 11.8, 7.0,
+     7.1, 4.0 and 0.2 before. At 669 the line lies outside that window at both ends: that is why it read 0.2.)
+24 rows either way: at the first setting no run the after alone has in any of the four. At the second: none in
+619, 621 or 666; one more in 669 (rows 1901/1902, x 833 to 861, 29 px by 4.1, ten rows over the line at the left
+end; the before steps 4.0 there, 29 of 29 columns).
+All seven together, within 8 rows: at the first setting the after alone has one run (668's, the frost's own). At
+the second: 667 four, 668 two, 669 three; 619, 620, 621 and 666 none.
+
+667 WITH THE ZONE OFF AT 3840 (MEASURED)
+Drawn on my machine 06:29:55 to 06:42:48 UTC: film 667, uhd, final, the proof head 7e94aaf2 with the image zone
+switched off (the same one line of frost.ts as for 668, never committed, put back after; engine 6b1c7d89d665c176;
+record errors [], 74 samples, 764 s, sha256 b6764368060cf702). After it the checkout stood on agent/p6-change at
+bfbf6ac6 again, tree clean, engine 3c899f56a7f2cd5f (06:43:39 UTC).
+The step over each of the after's four runs: before, after, plain frost; then the plain frost's own run there:
+  rows 1913/1914, x 2558 to 2592:   +1.3   +12.6   +13.7    38 px by 13.0
+  rows 1914/1915, x 2577 to 2610:   +2.4   +12.0   +12.1    34 px by 12.1
+  rows 1915/1916, x 2557 to 2592:   -3.3   -12.2    -9.5    34 px by 10.1
+  rows 1919/1920, x 2567 to 2602:   -2.7   -12.8   -15.6    35 px by 16.0
+On the old line, x 2537 to 2619: 22.6 before, 0.0 after, 0.0 plain frost. At the first setting, x 2440 to 2760,
+the after and the plain frost have one run each and it is one the before has too (rows 1904/1905, 70 to 76 px by
+15.5 to 16.5); the before has its two of the old line besides.
+So at 3840 the comb at 667 is the frost's own: with no image there at all the same four streaks stand in the same
+rows and columns, two stronger than under the mend, one the same, one weaker.
+
+FROM ONE FRAME TO THE NEXT (MEASURED)
+619 to 620 to 621 (the foot up, the frost lying). The place does not move (best fit 0 columns and 0 rows over
+x 2080 to 2639, y 1830 to 2009). What changes in the mend's place (20,898 and 20,824 px):
+  619 to 620: rms 2.94 levels before, 3.12 after; over 12 levels 115 px before, 122 after; over 24 levels 3 px in
+    each, the same three pixels; the largest clump of pixels over 12 levels is 4 px before, 5 px after.
+  620 to 621: rms 3.24 before, 3.30 after; over 12 levels 136 px before, 128 after; over 24 levels 2 px in each,
+    the same two; the largest clump 21 px before, 13 px after, in the same place.
+  The rest of the box: 1.90 and 1.89; then 3.34 and 3.31.
+  A finger that jumps: none. A run that comes and goes: none; the after has no run of its own in any of the three.
+666 to 667 to 668 to 669 (the leaving). Best fit over x 2280 to 2859, y 1830 to 1997, found on the after:
+  666 to 667: 14 columns right, 1 row down. The mend's place (11,387 px): rms 20.59 before, 19.41 after. The rest
+    of the box: 25.73 and 25.47.
+  667 to 668: 113 columns right, 1 row up. The mend's place (8,390 px): 15.16 before, 15.23 after. The rest:
+    30.31 and 30.10. (My first report gave the rest as 29.56 and 29.34: its box began 20 columns further right,
+    at x 2300. The mend's place is the same 8,390 px in both.)
+  668 to 669: 289 columns right, 14 rows down, a weak fit (the picture changes all over). The mend's place
+    (7,044 px): 13.72 before, 12.46 after. The rest: 23.56 and 23.57.
+  In each step the mend's place changes less than the frost beside it, and no more after than before (at the
+  most 0.07 levels rms more, 667 to 668).
+  A run that comes and goes: yes, as my first report said of 667 to 668, and the frost's own do the same. At the
+  second setting the after alone has 0, 4, 2 and 3 runs in the four frames. Of 667's four, three are gone or
+  under 4 levels in 668 (0.5, 3.7, under 1) and one holds (8.1).
+  One streak holds for two frames: the light one on row 1915. In 667 its upper edge (rows 1914/1915) is 12.0
+  levels on x 2577 to 2610 and its lower edge (rows 1915/1916) 12.2 on x 2557 to 2592; in 668, 113 columns on,
+  8.2 on x 2663 to 2725 and 5.7 on x 2649 to 2686. The plain frost has it in both frames (12.1 and 10.1 in 667;
+  8.6 and 6.2 in 668). In 669 I do not find it: over any shift of 150 to 350 columns and two rows either way its
+  upper edge is 3.0 levels at the most.
+  The before's ruled line is the thing that stays on its own two rows through all four frames: 34.5, 27.0, 11.5
+  and 6.2 levels at the right end.
+  A finger that jumps: none found. The after's runs go with the frost's end (x 2557 to 2610 in 667, x 2649 to
+  2725 in 668, x 2896 to 2940 in 669).
+
+WHAT I SAW (each pair in its place at full size, at 2x and at 4x; each frame whole at 400 px; 667's plain frost at
+4x and 2x beside its before and after)
+- 619 and 621 before: as 620, a dark wedge with a flat level top ruled along the table's line for about 50 px.
+  After: a grainy frayed end with fingers of grain that fall away into the dark; no level edge. The three afters
+  look alike to me; I find no finger that differs between them.
+- 666 before: the same ruled top, dimmer. After: grain, no level edge.
+- 669 before: at full size and at 2x I do not find the line. At 4x there is a faint level edge at the table's
+  line right of a bright glint, and the glint's underside is cut flat along it. After: the glint is whole and no
+  level edge runs from it. At the left end the before has a faint level seam at 4x, which I find only because
+  the judge names it; the after has none. At full size the two are alike to my eye at both ends.
+- 667 plain frost beside the after at 4x and 2x: the same comb of short level streaks in the same rows, lighter
+  all over. I cannot tell the two apart by their streaks.
+- What changes from 619 to 620 to 621, made into a picture (times 8): a scatter of single pixels, the frost's own
+  twinkle, alike before and after; no clump at the end.
+- At 400 px wide I cannot tell any of the four befores from its after.
+- Seen in both pictures alike, so not the mend's: the frost's heap right of the place shows square texels about
+  5 px wide at 4x in 619 to 621 and 666, faint at full size. Not in my lines; I name it because I looked there.
+
+PICTURES (9, JPEG, none over 1200 px; before left, after right; labels in the margins only; the tick marks rows
+1911/1912)
+111 film 619, 620, 621, the place as it is.  112 the same three at 2x.
+113 film 666, 667, 668, 669, the place as it is.  114 the same four at 2x.
+115 film 669, both ends at 4x and the left end as it is.
+116 film 619, 621, 666, 669 whole, made 400 px wide.
+117 film 667, the runs at 4x and 2x: before, after, and plain frost with the image zone off.
+118 film 619, 621, 666, the end at 4x.
+119 what changed from 619 to 620 and from 620 to 621, times 8 (a made picture, not the film).
