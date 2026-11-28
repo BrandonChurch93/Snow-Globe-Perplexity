@@ -1,3 +1,25 @@
+/* A tint of the glass fades as a number the page steps itself and not as a colour: a browser gives a fading background
+   colour to its compositor, which then builds pictures of its own, and a frame that answers a press waits for them.
+   The number is the tint in whole 255ths, which is how a colour holds it, so a fade takes the steps the colour took. */
+@property --tint {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --warmth {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+
+/* Where a browser cannot fade a number this has no value, and each list of fades then names the colour itself. */
+@property --colour-instead {
+  syntax: '<custom-ident>';
+  inherits: false;
+  initial-value: no-property;
+}
+
 .ui {
   --ink: 244 234 220;
   --lit: 255 242 222;
@@ -136,18 +158,23 @@
 
 /* The disc under a glyph: the same dark glass and hairline as the Shake control, and the same warm rim under a press. */
 .disc {
+  --warmth: 0;
   position: absolute;
   inset: var(--disc);
   border-radius: 50%;
+  background-color: rgb(var(--glow) / calc(var(--warmth) / 255));
   pointer-events: none;
   transition:
-    background-color 0.3s ease,
+    --tint 0.3s ease,
+    --warmth 0.3s ease,
+    var(--colour-instead, background-color) 0.3s ease,
     box-shadow 0.3s ease,
     transform 0.16s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .sound .disc {
-  background: rgb(var(--glass) / 0.46);
+  --tint: 117;
+  background: rgb(var(--glass) / calc(var(--tint) / 255));
   -webkit-backdrop-filter: blur(14px) saturate(1.25);
   backdrop-filter: blur(14px) saturate(1.25);
   box-shadow:
@@ -242,7 +269,7 @@
 .mark[data-press] .disc,
 .sound:active .disc,
 .sound[data-press] .disc {
-  background-color: rgb(var(--glow) / 0.17);
+  --warmth: 43;
   box-shadow:
     inset 0 0 0 1px rgb(var(--glow) / 0.62),
     inset 0 0 12px 0 rgb(var(--glow) / 0.2);
@@ -252,7 +279,8 @@
 
 .sound:active .disc,
 .sound[data-press] .disc {
-  background: linear-gradient(rgb(var(--glow) / 0.17), rgb(var(--glow) / 0.17)), rgb(var(--glass) / 0.62);
+  --tint: 158;
+  background: linear-gradient(rgb(var(--glow) / 0.17), rgb(var(--glow) / 0.17)), rgb(var(--glass) / calc(var(--tint) / 255));
 }
 
 .sound {
@@ -295,7 +323,8 @@
   gap: var(--pair);
   border: 0;
   border-radius: 999px;
-  background: rgb(var(--glass) / 0.46);
+  --tint: 117;
+  background: rgb(var(--glass) / calc(var(--tint) / 255));
   -webkit-backdrop-filter: blur(14px) saturate(1.25);
   backdrop-filter: blur(14px) saturate(1.25);
   box-shadow:
@@ -318,7 +347,8 @@
   transition:
     opacity var(--fade) ease-out,
     transform 0.16s cubic-bezier(0.2, 0.7, 0.2, 1),
-    background-color 0.25s ease,
+    --tint 0.25s ease,
+    var(--colour-instead, background-color) 0.25s ease,
     box-shadow 0.25s ease,
     color 0.25s ease;
 }
@@ -334,13 +364,15 @@
 }
 
 .shake::before {
-  background-color: rgb(var(--glow) / 0);
+  --warmth: 0;
+  background-color: rgb(var(--glow) / calc(var(--warmth) / 255));
   box-shadow:
     inset 0 0 0 1px rgb(var(--glow) / 0.62),
     inset 0 0 16px 0 rgb(var(--glow) / 0.16);
   transition:
     opacity 0.3s ease,
-    background-color 0.3s ease;
+    --warmth 0.3s ease,
+    var(--colour-instead, background-color) 0.3s ease;
 }
 
 .shake::after {
@@ -371,20 +403,20 @@
 .shake:active:not([aria-disabled='true']),
 .shake[data-press] {
   transform: scale(0.97);
-  background: rgb(var(--glass) / 0.62);
+  --tint: 158;
   color: rgb(var(--lit));
 }
 
 .shake:active:not([aria-disabled='true'])::before,
 .shake[data-press]::before {
   opacity: 1;
-  background-color: rgb(var(--glow) / 0.13);
+  --warmth: 33;
   transition-duration: 0.08s;
 }
 
 .shake[aria-disabled='true'] {
   cursor: default;
-  background: rgb(var(--glass) / 0.34);
+  --tint: 87;
   box-shadow:
     inset 0 0 0 1px rgb(var(--line) / 0.11),
     inset 0 1px 0 0 rgb(var(--line) / 0.06),
@@ -459,7 +491,7 @@
   }
 
   .shake:hover:not([aria-disabled='true']) {
-    background: rgb(var(--glass) / 0.56);
+    --tint: 143;
     color: rgb(var(--lit));
   }
 

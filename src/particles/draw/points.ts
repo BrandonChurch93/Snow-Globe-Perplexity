@@ -8,11 +8,15 @@ import type { ParticleSource, SdfGrid } from '../../core/stage'
 import { texture } from '../../core/textures'
 import { partBytes } from '../../diagnostics/views'
 import type { StageFrame } from '../../scene/frame'
+import { filmCut } from '../../film/cut'
+import { filmTimeline, globePoseAt, prerollSeconds, type Timeline } from '../../film/timeline'
 import { flickerOf, gridInfo } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
 import { landingLook } from '../../seasons/summer/veil'
+import type { GlobePose } from '../../shake/table'
 import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SEED_RESTS, SETTLE_SHOWN, SHAPE, STORM_BLOOM, lookOf, SEED_NEAR } from './looks'
 import { BEHAVIOUR } from '../engine/kinds'
+import { CENTRE_Y } from '../engine/sdf'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
 import { downAtlas } from './down'
 
@@ -24,7 +28,67 @@ const STATE_LAID = 1.5
 export const STATE_GLOW = 0.25
 const NO_LIGHTS: readonly InnerLight[] = []
 const SHUTTER = (config.film.shutterDegrees / 360) * (config.sim.stepHz / config.film.fps)
+/** The film's shutter in seconds. */
+const SHUTTER_SEC = config.film.shutterDegrees / 360 / config.film.fps
 const TAU = 2 * Math.PI
+
+const samePose = (a: GlobePose, b: GlobePose): boolean => a.x === b.x && a.y === b.y && a.z === b.z && a.tiltX === b.tiltX && a.tiltZ === b.tiltZ && (a.twist ?? 0) === (b.twist ?? 0)
+
+/**
+ * How a light of the storm rides with the ball through one exposure of the film (looks.ts, CARD.glow, `stormRideBy`): null
+ * where it does not. In a frame of the film the ball travels a little inside the shutter while it is set down and while it
+ * rocks after the landing, and every sample of the frame draws the ball where it stands at that sample's moment. A light
+ * of the storm is one short streak, held near its place at the middle of the exposure against its own path; carried with
+ * the ball from sample to sample it stood as a band of lines side by side (seen at the landing of shake 2 at 3840). So the
+ * light is held against the ball's travel as well: in every sample it is drawn at its place in the ball as the ball stands
+ * at the middle of the exposure.
+ *
+ * `share` is how much of that hold stands: none up to the take over's end, so the take over's frames are as they were to
+ * the last bit, whole once the storm has gone `stormRideBy` of the way to the look of the landing (summer's own course,
+ * veil.ts `landingLook`), and whole after the landing for as long as that look stands; it rises by degrees, so no light
+ * sharpens between two frames. `mid` is the ball's pose at the middle of the exposure. `move` is how far this sample's
+ * moment was moved from its share of the shutter (film/motion.ts, `evenSet`): the light's own hold reads the share, so the
+ * light stood off by that much of its own path, and is put back by it.
+ *
+ * It reads the film's own timeline: a sample says its moment and the ball's pose at it, and not where the ball stands half
+ * a shutter on. It answers only for a sample of the film's frames (a moment on the film's timeline whose pose is the
+ * timeline's own at that time): never for the app, a still, the loop or a picture drawn in one sample.
+ */
+export function lightRide(film: Timeline, f: { sample: { t: number } | null; view: string; live: boolean; moment: { time: number; period: number | null; beat: number | null; sinceLanding: number }; globe: GlobePose; from: { veil: unknown }; to: { veil: unknown } }): { share: number; mid: GlobePose; move: number } | null {
+  const time = f.moment.time
+  if (f.sample === null || f.view !== '' || f.live || f.moment.period !== null || !(time >= prerollSeconds)) return null
+  const look = Math.min(1, Math.max(0, landingLook(f) / CARD.glow.stormRideBy))
+  const share = look * look * (3 - 2 * look)
+  if (!(share > 0) || !samePose(globePoseAt(film, time), f.globe)) return null
+  const open = prerollSeconds + Math.floor((time - prerollSeconds) * config.film.fps + 1e-6) / config.film.fps
+  const mid = globePoseAt(film, open + 0.5 * SHUTTER_SEC)
+  if (samePose(mid, f.globe)) return null
+  const move = (time - open) / SHUTTER_SEC - f.sample.t
+  return { share, mid, move: Math.abs(move) < 1e-6 ? 0 : move }
+}
+
+const POSE_NOW = new THREE.Matrix4()
+const POSE_MID = new THREE.Matrix4()
+const POSE_TURN = new THREE.Quaternion()
+const POSE_EULER = new THREE.Euler()
+const POSE_SHIFT = new THREE.Vector3()
+const POSE_ONE = new THREE.Vector3(1, 1, 1)
+
+/** The ball's own space to the world: turned about the foot, then moved (as the stage sets its group). */
+const ballMatrix = (g: GlobePose, into: THREE.Matrix4): THREE.Matrix4 => into.compose(POSE_SHIFT.set(g.x, g.y, g.z), POSE_TURN.setFromEuler(POSE_EULER.set(g.tiltX, g.twist ?? 0, g.tiltZ, 'XZY')), POSE_ONE)
+
+/**
+ * Takes a point of the liquid to where it is as the ball stands at `mid`, said in the liquid's own space as the ball stands at `now`
+ * (the shader's uMidPose). The points hang in the ball's inside, the ball's centre above its foot, and the stage may mirror the whole
+ * for the table: so the two poses are compared inside the ball's own group, and the draw's own matrix takes it from there.
+ */
+export function rideMatrix(now: GlobePose, mid: GlobePose, into: THREE.Matrix4): THREE.Matrix4 {
+  ballMatrix(now, POSE_NOW).invert()
+  ballMatrix(mid, POSE_MID)
+  into.makeTranslation(0, CENTRE_Y, 0).premultiply(POSE_MID).premultiply(POSE_NOW)
+  into.elements[13] = into.elements[13]! - CENTRE_Y
+  return into
+}
 
 type KindColors = Readonly<Record<string, { color: Rgb; glow: number }>>
 
@@ -131,6 +195,7 @@ export class ParticleDraw {
   private glows: readonly InnerLight[] = NO_LIGHTS
   private solid: SdfGrid | null = null
   private glowAt: readonly [number, number] = [0, 1]
+  private film: Timeline | null = null
   drawn = 0
   maxPointPx = 256
 
@@ -140,6 +205,8 @@ export class ParticleDraw {
       uPoint: { value: new THREE.Vector4(1, 1, 0, 1) },
       uStorm: { value: new THREE.Vector4() },
       uStormLanding: { value: 0 },
+      uMidPose: { value: new THREE.Matrix4() },
+      uMidHold: { value: new THREE.Vector2() },
       uAperture: { value: new THREE.Vector4(0, 0, 0, 0) },
       uEyeShift: { value: new THREE.Vector3() },
       uWhole: { value: 0 },
@@ -410,6 +477,11 @@ export class ParticleDraw {
     }
     for (const a of quads ? this.instanced : this.single) a.needsUpdate = true
     this.drawn = Math.max(0, Math.min(n, Math.floor(n * fraction)))
+    // a level that draws a part of the list sends that part alone: the rest is never read, and the whole list is megabytes a frame
+    for (const a of quads ? this.instanced : this.single) {
+      a.clearUpdateRanges()
+      if (this.drawn > 0) a.addUpdateRange(0, this.drawn * a.itemSize)
+    }
     this.sprites.geometry.setDrawRange(0, this.drawn)
     const bats = this.uniforms.uBat!.value as THREE.Vector4[]
     const batKind = source.kinds.findIndex((kind) => lookOf(kind).shape === SHAPE.bat)
@@ -451,6 +523,20 @@ export class ParticleDraw {
     const limit = u.uLimit!.value as THREE.Vector4
     limit.x = LENS_LOOK.maxStreakPx * scale
     limit.y = pointMesh(f.live, this.maxPointPx).halfPx
+    this.ride(f)
+  }
+
+  /** How a light of the storm rides with the ball through an exposure of the film (`lightRide`): nothing of it everywhere else. */
+  private ride(f: StageFrame): void {
+    const u = this.uniforms
+    const hold = u.uMidHold!.value as THREE.Vector2
+    const ride = f.sample !== null && f.view === '' && !f.live && f.moment.period === null && f.moment.time >= prerollSeconds ? lightRide((this.film ??= filmTimeline(filmCut())), f) : null
+    if (!ride) {
+      hold.set(0, 0)
+      return
+    }
+    hold.set(ride.share, ride.move)
+    rideMatrix(f.globe, ride.mid, u.uMidPose!.value as THREE.Matrix4)
   }
 
   private lights(f: StageFrame): void {
