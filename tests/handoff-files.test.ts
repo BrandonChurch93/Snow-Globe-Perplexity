@@ -368,6 +368,8 @@ describe('release and records privacy', () => {
 
 describe('the handoff guide proof', () => {
   const helpers = path.resolve('.github', 'handoff-proof')
+  const powerShell = process.env.HANDOFF_PROOF_PWSH || (process.platform === 'win32' ? 'powershell.exe' : 'pwsh')
+  const havePowerShell = spawnSync(powerShell, ['-NoProfile', '-NonInteractive', '-Command', 'exit 0']).status === 0
   const fence = (lines: string[]) => ['```sh', ...lines, '```', ''].join('\n')
   const fixture = (lines: string[]) => {
     const clone = temporary()
@@ -496,6 +498,28 @@ describe('the handoff guide proof', () => {
     expect(ran.status, ran.stdout + ran.stderr).toBe(0)
     expect(fs.readFileSync(path.join(f.out, 'setup.out.txt'), 'utf8')).toBe('setup --only-in-the-guide\n')
     const checked = verdict(f.out, { want: 'setup' })
+    expect(checked.status, checked.stdout + checked.stderr).toBe(0)
+    expect(checked.stdout).toContain(cmd + '   (written in the file)')
+  })
+
+  it.skipIf(!havePowerShell)('executes the guide line in PowerShell and keeps native stderr for the verdict', () => {
+    const cmd = 'node tools/handoff.mjs status --from-the-guide'
+    const f = fixture([cmd])
+    const script = [
+      '$Help = $env:PROOF_HELP',
+      '. (Join-Path $Help "proof.ps1")',
+      '$script:ProofGuide = $env:PROOF_GUIDE',
+      '$script:ProofGuideSource = "clone"',
+      'Line "status-before-clone" "1" "status" "Cannot find module" -Once',
+      'if (-not $script:LastOk) { exit 1 }; exit 0',
+    ].join('; ')
+    const ran = spawnSync(powerShell, ['-NoProfile', '-NonInteractive', '-Command', script], {
+      cwd: f.clone, encoding: 'utf8',
+      env: { ...process.env, PROOF_HELP: helpers, PROOF_GUIDE: f.guide, PROOF_OUT: f.out, PROOF_BRANCH: '', POWERSHELL_TELEMETRY_OPTOUT: '1' },
+    })
+    expect(ran.status, ran.stdout + ran.stderr).toBe(0)
+    expect(fs.readFileSync(path.join(f.out, 'status-before-clone.out.txt'), 'utf8')).toContain('Cannot find module')
+    const checked = verdict(f.out, { want: 'status-before-clone' })
     expect(checked.status, checked.stdout + checked.stderr).toBe(0)
     expect(checked.stdout).toContain(cmd + '   (written in the file)')
   })

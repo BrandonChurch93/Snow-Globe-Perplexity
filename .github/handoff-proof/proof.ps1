@@ -38,7 +38,7 @@ function Line {
     $global:LASTEXITCODE = 0
     try {
       if ($Cmd.StartsWith('cd ')) { $ErrorActionPreference = 'Stop' }
-      Invoke-Expression $Cmd 2>&1 | ForEach-Object { Write-Host $_; $all.Add([string]$_) }
+      & ([ScriptBlock]::Create($Cmd)) 2>&1 | ForEach-Object { Write-Host $_; $all.Add([string]$_) }
       $code = $global:LASTEXITCODE
     } catch {
       $code = 127
