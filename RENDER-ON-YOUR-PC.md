@@ -224,9 +224,18 @@ How the frames are compared, and why so:
   each reach a floor in PSNR (how close the pixels are, in dB, higher is closer). The same pieces must reach a
   floor in a coarser measure, the PSNR of the means of 8 x 8 pixel blocks, which a shift of one pixel hardly
   moves. A region of the glass must keep its mean brightness and must not turn white.
-- The floors are written in `render/STAMP.json` and printed in the report beside every number. They were set from
-  the same frames drawn on three test renderers, with a margin under the lowest. A frame that is wrong (a layer
-  missing, white glass, a flat or empty picture) falls far under them.
+- The floors are written in `render/STAMP.json` and printed in the report beside every number: 39 dB for the
+  whole picture and 41 dB for it in blocks, 40 dB for a cut and 44 dB for it in blocks. The glass region may lie
+  0.01 from its reference in brightness (on a scale of 0 to 1) and may hold half a point more of near white.
+- Why these: the same frames were drawn at 3840 x 2160 on two test machines, through Direct3D 11 on Windows and
+  through Metal on macOS, and compared with the references. A right picture reached 41.4 dB or more for the whole
+  picture, 43.6 in blocks, 43.2 for a cut and 48.0 for a cut in blocks, and its glass lay within 0.001 of the
+  reference. A picture from an engine one small mend apart reached 36.8, 38.4, 38.4 and 40.7. The floors lie
+  between the two. A frame that is wrong in a bigger way (a layer missing, white glass, a flat or empty picture)
+  falls far under them.
+- Those two test machines have no real graphics card, so no NVIDIA card was measured. When a frame fails here by
+  a little, the floor may be at fault and not the picture. You do not decide that: report, and the remote team
+  reads the numbers and the sheet of pictures.
 - The report also says, for every frame, how far the picture stands from its reference: the largest and the mean
   difference in levels of 255, how many pixels are more than 8 levels apart, and where in the picture they lie.
   These lines are marked `noted` and fail nothing. They tell the remote team where to look.

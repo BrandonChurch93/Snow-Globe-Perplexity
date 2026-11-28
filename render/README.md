@@ -81,4 +81,7 @@ All of `refs/` is at most 40 MB, and no file here is over 45 MB. The tool refuse
 | `glassLuma` | how far the mean brightness of a glass region may lie from the reference's (0 to 1) |
 | `glassWhite` | how much more of a glass region may be near white than in the reference (0 to 1) |
 
-`floorsFrom` says which runs on which renderers they were set from, and with what margin.
+`floorsFrom` says which runs on which renderers they were set from, and with what margin. Each floor lies between
+the lowest a right picture reached on the test renderers and what a picture from an engine one small mend apart
+reached. When the floors are changed, the numbers in step 1.5 of `RENDER-ON-YOUR-PC.md` are changed with them (a
+test of `tests/handoff.test.ts` holds the two together), and the stamp is written again.

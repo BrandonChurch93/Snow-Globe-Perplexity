@@ -38,8 +38,8 @@
   "test": {
     "stretch": { "first": 660, "last": 779, "landing": 720, "why": "two seconds of film B across the landing of spring at frame 720: the end of the change out of winter, the landing and the first second of the storm. Its frames hold 24 to 99 samples, so the 24 and the 96 sample frames are both timed." }
   },
-  "floors": { "psnrWhole": 30, "coarseWhole": 30, "psnrCut": 30, "coarseCut": 30, "glassLuma": 0.05, "glassWhite": 0.05 },
-  "floorsFrom": "NOT SET YET: these are stand in floors until the pictures of three renderers are measured.",
+  "floors": { "psnrWhole": 39, "coarseWhole": 41, "psnrCut": 40, "coarseCut": 44, "glassLuma": 0.01, "glassWhite": 0.005 },
+  "floorsFrom": "Set on 28 November 2026 from film B frames 120 and 720 and loop frame 0, drawn at 3840 x 2160 in the masters' tier on two test renderers and compared with the Linux references: the Microsoft Basic Render Driver through Direct3D 11 on hosted Windows (run 46100206929, job windows-3840) and Apple Metal on hosted macOS (run 46100206929, job macos-3840). The lowest a right picture reached there: 41.42 dB whole, 43.56 dB whole in blocks, 43.15 dB for a cut, 48.01 dB for a cut in blocks; the glass lay within 0.0006 of the reference in brightness and held no more near white. A picture that is wrong by one small mend of the engine (frame 720 before and after the mend of spring's glass in main f063702c, both drawn on Linux) reached 36.83 dB whole, 38.44 dB in blocks, 38.42 dB in its glass cut and 40.68 dB there in blocks. Every floor lies between the two. It also lies under what a third renderer would reach that stood as far from Windows as macOS does, with that distance on top of the measured one (40.12, 42.59, 41.86 and 47.04 dB). Not measured: any real graphics card, and the other seven frames of the plan on any renderer but Linux.",
   "sound": {
     "film-a": "883ee8bd67c284161d0156b0e10fcc7dc79be5c0526423809174e456544b5515",
     "film-b": "3edd8ff579404fce8d62a041b2172306a6b26eb9a31d59e0b90d82315337bf23"

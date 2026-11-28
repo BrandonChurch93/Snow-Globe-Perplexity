@@ -821,6 +821,26 @@ describe('the handoff file and the tools it names', () => {
     expect(commands.length).toBeGreaterThan(10)
     for (const c of commands) expect(c, c).toMatch(/^(node tools\/handoff\.mjs (setup|doctor|test|render|check|deliver|upload|clean)|winget install --id (Git\.Git|OpenJS\.NodeJS\.LTS|Gyan\.FFmpeg|Google\.Chrome|GitHub\.cli) -e --source winget --accept-package-agreements --accept-source-agreements|brew install (git|node|ffmpeg)|brew install --cask google-chrome|git clone --filter=blob:none --single-branch --branch \S+ https:\/\/github\.com\/BrandonChurch93\/Snow-Globe-Perplexity\.git Snow-Globe-Perplexity|cd Snow-Globe-Perplexity|git pull --ff-only|node --version|git --version)$/)
   })
+  it('names the floors of the plan, and the plan says what they were measured on', () => {
+    const plan = readJson(rel('render', 'PLAN.json')) as { floors: Record<string, number>; floorsFrom: string }
+    const f = plan.floors
+    const text = md.replace(/\s+/g, ' ')
+    expect(text).toContain(`${f.psnrWhole} dB for the whole picture and ${f.coarseWhole} dB for it in blocks, ${f.psnrCut} dB for a cut and ${f.coarseCut} dB for it in blocks`)
+    expect(text).toContain(`may lie ${f.glassLuma} from its reference in brightness`)
+    expect(f.glassWhite).toBe(0.005)
+    expect(text).toContain('may hold half a point more of near white')
+    // the floors lie under every right picture measured and over the wrong one, as floorsFrom tells it
+    const right = { psnrWhole: 41.42, coarseWhole: 43.56, psnrCut: 43.15, coarseCut: 48.01 }
+    const wrong = { psnrWhole: 36.83, coarseWhole: 38.44, psnrCut: 38.42, coarseCut: 40.68 }
+    for (const k of Object.keys(right) as (keyof typeof right)[]) {
+      expect(f[k], k).toBeLessThan(right[k])
+      expect(f[k], k).toBeGreaterThan(wrong[k])
+      expect(plan.floorsFrom).toContain(String(right[k]))
+      expect(plan.floorsFrom).toContain(String(wrong[k]))
+    }
+    expect(plan.floorsFrom).not.toMatch(/NOT SET/)
+    expect(plan.floorsFrom).toMatch(/run \d{8,}/)
+  })
   it('gives the same winget lines the doctor prints', () => {
     for (const t of ['git', 'node', 'ffmpeg', 'chrome'] as const) expect(md).toContain(L.installLine(t, 'win32'))
   })
@@ -1213,6 +1233,34 @@ describe('the browser versions a render drew with', () => {
   it('falls back to the newest short test for a render whose starts kept no version, and says so when nothing is known', () => {
     expect(L.browsersUsed([{}, { browser: null }], '158.0.8127.38')).toEqual(['158.0.8127.38'])
     expect(L.browsersLine(undefined, undefined)).toBe('Google Chrome, version not recorded')
+  })
+})
+
+describe('the proof workflow', () => {
+  const yml = fs.readFileSync(rel('.github', 'workflows', 'handoff-proof.yml'), 'utf8')
+  const code = yml.split('\n').filter((l) => !/^\s*#/.test(l))
+  it('starts by hand, has no timer, and a push starts it on no branch but the handoff\'s own, in one line', () => {
+    expect(code).toContain('  workflow_dispatch:')
+    expect(code.join('\n')).not.toMatch(/schedule|cron|pull_request|workflow_run/)
+    const push = code.filter((l) => /^\s+push\b/.test(l))
+    // one line while the handoff is proven, none in what reaches main
+    expect(push.length).toBeLessThanOrEqual(1)
+    for (const l of push) expect(l).toBe('  push: { branches: [agent/p6-handoff] }')
+    expect(code.join('\n')).not.toMatch(/branches:\s*\n/)
+  })
+  it('uses no secret, and gives leave to write to one job only', () => {
+    expect(yml).not.toMatch(/secrets\./)
+    const text = code.join('\n')
+    expect(text).toMatch(/\npermissions:\n  contents: read\n/)
+    expect(text.match(/contents: write/g)).toHaveLength(1)
+    const job = text.slice(text.indexOf('\n  upload-test:'))
+    expect(job).toMatch(/\n    permissions:\n      contents: write\n/)
+    // the token of the run reaches two steps of that job through their environment, and nothing else
+    const before = text.slice(0, text.indexOf('\n  upload-test:'))
+    expect(before).not.toMatch(/GH_TOKEN|github\.token|GITHUB_TOKEN/)
+    expect(job.match(/GH_TOKEN: \$\{\{ github\.token \}\}/g)).toHaveLength(2)
+    expect(job.match(/github\.token|GITHUB_TOKEN/g)).toHaveLength(2)
+    expect(text).toMatch(/persist-credentials: false/)
   })
 })
 

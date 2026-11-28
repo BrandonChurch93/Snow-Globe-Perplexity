@@ -2,7 +2,7 @@
   "what": "opening",
   "frame": 450,
   "name": "the opening while the prompt is typed",
-  "engineHash": "dc59c0d7c2daa6ab",
+  "engineHash": "144059cb99b0d134",
   "samples": 0,
   "pack": "665ac47671ead473d999f38848f854408e3a83b92459ecb66413e87120acec77",
   "renderer": "none: read from the opening pack, never drawn",

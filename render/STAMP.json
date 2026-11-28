@@ -12,9 +12,9 @@
     "film-b:2440",
     "film-b:2880"
   ],
-  "engineHash": "dc59c0d7c2daa6ab",
-  "commit": "38e22cda91e64a3f7bc7df301d1e55a996bfa29c",
-  "made": "2026-11-28T03:04:13.599Z",
+  "engineHash": "144059cb99b0d134",
+  "commit": "6cfeb17d92e7a83856583c139146359af4558bc0",
+  "made": "2026-11-28T04:00:12.717Z",
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "c5bc5c38fdabce09",
@@ -61,23 +61,23 @@
     "files": "lossless WebP, each decoded again and compared when it was written"
   },
   "floors": {
-    "psnrWhole": 30,
-    "coarseWhole": 30,
-    "psnrCut": 30,
-    "coarseCut": 30,
-    "glassLuma": 0.05,
-    "glassWhite": 0.05
+    "psnrWhole": 39,
+    "coarseWhole": 41,
+    "psnrCut": 40,
+    "coarseCut": 44,
+    "glassLuma": 0.01,
+    "glassWhite": 0.005
   },
-  "floorsFrom": "NOT SET YET: these are stand in floors until the pictures of three renderers are measured.",
+  "floorsFrom": "Set on 28 November 2026 from film B frames 120 and 720 and loop frame 0, drawn at 3840 x 2160 in the masters' tier on two test renderers and compared with the Linux references: the Microsoft Basic Render Driver through Direct3D 11 on hosted Windows (run 46100206929, job windows-3840) and Apple Metal on hosted macOS (run 46100206929, job macos-3840). The lowest a right picture reached there: 41.42 dB whole, 43.56 dB whole in blocks, 43.15 dB for a cut, 48.01 dB for a cut in blocks; the glass lay within 0.0006 of the reference in brightness and held no more near white. A picture that is wrong by one small mend of the engine (frame 720 before and after the mend of spring's glass in main f063702c, both drawn on Linux) reached 36.83 dB whole, 38.44 dB in blocks, 38.42 dB in its glass cut and 40.68 dB there in blocks. Every floor lies between the two. It also lies under what a third renderer would reach that stood as far from Windows as macOS does, with that distance on top of the measured one (40.12, 42.59, 41.86 and 47.04 dB). Not measured: any real graphics card, and the other seven frames of the plan on any renderer but Linux.",
   "references": [
     {
       "what": "film-b",
       "frame": 120,
       "name": "winter at rest",
-      "engineHash": "dc59c0d7c2daa6ab",
+      "engineHash": "144059cb99b0d134",
       "samples": 24,
       "travelPx": 2.73,
-      "seconds": 131.2,
+      "seconds": 131.6,
       "png": {
         "sha256": "188d0fc9058522f6de412b7b1a7a87f615813f214a1a0360cbe0accb11f1e573",
         "bytes": 14031775
@@ -129,10 +129,10 @@
       "what": "film-b",
       "frame": 720,
       "name": "spring in storm, just landed",
-      "engineHash": "dc59c0d7c2daa6ab",
+      "engineHash": "144059cb99b0d134",
       "samples": 24,
       "travelPx": 7.27,
-      "seconds": 204.1,
+      "seconds": 204.2,
       "png": {
         "sha256": "a0f74bad16db639165a1a17e84025a52491684a28b35eb232faef190bc82fc4f",
         "bytes": 12772503
@@ -184,10 +184,10 @@
       "what": "loop",
       "frame": 0,
       "name": "the first frame of the loop, which is also the screenshot",
-      "engineHash": "dc59c0d7c2daa6ab",
+      "engineHash": "144059cb99b0d134",
       "samples": 96,
       "travelPx": 0.09,
-      "seconds": 384.5,
+      "seconds": 383.9,
       "png": {
         "sha256": "dff51b5e335ad41fbb03f1190dfc86a47ecfc668c6318a964a69008deada7680",
         "bytes": 13329762
@@ -239,7 +239,7 @@
       "what": "opening",
       "frame": 450,
       "name": "the opening while the prompt is typed",
-      "engineHash": "dc59c0d7c2daa6ab",
+      "engineHash": "144059cb99b0d134",
       "samples": 0,
       "pack": "665ac47671ead473d999f38848f854408e3a83b92459ecb66413e87120acec77",
       "renderer": "none: read from the opening pack, never drawn",

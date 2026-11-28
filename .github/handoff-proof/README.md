@@ -1,7 +1,9 @@
 # The helpers of the proof workflow
 
 `.github/workflows/handoff-proof.yml` proves `RENDER-ON-YOUR-PC.md` on real Windows and macOS machines.
-It runs only on a push to `agent/p6-handoff` and by hand, never on main.
+It starts by hand. While the handoff was being proven it also started on every push to `agent/p6-handoff`; the
+last commit of that branch takes that one line out of the workflow, so in what reaches main it starts by hand only.
+The words for a push further down belong to that time.
 
 | file | what it does |
 | --- | --- |
@@ -11,6 +13,7 @@ It runs only on a push to `agent/p6-handoff` and by hand, never on main.
 | `after.mjs` | lists the Desktop and gathers the reports for the uploaded artifact |
 | `verdict.mjs` | reads what the lines did, checks that every line run is written in the handoff file, and writes the verdict |
 | `shader-warnings.mjs`, `shaders.sh` | list what the shader compiler of the machine writes about every program of the film, and what the card answers to the maths probe, for one head |
+| `still.sh` | in the job of the shader list, draws the guard still of fall at rest in the same clone through Direct3D and keeps the picture and its record in the artifact (folder `looks`), with the walk's two pictures of fall. A step of its own with its own time limit |
 | `held-file.mjs` | on Windows, proves that the tool's rename waits for a file another program holds, where a plain rename fails |
 | `upload-test.ps1` | the upload's own test in the job `windows-upload-test`: stand-in files to a draft release, read back, the draft removed by its id |
 | `other-head.txt` | one line, a branch and a full commit: the head the job `windows-shaders` lists instead of this branch. Comments only means this branch |

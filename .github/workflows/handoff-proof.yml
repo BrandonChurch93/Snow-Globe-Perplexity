@@ -1,6 +1,8 @@
 # Proves RENDER-ON-YOUR-PC.md on real Windows and macOS machines: the lines of the file, exactly as written, in
 # Windows PowerShell and in Git Bash, in a folder with a space in its name, from a plain git clone.
-# It runs only on a push to agent/p6-handoff and by hand. It never runs on main.
+# It starts by hand (workflow_dispatch). While the handoff was being proven it also started on every push to
+# agent/p6-handoff: that is the one line under "on" that names the branch, and the last commit of that branch takes
+# it out, so that in what reaches main the workflow starts by hand only. It has no timer and never starts on main.
 # Every job ends green whatever happens: a red run sends a mail. The verdict of each job is the last step of its log
 # and the file verdict.txt of its artifact. It uses no secret. One job, windows-upload-test, is given the token of
 # the run itself with leave to write, for the upload's own test; that job alone can end red, and only when its last
@@ -8,10 +10,8 @@
 name: handoff proof
 
 on:
-  push:
-    branches:
-      - agent/p6-handoff
   workflow_dispatch:
+  push: { branches: [agent/p6-handoff] }
 
 # A newer push ends the run of an older one. A push that asks only for the list of shader messages has a group of
 # its own, so that it does not end a whole proof that is still running.
@@ -106,7 +106,7 @@ jobs:
             mode: shaders
             switches: ''
             refusal: 'no'
-            expect: clone,checkout,install,build,shader-list
+            expect: clone,checkout,install,build,shader-list,still-fall-rest
     env:
       PROOF_BRANCH: ${{ github.ref_name }}
       PROOF_MODE: ${{ matrix.mode }}
@@ -162,6 +162,14 @@ jobs:
         timeout-minutes: 90
         shell: bash
         run: bash "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/shaders.sh"
+
+      # one guard still, drawn by Direct3D in the same clone, kept with the list to be looked at far away
+      - name: the guard still of fall at rest
+        if: env.PROOF_LEFT_OUT != 'true' && matrix.mode == 'shaders'
+        continue-on-error: true
+        timeout-minutes: 20
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/still.sh"
 
       - name: the verdict
         if: always() && env.PROOF_LEFT_OUT != 'true'

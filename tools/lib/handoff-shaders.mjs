@@ -450,9 +450,10 @@ export const WALK = { 'film-b': [0, 120, 675, 720, 1000, 1440, 1720, 2160, 2440,
 /**
  * Opens the film's own page as the render opens it, draws the frames of WALK small and in one sample, and gathers
  * what the shader compiler wrote about every program, with the answers of the maths probe. `lib` is the folder
- * tools/lib of the clone whose page is opened. It draws nothing that is kept.
+ * tools/lib of the clone whose page is opened. It draws nothing that is kept, unless `keep` is given: that is
+ * called with every picture as it is drawn (what, frame, the PNG).
  */
-export async function walkShaders({ lib, dist, local = true, say = () => {}, frames = WALK, formatId = 'preview' }) {
+export async function walkShaders({ lib, dist, local = true, say = () => {}, frames = WALK, formatId = 'preview', keep = null }) {
   const from = (name) => import(pathToFileURL(path.join(lib, name)).href)
   const { Session, cfg, formatById } = await from('page.mjs')
   const { Run } = await from('frames.mjs')
@@ -477,6 +478,8 @@ export async function walkShaders({ lib, dist, local = true, say = () => {}, fra
         const t0 = Date.now()
         try {
           const png = await run.frame(track, page, frame)
+          // the proof may keep a picture of the walk to look at; the tool itself keeps none
+          keep?.(what, frame, png)
           out.drawn.push(`${what} frame ${frame}: drawn in ${((Date.now() - t0) / 1000).toFixed(1)} s, ${png.length} bytes`)
         } catch (e) {
           out.notDrawn.push(`${what} frame ${frame}: ${String(e.message).split('\n')[0]}`)

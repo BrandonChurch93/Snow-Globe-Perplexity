@@ -18,8 +18,21 @@ const S = await import(pathToFileURL(path.join(lib, 'handoff-shaders.mjs')).href
 
 const head = git('rev-parse', 'HEAD')
 const branch = process.env.SHADERS_BRANCH || git('rev-parse', '--abbrev-ref', 'HEAD')
+// Two pictures of the walk are kept to look at: fall in storm and fall at rest, which show fall's leaves. They are
+// the walk's own pictures, 960 x 540 and one sample, written as the page gave them.
+const KEPT = { 'film-b': [2160, 2440] }
+const looks = path.join(out, '..', 'looks')
+const kept = []
+const keep = (what, frame, png) => {
+  if (!(KEPT[what] ?? []).includes(frame)) return
+  fs.mkdirSync(looks, { recursive: true })
+  const name = `${what}-${String(frame).padStart(6, '0')}-walk.png`
+  fs.writeFileSync(path.join(looks, name), png)
+  kept.push({ name, what, frame, bytes: png.length })
+}
 // the proof's own trial on a Linux machine has no Chrome: SHADERS_LOCAL=no draws with the pinned browser of the tool tests
-const w = await S.walkShaders({ lib: path.join(clone, 'tools', 'lib'), dist: path.join(clone, 'dist'), local: process.env.SHADERS_LOCAL !== 'no', say: (t) => console.log(t) })
+const w = await S.walkShaders({ lib: path.join(clone, 'tools', 'lib'), dist: path.join(clone, 'dist'), local: process.env.SHADERS_LOCAL !== 'no', say: (t) => console.log(t), keep })
+for (const k of kept) fs.writeFileSync(path.join(looks, `${k.name}.json`), JSON.stringify({ ...k, width: w.format.width, height: w.format.height, samples: 1, branch, head, renderer: w.renderer, browser: w.browser, switches: process.env.SHOWCASE_LOCAL_ARGS ?? '', time: new Date().toISOString() }, null, 1))
 const text = S.shaderList(w.seen, S.walkHead(w, [
   'Snow Globe Seasons: what the shader compiler wrote, program by program',
   `written   ${new Date().toISOString()}`,
