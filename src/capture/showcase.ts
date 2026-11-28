@@ -28,6 +28,7 @@ import { framingOfRig, livePose, liveRig, roomUnder } from '../app/framing'
 import { Painter } from '../app/painter'
 import { Replay, scriptPlan, type ScriptFrame, type ScriptPlan } from '../app/replay'
 import parts from '../../parts/PARTS.json'
+import { detailOwed } from '../core/textures'
 
 export interface StillSpec {
   season: string
@@ -620,5 +621,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       },
     },
   }
+  // Diagnosis of film frame 2828 only (branch agent/p6-diag-2828, which is never merged): the harness under tools/diag-2828 reads these.
+  ;(window as unknown as { __diag?: unknown }).__diag = { gfx, stage, driver, particles, post, painter, acc: () => acc, owed: () => detailOwed(), format: () => format }
   return api
 }
