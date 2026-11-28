@@ -138,3 +138,14 @@ Written 23:40 UTC, 27 November 2026, the lines on frame 2121 added at 23:50 UTC,
 - Change 1, frames 679 to 682 at preview, before and after: the rows of copies are smears; the grainy fringe beside the petals at 680 is the same before and after, so it is not the gust's. At preview's 24 samples the smear's own grain is coarse. Section 11 of the report, `streak-14` and `streak-15`.
 - Not seen: the two frames played at speed; the arriving scatter of change 2 before and after; any master chunk; the page in a browser during a change; the cost on a graphics card (23 percent on frame 1388 in software).
 
+### The weave in the smears (open item 278), added 02:35 UTC, 28 November
+
+- The rib of frame 1388 and the crossed weave the root saw at one to one in frames 1388 and 1389 are one thing: ribs across the smears, 6 to 12 px apart. They are older than the smear (frame 1388 before any mend has them). The guess about the foot's kick was wrong.
+- Two mends tried and dropped, unproven as a gain: the still tile at a place of its own in every sample, and the front at each part's own moment. Section 12, `streak-16` to `streak-20`.
+- The cause: a sample is seen from one lens point, so the eight parts of a sample of a petal out of focus bunch together. The mend: each part of the second mesh is seen from a lens point of its own (`gustLensPoint`, `stageGustSeen`).
+- Code: `agent/p6-shutter-c`, not merged. Commit `43aaf2a6`, then merges of main `342102e1` (head `f8f103fd`, engine `530b5d1ac19d93c3`, on which the frames were drawn) and `2340c4f7` (head `07c94d0a`, engine `144059cb99b0d134`).
+- Measured at 3840 on `f8f103fd`, frames drawn by the root's helpers: the strongest wave of 3.5 to 12 px at the rib of 1388 fell from 1.656 to 0.872 levels, at the root's place in 1389 from 1.439 to 0.605. The first is over the half of the head's by 0.044; the band is flat there, so the number reads the grain.
+- The price: a finer grain without pattern. The spread of the fine part rose by about a fifth where the ribs stood (1.601 to 1.945 at the rib) and by 3 to 10 percent over the cuts. Whether that reads better than the ribs is the root's judgement at full size.
+- Frames with nothing in the air are the same bytes with and without: 668 and 2108 at 3840, four frames at draft, two at preview at the final tier. The eight guards equal chain 42's list on `07c94d0a`. The whole vitest: 1064 passed, 8 skipped.
+- Not seen: anything played; the petals arriving (680 to 682) and change 4 at 3840 with the mend; any film frame on `07c94d0a`. Section 13, `streak-21` to `streak-36`.
+
