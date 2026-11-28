@@ -267,13 +267,38 @@ export const GUST_CLOSES = TABLE.closes
 /** The same instant as a place in the swap window. */
 export const GUST_LAST_DOWN_AT = OUTSIDE_RAMP.start + GUST_LAST_DOWN * OUTSIDE_RAMP.length
 
+const GUST_PARTS = 8
+/** The ring of the lens each part of a sample is seen from, counted from the sample's own: no two neighbours in the round are neighbours in the rings. */
+const GUST_RING = [0, 4, 2, 6, 1, 5, 3, 7] as const
+
+/** The point of the lens (in the unit disc) from which a part of a sample is seen, the sample's own being (`lu`, `lv`): what `stageGustSeen` takes. */
+export function gustLensPoint(lu: number, lv: number, part: number): [number, number] {
+  const far = lu * lu + lv * lv
+  const way = far > 0 ? [lu / Math.sqrt(far), lv / Math.sqrt(far)] : [1, 0]
+  const turn = (2 * Math.PI * part) / GUST_PARTS
+  const r = Math.sqrt((far + GUST_RING[part]! / GUST_PARTS) % 1)
+  return [r * (way[0]! * Math.cos(turn) - way[1]! * Math.sin(turn)), r * (way[0]! * Math.sin(turn) + way[1]! * Math.cos(turn))]
+}
+
 /** For a vertex shader of a part of the table's dressing: x the way a piece is moved along the line out from the stage's axis, y its height as a share, z how far it is from lying (1 to 0). */
 export const STAGE_GUST_GLSL = `
 uniform float uChange;
 uniform vec4 uState;
 #ifdef STAGE_STREAK
 uniform vec4 uGustSlot;
+uniform vec4 uGustLens;
 varying float vGustPart;
+const float GUST_RING[${GUST_PARTS}] = float[${GUST_PARTS}](${GUST_RING.map((r) => r.toFixed(1)).join(', ')});
+vec4 stageGustSeen(vec4 at) {
+  int part = gl_InstanceID % STAGE_STREAK;
+  vec2 own = uGustLens.xy;
+  float far = dot(own, own);
+  vec2 way = far > 0.0 ? own / sqrt(far) : vec2(1.0, 0.0);
+  float turn = 6.2831853 * float(part) / float(STAGE_STREAK);
+  vec2 seen = sqrt(fract(far + GUST_RING[part] / float(STAGE_STREAK))) * vec2(way.x * cos(turn) - way.y * sin(turn), way.x * sin(turn) + way.y * cos(turn));
+  at.xy += vec2(projectionMatrix[0][0], projectionMatrix[1][1]) * (seen - own) * uGustLens.z * (at.w * uGustLens.w - 1.0);
+  return at;
+}
 #endif
 vec3 stageGust(vec2 rest, float a, float b) {
 #ifdef STAGE_STREAK
@@ -310,13 +335,19 @@ vec3 stageGust(vec2 rest, float a, float b) {
  * scatter is drawn once at the middle of each part, and every pixel keeps one of them: its level in the still tile
  * (still.ts), turned on by `turn` of a whole with every sample, so that neighbours keep unlike parts and one pixel goes
  * round all of them. Over the frame a pixel then sees the scatter at as many moments as the frame has samples, one in each
- * sample's share, and where a row of copies stood there is one smear with a fine grain. The parts are
+ * sample's share, and where a row of copies stood there is one smear with a fine grain. A sample is also seen from one
+ * point of the lens, and a piece out of focus is drawn at its place along its flight plus its blur disc times that point:
+ * with one point to all the parts of a sample the parts lay together as a bunch, the bunches of a frame stood unevenly
+ * along the streak, and the streak was ribbed across its flight. So each part is seen from a point of its own
+ * (`gustLensPoint`, `stageGustSeen`): the sample's point turned an eighth of the round a part and set on another ring of
+ * the lens, so that the parts of one sample lie all over the blur disc. The parts are
  * a second mesh over the same vertices (`gustTwin`), made when a film frame first asks for it and shown in place of the first
  * for those samples alone: the live page has no sample, a still and a frame with nothing in the air have the first mesh, and
  * their shader is the one it was (`STAGE_STREAK` is defined for the second mesh only).
  */
-export const GUST_STREAK = { join: 8, parts: 8, turn: 0.6180339887 } as const
+export const GUST_STREAK = { join: 8, parts: GUST_PARTS, turn: 0.6180339887 } as const
 const gustSlot = { value: new THREE.Vector4() }
+const gustLens = { value: new THREE.Vector4() }
 const GUST_AT = [0.5 / (1 + DRESSING_FRONT.gain), (0.5 + DRESSING_FRONT.gain) / (1 + DRESSING_FRONT.gain)] as const
 /** The shares of the outside span between which a piece of the scatter is in the air: from the first that lifts to the last that is gone, and from the first that starts in to the last that is down. */
 export const GUST_FLIGHT = {
@@ -325,13 +356,14 @@ export const GUST_FLIGHT = {
 } as const
 
 /** Whether this sample draws the scatter in parts (`GUST_STREAK`), for a dressing that comes (`incoming`) or leaves; if so the sample's share of the shutter is set for the second mesh. */
-export function gustStreaks(sample: Sample | null, incoming: boolean): boolean {
+export function gustStreaks(sample: Sample | null, incoming: boolean, apertureMm = 0, focusMm = 1): boolean {
   const of = sample?.of ?? 1
   if (!sample || sample.hold === undefined || of < GUST_STREAK.join) return false
   const flight = incoming ? GUST_FLIGHT.in : GUST_FLIGHT.out
   if (!(share(sample.hold + SHUTTER_CHANGE) > flight[0] && share(sample.hold) < flight[1])) return false
   const rank = Math.floor(sample.t * of)
   gustSlot.value.set(sample.hold + (rank / of) * SHUTTER_CHANGE, SHUTTER_CHANGE / of, (rank * GUST_STREAK.turn) % 1, 0)
+  gustLens.value.set(sample.lu, sample.lv, apertureMm, 1 / focusMm)
   return true
 }
 
@@ -363,7 +395,7 @@ export function gustTwin(mesh: THREE.Mesh): (on: boolean) => void {
     g.instanceCount = own * GUST_STREAK.parts
     const first = mesh.material as THREE.ShaderMaterial
     const m = first.clone()
-    m.uniforms = { ...first.uniforms, uGustSlot: gustSlot }
+    m.uniforms = { ...first.uniforms, uGustSlot: gustSlot, uGustLens: gustLens }
     m.defines = { ...first.defines, STAGE_STREAK: GUST_STREAK.parts }
     m.userData.stage = first.userData.stage
     const second = new THREE.Mesh(g, m)
