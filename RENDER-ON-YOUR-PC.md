@@ -401,18 +401,24 @@ How the frames are compared, and why so:
   in those lines and was compared nowhere. When a frame fails here by a little, the floor may be at fault and not
   the picture. You do not decide that: do what stands under `Bad` below, and the remote team reads the numbers
   and the sheet of pictures.
-- What was run where. The Windows and macOS test machines last ran the commands of this file in run 46130923210
-  of the workflow `handoff-proof`, at commit 463ed0cd of the repo, whose engine hash is 74660360c1965b4f. The
+- What was run where. The Windows and macOS test machines last ran the commands of this file in run 46173757954
+  of the workflow `handoff-proof`, at commit 7c769ac5 of the repo, whose engine hash is 7dbb2c54aa42b34a. The
   setup line of 1.3 prints the engine hash of this clone. If it prints that same hash, this very build ran
   there. If it prints another, this clone holds a newer build, which was drawn and compared on Linux only and
   ran on no Windows and no macOS test machine. The remote team has said that it runs the test machines once more
   on the final build before it releases the full render.
   A green run there means only that the machines ran. The verdicts named here are read from the table of the
-  run or from the reports of its jobs, never from its colour.
-- What was added after that run. The two approve lines (2.2, 2.5), the record of Brandon's yes, the reading of
-  the card's driver, the `LOOK` lines for a restart that Windows waits for and for a Desktop inside OneDrive,
-  and the rule that a finished chunk counts only as the build of the approved test: all of these were run on
-  Linux only, with a small picture drawn in software. On a Windows or macOS machine they have not run yet.
+  run or from the reports of its jobs, never from its colour. In that run each of its ten jobs wrote the
+  verdict PASS. The Windows test machines drew in software and the macOS ones on a virtual device, so no
+  real graphics card has drawn this film yet, and no real card has been measured.
+- What that run did and did not run. With a small picture it ran, on Windows and on macOS: step 2 begun in
+  the folder that holds the clone (the status line, the `cd` line, the status line again, then the pull), the
+  approve line of the render with stand-in words, once with the words inside quotes, the render that refuses
+  without a recorded yes, a new yes after a test in the middle of the render, the reading of the card's
+  driver, and the refusals of the two upload lines. It did not run: the `LOOK` lines for a restart that
+  Windows waits for and for a Desktop inside OneDrive (no test machine was in that state; they were run on
+  Linux only, with made up facts), a finished chunk of another build that is refused (Linux only), and the
+  `PASS:` of the approve line of the upload (2.5).
 - The report also says, for every frame, how far the picture stands from its reference: the largest and the mean
   difference in levels of 255, how many pixels are more than 8 levels apart, and where in the picture they lie.
   These lines are marked `noted` and fail nothing. They tell the remote team where to look.
@@ -542,8 +548,10 @@ node tools/handoff.mjs status
 ```
 
 - It ends with `PASS: this is the clone of the film, at ...`: you are inside the clone. Go on with the four lines
-  below. One thing first: if its line `at work` names a word and does not say `nothing`, work is going on here
-  already. Then do not pull, and do what "If you are started in the middle" says.
+  below. The same line may say that step 1 ends here, and name no next line: that is how the work stands until
+  Brandon's word for step 2, and you have his word now. One thing first: if its line `at work` names a word and
+  does not say `nothing`, work is going on here already. Then do not pull, and do what "If you are started in
+  the middle" says.
 - node answers `Cannot find module` with a path that ends in `tools\handoff.mjs` or `tools/handoff.mjs`: you are
   not inside the clone. Run the line below once, then the status line again, and judge its answer by these rows.
 
@@ -728,7 +736,9 @@ set from one measure of 47.74 dB, on a Linux test machine that draws in software
 encoded by FFmpeg 8.0.1, less a margin of 3 dB that was chosen and not measured. On this computer the whole loop
 is encoded, by another build of FFmpeg, from frames that carry this card's own fine noise. A pair that falls
 under the floor here may therefore have nothing wrong in what was drawn. A `FAIL:` of this row is a question for
-the remote team and no verdict on the render.
+the remote team and no verdict on the render. On the Windows and macOS test machines the same measure was taken
+at a small size only (960 x 540), where the row holds no floor: 44.93 dB on Windows, 44.91 dB on macOS, and
+44.97 dB on Linux at that size. What it reads on those machines at 3840 x 2160 is not known.
 
 ### 2.4 Deliver to the Desktop
 
@@ -834,12 +844,14 @@ same terminal: the tool looks in the places winget installs to, and its answer d
 is not on this machine, do not install a second time: stop and report. A winget line that ends in anything else
 is also a stop and report.
 
-What was tried: sending, carrying on after a cut connection and reading back were run with stand-in files of a
-few bytes, on Linux and on a hosted Windows machine. The refusal for a missing sign in was run on the hosted
-Windows and macOS machines, after a small render there. The refusal for a repo that is not private was run on
-Linux only, while the repo was public. `gh auth login` was run on no test machine, and no whole film was sent by
-this line before Brandon's own run. The approve line of the upload was run on Linux only, where it refused
-because the repo was public. Its `PASS:` was run on no machine, because the repo of the tests is public.
+What was tried: sending, carrying on after a cut connection, and downloading each file again to compare its
+SHA-256 were run with stand-in files of a few bytes, on Linux and on a hosted Windows machine. The refusal for a
+missing sign in was run on the hosted Windows and macOS machines, after a small render there. The refusal for a
+repo that is not private was run on Linux only, while the repo was public. `gh auth login` was run on no test
+machine, and no whole film was sent by this line before Brandon's own run. The approve line of the upload was
+run on the hosted Windows and macOS machines, where it refused before the delivery and then for the missing
+sign in, and on Linux, where it refused because the repo was public. Its `PASS:` was run on no machine, because
+the repo of the tests is public.
 
 ### 2.6 Clean up, only after the delivery passed
 

@@ -12,7 +12,7 @@ Nothing here is read by the page or the build, and nothing here changes the engi
 
 ## Who runs what
 
-The machine that renders runs only the seven words of `RENDER-ON-YOUR-PC.md`. It never runs `stamp`.
+The machine that renders runs only the ten words of `RENDER-ON-YOUR-PC.md` (setup, doctor, test, approve, render, check, deliver, upload, clean, status). It never runs `stamp`.
 
 The one who releases the film runs `stamp`, in the cloud, on Linux, in a clone with `npm ci` and a build done.
 
