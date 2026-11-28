@@ -12,9 +12,12 @@ import { BEHAVIOUR } from '../src/particles/engine/kinds'
 import { CENTRE_Y } from '../src/particles/engine/sdf'
 import { filmCut } from '../src/film/cut'
 import { loopMoment, timelineMoment } from '../src/film/moments'
+import { filmPose } from '../src/film/moves'
 import { eventSeconds, filmTimeline, globePoseAt, prerollSeconds, stateSeconds, stillTimeline } from '../src/film/timeline'
 import { innerRadiusMm, lensIor, lensPlace, lensRadiusMm } from '../src/globe/lens'
 import { VEIL_LOOK, veilUniforms } from '../src/core/chunks/veil'
+import { poseById, sphereCentreMm } from '../src/scene/cameras'
+import type { Pose } from '../src/scene/cameras'
 import type { KitMoment } from '../src/seasons/kit'
 import { LANDING_BEAT, LANDING_LOOK, STORM, TAKE, TAKE_END_BEAT, comesOfAnother, floodLeft, holdStorm, landingLook, stormHeld, takePace, veil as summerVeil } from '../src/seasons/summer/veil'
 
@@ -331,6 +334,64 @@ describe('how the storm is drawn', () => {
     expect(line.stormLockShare).toBeGreaterThan(0.5)
   })
 
+  it("open item 277, decision 246: the small glint at the head of a stroke of summer's down goes out by degrees where the film's lens lays the stroke out over more than about two pixels of the hd picture; the stroke stays, and no frame of the film in summer and no still at the hero camera comes to that", () => {
+    const line = CARD.line
+    const n = (v: number): string => (Number.isInteger(v) ? v.toFixed(1) : String(v))
+    // from about two pixels of the hd picture and by degrees: under the first of the two the glint is whole to the last bit, at the second it is out
+    expect(line.stormGlintLaidPx[0]).toBeGreaterThanOrEqual(2)
+    expect(line.stormGlintLaidPx[0]).toBeLessThanOrEqual(2.5)
+    expect(line.stormGlintLaidPx[1] - line.stormGlintLaidPx[0]).toBeGreaterThanOrEqual(1.5)
+    expect(line.stormGlintLaidPx[1]).toBeLessThanOrEqual(6)
+    // the measure is the radius the lens lays a stroke out over, as the card reckons it: what is left of the lens's circle beside the share by which the stroke stands still in the lens, in pixels of the hd picture. A stroke that is no mist hands it over where a seed's head says how near it is, which no stroke reads; a stroke of mist keeps its glow there
+    const seed = `(shape > ${n(SHAPE.seed - 0.5)} && shape < ${n(SHAPE.seed + 0.5)})`
+    const mistAt = CARD_VERT.indexOf('vL3.z = glowC;')
+    const laidAt = CARD_VERT.indexOf(`if (${seed} && lineC > 0.5 && mistC < 0.5) vL3.z = (1.0 - lensC) * abs(coc) / uPoint.w;`)
+    expect(mistAt).toBeGreaterThan(0)
+    expect(laidAt).toBeGreaterThan(mistAt)
+    expect(VERT_MAIN).toContain('float lensC = afloat * lensShare;')
+    expect(VERT_MAIN).toContain('float coc = uAperture.w * uPoint.y * (1.0 / zImg - uAperture.z);')
+    // one factor on the glint and on nothing else: in a stroke's picture only the mist's glow reads that place beside it, and the mist is drawn before the glint and carries none
+    const streak = CARD_FRAG_PARS.slice(CARD_FRAG_PARS.indexOf('void cardStreak('), CARD_FRAG_PARS.indexOf('void cardStormGlow('))
+    expect(streak).toContain(`if (fract(vL3.x * 419.0) < ${n(line.stormGlint)}) glint = exp(-0.5 * dot(hp, hp) / (vStreak.w + ${n(line.stormGlintPx * line.stormGlintPx)} * uPoint.w * uPoint.w)) * (1.0 - smoothstep(${n(line.stormGlintLaidPx[0])}, ${n(line.stormGlintLaidPx[1])}, vL3.z));`)
+    expect(streak.split('vL3.z').length - 1).toBe(2)
+    expect(streak.indexOf('glowM = vL3.z * exp(')).toBeGreaterThan(streak.indexOf('if (mist) {'))
+    expect(streak.indexOf('glowM = vL3.z * exp(')).toBeLessThan(streak.indexOf('if (swish && !bit && !mist) {'))
+    // how far the lens lays a seed out at the most, wherever in the ball it is: the shader's own reckoning of the image's depth through the glass, at the near and the far end of the ball's inside
+    const laid = (pose: Pose, centre: THREE.Vector3): number => {
+      const focal = 1080 / (2 * Math.tan((pose.fovDeg * Math.PI) / 360))
+      const dist = pose.position.distanceTo(centre)
+      let most = 0
+      for (const a of [-innerRadiusMm, innerRadiusMm]) {
+        const den = Math.max(lensRadiusMm + (lensIor - 1) * a, 0.3 * lensRadiusMm)
+        const zImg = Math.max(dist - (lensRadiusMm - (lensRadiusMm * (lensRadiusMm - a)) / den), 1)
+        most = Math.max(most, (1 - CARD.hair.lensFilm) * pose.apertureMm * focal * Math.abs(1 / zImg - 1 / pose.focusMm))
+      }
+      return most
+    }
+    const rest = new THREE.Vector3(0, sphereCentreMm, 0)
+    // the hero camera is under the first of the two and the stills' close camera, where the bunches of dots stood, far over the second
+    expect(laid(poseById('hero'), rest)).toBeLessThan(line.stormGlintLaidPx[0])
+    expect(laid(poseById('macro'), rest)).toBeGreaterThan(4 * line.stormGlintLaidPx[1])
+    // the film: at every frame and half frame where summer is in the ball, with the ball where the shake has it, the lens lays a seed out over less than the first of the two, so the glint is whole in every frame of the film
+    const cut = filmCut()
+    const film = filmTimeline(cut)
+    const fps = config.film.fps
+    let most = 0
+    let moments = 0
+    for (let half = 0; half < 2 * cut.frameCount; half++) {
+      const sec = half / (2 * fps)
+      const moment = timelineMoment(film, prerollSeconds + sec, 1, 1)
+      if (moment.from !== 'summer' && moment.to !== 'summer') continue
+      const g = moment.globe
+      const centre = rest.clone().applyEuler(new THREE.Euler(g.tiltX, g.twist ?? 0, g.tiltZ, 'XZY')).add(new THREE.Vector3(g.x, g.y, g.z))
+      most = Math.max(most, laid(filmPose(cut, sec), centre))
+      moments++
+    }
+    expect(moments).toBeGreaterThan(2 * 600)
+    expect(most).toBeGreaterThan(1)
+    expect(most).toBeLessThan(line.stormGlintLaidPx[0])
+  })
+
   it("summer's lights are streaks along the swirl in the storm and soft glows with a bright heart and no edge at rest; a seed at rest is a round tuft, in sizes, with a stalk on about one in eight", () => {
     const glow = CARD.glow
     expect(glow.stormStreakPx[0]).toBeLessThan(glow.stormStreakPx[1])
@@ -590,6 +651,100 @@ describe('how the storm is drawn', () => {
     // a ball that stands as it stood moves nothing
     const none = rideMatrix(poses[1][0], poses[1][0], new THREE.Matrix4())
     for (let k = 0; k < 16; k++) expect(none.elements[k]!).toBeCloseTo(k % 5 === 0 ? 1 : 0, 12)
+  })
+
+  it('decision 255 point 3, the width at 3840: above the pixels of the hd picture, in the film alone, a light of the storm is slim across and stands in every sample where it is at the middle of the exposure; at hd, at rest and in the app none of it is read', () => {
+    const [cap, capPower, bellPower] = CARD.glow.stormSlim
+    // the cap is said in pixels of the hd picture and is about half of one; the knee between a light's own core and the cap is sharp, and the sides fall more steeply than a bell's
+    expect(cap).toBeGreaterThanOrEqual(0.4)
+    expect(cap).toBeLessThanOrEqual(0.7)
+    expect(capPower).toBeGreaterThanOrEqual(2)
+    expect(bellPower).toBeGreaterThan(1)
+    expect(bellPower).toBeLessThanOrEqual(4)
+    const num = (v: number): string => (Number.isInteger(v) ? v.toFixed(1) : String(v))
+    const light = `(shape > ${(SHAPE.light - 0.5).toFixed(1)} && shape < ${(SHAPE.light + 0.5).toFixed(1)})`
+
+    // the fragment: the bell as it was, then the slim one (above hd, outside the app, in the storm, never a spark), then the core that reads it. The ends of item 276 are set before it
+    const slim = [
+      'float bell = exp(-0.5 * d2 / vcBare);',
+      'if (!spark && uPoint.w > 1.0 && uWhole < 0.5 && tightL > 0.0) {',
+      // every base of a power is written with its guard (tests/glsl-safe.test.ts): none can be below nought, and the guards change no value
+      `float slimV = vcBare * pow(max(1.0 + pow(max(vcBare / (${num(cap * cap)} * uPoint.w * uPoint.w), 0.0), ${num(capPower)}), 1.0), ${num(-1 / capPower)});`,
+      `bell = mix(bell, exp(-0.5 * pow(max(d2 / slimV, 0.0), ${num(bellPower)})), tightL * min(uPoint.w - 1.0, 1.0));`,
+      'core = rc * rc / vc',
+      '* bell * fade * bareGain;',
+    ]
+    let at = CARD_FRAG_PARS.indexOf('d2 = dot(dE, dE);')
+    expect(at).toBeGreaterThan(0)
+    for (const line of slim) {
+      const next = CARD_FRAG_PARS.indexOf(line, at)
+      expect(next, line).toBeGreaterThan(at)
+      at = next
+    }
+    expect(CARD_FRAG_PARS.split('slimV').length - 1).toBe(2)
+    expect(CARD_FRAG_PARS).toContain('uniform float uWhole;')
+    expect(CARD_FRAG_PARS.split('uWhole < 0.5').length - 1).toBe(1)
+    // the bell as it was is still the one the core reads where the slim one is not: it is written once and nothing else sets it
+    expect(CARD_FRAG_PARS.split('bell = ').length - 1).toBe(2)
+
+    // the card: above hd the light is not put back along its path, since it does not travel it. The line stands after the hold as it was and before the ride, and is read by the light alone
+    const hold = CARD_VERT.indexOf('holdC = -stC * uStorm.y * (uPoint.z / max(shut, 1e-6) - (1.0 - uStorm.x))')
+    const whole = CARD_VERT.indexOf(`if (storming && ${light} && uPoint.w > 1.0) holdC *= 1.0 - min(uPoint.w - 1.0, 1.0);`)
+    const ride = CARD_VERT.indexOf(`if (storming && ${light} && uMidHold.x > 0.0) {`)
+    expect(hold).toBeGreaterThan(0)
+    expect(whole).toBeGreaterThan(hold)
+    expect(ride).toBeGreaterThan(whole)
+    expect(CARD_VERT.split('holdC *=').length - 1).toBe(1)
+
+    // the place: after the line every kind reads, which is as it was, the light alone goes to its place of the middle of the exposure
+    const path = VERT_MAIN.indexOf('vec3 nowL = mix(aPrev, aNow, uPoint.x + shut * uStorm.y * afloat * (storming ? 1.0 - uStorm.x : 1.0));')
+    const middle = VERT_MAIN.indexOf(`if (storming && abs(shape - ${num(SHAPE.light)}) < 0.5 && uPoint.w > 1.0 && uStorm.y != 0.0) nowL = mix(nowL, mix(aPrev, aNow, uPoint.x + uPoint.z * uStorm.y * afloat), min(uPoint.w - 1.0, 1.0));`)
+    expect(path).toBeGreaterThan(0)
+    expect(middle).toBeGreaterThan(path)
+    expect(VERT_MAIN.split('nowL = ').length - 1).toBe(2)
+    // a sample at the share t of the shutter is drawn at the step's share m + span * (t - 0.5), and the draw hands the shader 0.5 - t: the place asked for is the one of the middle, m, whatever the sample
+    for (const [m, span] of [[0.5, 0.5], [0.2, 0.3], [0.9, 0.18]] as const) for (const t of [0, 0.125, 0.5, 0.77, 1]) expect(m + span * (t - 0.5) + span * (0.5 - t)).toBeCloseTo(m, 12)
+    // and the light is summer's alone: no kind of another season has its shape
+    for (const season of config.seasons) for (const kind of particleKinds(season)) expect(lookOf(kind.kind).shape === SHAPE.light, kind.kind).toBe(season === 'summer' && kind.kind === 'firefly')
+
+    // reckoned as the shader does. `w` is the picture's height over the hd picture's, `tight` the storm's share of the light
+    const slimV = (vc: number, w: number): number => vc * Math.pow(1 + Math.pow(vc / (cap * cap * w * w), capPower), -1 / capPower)
+    const bell = (d2: number, vc: number, w: number, tight: number, app = false): number => {
+      const plain = Math.exp((-0.5 * d2) / vc)
+      if (!(w > 1 && !app && tight > 0)) return plain
+      return plain + (Math.exp(-0.5 * Math.pow(d2 / slimV(vc, w), bellPower)) - plain) * tight * Math.min(w - 1, 1)
+    }
+    const held = (w: number): number => (w > 1 ? 1 - Math.min(w - 1, 1) : 1)
+    for (const vc of [0.05, 0.2, 0.5, 1, 2.5, 8]) {
+      for (const d2 of [0, 0.3, 1, 4]) {
+        const was = Math.exp((-0.5 * d2) / vc)
+        // where a pixel is a pixel of the hd picture: the bell as it was, in the storm too
+        expect(bell(d2, vc, 1, 1)).toBe(was)
+        // at rest: as it was at any size
+        expect(bell(d2, vc, 2, 0)).toBe(was)
+        // in the app: as it was at any size, in the storm too
+        expect(bell(d2, vc, 2, 1, true)).toBe(was)
+        // nowhere is a light brighter at a place across than its own bell or the capped steep one allows, and its sides are never wider than its own were from one core's width out
+        if (d2 >= vc) expect(bell(d2, vc, 2, 1)).toBeLessThanOrEqual(was + 1e-12)
+      }
+      // the light at its middle line is as it was: no light is fainter at its brightest
+      expect(bell(0, vc, 2, 1)).toBe(1)
+      // never softer than the light's own core, never softer than the cap
+      expect(slimV(vc, 2)).toBeLessThanOrEqual(vc)
+      expect(slimV(vc, 2)).toBeLessThanOrEqual(cap * cap * 4)
+    }
+    // a light whose own core is far finer than the cap keeps it; one far softer has the cap
+    expect(slimV(0.05, 2) / 0.05).toBeGreaterThan(0.99)
+    expect(slimV(50, 2) / (cap * cap * 4)).toBeGreaterThan(0.99)
+    // across, a capped light at 3840 is at half its light a little over one pixel from its middle line: 2 to 2.6 px in all, before the lens and the film's curve widen it to about 3
+    const across = 2 * cap * 2 * Math.pow(2 * Math.LN2, 1 / (2 * bellPower))
+    expect(across).toBeGreaterThan(2)
+    expect(across).toBeLessThan(2.6)
+    // the hold: whole at hd, none from twice its height on, by degrees between
+    expect(held(1)).toBe(1)
+    expect(held(1.5)).toBeCloseTo(0.5, 12)
+    expect(held(2)).toBe(0)
+    expect(held(3)).toBe(0)
   })
 
   it("a head afloat in the calm is a clock the card draws hair by hair: two rings of hairs round a small bright hub on a stalk that hangs, in three classes by depth, with no hair finer than a pixel, and none of it at the storm's full level", () => {

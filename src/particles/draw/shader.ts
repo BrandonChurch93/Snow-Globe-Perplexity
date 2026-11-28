@@ -111,6 +111,8 @@ export const VERT_MAIN = `
   bool storming = uStorm.x > 0.0 && shape > ${n(STORM_OWN_PATH_FROM)};
   float shut = uPoint.z * mix(1.0, storming ? ${n(STORM_SHUTTER)} : ${n(STORM_SHUTTER_TURNED)}, uStorm.x);
   vec3 nowL = mix(aPrev, aNow, uPoint.x + shut * uStorm.y * afloat * (storming ? 1.0 - uStorm.x : 1.0));
+  // above the pixels of the hd picture (the film at 3840) a light of the storm stands in every sample of a frame where it is at the middle of the exposure. Carried along its path from sample to sample and put back on the picture by a share of that path (cards.ts, holdC), it kept a rest of its travel, the more the nearer the glass's wall, where the glass draws a path out as no one measure of its magnifying tells: that rest lay across its streak as often as along it and laid the streak out two pixels and more wider than its core. Where a pixel is a pixel of the hd picture nothing of this is read, and nothing of it in the app, which draws one moment (uStorm.y 0)
+  if (storming && abs(shape - ${n(SHAPE.light)}) < 0.5 && uPoint.w > 1.0 && uStorm.y != 0.0) nowL = mix(nowL, mix(aPrev, aNow, uPoint.x + uPoint.z * uStorm.y * afloat), min(uPoint.w - 1.0, 1.0));
   vec3 nowW = (modelMatrix * vec4(nowL, 1.0)).xyz;
   // a seed's down is finer than the film's lens can hold out of focus: a head takes a share only of the lens's spread, so its hairs stay hairs
   float lensShare = abs(shape - ${n(SHAPE.seed)}) < 0.5 ? ${n(CARD.hair.lensFilm)} : (abs(shape - ${n(SHAPE.light)}) < 0.5 ? ${n(CARD.glow.lensFilm)} : 1.0);
