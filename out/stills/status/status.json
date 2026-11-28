@@ -1,44 +1,45 @@
 {
-  "number": 267,
-  "time": "2026-11-28 13:53 UTC",
+  "number": 269,
+  "time": "2026-11-28 14:40 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 267 · 2026-11-28 13:53 UTC · Phase 6",
+    "Status 269 · 2026-11-28 14:40 UTC · Phase 6",
     "Phases 1 to 5 complete. Phase 6 in progress. Three words are asked of Brandon and all three still stand. One: move on to the film and the masters, or one more round of looks first, asked in Status 236 at about 5:20 PM MT Friday. Two: take the level line's mend, yes or no, asked in Status 262. Three: take the third what-if, fall's lit faces going out before winter's base comes, yes or no, asked in Status 263. The work goes on in any case and only the freeze waits.",
-    "The render instructions (decision 314). The first builder pushed the file's words at 6:48 AM MT, inside its limit; the branch's head was read here by a fetch. Stated by the builder and not run here: the engine equals the main branch's and 1320 tests passed with 8 skipped. The file is 745 lines now (measured here). New in it: one table of every stop, a word that only reads where the work stands and names the one line that carries on, and a test without the final sound mix now ends by saying that the picture passed and the render is not ready, never a plain pass. Its new limit for the tool's guards is 9:30 AM MT. The second builder: its machine's calibration pixels equal the wanted value in all four runs (measured by it), its first group is written and checked on its machine, and it is drawing the one 4K piece that its check of the screenshot needs. It then joins the words and builds the honest verdict, aimed at 7:50 AM MT; its first group keeps 9:00 AM MT. After the guards come the join, the hosted run of about 110 minutes and a fresh reader of a third family. The merge stays held until that reader says yes with no must.",
-    "The page's lost drawing (item 294). The mender's whole report and 33 pictures are in and its branch is pushed; the head was read here by a fetch. Not on the main branch, and the live page is unchanged. What it mends: when the graphics card drops the page's drawing, the main branch goes black and comes back with a damaged globe (0 of 8 cases right and 113 console lines, measured by the mender on its machine). With the mend the page lays the season's still at once, stops the sound and loads itself again once at that season: 8 of 8 cases right at 1920 wide and 8 of 8 at phone size, no console line (measured by the mender). After a second loss within two minutes it stays on a dimmed still with one line of words. On a hosted Mac 12 of 16 went as wanted; in the other four that machine's browser lost its drawing for real and the page stood on its still. Seen here so far: three of the pictures. One thing seen here is not right: the line of words in the staying state says that this browser cannot draw the globe, which is not true for a current browser whose card dropped twice. It gets a ruling. Next: the report is read whole, then a fresh critic of another family, then a chain if it holds.",
-    "The first press with sound (item 285). The cause is found. The long piece is the browser's own making of its sound context at the first press: 108 to 300 ms on the helper machine in 8 loads (measured by the builder). On the hosted Mac the first one of a browser's life took 217 to 776 ms and every later one 1 to 31 ms (stated from its earlier runs). The shake does not wait for the sound, but the browser makes the context first. Changing the order inside the press would only move the stand, so that is not ordered. One trial is ordered that moves no pixel: waking the browser's sound service early with a call that makes no sound and asks no permission. A mend follows only if the first context then falls under 50 ms on the Mac. Numbers by 9:00 AM MT. Unknown on a real machine with a sound device.",
-    "The leaves' rework is pushed, at 6:49 AM MT; the head was read here by a fetch. Not on the main branch. Looked at here at own size, from its builder's own draws at 4K: the ribs and feathered edges are gone and every leaf in the air is one soft shape. The price: a leaf in fast flight has one colour and no veins, so the leaves read flatter than on the main branch. Named by its builder as not right: one bunch right of the right foot in film frame 2162 keeps a few soft streaks, cause not found, and one leaf in frame 2163 has faint streaks; only 3 of the lift's 73 frames were drawn at 4K. Three helpers are drawing frames 2162, 2163 and 2170 as the masters draw them, due by 7:25 AM MT. The missing before frame, 2163, is drawn; a frame drawn twice on one machine came out equal byte for byte (measured by the helper). Its builder's other pieces and whole report: by 7:45 AM MT with about five minutes of slack. Then a fresh reviewer of another family reads all the what-ifs before any of them is offered.",
-    "Other open work. The slow spring picture, the last piece of item 285: trials are running on a hosted Mac, due by 8:30 AM MT. The lost drawing's addendum on the Windows shader warning: by 7:20 AM MT. All of it is unknown on a real graphics card.",
-    "Remaining in phase 6 and what he receives. The render instructions: one file in the repo and one line to give Claude Code, after the mends above. The what-ifs, each shown before and after at 4K, none merged without his word. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last the fresh review and BUILD COMPLETE. Sound credits 7,420 of 10,000 (measured from the ledger at 6:50 AM MT: 52 calls), no call since 10:47 PM MT Wednesday. No film render and no new preview video. The live page is the sixteenth publish, unchanged since 2:57 AM MT.",
-    "phase 6: 59.06 h used of its 12.00 h box",
-    "allowance (after the review): 59.06 h used of 12.00 h allowed",
+    "The what-ifs before fresh eyes (decision 316). Two fresh reviewers of two families, each in its own machine, were started at 7:16 AM MT on the three what-ifs that are ready: summer's mound of sand leaving, fall's leaves at the landing, and fall's lit faces going out. Each got the main branch's look and the what-if of every 4K frame, with the fault named and none of my own findings. The first answered at 7:38 AM MT (stated by it, read whole here). The mound leaving: 6 for the film as it stands and 8 with the what-if, take it. The lit faces: 5 and 8, take it; its cost is that fall's base goes dark about half a second before the change. The leaves at the landing: 6 and 7, take it after one mend, since one leaf before the left gold foot reads as a flat piece cut from paper in frames 2162 and 2163, the same place and the same reading as in Status 268. It could not judge play at speed. The second answer is due by 8:20 AM MT. Nothing is ruled before it and nothing is merged without his word.",
+    "The sand sprinkle's what-if. Pushed at 7:15 AM MT on the what-if branch. Three frames are drawn at 4K as the masters draw them, by three helper machines after calibrations equal to the wanted value (measured by them): film frame 2072 before and after and frame 2096 after. The before of 2096 is drawing. Looked at here at own size: on the main branch the sprinkle left of the base ends in a bright comet with a ruled lower edge about 410 pixels long. In the what-if the ruled stroke is gone and a softer tongue of grains remains whose lower edge still keeps one direction, and both helpers read its tip as an arrow toward the base. The gain is real and small, and the what-if changes two guard stills of summer, since the sprinkle lies in both. It goes to the two reviewers together with the mound arriving, whose builder reports by 8:05 AM MT.",
+    "A fault seen again on the main branch. Film frame 2072 at 4K, in the film as it stands and in the what-if alike: inside the glass at the right some thirty yellow green squares with sharp corners, 15 to 45 pixels each, hang in the air above the lawn, and stacks of short pale level dashes stand in the tree's crown. Open item 289 named these squares in the shake into summer at frame 1408. They show in the shake out of summer too. A diagnosis is ordered and no edit. It belongs to one more round of looks if he asks for one.",
+    "The page's lost drawing (item 294). Its mender states that the Windows shader warning's mend is on its branch, and that on a hosted Windows machine with the installed Chrome the main branch's build wrote one console line in fall and one in winter and the branch's build wrote none. A third hosted run was ruled at 7:36 AM MT for its last head, with the new words and the lit mark, due by 8:50 AM MT. Its push is due by 8:10 AM MT, then a fresh critic of another family.",
+    "The render instructions. The second builder pushed the last of its first groups at 7:24 AM MT (head read here by a fetch). Stated by it and not run here: 1320 tests passed with 8 skipped and the engine equals the main branch's. It now joins the first builder's words. The first builder's guards are due by 9:30 AM MT. The merge stays held until both are joined, the hosted proof passes and a third cold reader says yes.",
+    "Other open work. The first press with sound (item 285): the trial's numbers by 9:00 AM MT. The slow spring picture: trials on a hosted Mac by 8:30 AM MT. All of it is unknown on a real graphics card.",
+    "Remaining in phase 6 and what he receives. The render instructions: one file in the repo and one line to give Claude Code, after the mends above. The what-ifs, each shown before and after at 4K with the reviewers' words, none merged without his word. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last the fresh review and BUILD COMPLETE. Sound credits 7,420 of 10,000 (measured from the ledger at 7:39 AM MT: 52 calls), no call since 10:47 PM MT Wednesday. No film render and no new preview video since Status 268.",
+    "phase 6: 59.84 h used of its 12.00 h box",
+    "allowance (after the review): 59.84 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-267-1.jpg",
-      "caption": "The page when the graphics card drops its drawing, black and then damaged on the main branch above, the season's still and a fresh load with the mend below, not on main",
+      "file": "out/stills/status/status-269-1.jpg",
+      "caption": "Summer's left sprinkle of sand at 4K at own size, film frame 2072, the ruled comet on the main branch above and the what-if below, not on main",
       "w": 1200,
-      "h": 373
+      "h": 813
     },
     {
-      "file": "out/stills/status/status-267-2.jpg",
-      "caption": "The state the mend stays in after a second loss within two minutes, a dimmed still and one line of words that gets a ruling, not on main",
+      "file": "out/stills/status/status-269-2.jpg",
+      "caption": "Film frame 2072 whole with the sprinkle's what-if, drawn at 4K as the masters draw it and shown at 1600 wide, not on main",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-267-3.jpg",
-      "caption": "Fall's leaves in the air at 4K at own size, film frame 2170, the main branch above and the what-if's rework below, its builder's draw, not on main",
-      "w": 1200,
-      "h": 1028
+      "file": "out/stills/status/status-269-3.jpg",
+      "caption": "The lawn's squares in the shake out of summer at 4K at own size, film frame 2072 on the main branch, open item 289, below the bar",
+      "w": 700,
+      "h": 700
     },
     {
-      "file": "out/stills/status/status-267-4.jpg",
-      "caption": "Film frame 2163 whole, fall a twentieth of a second after its landing, drawn at 4K on the main branch's look and shown at 1600 wide",
+      "file": "out/stills/status/status-269-4.jpg",
+      "caption": "Still: winter rest hero, hd, draft",
       "w": 1200,
       "h": 675
     }
