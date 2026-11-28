@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { lightUniforms } from '../../core/chunks/light'
-import { GUST, STAGE_GUST_FRAG_GLSL, STAGE_GUST_GLSL, gustStreaks, gustTwin, stageShader } from '../../core/materials'
+import { config } from '../../config'
+import { GUST, STAGE_GUST_FRAG_GLSL, STAGE_GUST_GLSL, gustStreaks, gustTwin, partStreaks, stageShader } from '../../core/materials'
 import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
@@ -43,10 +44,59 @@ export function skitterLeft(gapMm: number, wait: number, long: number, seconds: 
   const t = Math.min(1, Math.max(0, (seconds - gapMm / SKITTER.waveMmPerSecond - SKITTER.ownWaitSeconds * wait) / (SKITTER.slideSeconds * (0.6 + 1.3 * long))))
   return (1 - t) ** 4
 }
+
+// A leaf that the landing lifts is faster than anything else in its frame: the globe stands, so a frame of the film has
+// its least count of samples, and a leaf that goes a hundred pixels in it was drawn that many times whole, a row of
+// copies with ribs on its face and teeth along its edge (the main branch's gentler lift too). So in a frame of the film
+// the lifted leaves are drawn as the flown leaves of a change are (materials.ts, `GUST_STREAK`): each sample draws them
+// once at the middle of each of that many equal parts of its own share of the shutter, every pixel keeps one, and a leaf
+// is one smear with a fine grain. The share lies about the sample's own moment and is `shutter / of` long; `uLeafTime.y`
+// holds it, and is 0 where the leaves are drawn once: the live page, a draft, a leaf at rest, and inside a change, where
+// the gust has the second mesh. `SKITTER_OVER` is when the last leaf lies still.
+const SHUTTER_SECONDS = config.film.shutterDegrees / 360 / config.film.fps
+const LEAF_SPAN_MM = 1100
+const LEAF_FOOT_MM = 58
+export const SKITTER_OVER = (LEAF_SPAN_MM * Math.SQRT1_2 - LEAF_FOOT_MM) / SKITTER.waveMmPerSecond + SKITTER.ownWaitSeconds + SKITTER.slideSeconds * 1.9
+
+/** The seconds of the shutter that one sample of `of` stands for while the leaves move at the landing (`seconds` after it), 0 where they are drawn once. */
+export function skitterShare(seconds: number, of: number): number {
+  const share = SHUTTER_SECONDS / Math.max(of, 1)
+  return of >= 1 && seconds > 0 && seconds < SKITTER_OVER + share ? share : 0
+}
+
+// What the parts cannot do: the shutter melts what lies across a leaf's way and keeps what lies along it, so a leaf that
+// went along its own veins, its teeth or its lobes kept them through its smear: ribs on its face, a feathered edge, and
+// its midrib as a straight bright line. A lifted leaf's sheet is therefore read at the level at which one texel is as
+// long as the leaf goes while the shutter is open (`texels` of the sheet to a leaf's length, `most` levels at the most,
+// where a texel is as wide as a lobe): what the shutter melts across the way is melted along it too, a leaf at rest is
+// read as it was, and a leaf comes to rest sharp, a level for every halving of its speed. How far it goes is the root
+// of the squares of its slide, its hops and the swing of its edge (`arm` of its length from its middle) about it.
+// Past `most` a leaf goes farther than a lobe is wide, and what its face still holds there (a darker patch beside a
+// paler one) would be drawn out into streaks along its way. So from `most` to `flat` its face goes to its one mean
+// colour: its colour is read coarser still and nearer the middle of its own cell of the sheet (`cells` across and
+// down), at `flat` at the middle itself, where the level holds the mean of the whole cell. Its outline stays at `most`.
+export const MELT = { texels: 256, arm: 0.25, most: 5, flat: 7, cells: [4, 2] } as const
+
+/** How far a lifted leaf goes while the shutter is open, in mm: `pushMm` its slide, `swing` the radians it turns through and `leapMm` its hops over its whole way, `t` the share of its way behind it, `longSeconds` how long its way takes. */
+export function leafGoes(pushMm: number, swing: number, leapMm: number, sizeMm: number, t: number, longSeconds: number): number {
+  return (Math.hypot(pushMm, MELT.arm * sizeMm * swing, leapMm) * 4 * (1 - Math.min(1, Math.max(0, t))) ** 3 * SHUTTER_SECONDS) / longSeconds
+}
+
+/** How many levels coarser the sheet of a leaf `sizeMm` long is read when the leaf goes `goesMm` while the shutter is open: none under a texel. */
+export function leafMelt(goesMm: number, sizeMm: number): number {
+  return Math.min(MELT.most, Math.max(0, Math.log2(Math.max((goesMm * MELT.texels) / Math.max(sizeMm, 1e-3), 1))))
+}
+
+/** How much of the way to its one mean colour the face of such a leaf has gone: 0 up to `most` levels, 1 from `flat`. */
+export function leafFlat(goesMm: number, sizeMm: number): number {
+  const level = Math.log2(Math.max((goesMm * MELT.texels) / Math.max(sizeMm, 1e-3), 1))
+  return Math.min(1, Math.max(0, (level - MELT.most) / (MELT.flat - MELT.most)))
+}
+
 const leafUniforms = {
   uLeafMap: { value: null as THREE.Texture | null },
   uLeafTime: { value: new THREE.Vector4(99, 0, 0, 0) },
-  uLeafSpan: { value: new THREE.Vector4(1100, 32, 58, 0) },
+  uLeafSpan: { value: new THREE.Vector4(LEAF_SPAN_MM, 32, LEAF_FOOT_MM, 0) },
   uLeafMove: { value: new THREE.Vector4(SKITTER.pushMm, SKITTER.reachMm, SKITTER.waveMmPerSecond, SKITTER.slideSeconds) },
   uLeafTurn: { value: new THREE.Vector4(SKITTER.hopMm, SKITTER.spin, SKITTER.tumble, 0) },
 }
@@ -61,6 +111,9 @@ uniform vec4 uLeafTurn;
 varying vec2 vLeafUv;
 varying vec3 vLeafN;
 varying vec4 vLeafOne;
+#ifdef STAGE_STREAK
+varying float vLeafMelt;
+#endif
 float leafHash(float n) {
   return fract(sin(n * 127.1) * 43758.5453);
 }
@@ -75,10 +128,15 @@ float leafGap = max(leafFar - uLeafSpan.z, 0.0);
 float leafPush = min(uLeafMove.x * exp(-leafGap / uLeafMove.y) * (0.45 + 0.9 * leafHash(leafId * 3.1)), max(leafGap - ${SKITTER.clearMm.toFixed(1)}, 0.0));
 float leafWait = leafGap / uLeafMove.z + ${SKITTER.ownWaitSeconds.toFixed(3)} * leafHash(leafId * 9.7);
 float leafLong = uLeafMove.w * (0.6 + 1.3 * leafHash(leafId * 5.3));
-float leafT = clamp((uLeafTime.x - leafWait) / leafLong, 0.0, 1.0);
+float leafNow = uLeafTime.x;
+#ifdef STAGE_STREAK
+vGustPart = float(gl_InstanceID % STAGE_STREAK);
+leafNow += uLeafTime.y * ((vGustPart + 0.5) / float(STAGE_STREAK) - 0.5);
+#endif
+float leafT = clamp((leafNow - leafWait) / leafLong, 0.0, 1.0);
 float leafLeft = (1.0 - leafT) * (1.0 - leafT) * (1.0 - leafT) * (1.0 - leafT);
 float leafEase = 1.0 - leafLeft;
-float leafLive = leafLeft * smoothstep(0.0, ${SKITTER.wakeSeconds.toFixed(2)}, uLeafTime.x - leafWait);
+float leafLive = leafLeft * smoothstep(0.0, ${SKITTER.wakeSeconds.toFixed(2)}, leafNow - leafWait);
 float leafStir = smoothstep(0.0, 6.0, leafPush);
 float leafSide = (leafHash(leafId * 7.9) - 0.5) * 0.9 * leafPush;
 vec2 leafAt = leafRest - leafDir * (leafPush * leafLeft) + vec2(-leafDir.y, leafDir.x) * (leafSide * leafLeft * (1.0 - leafLeft) * 4.0 * 0.5);
@@ -108,6 +166,14 @@ float leafSr = sin(leafRoll);
 leafOff = leafOff * leafCr + cross(leafAxis, leafOff) * leafSr + leafAxis * dot(leafAxis, leafOff) * (1.0 - leafCr);
 leafNo = leafNo * leafCr + cross(leafAxis, leafNo) * leafSr + leafAxis * dot(leafAxis, leafNo) * (1.0 - leafCr);
 float leafSize = color.z * uLeafSpan.y;
+#ifdef STAGE_STREAK
+// A lifted leaf (MELT, above): how far it goes while the shutter is open, and the level of its sheet at which a texel is
+// that long. Inside a change the gust carries the leaves and nothing is melted.
+float leafSwing = ${MELT.arm.toFixed(2)} * leafSize * (abs(leafHash(leafId * 6.7) - 0.5) * 2.0 * uLeafTurn.y * leafStir + leafOver * 6.2831853 * (leafHash(leafId * 1.7) < 0.5 ? 1.0 : 2.0) + (1.0 - leafOver) * 4.5 * leafLive * leafStir);
+float leafLeap = 3.14159265 * leafHops * leafLive * uLeafTurn.x * (0.4 + leafHash(leafId * 4.1)) * leafStir;
+float leafGoes = sqrt(leafPush * leafPush + leafSwing * leafSwing + leafLeap * leafLeap) * 4.0 * (1.0 - leafT) * (1.0 - leafT) * (1.0 - leafT) / leafLong * ${SHUTTER_SECONDS.toFixed(6)};
+vLeafMelt = uLeafTime.y > 0.0 && uState.w < 0.5 && leafNow > leafWait ? clamp(log2(max(leafGoes * ${MELT.texels.toFixed(1)} / max(leafSize, 1e-3), 1.0)), 0.0, ${MELT.flat.toFixed(1)}) : 0.0;
+#endif
 float leafUp = leafHop + leafSize * 0.55 * abs(sin(leafRoll)) + 0.06;
 vec3 leafPlace = vec3(leafAt.x + leafOff.x, max(leafOff.y + leafUp, 0.03), leafAt.y + leafOff.z);
 vec4 leafW = modelMatrix * vec4(leafPlace, 1.0);
@@ -176,6 +242,9 @@ uniform vec3 uSky;
 varying vec2 vLeafUv;
 varying vec3 vLeafN;
 varying vec4 vLeafOne;
+#ifdef STAGE_STREAK
+varying float vLeafMelt;
+#endif
 ${ROOM_GLSL}
 ${SLAB_LIGHT_GLSL}
 ${CANDLE_GLSL}
@@ -186,7 +255,23 @@ void main() {
 #endif
   float c = stageChange();
   if (stageGone(c)) discard;
+#ifdef STAGE_STREAK
+  // A lifted leaf (MELT, above) is read coarser where its own level is over the one the lens reads it at.
+  vec2 leafAt = vLeafUv * vec2(textureSize(uLeafMap, 0));
+  float leafSeen = 0.5 * log2(max(max(dot(dFdx(leafAt), dFdx(leafAt)), dot(dFdy(leafAt), dFdy(leafAt))), 1.0));
+  vec4 leaf = vLeafMelt > leafSeen ? textureLod(uLeafMap, vLeafUv, min(vLeafMelt, ${MELT.most.toFixed(1)})) : texture2D(uLeafMap, vLeafUv);
+  // The sheet is dark where it is clear, so a coarse level holds the leaf's colour times its cover.
+  if (vLeafMelt > leafSeen) leaf.rgb *= mix(1.0, 1.0 / max(leaf.a, 0.5), min(vLeafMelt - leafSeen, 1.0));
+  // Past the last level of its outline its face goes to its one mean colour (MELT, above).
+  if (vLeafMelt > ${MELT.most.toFixed(1)}) {
+    vec2 leafCells = vec2(${MELT.cells[0].toFixed(1)}, ${MELT.cells[1].toFixed(1)});
+    vec2 leafMid = (floor(vLeafUv * leafCells) + 0.5) / leafCells;
+    vec4 leafMean = textureLod(uLeafMap, mix(vLeafUv, leafMid, (vLeafMelt - ${MELT.most.toFixed(1)}) / ${(MELT.flat - MELT.most).toFixed(1)}), max(vLeafMelt, leafSeen));
+    leaf.rgb = leafMean.rgb / max(leafMean.a, 0.1);
+  }
+#else
   vec4 leaf = texture2D(uLeafMap, vLeafUv);
+#endif
   if (leaf.a < 0.5) discard;
   vec3 n = normalize(vLeafN);
   vec3 view = normalize(cameraPosition - vStageWorld);
@@ -330,5 +415,9 @@ export function setSkitter(seconds: number): void {
 
 export function update(moment: KitMoment): void {
   const f = moment.frame
-  inAir?.(f.from !== f.to && (f.from.season === 'fall' || f.to.season === 'fall') && gustStreaks(f.sample, f.to.season === 'fall', f.blurMm, f.pose.focusMm))
+  const flown = f.from !== f.to && (f.from.season === 'fall' || f.to.season === 'fall') && gustStreaks(f.sample, f.to.season === 'fall', f.blurMm, f.pose.focusMm)
+  // The landing's lift (above): fall stands alone, the leaves are on their way, and the frame has samples enough.
+  const parts = !flown && f.from === f.to && f.to.season === 'fall' && skitterShare(leafUniforms.uLeafTime.value.x, f.sample?.of ?? 0) > 0 ? partStreaks(f.sample, f.blurMm, f.pose.focusMm) : 0
+  leafUniforms.uLeafTime.value.y = parts * SHUTTER_SECONDS
+  inAir?.(flown || parts > 0)
 }

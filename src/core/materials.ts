@@ -368,6 +368,20 @@ export function gustStreaks(sample: Sample | null, incoming: boolean, apertureMm
   return true
 }
 
+/**
+ * The same for a part of the dressing that moves outside a change (fall's leaves at the landing, fall/slab.ts): whether a
+ * sample of `of` draws it in parts. The times of the parts are the caller's, since they are no share of a change; what is
+ * set here is which part a pixel keeps in this sample and the point of the lens each part is seen from. Returns the
+ * sample's share of the shutter, 0 where the part is drawn once (the live page, a draft).
+ */
+export function partStreaks(sample: Sample | null, apertureMm = 0, focusMm = 1): number {
+  const of = sample?.of ?? 1
+  if (!sample || of < GUST_STREAK.join) return 0
+  gustSlot.value.set(0, 0, (Math.floor(sample.t * of) * GUST_STREAK.turn) % 1, 0)
+  gustLens.value.set(sample.lu, sample.lv, apertureMm, 1 / focusMm)
+  return 1 / of
+}
+
 /** For the fragment shader of a part the gust carries: whether this pixel keeps another part of the sample's share than the one being drawn. */
 export const STAGE_GUST_FRAG_GLSL = `
 #ifdef STAGE_STREAK
