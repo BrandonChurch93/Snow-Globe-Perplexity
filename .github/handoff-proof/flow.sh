@@ -61,6 +61,9 @@ line doctor 0 'node tools/handoff.mjs doctor'
 
 if [ "$PROOF_MODE" = small ]; then
   line test 0 'node tools/handoff.mjs test'
+  # step 2 begins with these two lines
+  line pull 0 'git pull --ff-only' 'Already up to date'
+  line setup-again 0 'node tools/handoff.mjs setup'
   ONCE=1 line render-first-call 3 'node tools/handoff.mjs render'
   # wait for the first finished chunk, then end the process that renders, and it alone
   if [ "$LAST_CODE" = 3 ]; then

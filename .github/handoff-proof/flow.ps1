@@ -73,6 +73,9 @@ Line 'doctor' '0' 'node tools/handoff.mjs doctor'
 
 if ($env:PROOF_MODE -eq 'small') {
   Line 'test' '0' 'node tools/handoff.mjs test'
+  # step 2 begins with these two lines
+  Line 'pull' '0' 'git pull --ff-only' 'Already up to date'
+  Line 'setup-again' '0' 'node tools/handoff.mjs setup'
   Line 'render-first-call' '3' 'node tools/handoff.mjs render' -Once
   # wait for the first finished chunk, then end the process that renders and everything it started
   $Chunk = $null

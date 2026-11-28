@@ -36,7 +36,7 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,render-first-call,render-carries-on,render-again,check,deliver,clean
+            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,clean
           # the same in Git Bash
           - id: windows-gitbash-small
             os: windows-latest
@@ -44,7 +44,7 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,render-first-call,render-carries-on,render-again,check,deliver,clean
+            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,clean
           # the same on the newest LTS of Node
           - id: windows-newest-lts-small
             os: windows-latest
@@ -53,7 +53,7 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,render-first-call,render-carries-on,render-again,check,deliver,clean
+            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,clean
           # the four winget lines of the file, then setup and the doctor with what they installed
           - id: windows-winget-lines
             os: windows-latest
@@ -86,7 +86,7 @@ jobs:
             mode: small
             switches: small,tones,fast-watch
             refusal: 'no'
-            expect: clone,setup,doctor,test,render-first-call,render-carries-on,render-again,check,deliver,clean
+            expect: clone,setup,doctor,test,pull,setup-again,render-first-call,render-carries-on,render-again,check,deliver,clean
           - id: macos-3840
             os: macos-latest
             shell: bash
