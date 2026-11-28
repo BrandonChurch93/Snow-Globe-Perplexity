@@ -1,6 +1,90 @@
 # Handover: `change_finisher`, unit `change`, branch `agent/p6-change`
 
-## Newest: round two of the eighth job. Winter's heap of snow leaves its own light and then the table; the petals' fringe at 680 is NOT mended and its line is not pushed
+## Newest: item 275 (DECISION 245). The level edge in winter's frost where the foot stood is mended in one commit, bfbf6ac6, pushed and not merged yet; nothing was seen at 3840 or in motion
+
+Written 2026-11-28 at 05:47 UTC by the clock. This part is newer than everything below it. Where the two differ, this part holds. The whole report as it went to `/root` at 05:19 UTC is `report-275.txt` beside this file: every frame's numbers are there, and this part gives the state and the way in. Of the ten pictures of this part (93 to 102), 93 to 96 are on the branch with this push; the other six follow in the next two pushes, four pictures a push.
+
+Head of the code branch `agent/p6-change`: bfbf6ac685add6542f41559b8f39cc73b770f64b (engine 3c899f56a7f2cd5f), pushed at 05:20 UTC on 28 November as a fast forward from 361814f3. It is one commit, "Winter's frost: the end of the foot's image is spread once the foot is up or the frost leaves (item 275)", over `origin/main` 1a758bc0 (engine dc59c0d7c2daa6ab, chain 42). Two files: `src/seasons/winter/frost.ts` (17 lines in, 3 out, the image zone of the foot in the sheet; that line is this unit's "for this mend alone" by DECISION 245) and `tests/shake-change.test.ts` (one test, 89 lines).
+
+`origin/main` has moved on since (c72ca3a7 with chain 43, 4580676e with chain 44, 54416c96 at 05:45 UTC). By DECISION 262, point 3, none of it is merged into the branch, and by DECISION 273 (05:30 UTC) it stays so: "The mend is the way. It is taken for chain 45 on one condition, the 3840 proof. I merge; you merge nothing, and decision 262 stands for your branch."
+
+### What is not done and not seen, worst first
+
+- **The 3840 proof is being drawn and is not judged yet.** By DECISION 273 two helpers draw film 619, 620, 621 (the foot up, the frost lying) and 666, 667, 668, 669 (the leaving) at 3840 by 2160 at the masters' tier. Before: `origin/main` 4580676e, to `agent/p6-looks-275-before` under `looks/275/before/`. After: `agent/p6-proof-275` at 7e94aaf2187c38ed9f113553de76c30593c55e0d (a merge of that main and the commit, made by `/root` for the proof alone), to `agent/p6-looks-275-after` under `looks/275/after/`. Each file is `film-<N>-uhd-final.png` with its `.json`. This unit's part: read each record's errors, run the judge at 3840 (6 levels and 40 px, 3 levels and 28 px, within 8 rows of the table's line), say whether anything at the frost's end changes from one frame to the next with nothing between, make pairs of the place at full size, look at each, and report by 06:35 UTC with one plain line at the head: below the bar at 3840 or not, and why. At the time of writing neither looks branch stands and nothing of it is seen.
+- **Nothing was played.** Every picture judged by this unit before the 3840 proof is a single frame at 1920 by 1080, or at 390 by 844 for the phone. The mend adds no geometry and moves none, but it changes how thin frost is read while the foot is up and while the frost leaves.
+- **The after has short level runs of its own where the edge was.** None is on the old line and none is longer than 46 px at hd. Film 667 has two at the judge's 6 levels and 20 px (rows 957/958, x 1279 to 1299, 21 px, 16.1 levels; rows 959/960, x 1277 to 1298, 22 px, 10.7 levels). A trial with the foot's image zone switched off altogether (plain frost, never committed) has runs at the same places (16.9 and 7.2 levels), so they are the frost's grain drawn out by the shutter; but two are stronger after than in plain frost (10.7 against 7.2, and 7.6 against 5.4 for a third at 3 levels and 14 px). The app (one sample a frame) has one bright sliver one row high and 14 px long two rows below the old line at frame 119 (48.4 levels): a finger of the frayed end, looked at at eight times. At 3840 a run of 20 px is 40 px long: look there first. Picture 102 and the report's A 5 and E 5.
+- **By the order's own rule the 3 mm beside each end of the foot keep their hard end while the frost lies** ("a place that is seen while the foot stands is drawn as before"). Film 604, on the line: 5.9 levels before and 5.7 after at the left strip (x 592 to 609), 2.0 and 2.0 at the right. Nothing of it can be seen at four times (picture 94).
+- **Accepted by `/root` as named (DECISION 273, point 6):** "the short level runs as frost grain at 1920 wide, with the proof looking at them first at 3840; the hard end in the 3 mm beside each end of the foot while the frost lies, left by the order's own rule; no tablet and no landing in winter on a phone." The two bullets above and the phone's bullet below are those.
+- **No fresh reviewer.** The Project's standard asks for one before a hand over; this unit may not start agents. The pass was the builder's own.
+- **Phone only at quality low**, frames 116 to 126 of the leaving (a jump to summer, a shake to spring). No tablet. The landing in winter was not drawn on a phone.
+- **Of the measures M4 and M5 alone**, at draft, on both heads (05:08 to 05:13 UTC). All eight lines pass and are the same on main 1a758bc0 and on the commit down to the count of pixels: M4 of shakes 1 to 4 0.9694, 0.889, 0.9572, 0.961 (threshold 0.85); M5 0.9932, 1, 0.99, 0.9998 (threshold 0.6). The other 16 of the unit's 24 lines (M1, M2, M3, M6) were not run. Five judged pictures change with the mend: `loop-strokes` (card loop 120), `film-shake-1-swap` and `change-shake-1-swap` (film 666), `film-shake-4-landing` (film 2880, 9 pixels by 0.7 levels) and `change-shake-4-landing` (8 pixels by 0.7 levels). They were drawn at hd final on both heads and looked at (pictures 100 and 101).
+- **The sweeps that say where the mend acts at all stand on an earlier head** (d43905cd, hd draft, two samples a frame), not on the pushed one: film 580 to 668 and 2876 to 2902, the card loop 52 to 136 and 188 to 212, the app's landing in winter 168 to 197.
+- **On a newer main the commit was drawn by this unit in one local trial alone** (with chain 43, see "A trial merge with chain 43" below). Chain 44 and what came after it were not drawn here; the proof branch with chain 44 is `/root`'s.
+- **The fringe at film frame 680 is not mended.** `/root` asked for the lines from the code alone; they are below, under "The second thing". The order of 00:54 UTC on 28 November stands: do NOT edit `stageChange` or `stageGone` until `/root` says where their work stands.
+- **Round two is closed.** There is no round three without Brandon's word; item 275's mend was the one exception, ordered by DECISION 245.
+
+### The mend, as built
+
+The fault: with the foot lifted (the shakes, the card loop) or the frost on its way, a straight level edge lay along the table where the foot's axis stood: thin frost whole behind it, cleared in front. The cause, proven by one edit and taken by `/root`: the image zone of the foot in winter's sheet (it clears the thin film of rime in front of the foot so that the foot's image in the table is not buried) ended on the axis with `step(0.0, xz.y)`. While the foot stands, that end is under the foot.
+
+Now one number, `imageFront`, ends the zone (`src/seasons/winter/frost.ts`, in `SHEET`):
+
+- At rest (the foot down and upright, no leaving) it is the same `step(0.0, xz.y)`, the same arithmetic in the same order. The eight guards are the same files.
+- With the foot lifted or leaning (`uFoot.w > 0.0 || dot(uLean.zw, uLean.zw) > 0.0`, the test by which `slabShade` in `src/scene/surface.ts` knows the foot is off the table) or the frost on its way (`uGone.x > 0.0`) it is `smoothstep(-imageSpread, imageSpread, xz.y)` with `imageSpread = max(imageHalf, min(uGone.x, 6.0))`.
+- `imageHalf = sqrt(max(uFoot.z * uFoot.z - xz.x * xz.x, 0.0))` is half the foot's chord at that place: the depth the foot hid there, either way from the axis. It is 58 mm in the middle of the foot and 0 at its ends and beside it, so a place that is seen while the foot stands is drawn as before.
+- `min(uGone.x, 6.0)` (`IMAGE_LEAVE_MM = 6`) is for the leaving alone: the frost drawn at a place is the frost that lay `uGone.x` mm nearer the axis, so the strip beside the foot would carry its step out over the table. The end is spread over the way the frost has gone, up to 6 mm either way; nothing at the leaving's first instant, so there is no step in time.
+
+The test (`tests/shake-change.test.ts`, "ends the foot's image in winter's frost on the line it had while the foot stands and the frost lies ...") holds the lines of the sheet and the same rule in numbers at 13 places across the foot and 160 along the view. Without the mend it fails (1 failed of 32 in that file).
+
+### The floors of DECISION 245, on real heads
+
+Before: clean `origin/main` 1a758bc0, drawn 03:30:54 to 04:12:02 UTC. After: the commit bfbf6ac6 with a clean tree, drawn 04:20:32 to 05:02:00 UTC. One render at a time; every draw ended with exit 0. "A level run" is so many columns side by side in which the step of luma from one row to the next is over so many levels, the same way all along; the judge is at 6 levels and 20 px within 4 rows of the table's line (film rows 955/956, app rows 809/810) unless said otherwise.
+
+- **The eight guards** (draft, hd, hero) equal `/root`'s list of 02:19 UTC (chain 42) on both heads: winter-rest 0cab5cd137ba09d9, winter-landed a7ab4af383606ed0, spring-rest e4fc69143cfbec0c, spring-landed 957c3e4d84f44258, summer-rest f3f5192c31aec551, summer-landed fa8eb988dc74c972, fall-rest acacfc9d63a8103c, fall-landed e5f5ad025f58dfcd.
+- **`npx tsc --noEmit`** exit 0, nothing printed. **The whole vitest**: 72 files passed and 1 skipped; 1062 tests passed and 8 skipped (chain 42's 1061 and the one new test).
+- **The app's jump (winter to summer) at hd high, frames 114 to 126.** Before: a level edge on rows 809/810 in every frame 116 to 124 (22 to 55 px long, 19.4 to 69.2 levels). After: none in any frame. 114, 115 and 125 differ without one; 126 is the same file. The app's shake to spring reads the same. Pictures 95, 96 and 98.
+- **Film at hd final.** 620: before 34 px by 64.2 levels on rows 955/956, after none. 667: before 38 px by 17.1 on rows 954/955, after the two runs of its own named above. 668: before 56 px by 16.5 on rows 955/956, after none. 669 and 670: a level edge before, none after. 604 and 671: none either side. Pictures 93, 94 and 97.
+- **The phone (390 by 844, low).** The edge stands on rows 523/524. At frame 123, read over x 6 to 46: 19.2 levels before and 4.1 after in the jump, 16.4 and 3.6 in the shake. Picture 99.
+- **The judged stills and the landing, hd final.** Card loop 120: 8,480 px differ, largest 30.7. Card loop 132: before 29 px by 49.5 levels, after none. Film 666: before 32 px by 45.2, after none. Film 2878 (the foot 0.9 mm up, coming down): 1,415 px differ, largest 25.0, no level run either side. Film 2880: 9 px by 0.7. Pictures 100 and 101.
+- **A second run on earlier heads** (before d00b78b0 and d43905cd, after d43905cd with the mend in the tree) read the same on the table; of its 126 files 64 are the same bytes as this run's, the other 62 have spring behind the glass, which main's merge 1583a486 changed between the runs.
+
+### A trial merge with chain 43, local and never pushed
+
+`origin/main` c72ca3a7 (chain 43 in it: the shutter's mend for flown pieces, `src/core/materials.ts`, spring's and fall's `slab.ts`, `tests/gust-streak.test.ts`) merged over bfbf6ac6 on a detached head, with no conflict: df20d3fc, a local commit that is on no remote. Built (engine 81bab8e618fd1d59) and drawn from 05:27 to 05:44 UTC on 28 November:
+
+- the eight guards equal chain 42's list;
+- film 667 and 668 at hd final are the same bytes as on the commit alone (sha256 0fd06488eb8406fb and 2e91c2b0abbad1b1), so chain 43 does not reach the frames of this mend. By the code it cannot: in the first shake spring's slab shows the second mesh for the incoming scatter alone (film 678 to 683), and winter has no part in the gust;
+- `npx tsc --noEmit` exit 0, nothing printed; the whole vitest 72 files passed and 1 skipped, 1065 tests passed and 8 skipped;
+- film 680 differs: see the second thing below.
+
+The checkout was put back on `agent/p6-change` at bfbf6ac6 with a clean tree and its own build (engine 3c899f56a7f2cd5f) at 05:45 UTC.
+
+### The second thing: the fringe at film frame 680, the lines from the code
+
+`/root` asked (00:51 and 00:54 UTC on 28 November): is the arriving of the petals on the table drawn by a threshold against a tile whose place is the same in every sample? A line from the code was asked for, and no edit to `stageChange` or `stageGone`. Nothing is edited.
+
+Two thresholds act on an arriving petal in a film frame. Line numbers are those of `origin/main` c72ca3a7; the three files are the same text on 54416c96.
+
+1. **The front** (`stageGone`: is this place filled yet): no tile with a fixed place. `src/core/materials.ts` 597 `if (uPass.w < 0.5) return stageGoneStill(c);`, 599 `float h = stageHash(vec3(gl_FragCoord.xy, uSeed));`, and `src/scene/stage.ts` 552 `u.uSeed.value = moment.seed + (sample ? sample.index * 7.31 : 0)`. The still tile is read by `stageGoneStill` alone, where `uPass.w` is 0: the app, one sample a frame.
+2. **The petal in the air** (`stageGustElse`): yes, the tile's place is the same in every sample. `src/core/materials.ts` 376, the part a pixel keeps: `floor(fract(stageStill(ivec2(gl_FragCoord.xy) + ivec2(53, 17)) + uGustSlot.z) * float(STAGE_STREAK))`, and a fragment of any other part is discarded. In a film frame of 8 samples or more whose shutter is open while a piece of the incoming scatter is in the air (film 678 to 683 in the first shake, reckoned from the code's own numbers; 680 at hd final has 24 samples) spring's petals are drawn by the second mesh (`gustTwin`): 8 parts of each sample's share of the shutter, and a pixel keeps one. What goes by the sample is the level alone, turned on by 0.618 of a whole (`uGustSlot.z`, set in line 365).
+
+This corrects round two's reading further down, which named the front alone.
+
+**Seen so far**, film 680 at hd final on two heads that differ in the second mesh alone, the commit (chain 42's main under it) and the local trial merge with chain 43: they differ in 52,315 pixels (2.52 in 100) by up to 81 levels. Where they differ, a pixel stands out from the median of its 3 x 3 by 2.23 levels rms before chain 43 and by 3.24 with it; 204 pixels stand out by more than 12 levels before and 646 with it. Looked at as it is, at three times and whole at 400 px wide: before chain 43 the grain lies behind a petal, along its flight; with chain 43 it lies round the whole outline of every petal that is out of focus. At 400 px wide the two cannot be told apart.
+
+**Not proven yet** which of the two thresholds makes the grain that was there before chain 43, and not known whether "the place of the tile goes by the sample" would better it: a pixel keeps one part a sample either way, so at hd final it holds a petal at 24 of the frame's 192 moments. Trials on `origin/main` 54416c96 are being drawn at the time of writing (the second mesh never shown; the petals' front with no hash; the tile's place by the sample; the level not turned), each one edit in the tree, never committed. Their result goes to `/root` and into this file with a later push. The lines of the second threshold lie below `OUTSIDE_RAMP` in `materials.ts` and were last changed by the shutter's builder: they are not this unit's unless `/root` says so.
+
+### The pictures of this part
+
+93 to 102, in `captions.txt`. The before is on the left and the after on the right in each (102: before, after, the zone off). Labels stand in the margins; a tick in both margins marks the row of the table's line under the foot's axis (film 956, app 810, phone 524; in picture 100 the card loop's two cuts carry it at the row of the before's level edge in that cut, 921 and 926, because the line's row was not worked out for the loop's camera). All ten were looked at at full size; the wholes at 400 px wide are 97, 98 and 101, and at that size no before can be told from its after.
+
+### For the next builder
+
+- The scratch tools of this part are not in the repo (they lay in `/tmp/r2/m245/` of the builder's machine): a judge of level runs (`judge2.py`, `rowruns.py`), the chains that draw the floors (`chain.sh`, `chain2.sh`, `chain3.sh`) and `out/work/loopstate.mjs`, which prints the state of film or card loop frames from the page with no drawing (`window.showcase.film()`, `window.showcase.dev.loopState(i)`).
+- Where the mend acts, from the page's state on the commit's build: in the film's first shake the foot is off the table from 580 to 676 (3.3 to 7.25 mm up, tilted by up to 5.3 degrees); in the landing into winter it comes down from 5.8 mm at 2868 to the table at 2880, bounces to 2.4 mm at 2890 and stands from 2904; in the card loop it is up from 52 to 188, on the table at 192, bounces to 2.3 mm at 200 and stands from 216. Where the foot is up and the table is bare (film 2868 to 2874, loop 144 to 184) the files are the same bytes.
+- The local remote of this checkout fetches `main` alone (`+refs/heads/main:refs/remotes/origin/main`), so `origin/agent/p6-change` in a local list is stale; read the remote's heads with `git ls-remote`.
+
+## Round two of the eighth job as pushed at 361814f3: Winter's heap of snow leaves its own light and then the table; the petals' fringe at 680 is NOT mended and its line is not pushed
 
 Written 2026-11-27 at 22:35 UTC by the clock. The section "Run again on the pushed head 361814f3 after the report" and the lines that point to it were added at 22:43 UTC, its last line at 22:49 UTC. This part is newer than everything below it. Where the two differ, this part holds.
 

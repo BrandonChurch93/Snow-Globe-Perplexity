@@ -1,0 +1,369 @@
+REPORT: item 275, the level edge in winter's frost under the foot (DECISION 245, with DECISION 262)
+From change_finisher to /root. Stamped 05:19 UTC on 28 November by the clock.
+
+In short. The mend is one commit, bfbf6ac6, on agent/p6-change over origin main 1a758bc0. Every floor you named is
+drawn before on clean main and after on the commit with a clean tree. The eight guards equal your list, tsc is clean,
+the whole vitest is 1062 passed and 8 skipped, M4 and M5 read the same on both heads. The level edge on the table's
+line, which my judge finds in every before of the app's frames 116 to 124 and of film 620, 667 and 668, is in no after
+by the same judge. What stands against it comes first, in A: nothing at 3840 and nothing played by me, and short level
+runs of the frost's grain in the after, two of them stronger than plain frost has them. Origin main has moved to
+c72ca3a7 (chain 43 is in it); by decision 262 I push over 1a758bc0 and do not merge it (A 9).
+
+Parts. A: not done, not seen, below the bar. B: the commit, and decision 262's line. C: the mend. D: the floors on
+real heads, and the second run. E: beyond the floors. F: the pictures.
+
+A. NOT DONE, NOT SEEN, BELOW THE BAR
+
+In one line: of what I have seen (single frames at hd and on the phone, each place at four times and whole at 400 px
+wide) I hold nothing below the bar: the level edge is gone and what is left reads as frost. Not seen: the same at 3840
+and played (1 and 2). The short runs of 5 are what I would look at there first; what the order left as it was is in 6.
+
+1. Nothing at 3840 by me, so decision 211's motion proof is not made by me. Every picture I judged is 1920 by 1080, or
+   390 by 844 for the phone. The mend adds no geometry and moves none, but it changes how thin frost is read while the
+   foot is up and while it leaves, so I name it. Film 620 and 668 at 3840 are yours to order.
+2. Nothing played. I compared single frames. Between the frames the order names I have sweeps at the draft tier only (two
+   samples a frame), and those stand on the earlier head d43905cd, not on the pushed one (E 6).
+3. Phone: only at low, frames 116 to 126 of the leaving (a jump to summer and a shake to spring). The tablet is not
+   drawn. The landing in winter is not drawn on a phone.
+4. The fresh reviewer that the Project's standard asks for before a hand over is not done: I may not start agents. The
+   pass is my own, and F says what I looked at and at which sizes.
+5. The after has short level runs the before has not, in the place where the level edge was. I read them as the frost's
+   own grain, and a trial backs that for film 667 and 668; none is on the old line, none is longer than 46 px.
+   - Film 667, at my judge's 6 levels and 20 px: rows 959/960, x 1277 to 1298, 22 px, 10.7 levels darker below; rows
+     957/958, x 1279 to 1299, 21 px, 16.1 levels brighter below. At 3 levels and 14 px a third: rows 958/959, x 1295 to
+     1313, 19 px, 7.6 levels.
+   - Film 668, at 6 and 20: none. At 3 and 14: rows 957/958, x 1326 to 1371, 46 px, 7.1 levels brighter below; rows
+     956/957, x 1330 to 1369, 40 px, 6.4 levels darker below.
+   - The trial (E 5): the same two frames drawn with the foot's image zone switched off altogether, so plain frost with no
+     end anywhere. At those five places plain frost steps by 7.2, 16.9, 5.4, 7.6 and 6.7 levels the same way. So the runs
+     are there with no zone at all: frost grain, flattened by the low view and drawn out sideways by the shutter. Two of
+     them are stronger in the after than in plain frost: 10.7 against 7.2 and 7.6 against 5.4. That surplus is the spread
+     end's own fall, 2 to 3 levels a row there.
+   - Film 620 (the foot up, the frost lying), at 6 and 20: none. At 3 and 14: rows 958/959, x 1258 to 1276, 19 px, 31.3
+     levels brighter below, three rows below the old line and one pixel short of my judge's 20, so I name it. The before
+     steps the same way there by 14.2 in 19 of 19 columns: a grain both have, brighter after because about half of the
+     thin film now stays at that place. In the box x 1200 to 1340, rows 945 to 966 the before has 12 runs at 3 and 14,
+     the after 19 (14 to 22 px, up to 43.9 levels): in front of the old line the before was cleared flat, the after
+     shows the frost's grain there.
+   - The app's jump and shake (one sample a frame, so the grain is crisp): at 6 and 20 none in any frame. At 3 and 14,
+     one to three runs a frame in frames 114 to 122 (the jump has none at 117), all on rows 810 to 814, one to four rows
+     below the old line: at the left end of the foot in 114 to 116 (x 648 to 688, 14 to 18 px, 7.5 to 19.2 levels) and
+     under where the edge stood in 117 to 122 (14 or 15 px, 27.9 to 48.4 levels). The strongest is in frame 119, rows
+     811/812 and 812/813, x 1224 to 1239: one bright sliver of frost one row high and 14 px long, two rows below the old
+     line. I looked at it at eight times: a finger of the frayed end among others. I have no trial without the zone for
+     the app. What I have: in a box around the foot (x 560 to 1400, rows 780 to 840) the frost has 133 to 206 such runs a
+     frame before and 135 to 208 after.
+   - Film 666 and the card loop's frame 132 (E 4), at 6 and 20 within 4 rows of the line: none. At 3 and 14: film 666
+     has rows 958/959, x 1260 to 1276, 17 px, 23.2 levels and rows 959/960, x 1268 to 1282, 15 px, 21.3 (the bright grain
+     of 620, one row high); loop 132 has rows 928/929, x 1237 to 1254, 18 px, 32.9 and rows 924/925, x 1260 to 1273, 14
+     px, 13.4. Loop 132 read at 6 and 20 over 55 rows either side has two the before has not: rows 935/936, x 1215 to
+     1236, 22 px, 13.3, ten rows below the line, and rows 981/982, x 942 to 961, 20 px, 14.1.
+   - Not seen at 3840, where a run of 20 px is 40 px long.
+6. Left as it was, by the order's own rule ("a place that is seen while the foot stands is drawn as before"): the strip
+   of 3 mm beside each end of the foot keeps its hard end while the frost lies, and the spread narrows to nothing toward
+   each end of the foot. Measured on the line (rows 955/956) in the two frames with the foot up and the frost lying:
+   film 604, left strip (x 592 to 609): 5.9 levels before, 5.7 after, the same way in 13 of 18 columns; right strip (x
+   1311 to 1328): 2.0 before and after, 9 of 18 columns. Film 620: 0.1 (left, the table is black there) and 2.0 (right),
+   before and after alike. And just inside the left end in film 604 the after has one short run the before has not:
+   rows 957/958, x 607 to 622, 16 px, 7.9 levels (at 3 and 14; at 6 and 20 none).
+7. The mend changes more than the line. With the foot up or the frost on its way, all the frost that lay under the foot
+   is read anew: where the before cleared the thin film in front of the axis and left it whole behind, the after goes from
+   whole at the foot's back to cleared at its front. So the pictures differ over the whole place under the foot, not along
+   one row: D and E give where and by how much, frame by frame.
+8. Of the measures I ran M4 and M5 alone, at draft, on both heads: on the commit 05:08:43 to 05:09:51 UTC (engine
+   3c899f56a7f2cd5f), on main 1a758bc0 05:11:31 to 05:12:38 UTC (engine dc59c0d7c2daa6ab; I built main for it and then
+   the branch again: head bfbf6ac6, tree clean, engine 3c899f56a7f2cd5f as before). All eight lines pass, and each is
+   the same on the two heads down to its count of pixels: M4 of shakes 1 to 4 0.9694, 0.889, 0.9572, 0.961 (threshold
+   0.85); M5 0.9932, 1, 0.99, 0.9998 (threshold 0.6). Round two's head 361814f3 read 0.956 and 0.9599 for M4 of shakes 3
+   and 4 and 0.9882 and 0.9996 for M5 of them: that difference came with main's merges since, not with the mend. The
+   other 16 of the unit's 24 lines (M1, M2, M3 and M6) I did not run. Five judged pictures are changed by the mend:
+   loop-strokes (loop 120), film-shake-1-swap and change-shake-1-swap (film 666), film-shake-4-landing (film 2880, 9
+   pixels by 0.7 levels) and change-shake-4-landing (8 pixels by 0.7 levels). I drew them at hd final before and after
+   on the real heads and looked at them (E 4); what M1, M2, M3 and M6 read from them I do not have.
+9. Chain 43 is not in the pushed branch, and origin main has moved. My fetch at 05:14 UTC showed origin main at
+   c72ca3a7: chain 43's merge 61cf212c and ten commits of log and status over it. Against 1a758bc0 it changes, in
+   source, the four files of decision 262 and no other (kit/ and out/stills/status besides). By decision 262, point 3,
+   I push the one commit over 1a758bc0 and do not merge the newer main. So the standing rule "merge origin main before
+   every push" is not kept for this push, on your word. Every proof here stands on 1a758bc0 and on the commit over it;
+   none stands on a tree with chain 43's shutter mend in it.
+10. For your 3840 pair: the before of 668 to 671 at 3840 that you named at 00:51 UTC is older than spring's new glass
+   (merge 1583a486, 01:58 UTC), unless you drew it again. With that merge my hd befores of 666 to 671 changed over about
+   240,000 px by up to 86 levels, all of it the glass and its glow; on the table (rows 900 and below) at most 5 px by 0.7
+   levels. So against an after on the merged head the old before will differ all over the glass, and the table is the
+   part to compare.
+11. Slips.
+   (a) My reckoning at 00:49 that the mend acts in film frames 577 to 671 was too narrow: it also acts in the card loop
+   (frames 48 to 140 and 188 to 212), in the film's landing into winter (2876 to 2902) and in the app's landing in winter
+   (frames 168 to 197). Those ranges are from draft sweeps on d43905cd (E 6).
+   (b) I edited a chain script while it ran (the draft sweep of the after, at about 02:50); bash read on from the changed
+   file and the script's last line was lost to a syntax error. All five draws of that sweep had ended with exit 0 by
+   then; I wrote the log's last line by hand and the log says so. No script was edited while it ran since.
+   (c) My notes carry the words "the two slips of 00:49" and no more. I can no longer say what the two were and I will
+   not guess. What the logs do say about that hour: the trial that proved the cause ran on a local branch at 361814f3
+   with frost.ts edited, a file that was not mine then (it was never committed or pushed), and its guards (00:47) were
+   drawn without origin main 588258f3 merged.
+   (d) I named 05:20 for this report, then about 05:35 (my note of 03:48). It goes out at 05:19 UTC.
+
+B. THE COMMIT
+
+Branch agent/p6-change, head bfbf6ac685add6542f41559b8f39cc73b770f64b. One commit, its one parent origin main
+1a758bc0f43062c34540850cc2428adc5e9b00f2, so the push is a fast forward from 361814f3, which main holds. Author and
+committer Brandon Church, the trailer once. Two files: src/seasons/winter/frost.ts and tests/shake-change.test.ts.
+Built with a clean tree: engine 3c899f56a7f2cd5f. Main 1a758bc0 as I built it: dc59c0d7c2daa6ab, your chain 42's.
+It is not pushed as I write this: the report goes first, as you ordered. The push follows at once (a fetch in a step
+of its own, then the push), and my note of the push names the head the remote shows.
+
+Decision 262, point 3, the one line: the commit touches none of src/core/materials.ts, src/seasons/spring/slab.ts,
+src/seasons/fall/slab.ts and tests/gust-streak.test.ts, and no flown petal is in the picture at film 667 or 668, in the
+before or in the after (my own four frames at hd final, each looked at whole at full size in four quarters): outside the
+glass the table carries winter's frost and its lumps of snow and nothing else, nothing is in the air, and inside the glass
+the storm is a blur in which I can tell no single piece.
+From the code, read on origin main c72ca3a7: chain 43's new shader function stageGustSeen is called in spring's and
+fall's slab alone, under STAGE_STREAK (the second mesh of the flown pieces); nothing in src/seasons/winter reads it.
+
+The order of 00:54 stands kept: stageChange and stageGone are not edited. The second thing (the fringe at 680, one line
+from the code) comes in a note of its own after this.
+
+C. THE MEND
+
+One commit, two files: src/seasons/winter/frost.ts (17 lines in, 3 out, all in the sheet's image zone and the note above
+its constants) and tests/shake-change.test.ts (one test, 89 lines). No other file, no uniform, no geometry, no texture.
+The frost part is, byte for byte, the mend I held at 00:47 UTC and you took as the way (my scratch edge-plan-B.patch).
+
+What was there. In front of the foot the sheet clears the thin film of rime so that the foot's image in the table is not
+buried (the lumps stay). That zone ended on the foot's axis with step(0.0, xz.y): cleared in front of the axis, whole
+behind it. While the foot stands and the frost lies, that end is under the foot everywhere but in the 3 mm beside each end
+of the foot. With the foot lifted the table under it is seen, and in the leaving the frost that lay under the foot comes
+out from under it: the end was a level edge along the table (item 275).
+
+What is there now. One number, imageFront, ends the zone.
+- At rest (the foot down and upright, no leaving) it is the same step(0.0, xz.y), the same arithmetic in the same order.
+- With the foot lifted or leaning (uFoot.w > 0.0 || dot(uLean.zw, uLean.zw) > 0.0, the very test by which the table's
+  shade knows the foot is off the table, slabShade in src/scene/surface.ts) or the frost on its way (uGone.x > 0.0) it is
+  smoothstep(-imageSpread, imageSpread, xz.y), with imageSpread = max(imageHalf, min(uGone.x, 6.0)).
+- imageHalf is half the foot's chord at that place across the foot: the depth the foot hid there, either way from the
+  axis. It is 58 mm in the middle of the foot, 0 at its two ends and beside it. So the end rises from the foot's back to
+  its front, half way at the axis, and beside the foot, where the table is seen while the foot stands, the spread is 0
+  and the step is drawn as before.
+- min(uGone.x, 6.0) (IMAGE_LEAVE_MM = 6) is for the leaving alone: uGone.x is how far out the frost is, in mm, and the
+  frost drawn at a place is the frost that lay that much nearer the axis, so the zone and its end travel out with it. The
+  strip beside the foot would carry its step out over the table. So in the leaving the end is spread over the way the
+  frost has gone, up to 6 mm either way: nothing at the leaving's first instant (no step in time), 6 mm from the moment
+  the frost is 6 mm out. By change.ts and the config (60 frames a second, a shutter of half a frame) the frost leaves from
+  film frame 666.72 to 672.72 and is out by 170 mm times the square of the share of that span: 0.4 to 2.9 mm while the
+  shutter of 667 is open, 7.7 to 15.0 mm in 668, 24.6 to 36.5 mm in 669.
+
+What it costs. At rest one comparison of three numbers that are 0. With the foot up or the frost leaving, one smoothstep,
+a max and a min.
+
+The test (tests/shake-change.test.ts, "ends the foot's image in winter's frost on the line it had while the foot stands
+and the frost lies ..."): it holds the lines of the sheet (one step(0.0, xz.y) left, the branch, the spread, the zone's
+product), that the branch is slabShade's test, and the same rule in numbers at 13 places across the foot and 160 along the
+view: the step at rest; the step wherever the foot hid nothing; under the foot a rise that is monotone, symmetric about
+the axis and goes from one place to the next by no more than the spread allows; the leaving's first instant moves
+nothing; the spread never narrows as the frost goes and ends at max(half chord, 6). Without the mend the test fails (run
+at 03:13 UTC on the tree without it: 1 failed of 32 in that file).
+
+D. THE FLOORS, ON REAL HEADS
+
+Before: origin main 1a758bc0, clean tree, engine dc59c0d7c2daa6ab, drawn 03:30:54 to 04:12:02 UTC.
+After: the commit bfbf6ac6 over it, clean tree, engine 3c899f56a7f2cd5f, drawn 04:20:32 to 05:02:00 UTC.
+One render at a time, nothing else drawing. Every draw ended with exit 0, no error and no value that is no number.
+My judge reads "a level run" as: so many columns side by side in which the step of luma from one row to the next is
+over so many levels, the same way all along. It sorts the runs into those the before alone has, those the after alone
+has and those both have at the same place. Unless I say otherwise: 6 levels, 20 px, within 4 rows of the table's line
+z = 0 (film rows 955/956, app rows 809/810).
+
+1. The eight guards (draft, hd, hero; first 16 of the sha256), drawn on the commit 04:20:32 to 04:23:59 UTC. All eight
+   equal your list of 02:19 UTC (chain 42), and so do the eight I drew on main 1a758bc0 (03:30:54 to 03:34:25):
+   winter-rest 0cab5cd137ba09d9, winter-landed a7ab4af383606ed0, spring-rest e4fc69143cfbec0c, spring-landed
+   957c3e4d84f44258, summer-rest f3f5192c31aec551, summer-landed fa8eb988dc74c972, fall-rest acacfc9d63a8103c,
+   fall-landed e5f5ad025f58dfcd. No guard moves.
+2. npx tsc --noEmit on the commit: exit 0, nothing printed (at 05:02:16 UTC, and again with a log 05:17:58 to 05:18:00
+   UTC; it reads 226 files of src and tests, frost.ts and the test among them).
+3. The whole vitest on the commit: 72 files passed and 1 skipped; 1062 tests passed and 8 skipped; exit 0 (05:02:17 to
+   05:07:13 UTC). That is your list of 02:19 UTC (1061 passed, 8 skipped; 72 files, 1 skipped) and the one new test.
+4. The jump of the app (winter to summer) at hd high, frames 114 to 126, one sample a frame. The level edge of item 275
+   is the run at rows 809/810.
+     frame   before, at rows 809/810                             after   pixels that differ, largest
+     114     none                                                none    8,539    45.5
+     115     none                                                none    8,194    46.5
+     116     x 1231 to 1252, 22 px, 30.4 darker below            none    7,831    67.9
+     117     x 1229 to 1253, 25 px, 53.5 darker below            none    7,607    97.1
+     118     x 1228 to 1253, 26 px, 65.2 darker below            none    7,161   103.2
+     119     x 1228 to 1253, 26 px, 69.2 darker below            none    6,642   101.6
+     120     x 1228 to 1253, 26 px, 64.2 darker below            none    6,039    97.4
+     121     x 1256 to 1282, 27 px, 47.2 darker below            none    6,864    83.7
+     122     x 1336 to 1361, 26 px, 32.2 darker below            none   11,996    64.9
+     123     x 427 to 464, 38 px, 23.8 brighter below            none   19,543    32.4
+     124     x 231 to 285, 55 px, 19.7 brighter below, and
+             x 1660 to 1692, 33 px, 19.4 darker below            none   25,760    25.1
+     125     none                                                none   22,170     7.0
+     126     the same file 43be6f0d6adff519
+   So the floor's frames 116 to 124: a level edge in every one before, in none after. At the finer 3 levels and 14 px
+   the after has the short runs of A 5. With the same judge over 40 rows either side of the line (not 4) there are,
+   away from the line and under the foot, 6 runs of 20 to 26 px that the before alone has over the 13 frames and 4 that
+   the after alone has (frames 114, 117 and 122; 17.0 to 18.3 levels): the frost there is read anew (A 7).
+5. Film 604, 620, 667 and 668 at hd at the final tier.
+     frame   before, near rows 955/956                           after                        pixels that differ, largest
+     604     none                                                none                         12,502    37.4
+     620     rows 955/956, x 1265 to 1298, 34 px, 64.2, and
+             rows 952/953, x 1246 to 1271, 26 px, 35.2           none                         12,911   106.2
+     667     rows 954/955, x 1276 to 1313, 38 px, 17.1, and
+             rows 957/958, x 594 to 613, 20 px, 9.1              the two runs of A 5           9,046    64.9
+     668     rows 955/956, x 1323 to 1378, 56 px, 16.5, and
+             rows 954/955, x 1326 to 1372, 47 px, 11.0           none                         16,296    26.3
+   The before's line read at the same columns in the after: 620 rows 955/956, 64.2 levels before, 2.5 after (the same way
+   in 22 of 34 columns); 667 rows 954/955, 17.1 before, 9.1 after (plain frost in the trial: 7.6); 668 rows 955/956,
+   16.5 before, 1.8 after (plain frost: 0.8).
+   604 at 3 levels and 14 px: the before alone has rows 955/956 at x 1270 to 1290 (21 px, 8.6), x 619 to 637 (19 px,
+   16.6) and x 649 to 663 (15 px, 4.3); the after alone has the one run of A 6.
+   The place at four times: pictures 93 (667 and 668) and 94 (604 and 620). The whole frames at 400 px: picture 97.
+
+The second run (kept as you asked; earlier heads, not the pushed one). Before: origin main d00b78b0, clean tree, engine
+8192a3756180aae6 (the floors, 01:05 to 01:32 UTC) and d43905cd, clean tree, the same engine (the finals, 02:57). After:
+d43905cd with the mend in the tree, not committed, engine bce54fd3952d3dbc (01:40 to 02:06 and 03:13). Guards of that run
+were equal to chain 41's list; the whole vitest with the mend and the test was 1056 passed, 8 skipped.
+- App jump, hd high: before, a level step at rows 809/810 in every frame 116 to 124 (22 to 55 px long, 19.4 to 69.2
+  levels); after, none in any frame. 114, 115 and 125 differ without a step, 126 is the same file.
+- Film, hd final, at 6 levels and 20 px: 620 before 34 px by 64.2 and 26 px by 35.2, after none. 667 before 38 px by 17.1
+  and 20 px by 9.1, after two runs the before has not (22 px by 10.7, 21 px by 16.1). 668 before 56 px by 16.5 and 47 px
+  by 11.0, after none. 669 before 25 px by 8.0 and 22 px by 16.2, after none. 670 before 44 px by 7.6, after none. 604
+  and 671 none either side.
+- Phone, low: 116 to 125 differ, 126 is the same file.
+- Which files of the two runs are the same bytes: of the 126 files both runs have, 64 are the same bytes in the two
+  runs and 62 are not. The same, before against before and after against after: film 604 and 620, the app's jump at hd
+  high (13 frames), the phone's jump (11), loop 120, 132 and 200, film 2878 and 2880, and the landing moment. Not the
+  same: film 666 to 671 and the swap moment, the app's shake at hd high (13 frames) and the phone's shake (11). Those
+  are the pictures with spring behind the glass, which main's merge 1583a486 (spring's new glass, 01:58 UTC) changed
+  between the runs (A 10). On the table the two runs read alike: the level runs above are those of D and E.
+
+E. BEYOND THE FLOORS (the same two heads, the same judge)
+
+1. Film 669, 670 and 671 at hd final, the rest of the leaving.
+     669   before: rows 955/956, x 1476 to 1500, 25 px, 8.0, and rows 956/957, x 1449 to 1470, 22 px, 16.2. After: none.
+           37,181 px differ, largest 9.9. At 3 and 14: four runs before (up to 49 px, 7.0 levels), one after (rows 953/954,
+           x 1450 to 1464, 15 px, 6.7).
+     670   before: rows 955/956, x 235 to 278, 44 px, 7.6. After: none. 42,395 px differ, largest 9.9. At 3 and 14: two
+           runs before (91 px by 6.2, 33 px by 4.0), none after.
+     671   none before, none after. 35,892 px differ, largest 3.1. At 3 and 14: two runs before (28 and 20 px by 4.0),
+           none after.
+   The long level runs both pictures of 669 to 671 have near those rows (up to 195 px) are the lower edge of the foot's
+   gilt rim, which stands on those rows in these frames: the foot, not the table.
+2. The app's shake (winter to spring) at hd high, frames 114 to 126: the same as the jump. Before, a level edge at rows
+   809/810 in every frame 116 to 124 (22 to 53 px, 16.7 to 69.4 levels); after, none in any frame; 114, 115 and 125
+   differ without one; 126 is the same file d7b944743636e629. At 3 and 14 the after has the same short runs as in the
+   jump (A 5), in frames 114 to 122.
+3. The phone (390 by 844, low), frames 116 to 126 of the jump and of the shake. 116 to 125 differ (791 to 2,413 px a
+   frame, largest 81.9 levels at 119), 126 is the same file in both. The level edge stands on rows 523/524 there. At its
+   longest, frame 123, read over x 6 to 46 at the left edge of the picture: the jump steps by 19.2 levels before (the
+   same way in 41 of 41 columns) and by 4.1 after; the shake by 16.4 before and 3.6 after. Two rows lower (rows 525/526)
+   the after steps by 9.6 (jump) and 8.9 (shake) over the same columns, where the before stepped by 7.5 and 7.0.
+   With the judge at the phone's size (6 levels, 10 px, within 4 rows of the line) the after alone has: one run of 10 px
+   three rows below the line, at the same place in frames 117 to 120 (rows 526/527, x 279 to 288, 24.2 to 30.2 levels
+   brighter below), a grain of frost in the fingered end as on the desk (A 5); and in frame 123 one run of 10 to 12 px by
+   7.8 to 8.9 levels at the left edge, one or two rows below the line. The before alone has runs of 10 to 20 px by 7.1
+   to 21.8 levels on the line or the row above it in frames 116, 117, 119, 120, 122 and 123.
+   Picture 99 shows the place five times (the shake, frames 119, 120, 122 and 123).
+4. The judged stills the mend changes, and the landing into winter, at hd final on the two heads. The card loop's
+   camera is not the film's: the before's level edge stands on rows 925/926 there, so the loop is read around row 926.
+     loop 120 (loop-strokes)   before 3723f2405d4689f2, after a12663d3ce8d5d0f. 8,480 px differ (x 633 to 1281, y 879 to
+                 990), largest 30.7. No level run within 4 rows of the line in either, at 6 and 20 or at 3 and 14. Over
+                 55 rows either side the before alone has two (rows 920/921, x 668 to 693, 26 px, 14.7; rows 975/976, x
+                 763 to 782, 20 px, 14.3), the after none.
+     loop 132    before bc705939f078b5ea, after b9cbdbfcbc2d4d81. 12,331 px differ, largest 106.8. Before: rows 925/926,
+                 x 1246 to 1274, 29 px, 49.5; rows 926/927, x 1244 to 1266, 23 px, 48.2; rows 923/924, x 1226 to 1249,
+                 24 px, 26.8. After: none. At 3 and 14 the after alone has rows 928/929, x 1237 to 1254, 18 px, 32.9
+                 brighter below, and rows 924/925, x 1260 to 1273, 14 px, 13.4. Over 55 rows either side, at 6 and 20,
+                 the after alone has rows 935/936, x 1215 to 1236, 22 px, 13.3 darker below (ten rows below the line)
+                 and rows 981/982, x 942 to 961, 20 px, 14.1 brighter below.
+     loop 200    before 0a9bab3e506e56a6, after 9c824cc8bc34a102. 2,433 px differ, largest 32.9. No level run in either.
+     film 666 (film-shake-1-swap and change-shake-1-swap)   before f5a2411418596196, after 083bc6fad8cd213f. 9,365 px
+                 differ (x 607 to 1307, y 911 to 1027), largest 98.0. Before: rows 955/956, x 1266 to 1297, 32 px, 45.2;
+                 rows 954/955, x 1260 to 1286, 27 px, 24.5. After: none. At 3 and 14 the after alone has rows 958/959,
+                 x 1260 to 1276, 17 px, 23.2 brighter below, and rows 959/960, x 1268 to 1282, 15 px, 21.3 darker below:
+                 the bright grain of 620 (A 5), one row high.
+     film 2878 (the foot coming down in winter)   before 0ec558704e0a450d, after 49bb9e46ad564b15. 1,415 px differ (x 737
+                 to 1323, y 939 to 1055), largest 25.0; by more than 12 levels 40 px, all at the right end of the foot
+                 (x 1303 to 1318, y 956 to 971). No level run in either, at 6 and 20 or at 3 and 14.
+     film 2880 (film-shake-4-landing and change-shake-4-landing)   before b5ca8d36de469bd2, after c7ca527e7a18ec14. 9 px
+                 differ, by 0.7 levels at most.
+     the two moments of the change as the tools draw them (hd final)   change-shake-1-swap: before f5a2411418596196,
+                 after 083bc6fad8cd213f, each the same bytes as film 666 of its head. change-shake-4-landing: before
+                 6e6b373391107a25, after e55bc2bda703f507, 8 px differ, by 0.7 levels at most.
+   Pictures 100 (loop 120, loop 132 and film 666, the place at four times) and 101 (film 2878 at four times; loop 120,
+   loop 132 and film 666 whole at 400 px). What I saw: loop 120, loop 132 and film 666 each have the level edge at the
+   tick before and a frayed, fingered end after; in 2878 I can tell the two apart only by the numbers.
+5. The trial with the zone off (04:12:11 to 04:19:27 UTC; never committed, never pushed). On clean main 1a758bc0 I put
+   0.0 where step(0.0, xz.y) stands in the image zone's line, so no thin film is cleared anywhere: plain frost, with no
+   end of any zone in it. Built (engine 26c8277699b823ec), drew film 667 and 668 at hd final, put the file back (tree
+   clean, head 1a758bc0) before the commit was made. The step in levels from one row to the next, as a mean over the
+   run's columns, before / after / zone off:
+     667 rows 959/960, x 1277 to 1298    -1.5   -10.7    -7.2     the after's own (A 5)
+     667 rows 957/958, x 1279 to 1299    +2.0   +16.1   +16.9     the after's own
+     667 rows 958/959, x 1295 to 1313    -4.8    -7.6    -5.4     the after's own, at 3 and 14
+     667 rows 960/961, x 1272 to 1296    -2.3   -19.1   -23.5
+     667 rows 973/974, x 1267 to 1290    +6.6   +11.6   +25.8
+     667 rows 954/955, x 1276 to 1313   -17.1    -9.1    -7.6     the before's line
+     668 rows 957/958, x 1326 to 1371    +0.1    +7.1    +7.6     the after's own, at 3 and 14
+     668 rows 956/957, x 1330 to 1369    -3.1    -6.4    -6.7     the after's own, at 3 and 14
+     668 rows 960/961, x 1320 to 1373    -1.2    -6.5    -6.9
+     668 rows 961/962, x 1320 to 1373    -1.3    -7.6   -11.3
+     668 rows 955/956, x 1323 to 1378   -16.5    -1.8    -0.8     the before's line
+     668 rows 954/955, x 1326 to 1372   -11.0    -5.4    -4.6     the before's line
+   Level runs in the box x 1150 to 1500, rows 930 to 975: at 3 levels and 14 px, 667 has 210 / 220 / 230 and 668 has
+   86 / 91 / 103; at 6 levels and 20 px, 667 has 63 / 65 / 71 and 668 has 25 / 23 / 29.
+   So the after lies between the before and plain frost at every place but the two of A 5, and the before's line, which
+   stood 9 to 16 levels over plain frost, stands 1 to 1.5 over it after. Picture 102 shows the three side by side.
+6. Where the mend acts at all. These are the sweeps of the second run: before d43905cd, after d43905cd with the mend in
+   the tree, two samples a frame at the draft tier, one sample a frame in the app. Not drawn again on the pushed head
+   (A 2). "The same file" means not one byte differs.
+   - Film, the first shake, every fourth frame 572 to 744 at hd draft: 572 the same file; 576 differs in 8 px by 1.0
+     level; 580 to 668 differ (5,361 to 15,864 px a frame, largest 41.5 to 110.3 levels); 672 differs in 963 px by 1.0;
+     676 to 744 the same files.
+   - Film, the landing into winter, every fourth frame 2800 to 2864 and every second 2864 to 2912 at hd draft: the same
+     files to 2874; 2876 differs in 168 px by 1.0; 2878 in 1,291 px, largest 30.2; 2880 in 3 px by 1.0; 2882 to 2902 in
+     8 to 1,285 px, largest 15.0 (frame 2892); 2904 to 2912 the same files.
+   - The card loop, every fourth frame 40 to 236 at hd draft: 40 and 44 the same files; 48 differs in 4 px by 1.0; 52 to
+     136 differ (4,200 to 12,140 px a frame, largest 47.5 to 107.9); 140 in 3 px by 0.7; 144 to 184 the same files; 188
+     to 212 differ (11 to 2,413 px, largest 47.7 at 200 and 204); 216 to 236 the same files.
+   - The app landing in winter at hd high (a jump from summer, every frame 160 to 204; a shake from fall, every second
+     frame): the same files to 167; 168 to 197 differ (largest 24.7 at 172, then 3 to 1,403 px a frame by 0.7 to 10.7);
+     198 to 204 the same files. The shake lands the same to within a pixel or two a frame.
+   The state of the same frames, read from the page on the commit's build (no drawing): in the film's first shake the
+   foot is off the table in every frame I asked from 580 to 676 (3.3 to 7.25 mm up, tilted by up to 5.3 degrees); in
+   the landing it comes down from 5.8 mm at 2868 to the table at 2880, bounces to 2.4 mm at 2890 and stands from 2904;
+   in the card loop it is up from 52 to 188 (3.4 to 7.25 mm), on the table at 192, bounces to 2.3 mm at 200 and stands
+   from 216.
+   So the mend acts where winter's frost lies on the table while the foot is off it or leaning, and in the six frames
+   of the leaving, and nowhere else in what I drew. Where the foot is up and the files are the same bytes all the same
+   (film 2868 to 2874, loop 144 to 184) the table is bare: the frost has left, or has not yet come with the landing. I
+   looked at loop 160 and film 2872 of the draft sweep for that: a bare dark table with the foot's image in it.
+
+F. THE PICTURES
+
+Ten, all JPEG, none over 1200 px on the long edge. The before is on the left and the after on the right in each (in
+102: before, after, the zone off). Labels stand in the margins, nothing is written over a picture. A tick in both
+margins marks the row of the table's line under the foot's axis (film 956, app 810, phone 524). In picture 100 the card
+loop's two cuts carry it at the row of the before's level edge in that cut (921 at frame 120, 926 at frame 132): I have
+not worked out where the line stands for the loop's camera. Places at four times and more are drawn pixel for pixel,
+each source pixel a square. Nine are attached here; the tenth (98) comes with my note of the push (ten attachments is
+the most a message takes). The same ten go to agent/p6-change-looks under the same names, with captions.txt and the
+handover.
+   93   film 667 and 668, hd final, the place at four times
+   94   film 604 (right end and left end of the foot) and 620, hd final, the place at four times
+   95   the app's jump, hd high, frames 117, 119, 120 and 121, the place at four times
+   96   the app's jump, frames 122, 123 (both ends) and 124 (both ends), the place at four times
+   97   film 604, 620, 667 and 668 whole at 400 px wide
+   98   the app's jump 117, 120, 122 and 124 whole at 400 px wide
+   99   the phone, the shake at low, frames 119, 120, 122 and 123, the place at five times
+   100  the judged stills: card loop 120 and 132 and film 666 at hd final, the place at four times
+   101  the landing into winter, film 2878 at hd final, the place at four times; loop 120, loop 132 and film 666 whole
+        at 400 px wide
+   102  film 667 and 668: before, after and the trial with the zone off, the place at four times
+What I looked at, and how. Every one of the ten at its full size. The after of film 604, 620, 667, 668 and 669 and of
+the app's jump 119 and 123 whole or by halves at full size (1 to 1), 667 and 668 in four quarters each. The wholes at 400
+px wide are pictures 97, 98 and 101: at that size I can tell no before from its after in any pair. What I saw at four
+times: in every before of the floors a straight level edge at the tick, the frost whole above it and the cleared dark
+below (604 has none to see); in every after no level edge, the frost ends in fingers that follow its own grain, and in
+the leaving (667, 668) the place is soft streaks like the frost around it.
