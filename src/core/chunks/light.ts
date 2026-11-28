@@ -131,8 +131,8 @@ vec3 stageGridAir(vec3 colour) {
 vec3 stageGrid(vec3 local) {
   vec3 a = vec3(0.0);
   vec3 b = vec3(0.0);
-  if (uGrid.x < 1.0) a = stageGridAir(texture(uGridA, stageGridAt(local, 0.0)).rgb) * stageGridGain(texture(uGridA, stageGridAt(local, 2.0)), uGridGainA);
-  if (uGrid.x > 0.0) b = stageGridAir(texture(uGridB, stageGridAt(local, 0.0)).rgb) * stageGridGain(texture(uGridB, stageGridAt(local, 2.0)), uGridGainB);
+  if (uGrid.x < 1.0) a = stageGridAir(textureLod(uGridA, stageGridAt(local, 0.0), 0.0).rgb) * stageGridGain(textureLod(uGridA, stageGridAt(local, 2.0), 0.0), uGridGainA);
+  if (uGrid.x > 0.0) b = stageGridAir(textureLod(uGridB, stageGridAt(local, 0.0), 0.0).rgb) * stageGridGain(textureLod(uGridB, stageGridAt(local, 2.0), 0.0), uGridGainB);
   return mix(a, b, uGrid.x) + stageFlood(local);
 }
 void stageGridRead(vec3 local, out vec3 colour, out vec3 air, out vec3 toward, out float open, out float shade) {
@@ -179,22 +179,22 @@ vec3 stageGridToward(vec3 local) {
 float stageGridShade(vec3 local) {
   float a = 1.0;
   float b = 1.0;
-  if (uGrid.x < 1.0) a = texture(uGridA, stageGridAt(local, 1.0)).a;
-  if (uGrid.x > 0.0) b = texture(uGridB, stageGridAt(local, 1.0)).a;
+  if (uGrid.x < 1.0) a = textureLod(uGridA, stageGridAt(local, 1.0), 0.0).a;
+  if (uGrid.x > 0.0) b = textureLod(uGridB, stageGridAt(local, 1.0), 0.0).a;
   return mix(a, b, uGrid.x);
 }
 float stageGridOpen(vec3 local) {
   float a = 1.0;
   float b = 1.0;
-  if (uGrid.x < 1.0) a = texture(uGridA, stageGridAt(local, 0.0)).a;
-  if (uGrid.x > 0.0) b = texture(uGridB, stageGridAt(local, 0.0)).a;
+  if (uGrid.x < 1.0) a = textureLod(uGridA, stageGridAt(local, 0.0), 0.0).a;
+  if (uGrid.x > 0.0) b = textureLod(uGridB, stageGridAt(local, 0.0), 0.0).a;
   return mix(uGridShade.w, 1.0, mix(a, b, uGrid.x));
 }
 vec3 stageGridWarm(vec3 local) {
   vec3 a = vec3(0.0);
   vec3 b = vec3(0.0);
-  if (uGrid.x < 1.0) a = texture(uGridA, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridA, stageGridAt(local, 2.0)), uGridGainA);
-  if (uGrid.x > 0.0) b = texture(uGridB, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridB, stageGridAt(local, 2.0)), uGridGainB);
+  if (uGrid.x < 1.0) a = textureLod(uGridA, stageGridAt(local, 0.0), 0.0).rgb * stageGridGain(textureLod(uGridA, stageGridAt(local, 2.0), 0.0), uGridGainA);
+  if (uGrid.x > 0.0) b = textureLod(uGridB, stageGridAt(local, 0.0), 0.0).rgb * stageGridGain(textureLod(uGridB, stageGridAt(local, 2.0), 0.0), uGridGainB);
   return mix(a, b, uGrid.x);
 }
 vec3 stageKeyBent(vec3 local) {
@@ -258,11 +258,13 @@ float stageKeyShade(sampler2DShadow map, vec3 c, vec3 dx, vec3 dy, float spread)
   float turn = noise * 6.283185307179586;
   vec2 wide = uRigShadowUv.xy * uRigShadowUv.z;
   vec4 hit = vec4(0.0);
+  // The map has one level, so a read with no gradient is the same read. Direct3D leaves a gradient undefined in a loop
+  // that follows an early return, and of a shadow map's reads it is given only textureGrad without one.
   for (int i = 0; i < ${SHADOW_TAPS}; i++) {
     vec2 o = stageSpiral(i, turn) * wide;
     int level = i - 4 * (i / 4);
     float back = level == 0 ? ${f1(SHADOW_STEPS_MM[0])} : level == 1 ? ${f1(SHADOW_STEPS_MM[1])} : level == 2 ? ${f1(SHADOW_STEPS_MM[2])} : ${f1(SHADOW_STEPS_MM[3])};
-    float dark = 1.0 - texture(map, vec3(c.xy + o, z + dot(tilt, o) - back * perMm));
+    float dark = 1.0 - textureGrad(map, vec3(c.xy + o, z + dot(tilt, o) - back * perMm), vec2(0.0), vec2(0.0));
     if (level == 0) hit.x += dark;
     else if (level == 1) hit.y += dark;
     else if (level == 2) hit.z += dark;
@@ -276,7 +278,7 @@ float stageKeyShade(sampler2DShadow map, vec3 c, vec3 dx, vec3 dy, float spread)
   float lit = 0.0;
   for (int i = 0; i < ${SHADOW_TAPS}; i++) {
     vec2 o = stageSpiral(i, turn + 1.9) * blur;
-    lit += texture(map, vec3(c.xy + o, z + dot(tilt, o)));
+    lit += textureGrad(map, vec3(c.xy + o, z + dot(tilt, o)), vec2(0.0), vec2(0.0));
   }
   return lit / ${f1(SHADOW_TAPS)};
 }

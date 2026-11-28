@@ -372,8 +372,8 @@ vec3 veilFibre(vec3 at, float k) {
   float pace = turns - floor(j.y * 1.999);
   float wide = fl.x / mix(${n(L.fibreTileLowMm)}, ${n(L.fibreTileHighMm)}, j.z);
   vec3 q = vec3(wide + fl.z * (floor(j.w * ${n(2 * L.fibreSpiral + 0.999)}) - ${n(L.fibreSpiral)}), 0.37 * k + j.w + ${n(L.shearDeep)} * wide, fl.z * turns - uVeilDrift.y * pace);
-  float coarse = texture(uVeilNoise, q).a;
-  float fine = texture(uVeilNoise, vec3(q.x * ${n(L.fibreFine)} + ${n(L.fibreWarp)} * coarse, q.y + 0.43 + ${n(L.shearDeep * (L.fibreFine - 1))} * wide, q.z * ${n(L.fibreFineLong)} + ${n(L.shearLong * L.fibreFine)} * wide)).a;
+  float coarse = textureLod(uVeilNoise, q, 0.0).a;
+  float fine = textureLod(uVeilNoise, vec3(q.x * ${n(L.fibreFine)} + ${n(L.fibreWarp)} * coarse, q.y + 0.43 + ${n(L.shearDeep * (L.fibreFine - 1))} * wide, q.z * ${n(L.fibreFineLong)} + ${n(L.shearLong * L.fibreFine)} * wide), 0.0).a;
   return vec3(coarse, mix(coarse, fine, mix(${n(L.fibreShareLow)}, ${n(L.fibreShareHigh)}, fract((k + 23.0) * 0.3247))), veilStrand(coarse, fine));
 }
 vec3 veilLie(vec3 at) {
