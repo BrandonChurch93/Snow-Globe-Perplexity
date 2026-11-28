@@ -14,6 +14,7 @@ The words for a push further down belong to that time.
 | `verdict.mjs` | reads what the lines did, checks that every line run is written in the handoff file, and writes the verdict |
 | `shader-warnings.mjs`, `shaders.sh` | list what the shader compiler of the machine writes about every program of the film, and what the card answers to the maths probe, for one head |
 | `still.sh` | in the job of the shader list, draws the guard still of fall at rest in the same clone through Direct3D and keeps the picture and its record in the artifact (folder `looks`), with the walk's two pictures of fall. A step of its own with its own time limit |
+| `failed-test.mjs` | after a short test that was made to fail, looks for the one folder it leaves on the Desktop for the build thread and says what it holds; after the test that passes next, makes sure the folder is gone |
 | `held-file.mjs` | on Windows, proves that the tool's rename waits for a file another program holds, where a plain rename fails |
 | `upload-test.ps1` | the upload's own test in the job `windows-upload-test`: stand-in files to a draft release, read back, the draft removed by its id |
 | `other-head.txt` | one line, a branch and a full commit: the head the job `windows-shaders` lists instead of this branch. Comments only means this branch |
@@ -33,3 +34,9 @@ of step 2.2 of the handoff file says, as the agent would: the short test again, 
 times at most in one job. The verdict lists those lines under names that end in `after-update` and
 `test-after-real-update`. The update that the tool's own test makes up (job `windows-gitbash-small`) is a line of
 its own and proves the same row on Windows.
+
+A short test that fails is made up too, by a switch that raises the floors of the comparison out of reach. Every
+small job runs such a test first (the line `test-fails`), looks into the folder it leaves on the Desktop, runs the
+test that passes and makes sure the folder is gone. The job `windows-3840-direct3d11` does it with real pictures
+at 3840 x 2160 and runs no passing test: that the same frames pass on the same renderer is proven by the job
+`windows-3840`. The 3840 jobs also keep the whole frames the machine drew in the artifact (folder `frames`).

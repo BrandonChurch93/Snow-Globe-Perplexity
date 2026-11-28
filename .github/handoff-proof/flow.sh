@@ -91,7 +91,13 @@ note "the switches of the tool's own tests from here on: $PROOF_SWITCHES"
 line doctor 0 'node tools/handoff.mjs doctor'
 
 if [ "$PROOF_MODE" = small ]; then
+  # A short test that fails comes first, its failure made up by a switch of the tool's own tests: the row of step
+  # 1.5 for a FAIL. One folder on the Desktop holds what the build thread needs, and the report names it.
+  # The test that passes next takes that folder away.
+  HANDOFF_TEST="$PROOF_SWITCHES,floors-high" line test-fails 1 'node tools/handoff.mjs test' 'TO SEND'
+  note "$(node "$HELP/failed-test.mjs" . there small)"
   line test 0 'node tools/handoff.mjs test'
+  note "$(node "$HELP/failed-test.mjs" . gone)"
   # step 2 begins with these four lines
   line pull 0 'git pull --ff-only' 'Already up to date'
   line setup-again 0 'node tools/handoff.mjs setup'
@@ -185,7 +191,15 @@ if [ "$PROOF_MODE" = small ]; then
   # after the clean the upload still finds the delivered files and the records
   line upload-after-clean 1 'node tools/handoff.mjs upload' 'the work files are cleaned already'
 else
-  line test 0 'node tools/handoff.mjs test'
+  case ",$PROOF_SWITCHES," in
+    *,floors-high,*)
+      # the row of step 1.5 for a FAIL, with real pictures at 3840 x 2160: every frame fails against floors raised
+      # out of reach, and the folder on the Desktop holds the sheet and what this machine drew
+      line test-fails 1 'node tools/handoff.mjs test' 'TO SEND'
+      note "$(node "$HELP/failed-test.mjs" . there uhd)"
+      ;;
+    *) line test 0 'node tools/handoff.mjs test' ;;
+  esac
   line render-refuses-unreleased 1 'node tools/handoff.mjs render' 'not released for its final render yet'
   node "$HELP/after.mjs" "$PROOF_OUT"
 fi

@@ -8,6 +8,7 @@ import * as S from '../tools/lib/handoff-shaders.mjs'
 import { planProblems } from '../tools/lib/handoff-stamp.mjs'
 import { crc32, zipRead, zipWrite } from '../tools/lib/handoff-zip.mjs'
 import * as WinFs from '../tools/lib/handoff-win-fs.mjs'
+import * as Work from '../tools/lib/handoff-work.mjs'
 import { rel, readJson } from '../tools/lib/paths.mjs'
 
 // The render handoff: the parts that need no browser. What is drawn is proven on real machines by
@@ -1233,6 +1234,104 @@ describe('the browser versions a render drew with', () => {
   it('falls back to the newest short test for a render whose starts kept no version, and says so when nothing is known', () => {
     expect(L.browsersUsed([{}, { browser: null }], '158.0.8127.38')).toEqual(['158.0.8127.38'])
     expect(L.browsersLine(undefined, undefined)).toBe('Google Chrome, version not recorded')
+  })
+})
+
+describe('a short test that failed: the one folder for the build thread', () => {
+  it('has a switch of the tool\'s own tests that raises the floors out of reach, and nothing else', () => {
+    const floors = { psnrWhole: 39, coarseWhole: 41, psnrCut: 40, coarseCut: 44, glassLuma: 0.01, glassWhite: 0.005 }
+    expect(L.floorsOfTest(floors, false)).toBe(floors)
+    expect(L.floorsOfTest(floors, true)).toEqual({ psnrWhole: 99, coarseWhole: 99, psnrCut: 99, coarseCut: 99, glassLuma: 0.01, glassWhite: 0.005 })
+    expect(floors.psnrWhole).toBe(39)
+    const t = L.testSwitches('software,floors-high')
+    expect(t.floorsHigh).toBe(true)
+    expect(L.testSwitches('software').floorsHigh).toBe(false)
+    // the report of such a run says that it is no run of the film
+    expect(L.anyTestSwitch(L.testSwitches('floors-high'))).toBe(true)
+    expect(() => L.testSwitches('floors-high=40')).toThrow(/no switch/)
+    expect(L.MADE_UP_FAILURE).toContain('made up')
+  })
+  it('names no switch of the tool\'s tests in the file an agent follows', () => {
+    const md = fs.readFileSync(rel('RENDER-ON-YOUR-PC.md'), 'utf8')
+    for (const word of ['HANDOFF_TEST', 'floors-high', 'browser-moved', 'fast-watch']) expect(md).not.toContain(word)
+    expect(md).toContain('Snow Globe Seasons - Test - Failed')
+    expect(md).toContain(L.failedTestName())
+  })
+  type Picked = { from: string; as: string; bytes: number; picture: boolean }
+  const since = Date.parse('2026-11-28T04:00:00Z')
+  const have = [
+    { path: 'test.json', ms: since + 9e5, bytes: 4000 },
+    { path: 'doctor.json', ms: since - 6e5, bytes: 3000 },
+    { path: 'report-doctor.txt', ms: since - 6e5, bytes: 2000 },
+    { path: 'shader-messages-test.txt', ms: since + 6e4, bytes: 9000 },
+    { path: 'test/contact-sheet.jpg', ms: since + 5e5, bytes: 800000 },
+    { path: 'compared/film-b-000120-here-half.webp', ms: since + 4e5, bytes: 1800000 },
+    { path: 'compared/film-b-000120-apart-half.png', ms: since + 4e5, bytes: 380000 },
+    { path: 'compared/deeper/x.png', ms: since + 4e5, bytes: 1 },
+    { path: 'render-state.json', ms: since + 4e5, bytes: 1 },
+  ]
+  it('takes the numbers, what the doctor found, the sheet and the pictures, flat and in order', () => {
+    const picked = L.failedTestPick(have, since) as Picked[]
+    expect(picked.map((f) => f.as)).toEqual(['contact-sheet.jpg', 'doctor.json', 'film-b-000120-apart-half.png', 'film-b-000120-here-half.webp', 'report-doctor.txt', 'shader-messages-test.txt', 'test.json'])
+    expect(picked.filter((f) => f.picture).map((f) => f.as)).toEqual(['contact-sheet.jpg', 'film-b-000120-apart-half.png', 'film-b-000120-here-half.webp'])
+    expect(picked.find((f) => f.as === 'contact-sheet.jpg')?.from).toBe('test/contact-sheet.jpg')
+  })
+  it('leaves out the pictures of an earlier test, which would pass for this one\'s', () => {
+    const old = have.map((f) => (f.path.startsWith('compared/') || f.path.startsWith('test/') || f.path.startsWith('shader') ? { ...f, ms: since - 36e5 } : f))
+    expect((L.failedTestPick(old, since) as Picked[]).map((f) => f.as)).toEqual(['doctor.json', 'report-doctor.txt', 'test.json'])
+  })
+  it('says in the report what to send, where it lies and where it is ruled on', () => {
+    expect(L.toSendLines(null)).toEqual([])
+    const lines = L.toSendLines({ folder: 'C:\\Users\\b\\Desktop\\Snow Globe Seasons - Test - Failed', files: 7, bytes: 2.9e6, pictures: 3 })
+    expect(lines[0]).toBe('TO SEND. The short test failed. Nothing is rendered and no floor is changed on this machine.')
+    expect(lines[1]).toBe('  folder   C:\\Users\\b\\Desktop\\Snow Globe Seasons - Test - Failed')
+    expect(lines[2]).toBe('  holds    this report, the numbers (test.json), the sheet of pictures and what this machine drew (3 picture files): 8 files, 2.9 MB')
+    expect(lines[3]).toBe('  Brandon brings that folder into the build thread. The floors are ruled on there.')
+    expect(L.toSendLines({ folder: 'x', files: 2, bytes: 5000, pictures: 0 })[2]).toBe('  holds    this report, the numbers (test.json), no picture, since the test drew none: 3 files, 0.0 MB')
+  })
+  it('makes the folder on the Desktop, anew each time, and a test that passed takes it away', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'failed test '))
+    try {
+      const H = path.join(tmp, 'work')
+      const desktop = path.join(tmp, 'the Desktop')
+      fs.mkdirSync(path.join(H, 'compared'), { recursive: true })
+      fs.mkdirSync(path.join(H, 'test'), { recursive: true })
+      fs.mkdirSync(desktop)
+      const time = new Date(Date.now() - 1000).toISOString()
+      for (const [n, text] of [['test.json', '{}'], ['doctor.json', '{}'], ['compared/a-here-half.webp', 'aa'], ['test/contact-sheet.jpg', 'sheet'], ['heartbeat.json', '{}']]) fs.writeFileSync(path.join(H, n), text)
+      const notes: string[] = []
+      const ctx = { H, note: (t: string) => notes.push(t) }
+      const folder = path.join(desktop, L.failedTestName())
+      fs.mkdirSync(folder)
+      fs.writeFileSync(path.join(folder, 'of an earlier test.png'), 'old')
+      const kept = Work.keepFailedTest(ctx, { time, desktop })
+      expect(kept).toEqual({ folder, files: 4, bytes: 11, pictures: 2 })
+      expect(fs.readdirSync(folder).sort()).toEqual(['a-here-half.webp', 'contact-sheet.jpg', 'doctor.json', 'test.json'])
+      // a folder that is not the tool's own is left alone by a passing test; the tool's own goes
+      Work.dropFailedTest(ctx, { desktop })
+      expect(fs.existsSync(folder)).toBe(true)
+      fs.writeFileSync(path.join(folder, 'report-test.txt'), 'FAIL: made up')
+      Work.dropFailedTest(ctx, { desktop })
+      expect(fs.existsSync(folder)).toBe(false)
+      // no Desktop that can be written: the folder lies in the work folder
+      const noDesk = path.join(tmp, 'a file, no folder')
+      fs.writeFileSync(noDesk, '')
+      const inside = Work.keepFailedTest(ctx, { time, desktop: noDesk })
+      expect(inside?.folder).toBe(path.join(H, 'test-failed'))
+      expect(fs.readdirSync(path.join(H, 'test-failed'))).toHaveLength(4)
+      expect(notes.some((n) => n.includes('could not be written'))).toBe(true)
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true })
+    }
+  })
+  it('is named in the handoff file as the tool names it, with what the agent says to Brandon', () => {
+    const md = fs.readFileSync(rel('RENDER-ON-YOUR-PC.md'), 'utf8').replace(/\s+/g, ' ')
+    expect(L.failedTestName()).toBe('Snow Globe Seasons - Test - Failed')
+    expect(md).toContain(`one folder on the Desktop, \`${L.failedTestName()}\``)
+    expect(md).toContain(`Please bring the folder ${L.failedTestName()} from your Desktop into the build thread.`)
+    expect(md).toContain('Render nothing. Change no floor and no file.')
+    expect(md).toContain('block `TO SEND`')
+    expect(md).toContain('`out/work/handoff/test-failed`')
   })
 })
 

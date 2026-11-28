@@ -76,7 +76,15 @@ Note "the switches of the tool's own tests from here on: $($env:PROOF_SWITCHES)"
 Line 'doctor' '0' 'node tools/handoff.mjs doctor'
 
 if ($env:PROOF_MODE -eq 'small') {
+  # A short test that fails comes first, its failure made up by a switch of the tool's own tests: the row of step
+  # 1.5 for a FAIL. One folder on the Desktop holds what the build thread needs, and the report names it.
+  # The test that passes next takes that folder away.
+  $env:HANDOFF_TEST = "$($env:PROOF_SWITCHES),floors-high"
+  Line 'test-fails' '1' 'node tools/handoff.mjs test' 'TO SEND'
+  $env:HANDOFF_TEST = $env:PROOF_SWITCHES
+  Note (node (Join-Path $Help 'failed-test.mjs') . there small)
   Line 'test' '0' 'node tools/handoff.mjs test'
+  Note (node (Join-Path $Help 'failed-test.mjs') . gone)
   # step 2 begins with these four lines
   Line 'pull' '0' 'git pull --ff-only' 'Already up to date'
   Line 'setup-again' '0' 'node tools/handoff.mjs setup'
@@ -118,7 +126,14 @@ if ($env:PROOF_MODE -eq 'small') {
   # after the clean the upload still finds the delivered files and the records
   Line 'upload-after-clean' '1' 'node tools/handoff.mjs upload' 'the work files are cleaned already'
 } else {
-  Line 'test' '0' 'node tools/handoff.mjs test'
+  if (",$($env:PROOF_SWITCHES)," -like '*,floors-high,*') {
+    # the row of step 1.5 for a FAIL, with real pictures at 3840 x 2160: every frame fails against floors raised
+    # out of reach, and the folder on the Desktop holds the sheet and what this machine drew
+    Line 'test-fails' '1' 'node tools/handoff.mjs test' 'TO SEND'
+    Note (node (Join-Path $Help 'failed-test.mjs') . there uhd)
+  } else {
+    Line 'test' '0' 'node tools/handoff.mjs test'
+  }
   Line 'render-refuses-unreleased' '1' 'node tools/handoff.mjs render' 'not released for its final render yet'
   node (Join-Path $Help 'after.mjs') $env:PROOF_OUT
 }

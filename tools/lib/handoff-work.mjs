@@ -574,6 +574,55 @@ export function soundState(stamp) {
   })
 }
 
+/**
+ * A short test that failed leaves one folder for the remote team, where the floors are ruled on: the numbers, the
+ * sheet of pictures, what this machine drew and what the doctor found. It lies on the Desktop, or in the work folder
+ * when the Desktop cannot be written. The caller puts the report of the test into it, last.
+ */
+export function keepFailedTest(ctx, result) {
+  const since = Date.parse(result.time ?? '') || 0
+  const have = []
+  const see = (p) => {
+    try {
+      const s = fs.statSync(path.join(ctx.H, ...p.split('/')))
+      if (s.isFile()) have.push({ path: p, ms: s.mtimeMs, bytes: s.size })
+    } catch {}
+  }
+  for (const p of ['test.json', 'doctor.json', 'report-doctor.txt', 'shader-messages-test.txt', 'test/contact-sheet.jpg']) see(p)
+  try {
+    for (const n of fs.readdirSync(path.join(ctx.H, 'compared'))) see(`compared/${n}`)
+  } catch {}
+  const picked = L.failedTestPick(have, since)
+  const desktop = result.desktop || readOr(path.join(ctx.H, 'doctor.json'))?.machine?.desktop || ''
+  const places = [...(desktop ? [path.join(desktop, L.failedTestName())] : []), path.join(ctx.H, 'test-failed')]
+  for (const folder of places) {
+    try {
+      fs.rmSync(folder, { recursive: true, force: true })
+      fs.mkdirSync(folder, { recursive: true })
+      for (const f of picked) fs.copyFileSync(path.join(ctx.H, ...f.from.split('/')), path.join(folder, f.as))
+      return { folder, files: picked.length, bytes: sum(picked.map((f) => f.bytes)), pictures: picked.filter((f) => f.picture).length }
+    } catch (e) {
+      ctx.note(`the folder of the failed test could not be written as ${folder}: ${e.message}`)
+    }
+  }
+  return null
+}
+
+/** A short test that passed takes the folder of an earlier failed test away: it would pass for news. */
+export function dropFailedTest(ctx, result) {
+  const desktop = result.desktop || readOr(path.join(ctx.H, 'doctor.json'))?.machine?.desktop || ''
+  for (const folder of [...(desktop ? [path.join(desktop, L.failedTestName())] : []), path.join(ctx.H, 'test-failed')]) {
+    try {
+      // only a folder this tool made: it holds the report of a test
+      if (!fs.existsSync(path.join(folder, 'report-test.txt'))) continue
+      fs.rmSync(folder, { recursive: true, force: true })
+      ctx.note(`the folder of an earlier failed test is taken away: ${folder}`)
+    } catch (e) {
+      ctx.note(`the folder of an earlier failed test could not be taken away (${folder}): ${e.message}`)
+    }
+  }
+}
+
 export async function shortTest(ctx) {
   const rows = []
   const row = (check, found, wanted, pass) => rows.push({ check, found, wanted, pass })
@@ -586,6 +635,7 @@ export async function shortTest(ctx) {
     return result
   }
   const doc = await doctor(ctx)
+  if (doc.machine?.desktop) result.desktop = doc.machine.desktop
   if (!doc.pass) return fail(`the doctor does not pass, so nothing was drawn: ${doc.why}`)
   const look = [...(doc.look ?? [])]
   result.look = look
@@ -721,7 +771,7 @@ export async function shortTest(ctx) {
         continue
       }
       if (got.samples !== ref.samples) row(`${name}: samples`, `${got.samples}`, `${ref.samples}, as the reference was drawn`, false)
-      const c = L.compareFrame({ here: here.data, width: here.width, height: here.height, ref: loaded, floors: stamp.floors })
+      const c = L.compareFrame({ here: here.data, width: here.width, height: here.height, ref: loaded, floors: L.floorsOfTest(stamp.floors, ctx.T.floorsHigh === true) })
       for (const x of c.rows) row(`${name}: ${x.check}`, x.found, x.wanted, x.pass)
       ;(result.frames ??= []).push({ what, frame: ref.frame, samples: got.samples, seconds: got.seconds, ...c.numbers, pass: c.pass })
       const h = L.half(here.data, here.width, here.height)
@@ -734,6 +784,8 @@ export async function shortTest(ctx) {
       sheet.push({ label: `${name}, ${got.samples} samples: whole ${Number.isFinite(c.numbers.psnrWhole) ? c.numbers.psnrWhole.toFixed(2) : 'identical'} dB${c.pass ? '' : '   FAILS'}`, pairs: [{ label: 'the whole picture at half size', ref: loaded.half.data, here: h.data, w: h.width, h: h.height }, ...loaded.cuts.map((cut, k) => ({ label: `cut ${cut.name} at full size, x ${cut.x} y ${cut.y}: ${Number.isFinite(c.numbers.cuts[k].psnr) ? c.numbers.cuts[k].psnr.toFixed(2) : 'identical'} dB`, ref: cut.data, here: L.crop(here.data, here.width, cut), w: cut.w, h: cut.h }))] })
     }
   }
+  // the tool's own test of a short test that fails: see floorsOfTest
+  if (ctx.T.floorsHigh) row(L.MADE_UP_FAILURE, 'the floors of the drawn frames were raised to 99 dB by a switch', 'no such switch in a real test', false)
   // the opening is never drawn: its reference frame is read from the pack and must be the same picture
   const { openPack } = await import('./openingpack.mjs')
   let pack = null
@@ -745,6 +797,29 @@ export async function shortTest(ctx) {
     for (const x of c.rows) row(`opening frame ${ref.frame}, read from the pack: ${x.check}`, x.found, x.wanted, x.pass)
     const h = L.half(here, pack.width, pack.height)
     sheet.push({ label: `opening frame ${ref.frame}, read from the pack and never drawn here`, pairs: [{ label: 'the whole picture at half size', ref: loaded.half.data, here: h.data, w: h.width, h: h.height }, ...loaded.cuts.map((cut) => ({ label: `cut ${cut.name} at full size, x ${cut.x} y ${cut.y}`, ref: cut.data, here: L.crop(here, pack.width, cut), w: cut.w, h: cut.h }))] })
+  }
+
+  // the contact sheet, made as soon as the frames are compared: a test that stops later still leaves its pictures
+  if (sheet.length) {
+    const file = path.join(T, 'contact-sheet.jpg')
+    const made2 = await contactSheet(sheet, file, `${L.TITLE}: the short test on ${doc.renderer}`)
+    result.sheet = { file, bytes: made2.bytes }
+    ctx.say(`contact sheet: ${file} (${mb(made2.bytes)})`)
+    const sheetName = `${L.TITLE} - Test - Contact Sheet.jpg`
+    try {
+      const to = path.join(doc.machine.desktop, sheetName)
+      fs.copyFileSync(file, to)
+      result.sheet.onDesktop = to
+    } catch (e) {
+      // the sheet of an earlier test is open in a viewer: the new one goes beside it
+      try {
+        if (!L.heldOpen(e)) throw e
+        const beside = path.join(doc.machine.desktop, L.besideName(sheetName))
+        fs.copyFileSync(file, beside)
+        result.sheet.onDesktop = beside
+        look.push(`the sheet of pictures of an earlier test, "${sheetName}" on the Desktop, is held open by another program and was left as it is. The sheet of this test is beside it as "${path.basename(beside)}"`)
+      } catch {}
+    }
   }
 
   // one chunk of the opening from the pack, as the full render takes it
@@ -896,28 +971,6 @@ export async function shortTest(ctx) {
     if (proj.seconds > L.TOO_LONG_HOURS * 3600) ctx.say(`MORE THAN ${L.TOO_LONG_HOURS} HOURS: the full render is projected at ${L.hoursText(proj.seconds)} on this machine. Say so in the report; whether it is started is decided by the one who released the film`)
   }
 
-  // (d) the contact sheet
-  if (sheet.length) {
-    const file = path.join(T, 'contact-sheet.jpg')
-    const made2 = await contactSheet(sheet, file, `${L.TITLE}: the short test on ${doc.renderer}`)
-    result.sheet = { file, bytes: made2.bytes }
-    ctx.say(`contact sheet: ${file} (${mb(made2.bytes)})`)
-    const sheetName = `${L.TITLE} - Test - Contact Sheet.jpg`
-    try {
-      const to = path.join(doc.machine.desktop, sheetName)
-      fs.copyFileSync(file, to)
-      result.sheet.onDesktop = to
-    } catch (e) {
-      // the sheet of an earlier test is open in a viewer: the new one goes beside it
-      try {
-        if (!L.heldOpen(e)) throw e
-        const beside = path.join(doc.machine.desktop, L.besideName(sheetName))
-        fs.copyFileSync(file, beside)
-        result.sheet.onDesktop = beside
-        look.push(`the sheet of pictures of an earlier test, "${sheetName}" on the Desktop, is held open by another program and was left as it is. The sheet of this test is beside it as "${path.basename(beside)}"`)
-      } catch {}
-    }
-  }
   ctx.say(`test film: ${onDesktop || kept} (${mb(fs.statSync(made).size)}, ${frames} frames)`)
 
   // the test's chunks leave the folder a later encode reads

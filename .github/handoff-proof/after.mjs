@@ -58,7 +58,8 @@ const walk = (dir, depth = 0) => {
       if (depth === 0) for (const f of fs.readdirSync(p)) {
         const s = fs.statSync(path.join(p, f))
         note(`on the Desktop: ${e.name}/${f}  ${s.size} bytes`)
-        take(path.join(p, f), `desktop-folder - ${f}`)
+        // the folder of a failed short test keeps its files apart from those of a delivery
+        take(path.join(p, f), / - Test - Failed$/.test(e.name) ? `desktop-failed-test - ${f}` : `desktop-folder - ${f}`)
       }
     } else {
       note(`on the Desktop: ${e.name}  ${fs.statSync(p).size} bytes`)
@@ -80,4 +81,14 @@ for (const dir of ['shaders-doctor', 'shaders-test', 'compared']) {
     for (const n of names) take(path.join(H, dir, n), path.join(dir, n))
   } catch {}
 }
+// the whole frames the short test drew at full size, when they are few: so that a cut around any pixel can be made
+// far away. A small run draws small frames, which say nothing, and they are left where they are.
+try {
+  const dir = path.join(H, 'test', 'frames')
+  const names = fs.readdirSync(dir).filter((n) => /-uhd-.*\.png$/.test(n))
+  if (names.length && names.length <= 4) {
+    fs.mkdirSync(path.join(out, 'frames'), { recursive: true })
+    for (const n of names) take(path.join(dir, n), path.join('frames', n))
+  }
+} catch {}
 if (!quiet) fs.appendFileSync(path.join(out, 'notes.txt'), notes.join('\n') + '\n')

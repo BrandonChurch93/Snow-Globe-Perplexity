@@ -234,8 +234,8 @@ How the frames are compared, and why so:
   between the two. A frame that is wrong in a bigger way (a layer missing, white glass, a flat or empty picture)
   falls far under them.
 - Those two test machines have no real graphics card, so no NVIDIA card was measured. When a frame fails here by
-  a little, the floor may be at fault and not the picture. You do not decide that: report, and the remote team
-  reads the numbers and the sheet of pictures.
+  a little, the floor may be at fault and not the picture. You do not decide that: do what the `Bad:` row below
+  says, and the remote team reads the numbers and the sheet of pictures.
 - The report also says, for every frame, how far the picture stands from its reference: the largest and the mean
   difference in levels of 255, how many pixels are more than 8 levels apart, and where in the picture they lie.
   These lines are marked `noted` and fail nothing. They tell the remote team where to look.
@@ -254,7 +254,19 @@ Good: `PASS: the short test passed on <the graphics card>: ...`. The test film i
 If the two final sound mixes are not in the clone, the test still passes and says in one line that its film is
 silent and why. That is expected in step 1.
 
-Bad: `FAIL:` with the reason. Stop and report.
+Bad: `FAIL:` with the reason. Render nothing. Change no floor and no file. Do not run the test a second time to
+see whether it passes. Step 1 ends here, and you do not go on to 1.6.
+
+The tool has put what the remote team needs into one folder on the Desktop,
+`Snow Globe Seasons - Test - Failed`. It holds the report, the numbers of the test (`test.json`) and, when the
+test got as far as drawing, the sheet of pictures and what this machine drew. The report names the folder in its
+block `TO SEND`. If the Desktop could not be written, that block names a folder inside the clone instead,
+`out/work/handoff/test-failed`.
+
+Give Brandon the whole text of `out/work/handoff/report-test.txt` as one block. Then say to him, word for word:
+"The short test failed and nothing was rendered. Please bring the folder Snow Globe Seasons - Test - Failed from
+your Desktop into the build thread. Whether the picture or the floor is at fault is ruled on there." Then stop
+and wait.
 
 ### 1.6 Report and STOP
 

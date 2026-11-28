@@ -107,7 +107,8 @@ function reportText(cmd, ctx, result, state) {
   ]
   const tables = ctx.tables.filter((t) => t.rows.length).flatMap((t) => [bar, `${t.title}:`, L.tableText(t.rows), ...(t.after?.length ? ['', ...t.after] : [])])
   const look = (result.look ?? []).length ? [bar, `TO LOOK AT, ${result.look.length}. It stops nothing here, and the remote team must read it:`, ...result.look.map((l) => `  LOOK  ${l}`)] : []
-  return [...head, bar, ...ctx.lines, ...tables, ...look, bar, L.verdictLine(state, result.why), ''].join('\n')
+  const send = L.toSendLines(result.toSend)
+  return [...head, bar, ...ctx.lines, ...tables, ...look, ...(send.length ? [bar, ...send] : []), bar, L.verdictLine(state, result.why), ''].join('\n')
 }
 
 /** The report of the whole render, which goes to the Desktop with the files. */
@@ -188,8 +189,25 @@ async function carryOut(cmd, ctx) {
     const { rows, ...rest } = result
     writeJson(file(KEPT[cmd]), { ...rest, ...(cmd === 'check' || cmd === 'deliver' || cmd === 'upload' ? { rows } : {}), command: cmd })
   }
+  // A short test that failed: what the remote team needs to rule on it goes into one folder, the report names the
+  // folder and is put into it last. A test that passed takes the folder of an earlier failed test away.
+  if (cmd === 'test' && !result.refused) {
+    try {
+      if (result.pass) ctx.work?.dropFailedTest(ctx, result)
+      else result.toSend = ctx.work?.keepFailedTest(ctx, result) ?? null
+    } catch (e) {
+      ctx.note(`the folder of a failed test: ${String(e?.stack ?? e)}`)
+    }
+  }
   const text = reportText(cmd, ctx, result, state)
   fs.writeFileSync(file(`report-${cmd}.txt`), text)
+  if (result.toSend) {
+    try {
+      fs.copyFileSync(file(`report-${cmd}.txt`), path.join(result.toSend.folder, `report-${cmd}.txt`))
+    } catch (e) {
+      ctx.note(`the report could not be put into ${result.toSend.folder}: ${e.message}`)
+    }
+  }
   return { state, why: result.why, text }
 }
 

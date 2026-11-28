@@ -17,6 +17,33 @@ export const deliveryName = (kind, width, height) => {
 }
 export const deliveryNames = (width, height) => Object.fromEntries(KINDS.map((k) => [k, deliveryName(k, width, height)]))
 export const testFilmName = (width, height) => `${TITLE} - Test - ${width}x${height}.mp4`
+/** The folder a short test that failed leaves on the Desktop, for Brandon to bring into the build thread. */
+export const failedTestName = () => `${TITLE} - Test - Failed`
+/**
+ * What of the tool's work folder goes into that folder. `have` lists files as { path, ms, bytes }: the path under
+ * the work folder with forward slashes, and when it was written. What the doctor found and the numbers of the test
+ * always go. Pictures, the sheet and the shader messages go only when this test wrote them (`since`, the time the
+ * test began): those of an earlier test would pass for this one's. Every file lies flat in the folder.
+ */
+export function failedTestPick(have, since) {
+  const always = ['test.json', 'doctor.json', 'report-doctor.txt']
+  const fresh = (p) => p === 'test/contact-sheet.jpg' || p === 'shader-messages-test.txt' || /^compared\/[^/]+$/.test(p)
+  return have
+    .filter((f) => always.includes(f.path) || (fresh(f.path) && f.ms >= since - 2000))
+    .map((f) => ({ from: f.path, as: f.path.split('/').pop(), bytes: f.bytes, picture: /\.(png|jpg|webp)$/.test(f.path) }))
+    .sort((a, b) => (a.as < b.as ? -1 : a.as > b.as ? 1 : 0))
+}
+/** The block of the test's report that says what to send, when the test failed. */
+export function toSendLines(kept) {
+  if (!kept) return []
+  const pictures = kept.pictures ? `the sheet of pictures and what this machine drew (${kept.pictures} picture ${kept.pictures === 1 ? 'file' : 'files'})` : 'no picture, since the test drew none'
+  return [
+    'TO SEND. The short test failed. Nothing is rendered and no floor is changed on this machine.',
+    `  folder   ${kept.folder}`,
+    `  holds    this report, the numbers (test.json), ${pictures}: ${kept.files + 1} files, ${(kept.bytes / 1e6).toFixed(1)} MB`,
+    '  Brandon brings that folder into the build thread. The floors are ruled on there.',
+  ]
+}
 /** The folder on the Desktop. A run of the tool's own tests gets another folder, so that it never passes for the film. */
 export const deliveryFolder = (small = false) => (small ? `${TITLE} (tool test)` : TITLE)
 
@@ -24,9 +51,9 @@ export const deliveryFolder = (small = false) => (small ? `${TITLE} (tool test)`
 // The switches of the tool's own tests. They come in one variable of the environment that RENDER-ON-YOUR-PC.md never
 // names, so that no line an agent is given can turn one on.
 export const TEST_VARIABLE = 'HANDOFF_TEST'
-const TEST_WORDS = ['software', 'small', 'tones', 'linux', 'inline', 'fast-watch', 'browser-moved']
+const TEST_WORDS = ['software', 'small', 'tones', 'linux', 'inline', 'fast-watch', 'browser-moved', 'floors-high']
 export function testSwitches(text = '') {
-  const out = { software: false, small: false, tones: false, linux: false, inline: false, fastWatch: false, browserMoved: false, angle: '', refs: '', stretch: '', stop: 0 }
+  const out = { software: false, small: false, tones: false, linux: false, inline: false, fastWatch: false, browserMoved: false, floorsHigh: false, angle: '', refs: '', stretch: '', stop: 0 }
   for (const word of String(text).split(',').map((w) => w.trim()).filter(Boolean)) {
     const [key, value = ''] = word.split('=')
     if (key === 'angle' && /^[a-z0-9]+$/.test(value)) out.angle = value
@@ -34,12 +61,25 @@ export function testSwitches(text = '') {
     else if (key === 'stretch' && /^\d+-\d+(\/\d+)?$/.test(value)) out.stretch = value
     else if (key === 'fast-watch' && !value) out.fastWatch = true
     else if (key === 'browser-moved' && !value) out.browserMoved = true
+    else if (key === 'floors-high' && !value) out.floorsHigh = true
     else if (TEST_WORDS.includes(key) && !value) out[key] = true
     else throw new Error(`${TEST_VARIABLE} holds ${word}, which is no switch of the tool's tests`)
   }
   return out
 }
-export const anyTestSwitch = (t) => t.software || t.small || t.tones || t.linux || !!t.angle || !!t.refs || !!t.stretch
+export const anyTestSwitch = (t) => t.software || t.small || t.tones || t.linux || t.floorsHigh || !!t.angle || !!t.refs || !!t.stretch
+
+/**
+ * The tool's own test of a short test that fails. With the switch on, the floors of the comparison are raised out
+ * of reach, so that every frame this machine draws fails with its real numbers, and one row says that the failure
+ * is made up. What a failed test leaves behind (the folder for the build thread) can so be proven on a machine
+ * whose pictures are right.
+ */
+export const MADE_UP_FAILURE = "a failure made up by the tool's own test"
+export function floorsOfTest(floors, high) {
+  if (!high) return floors
+  return { ...floors, psnrWhole: 99, coarseWhole: 99, psnrCut: 99, coarseCut: 99 }
+}
 
 /**
  * The tool's own test of a browser that updated itself between the short test and the render. With the switch on,

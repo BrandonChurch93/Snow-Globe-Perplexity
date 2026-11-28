@@ -38,7 +38,7 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,doctor-again,test-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+            expect: clone,setup,doctor-refuses-software,doctor,test-fails,test,pull,setup-again,doctor-again,test-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
           # the same in Git Bash. Here the test film is held open while the test runs again, and a browser that
           # updated itself between the test and the render is made up once: the render stops, the test runs again
           - id: windows-gitbash-small
@@ -47,7 +47,7 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch,browser-moved
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,doctor-again,test-again,render-stops-for-browser,test-after-update,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+            expect: clone,setup,doctor-refuses-software,doctor,test-fails,test,pull,setup-again,doctor-again,test-again,render-stops-for-browser,test-after-update,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
           # the same on the newest LTS of Node
           - id: windows-newest-lts-small
             os: windows-latest
@@ -56,7 +56,7 @@ jobs:
             mode: small
             switches: software,small,tones,fast-watch
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,pull,setup-again,doctor-again,test-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+            expect: clone,setup,doctor-refuses-software,doctor,test-fails,test,pull,setup-again,doctor-again,test-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
           # the winget lines of the file, then setup and the doctor with what they installed
           - id: windows-winget-lines
             os: windows-latest
@@ -75,14 +75,17 @@ jobs:
             switches: software,refs=film-b:120+film-b:720,stretch=720-721/1
             refusal: 'yes'
             expect: clone,setup,doctor-refuses-software,doctor,test,render-refuses-unreleased
-          # the same with Direct3D 11 asked for by name, the shader path of a Windows graphics card
+          # The same with Direct3D 11 asked for by name, the shader path of a Windows graphics card. Here the short
+          # test is made to fail (floors-high raises the floors out of reach), so that the row of step 1.5 for a FAIL
+          # is proven with real pictures: the folder on the Desktop with the report, the numbers, the sheet and
+          # what this machine drew. That the same frames pass is proven by the job above, on the same renderer.
           - id: windows-3840-direct3d11
             os: windows-latest
             shell: powershell
             mode: uhd
-            switches: software,tones,angle=d3d11,refs=film-b:120+film-b:720,stretch=720-721/1
+            switches: software,tones,angle=d3d11,floors-high,refs=film-b:120+film-b:720,stretch=720-721/1
             refusal: 'yes'
-            expect: clone,setup,doctor-refuses-software,doctor,test,render-refuses-unreleased
+            expect: clone,setup,doctor-refuses-software,doctor,test-fails,render-refuses-unreleased
           # the fallback: macOS, Metal
           - id: macos-small
             os: macos-latest
@@ -90,7 +93,7 @@ jobs:
             mode: small
             switches: small,tones,fast-watch
             refusal: 'no'
-            expect: clone,setup,doctor,test,pull,setup-again,doctor-again,test-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+            expect: clone,setup,doctor,test-fails,test,pull,setup-again,doctor-again,test-again,render-first-call,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
           - id: macos-3840
             os: macos-latest
             shell: bash
