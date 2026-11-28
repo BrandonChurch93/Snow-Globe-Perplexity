@@ -281,6 +281,7 @@ async function one(base, query, round) {
   const samples = []
   const notes = []
   let root = null
+  let profile = null
   let sampling = true
   let lossSeen = null
   const sample = async (why) => {
@@ -292,7 +293,9 @@ async function one(base, query, round) {
       samples.push({ at, why, processes: theirs, memory, card })
       return theirs
     }
-    root ??= list.find((p) => p.args.includes(`--loss295-tag=${tag}`) && !/--type=/.test(p.args))?.pid ?? null
+    const rootIs = list.find((p) => p.args.includes(`--loss295-tag=${tag}`) && !/--type=/.test(p.args))
+    root ??= rootIs?.pid ?? null
+    profile ??= /--user-data-dir=(\S+)/.exec(rootIs?.args ?? '')?.[1] ?? null
     // The browser and everything begun under it (on some machines its children are begun by a helper of its own).
     const under = new Set(root === null ? [] : [root])
     for (let grew = true; grew; ) {
@@ -377,6 +380,29 @@ async function one(base, query, round) {
       notes.push(`the browser did not name its processes: ${String(error?.message ?? error).split('\n')[0]}`)
     }
     await sample('before the browser was closed').catch(() => undefined)
+    // What Chrome's own crash handler wrote for this browser (a dump made with or without a crash), before the profile goes.
+    if (profile) {
+      for (const sub of ['new', 'pending', 'completed']) {
+        let names = []
+        try {
+          names = fs.readdirSync(path.join(profile, 'Crashpad', sub))
+        } catch {
+          continue
+        }
+        for (const n of names.filter((x) => x.endsWith('.dmp')).slice(0, 4)) {
+          try {
+            const st = fs.statSync(path.join(profile, 'Crashpad', sub, n))
+            notes.push(`Chrome's crash handler wrote ${sub}/${n}: ${st.size} bytes at ${new Date(st.mtimeMs).toISOString()}${firstAt ? ` (${Math.round(st.mtimeMs - firstAt)} ms after the tool saw the first picture)` : ''}`)
+            if (st.size < 40 * 1048576) {
+              fs.mkdirSync(path.join(out, `${tag}-dumps`), { recursive: true })
+              fs.copyFileSync(path.join(profile, 'Crashpad', sub, n), path.join(out, `${tag}-dumps`, n))
+            }
+          } catch {
+            // a dump that went while it was read is no dump
+          }
+        }
+      }
+    }
     result = { name, tag, query, round, beganUtc, endedUtc: utc(), endedBy, shot, t0, firstAtWall: firstAt, lossSeenWall: lossSeen, ...got, messages, told, crashCount: /GPU process crash count\s*:?\s*(\d+)/.exec(cardText)?.[1] ?? null }
   } catch (error) {
     result = { name, tag, query, round, beganUtc, endedUtc: utc(), failed: String(error?.message ?? error), messages, marks: [], lost: [], back: [], refused: [], gaps: [], perSecond: {}, frames: 0 }
