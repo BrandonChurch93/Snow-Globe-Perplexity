@@ -406,10 +406,11 @@ vec3 glassArcs(vec3 d) {
   if (all > 0.0) sum *= ${num(glassLook.arcs.most)} * (1.0 - exp(-all / ${num(glassLook.arcs.most)})) / all;
   return uArc.rgb * sum.x + ${vec(glassLook.arcs.cool)} * (uArc.a * sum.y);
 }
-vec3 glassRoom(vec3 d, float soft, int k, float own) {
+vec3 glassRoom(vec3 d, float soft, int k, float own, out vec3 lights) {
   vec3 c = stageRoomSeen(d, k == 3 ? ${num(glassLook.room.throughRough)} : ${num(glassLook.room.innerRough)});
   if (k != 3) c = mix(c, uRoomHue.rgb * dot(c, vec3(0.2126, 0.7152, 0.0722)), uRoomHue.a);
-  c += soft < 0.0 ? glassPoints(d) : stageRoomLights(d, ${num(glassLook.through.disc)} + soft * 0.05);
+  lights = soft < 0.0 ? glassPoints(d) : stageRoomLights(d, ${num(glassLook.through.disc)} + soft * 0.05);
+  c += lights;
   if (uOwn < 0.5) return c;
   soft = max(soft, 0.0);
   float side = mix(${num(glassLook.room.side)}, 1.0, smoothstep(-0.35, 0.85, dot(d, WIN_C)));
@@ -422,15 +423,24 @@ vec3 glassRoom(vec3 d, float soft, int k, float own) {
   dim += uRimCol * ${vec(glassLook.rimCard.tint)} * own * (${num(glassLook.rimCard.wide)} * pow(abs(rim), ${num(glassLook.rimCard.widePower)}) + ${num(glassLook.rimCard.core)} * pow(abs(rim), ${num(glassLook.rimCard.corePower)}));
   float lit = k == 0 ? 1.0 - ${num(W.dark.depth)} * glassDark(d) : 1.0;
   c += dim * lit;
-  if (k < 2 && uArc.a + uArc.r + uArc.g + uArc.b > 0.0) c += glassArcs(d) * (k == 0 ? 1.0 : ${num(glassLook.arcs.inner)});
-  c += uKeyCol * WIN_TINT * (WIN_GAIN[k] * uWinGain[k]) * glassWindow(d, (k == 3 ? ${num(glassLook.through.softDeg * RAD)} : soft) + uWinSoft.x, k);
-  if (k == 0) c += uKeyCol * WIN_TINT * ${vec(W.halo.tint)} * (${num(W.halo.gain)} * uWinGain.x) * glassHalo(d) * lit;
-  c += ${vec(glassLook.strip.tint)} * uKeyCol.b * (STRIP_GAIN[k] * uRingAmt.y) * glassStrip(d, soft);
+  vec3 part = k < 2 && uArc.a + uArc.r + uArc.g + uArc.b > 0.0 ? glassArcs(d) * (k == 0 ? 1.0 : ${num(glassLook.arcs.inner)}) : vec3(0.0);
+  c += part;
+  lights += part;
+  part = uKeyCol * WIN_TINT * (WIN_GAIN[k] * uWinGain[k]) * glassWindow(d, (k == 3 ? ${num(glassLook.through.softDeg * RAD)} : soft) + uWinSoft.x, k);
+  c += part;
+  lights += part;
+  part = k == 0 ? uKeyCol * WIN_TINT * ${vec(W.halo.tint)} * (${num(W.halo.gain)} * uWinGain.x) * glassHalo(d) * lit : vec3(0.0);
+  c += part;
+  lights += part;
+  part = ${vec(glassLook.strip.tint)} * uKeyCol.b * (STRIP_GAIN[k] * uRingAmt.y) * glassStrip(d, soft);
+  c += part;
+  lights += part;
   return c;
 }
 vec3 glassSeen(vec3 o, vec3 d, float soft, int k, float own) {
   vec3 dw = uTurn * d;
-  vec3 c = glassRoom(dw, soft, k, own);
+  vec3 lights;
+  vec3 c = glassRoom(dw, soft, k, own, lights);
   if (d.y < -0.003) {
     float t = (SEAT_Y - o.y) / d.y;
     vec3 q = o + d * t;
@@ -451,7 +461,8 @@ vec3 glassSeen(vec3 o, vec3 d, float soft, int k, float own) {
         vec3 slab = uRoomFloor * (1.0 - 0.6 * contact) + uSlab * uKeyCol * max(uKeyDir.y, 0.0) * (1.0 - contact) * lit;
         slab += uSlab * uPool * 3.0 * exp(-dist * dist / (2.0 * 110.0 * 110.0)) * (1.0 - 0.6 * contact);
         float away = 1.0 - clamp((-dw.y / max(length(dw.xz), 1e-5) - 0.003) / 0.097, 0.0, 1.0);
-        c = mix(slab * ${num(glassLook.floor)}, c, away);
+        float reach = smoothstep(1400.0, 2900.0, length(s.xz));
+        c = mix(slab * ${num(glassLook.floor)}, c - lights, away) + lights * reach;
       }
     }
   }
