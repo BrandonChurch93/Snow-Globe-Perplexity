@@ -112,6 +112,8 @@ export const VEIL_LOOK = {
   leanBank: 0.5,
   leanDrift: 0.5,
   leanFlood: 4.5,
+  /** The least share of the thin part, the haze and the white flood alike, that the side the load has left keeps. The bank takes the throw whole. */
+  leanFloor: 0.35,
   driftWallLeft: 1.3,
   driftWallLeftPower: 2.5,
   driftWallRight: 0.4,
@@ -414,7 +416,7 @@ vec4 veilField(vec3 p, vec3 f, float sheet) {
   float ring = mix(${n(L.arcCore)}, 1.0, smoothstep(${n(L.hazeFrom)}, ${n(L.hazeTo)}, (length(flat2) - ${n(L.hazeLift)} * dot(p, uVeilUp.xyz) - ${n(L.hazeSide)} * p.x) / uLens.w));
   float even = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level + ${n(L.bankWave)} * (f.x - 0.5));
   float thrown = ${leanGlsl('p', 'uVeilLean', 'uLens.w')};
-  float thin = (uVeil.a * mix(1.0, ring * arc * sheet, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w)) * thrown;
+  float thin = (uVeil.a * mix(1.0, ring * arc * sheet, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w)) * max(thrown, ${n(L.leanFloor)});
   float bank = uVeilBank.z * even * even * even * mix(fold, 1.0, uVeilBank.w) * thrown + uVeilDrift.x * streak * sheet;
   float pocket = veilPocket(p);
   if (pocket > 0.0) {
