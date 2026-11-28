@@ -1,13 +1,14 @@
 /* A tint of the glass fades as a number the page steps itself and not as a colour: a browser gives a fading background
-   colour to its compositor, which then builds pictures of its own, and a frame that answers a press waits for them. */
+   colour to its compositor, which then builds pictures of its own, and a frame that answers a press waits for them.
+   The number is the tint in whole 255ths, which is how a colour holds it, so a fade takes the steps the colour took. */
 @property --tint {
-  syntax: '<number>';
+  syntax: '<integer>';
   inherits: false;
   initial-value: 0;
 }
 
 @property --warmth {
-  syntax: '<number>';
+  syntax: '<integer>';
   inherits: false;
   initial-value: 0;
 }
@@ -161,7 +162,7 @@
   position: absolute;
   inset: var(--disc);
   border-radius: 50%;
-  background-color: rgb(var(--glow) / var(--warmth));
+  background-color: rgb(var(--glow) / calc(var(--warmth) / 255));
   pointer-events: none;
   transition:
     --tint 0.3s ease,
@@ -172,8 +173,8 @@
 }
 
 .sound .disc {
-  --tint: 0.46;
-  background: rgb(var(--glass) / var(--tint));
+  --tint: 117;
+  background: rgb(var(--glass) / calc(var(--tint) / 255));
   -webkit-backdrop-filter: blur(14px) saturate(1.25);
   backdrop-filter: blur(14px) saturate(1.25);
   box-shadow:
@@ -268,7 +269,7 @@
 .mark[data-press] .disc,
 .sound:active .disc,
 .sound[data-press] .disc {
-  --warmth: 0.17;
+  --warmth: 43;
   box-shadow:
     inset 0 0 0 1px rgb(var(--glow) / 0.62),
     inset 0 0 12px 0 rgb(var(--glow) / 0.2);
@@ -278,8 +279,8 @@
 
 .sound:active .disc,
 .sound[data-press] .disc {
-  --tint: 0.62;
-  background: linear-gradient(rgb(var(--glow) / 0.17), rgb(var(--glow) / 0.17)), rgb(var(--glass) / var(--tint));
+  --tint: 158;
+  background: linear-gradient(rgb(var(--glow) / 0.17), rgb(var(--glow) / 0.17)), rgb(var(--glass) / calc(var(--tint) / 255));
 }
 
 .sound {
@@ -322,8 +323,8 @@
   gap: var(--pair);
   border: 0;
   border-radius: 999px;
-  --tint: 0.46;
-  background: rgb(var(--glass) / var(--tint));
+  --tint: 117;
+  background: rgb(var(--glass) / calc(var(--tint) / 255));
   -webkit-backdrop-filter: blur(14px) saturate(1.25);
   backdrop-filter: blur(14px) saturate(1.25);
   box-shadow:
@@ -364,7 +365,7 @@
 
 .shake::before {
   --warmth: 0;
-  background-color: rgb(var(--glow) / var(--warmth));
+  background-color: rgb(var(--glow) / calc(var(--warmth) / 255));
   box-shadow:
     inset 0 0 0 1px rgb(var(--glow) / 0.62),
     inset 0 0 16px 0 rgb(var(--glow) / 0.16);
@@ -402,20 +403,20 @@
 .shake:active:not([aria-disabled='true']),
 .shake[data-press] {
   transform: scale(0.97);
-  --tint: 0.62;
+  --tint: 158;
   color: rgb(var(--lit));
 }
 
 .shake:active:not([aria-disabled='true'])::before,
 .shake[data-press]::before {
   opacity: 1;
-  --warmth: 0.13;
+  --warmth: 33;
   transition-duration: 0.08s;
 }
 
 .shake[aria-disabled='true'] {
   cursor: default;
-  --tint: 0.34;
+  --tint: 87;
   box-shadow:
     inset 0 0 0 1px rgb(var(--line) / 0.11),
     inset 0 1px 0 0 rgb(var(--line) / 0.06),
@@ -490,7 +491,7 @@
   }
 
   .shake:hover:not([aria-disabled='true']) {
-    --tint: 0.56;
+    --tint: 143;
     color: rgb(var(--lit));
   }
 
