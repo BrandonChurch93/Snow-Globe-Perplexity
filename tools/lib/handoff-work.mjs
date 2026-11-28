@@ -124,7 +124,8 @@ const loadCfg = () => readJson(rel('config', 'showcase.json'))
 
 /** The Chrome switches of every local run: the graphics card by name, and what a test asked for. */
 export function setChromeSwitches(ctx) {
-  const extra = ['--force_high_performance_gpu', ...(ctx.T.angle ? [`--use-angle=${ctx.T.angle}`] : [])]
+  // a test switch may name the layer Chrome draws through; Chrome asks for a second word before it draws in SwiftShader
+  const extra = ['--force_high_performance_gpu', ...(ctx.T.angle ? [`--use-angle=${ctx.T.angle}`] : []), ...(ctx.T.angle === 'swiftshader' ? ['--enable-unsafe-swiftshader'] : [])]
   process.env.SHOWCASE_LOCAL_ARGS = extra.join(' ')
   return extra
 }
@@ -157,8 +158,10 @@ async function readPage(ctx, mode) {
   const { Session, cfg, formatById } = await import('./page.mjs')
   const { Run } = await import('./frames.mjs')
   const sharp = (await import('sharp')).default
+  const S = await import('./handoff-shaders.mjs')
   const session = await Session.open({ local: mode.local, what: 'handoff doctor', say: ctx.note })
   try {
+    S.watchShaders(session.browser)
     const run = new Run(session, { by: 'handoff', looks: false, say: ctx.note })
     const track = { kind: 'film', name: 'film-b', format: formatById(mode.format.id), tier: 'samples-1', assets: 'full', fps: cfg.film.fps, step: 1 }
     const t0 = Date.now()
@@ -177,7 +180,18 @@ async function readPage(ctx, mode) {
       drawProblem = e.message
     }
     const lost = await page.evaluate(() => window.__contextLost).catch(() => null)
-    return { browser: session.browserVersion, gl, caps, picture, drawProblem, loadSeconds, lost, errors: [...page.errors] }
+    // the maths probe of the tree on a canvas of its own, then what the shader compiler wrote, program by program
+    const maths = await S.mathsProbe(page, rel('dist'))
+    const shaders = await S.collectShaders(page)
+    let shaderFile = ''
+    if (shaders) {
+      shaderFile = path.join(ctx.H, 'shader-messages-doctor.txt')
+      fs.writeFileSync(shaderFile, S.shaderList(shaders, [`${L.TITLE}: what the shader compiler wrote, program by program`, `written   ${new Date().toISOString()}`, `drawn by  ${gl?.renderer ?? 'nothing'}`, `browser   ${session.browserVersion}`, `page      the build's own page, film B frame 0 at ${mode.format.width} x ${mode.format.height}, one sample`, '']))
+      fs.rmSync(path.join(ctx.H, 'shaders-doctor'), { recursive: true, force: true })
+      S.writeShaders(shaders, path.join(ctx.H, 'shaders-doctor'))
+    }
+    const programs = shaders ? { linked: shaders.linked, withLog: shaders.logs.length, file: shaderFile, different: S.briefLogs(shaders) } : null
+    return { browser: session.browserVersion, gl, caps, picture, drawProblem, loadSeconds, lost, maths, programs, errors: [...page.errors] }
   } finally {
     await session.close().catch(() => {})
   }
@@ -216,8 +230,9 @@ export async function doctor(ctx, { draw = true } = {}) {
   const rows = []
   const row = (check, found, wanted, pass) => rows.push({ check, found, wanted, pass })
   const out = { pass: false, why: '', rows, time: new Date().toISOString() }
+  const after = []
   const done = (why) => {
-    ctx.tables?.push({ title: 'the doctor', rows })
+    ctx.tables?.push({ title: 'the doctor', rows, after })
     out.pass = rows.every((r) => r.pass !== false)
     out.why = out.pass ? why : rows.filter((r) => r.pass === false).map((r) => r.why ?? `${r.check}: ${r.found}`).join('. ')
     return out
@@ -343,8 +358,40 @@ export async function doctor(ctx, { draw = true } = {}) {
     if (fits) row('size', `textures to ${gl.maxTexture}, render buffers to ${gl.maxRenderbuffer}`, `${mode.master.width} x ${mode.master.height} and more`, true)
     else fail('size', `textures to ${gl.maxTexture}, render buffers to ${gl.maxRenderbuffer}`, `${mode.master.width} x ${mode.master.height} and more`, `this card draws no picture of ${mode.master.width} x ${mode.master.height}: its largest texture is ${gl.maxTexture}`)
   }
-  if (seen.errors.length) fail('page messages', `${seen.errors.length} ${seen.errors.length === 1 ? 'message' : 'messages'}`, 'none', `the page wrote ${seen.errors.length === 1 ? 'an error' : 'errors'} while it loaded and drew (a shader that does not compile shows here). In full:\n${seen.errors.join('\n')}`)
-  else row('page messages', 'none', 'none', true)
+  const wrote = L.pageMessages(seen.errors)
+  out.pageErrors = wrote.errors
+  out.pageWarnings = wrote.warnings
+  if (wrote.errors.length) fail('page errors', `${wrote.errors.length} ${wrote.errors.length === 1 ? 'error' : 'errors'}`, 'none', `the page wrote ${wrote.errors.length === 1 ? 'an error' : 'errors'} while it loaded and drew (a shader that does not compile shows here). In full:\n${wrote.errors.join('\n')}`)
+  else row('page errors', 'none', 'none', true)
+  // what the shader compiler wrote: with the shaders it belongs to where the watch could read them, else as the page wrote it
+  const progs = seen.programs
+  const other = wrote.warnings.filter((w) => !(progs?.different.length && /Program Info Log/.test(w.text)))
+  if (progs?.different.length) {
+    const count = progs.different.reduce((n, e) => n + new Set(e.messages.map((m) => `${m.code} ${m.text}`)).size, 0)
+    row('shader messages', `${progs.withLog} of ${progs.linked} programs wrote messages, ${count} different ones; listed under this table`, 'noted only: a shader that warns still compiles and draws', null)
+    after.push(`what the shader compiler of this machine wrote (it stops nothing; the remote team reads it). Each place and each shader in full: ${short(progs.file)} and the folder shaders-doctor beside it`)
+    for (const e of progs.different) {
+      const each = new Map()
+      for (const m of e.messages) each.set(`${m.code} ${m.text}`, (each.get(`${m.code} ${m.text}`) ?? 0) + 1)
+      after.push(`  fragment shader "${e.fragment}", vertex shader "${e.vertex}", ${e.programs} ${e.programs === 1 ? 'program' : 'programs'}:`)
+      for (const [text, times] of each) after.push(`      ${times} x  ${text}`)
+    }
+  }
+  if (other.length) {
+    row('page warnings', `${other.length} different ${other.length === 1 ? 'warning' : 'warnings'}, in full under this table`, 'noted only', null)
+    after.push('the warnings the page wrote while it loaded and drew, each once (they stop nothing; the remote team reads them):')
+    for (const w of other) after.push(`  ${w.times} x  ${w.text.replace(/\s*\n\s*/g, ' | ')}`)
+  }
+  // the maths probe of the tree: what this card and its compiler answer where the shading language leaves it open
+  const maths = seen.maths
+  out.maths = maths
+  if (maths?.lines) {
+    const S = await import('./handoff-shaders.mjs')
+    const isnan = S.mathsAnswer(maths.lines, 'isnan(nan)')
+    row('maths probe', `${maths.lines.length} questions answered${isnan === null ? '' : `; isnan of a value that is not a number answers ${isnan} (1.00 is yes)`}`, 'noted only: the answers are for the remote team', null)
+    after.push('what this card and its shader compiler answer to the maths probe of the tree (src/core/maths.ts):')
+    after.push(`  ${maths.lines.join('; ')}`)
+  } else row('maths probe', maths?.problem ?? 'not asked', 'noted only: the answers are for the remote team', null)
   if (seen.drawProblem) fail('one picture', 'not drawn', 'one picture of one sample, drawn and read back', `the page could not draw its first picture: ${seen.drawProblem}`)
   else if (draw && seen.picture) {
     if (seen.picture.problem) fail('one picture', seen.picture.problem, 'a picture that is not flat', `the first picture came back wrong: ${seen.picture.problem}`)
@@ -564,11 +611,50 @@ export async function shortTest(ctx) {
   if (!sim.ok) return fail(sim.why)
   ctx.say(`the checkpoints of the simulation are made (${L.hoursText(sim.seconds)})`)
 
+  // every program of the film and of the loop compiled once on this machine: what its shader compiler says of each
+  const S = await import('./handoff-shaders.mjs')
+  const after = []
+  result.after = after
+  let walk = null
+  ctx.say(`every program of the film is compiled once: ${Object.values(S.WALK).flat().length} frames of film B and of the loop, drawn small in one sample`)
+  try {
+    walk = await S.walkShaders({ lib: rel('tools', 'lib'), dist: rel('dist'), local: mode.local, say: ctx.note })
+  } catch (e) {
+    row('shaders across the film', `the page could not be walked: ${String(e.message).split('\n')[0]}`, `${Object.values(S.WALK).flat().length} frames drawn small, every program compiled`, false)
+  }
+  if (walk) {
+    const file = path.join(ctx.H, 'shader-messages-test.txt')
+    fs.writeFileSync(file, S.shaderList(walk.seen, S.walkHead(walk, [`${L.TITLE}: what the shader compiler wrote, program by program, across the film`, `written   ${new Date().toISOString()}`, `engine    ${hash}`])))
+    fs.rmSync(path.join(ctx.H, 'shaders-test'), { recursive: true, force: true })
+    S.writeShaders(walk.seen, path.join(ctx.H, 'shaders-test'))
+    const brief = S.briefLogs(walk.seen)
+    const errors = brief.flatMap((e) => e.messages.filter((m) => m.kind === 'error').map((m) => `${e.fragment}: ${m.code} ${m.text}`))
+    const frames = Object.values(walk.frames).flat().length
+    result.shaders = { file, linked: walk.seen.linked, withLog: walk.seen.logs.length, different: brief, maths: walk.maths, notDrawn: walk.notDrawn, errors: walk.errors }
+    row('shaders across the film', walk.notDrawn.length ? `not drawn: ${walk.notDrawn.join('; ')}` : `${frames} frames drawn small, ${walk.seen.linked} programs compiled`, `${frames} frames drawn small, every program compiled`, walk.notDrawn.length === 0)
+    row('shader errors', errors.length ? errors.join('; ') : walk.errors.filter((e) => /^(error|pageerror): /.test(e)).join('; ') || 'none', 'none', errors.length === 0 && !walk.errors.some((e) => /^(error|pageerror): /.test(e)))
+    row('shader messages', `${walk.seen.logs.length} of ${walk.seen.linked} programs wrote messages, ${brief.length} different ones; in ${short(file)}`, 'noted only: a shader that warns still compiles and draws', null)
+    ctx.say(`${walk.seen.linked} programs compiled, ${walk.seen.logs.length} of them with messages of the shader compiler: ${short(file)}`)
+    if (brief.length) {
+      after.push(`what the shader compiler of this machine wrote across the film (it stops nothing; the remote team reads it). Each place and each shader in full: ${short(file)} and the folder shaders-test beside it`)
+      for (const e of brief) {
+        const each = new Map()
+        for (const m of e.messages) each.set(`${m.code} ${m.text}`, (each.get(`${m.code} ${m.text}`) ?? 0) + 1)
+        after.push(`  fragment shader "${e.fragment}", vertex shader "${e.vertex}", ${e.programs} ${e.programs === 1 ? 'program' : 'programs'}:`)
+        for (const [text, times] of each) after.push(`      ${times} x  ${text}`)
+      }
+    }
+    if (walk.maths?.lines) after.push('the maths probe of the tree on this card (src/core/maths.ts):', `  ${walk.maths.lines.join('; ')}`)
+  }
+
   // (a) the reference frames
   const sheet = []
   const timed = []
   const drawnDir = path.join(T, 'frames')
   const sharp = (await import('sharp')).default
+  const comparedDir = path.join(ctx.H, 'compared')
+  fs.rmSync(comparedDir, { recursive: true, force: true })
+  fs.mkdirSync(comparedDir, { recursive: true })
   for (const what of ['film-b', 'loop']) {
     const list = refs.filter((r) => r.what === what)
     if (!list.length) continue
@@ -601,6 +687,12 @@ export async function shortTest(ctx) {
       for (const x of c.rows) row(`${name}: ${x.check}`, x.found, x.wanted, x.pass)
       ;(result.frames ??= []).push({ what, frame: ref.frame, samples: got.samples, seconds: got.seconds, ...c.numbers, pass: c.pass })
       const h = L.half(here.data, here.width, here.height)
+      // what this machine drew is kept beside the reports, so that a frame that fails can be looked at far away
+      const stem = path.join(comparedDir, `${what}-${String(ref.frame).padStart(6, '0')}`)
+      const raw3 = (data, w, hh) => sharp(data, { raw: { width: w, height: hh, channels: 3 } })
+      await raw3(h.data, h.width, h.height).webp({ lossless: true }).toFile(`${stem}-here-half.webp`)
+      await raw3(L.apartPicture(h.data, loaded.half.data, h.width, h.height), h.width, h.height).png().toFile(`${stem}-apart-half.png`)
+      for (const cut of loaded.cuts) await raw3(L.crop(here.data, here.width, cut), cut.w, cut.h).webp({ lossless: true }).toFile(`${stem}-here-cut-${cut.name}.webp`)
       sheet.push({ label: `${name}, ${got.samples} samples: whole ${Number.isFinite(c.numbers.psnrWhole) ? c.numbers.psnrWhole.toFixed(2) : 'identical'} dB${c.pass ? '' : '   FAILS'}`, pairs: [{ label: 'the whole picture at half size', ref: loaded.half.data, here: h.data, w: h.width, h: h.height }, ...loaded.cuts.map((cut, k) => ({ label: `cut ${cut.name} at full size, x ${cut.x} y ${cut.y}: ${Number.isFinite(c.numbers.cuts[k].psnr) ? c.numbers.cuts[k].psnr.toFixed(2) : 'identical'} dB`, ref: cut.data, here: L.crop(here.data, here.width, cut), w: cut.w, h: cut.h }))] })
     }
   }
@@ -1082,7 +1174,7 @@ async function seamSteps(file) {
   const steps = []
   for (let i = 1; i < n; i++) steps.push(step(i - 1, i))
   const sorted = [...steps].sort((a, b) => a - b)
-  return { frames: n, seam: step(n - 1, 0), median: sorted[Math.floor(sorted.length / 2)], most: sorted[sorted.length - 1] }
+  return { frames: n, seam: step(n - 1, 0), median: sorted[Math.floor(sorted.length / 2)], most: sorted[sorted.length - 1], beside: L.besideSeam(steps) }
 }
 
 export async function check(ctx) {
@@ -1133,7 +1225,7 @@ export async function check(ctx) {
     if (which === 'loop') {
       const seam = await seamSteps(file)
       if (!seam) row('loop: the seam', 'could not be measured', 'the step from the last frame back to the first', false)
-      else row('loop: the seam', `the step from the last frame to the first is ${seam.seam.toFixed(3)} levels; inside the loop the median step is ${seam.median.toFixed(3)} and the largest ${seam.most.toFixed(3)}`, mode.small ? 'noted only: a dozen frames of the loop do not close a loop' : 'at most twice the largest step inside the loop, or under half a level', mode.small ? null : seam.seam <= Math.max(seam.most * 2, 0.5))
+      else row('loop: the seam', `the step from the last frame to the first is ${seam.seam.toFixed(3)} levels; the largest of the ${L.SEAM.beside} steps on each side of it is ${seam.beside.toFixed(3)}; inside the loop the median step is ${seam.median.toFixed(3)} and the largest ${seam.most.toFixed(3)}`, mode.small ? 'noted only: a dozen frames of the loop do not close a loop' : L.SEAM.wanted, mode.small ? null : L.seamOk(seam))
     }
   }
   // the screenshot is the loop's frame 0, the very PNG its chunk names

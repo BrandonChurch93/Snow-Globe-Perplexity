@@ -71,4 +71,13 @@ const H = path.join(here, 'out', 'work', 'handoff')
 try {
   for (const n of fs.readdirSync(H)) if (/^(report-.*\.txt|job-.*\.(log|out|stderr|stdout)|.*\.json)$/.test(n)) take(path.join(H, n), `handoff - ${n}`)
 } catch {}
+// what the shader compiler wrote, the shaders it wrote about, and the pictures the short test compared
+for (const n of ['shader-messages-doctor.txt', 'shader-messages-test.txt']) take(path.join(H, n), `handoff - ${n}`)
+for (const dir of ['shaders-doctor', 'shaders-test', 'compared']) {
+  try {
+    const names = fs.readdirSync(path.join(H, dir))
+    if (names.length) fs.mkdirSync(path.join(out, dir), { recursive: true })
+    for (const n of names) take(path.join(H, dir, n), path.join(dir, n))
+  } catch {}
+}
 if (!quiet) fs.appendFileSync(path.join(out, 'notes.txt'), notes.join('\n') + '\n')

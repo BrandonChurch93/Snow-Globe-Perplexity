@@ -3,6 +3,7 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
 import * as L from '../tools/lib/handoff.mjs'
+import * as S from '../tools/lib/handoff-shaders.mjs'
 import { planProblems } from '../tools/lib/handoff-stamp.mjs'
 import { rel, readJson } from '../tools/lib/paths.mjs'
 
@@ -120,6 +121,48 @@ describe('what draws', () => {
   it('fails a page with no WebGL', () => {
     expect(L.drawVerdict({ renderer: '', cards: [NVIDIA] }).ok).toBe(false)
     expect(L.drawVerdict({ renderer: 'no WebGL', cards: [] }).ok).toBe(false)
+  })
+  it('names the software renderer the Windows test machines draw with, as their doctor read it', () => {
+    // MEASURED: handoff proof run 46090113975, windows-winget-lines
+    expect(L.softwareName('ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)')).toBe('basic render')
+  })
+})
+
+describe('the seam of the loop', () => {
+  it('passes the loop as it was measured, and fails one that jumps at its seam', () => {
+    // MEASURED on the whole loop at preview size: the four steps on each side, and the seam
+    const steps = [0.3827, 0.4659, 0.4522, 0.4136, 1.08, 10.56, 6.6, 0.4637, 0.4466, 0.4297, 0.4136]
+    expect(L.besideSeam(steps)).toBeCloseTo(0.4659, 4)
+    expect(L.seamOk({ seam: 0.6562, beside: L.besideSeam(steps) })).toBe(true)
+    expect(L.seamOk({ seam: 1.5, beside: L.besideSeam(steps) })).toBe(false)
+    expect(L.seamOk({ seam: 10.5, beside: L.besideSeam(steps) })).toBe(false)
+  })
+  it('lets a still loop pass: under one level is no jump', () => {
+    expect(L.seamOk({ seam: 0.9, beside: 0.01 })).toBe(true)
+    expect(L.seamOk({ seam: 1.1, beside: 0.01 })).toBe(false)
+  })
+})
+
+describe('what the page wrote', () => {
+  // the wording of the shader compiler of Direct3D, as the doctor read it on Windows in handoff proof run 46090113975
+  const warnA = 'warning: THREE.WebGLProgram: Program Info Log: (1185,1): warning X4000: use of potentially uninitialized variable (f_glassSeen_int)\n(1203,1): warning X4000: use of potentially uninitialized variable (f_glassSeen_int)'
+  const warnB = 'warning: THREE.WebGLProgram: Program Info Log: (503,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value'
+  const warnB2 = warnB.replace('(503,12-121)', '(500,12-121)')
+  it('takes a warning of the shader compiler as a warning, each different one once with its count', () => {
+    const m = L.pageMessages([warnA, warnB, warnB2, warnB])
+    expect(m.errors).toEqual([])
+    expect(m.warnings.map((w) => w.times)).toEqual([1, 3])
+    expect(m.warnings[1].text).toBe(warnB)
+  })
+  it('takes a shader that does not compile, an error of the page and a script that throws as errors', () => {
+    const errors = ['error: THREE.WebGLProgram: Shader Error 0 - VALIDATE_STATUS false', 'pageerror: x is not defined', 'error: THREE.WebGLShader: gl.getShaderInfoLog() fragment ERROR: 0:12']
+    const m = L.pageMessages([warnA, ...errors, errors[0]])
+    expect(m.errors).toEqual(errors)
+    expect(m.warnings).toHaveLength(1)
+  })
+  it('takes a line it does not know as an error', () => {
+    expect(L.pageMessages(['something else']).errors).toEqual(['something else'])
+    expect(L.pageMessages().errors).toEqual([])
   })
 })
 
@@ -467,15 +510,50 @@ describe('the measures of a picture', () => {
     const ref = { half: L.half(scene, W, Hh), cuts: [{ ...cutBox, data: L.crop(scene, W, cutBox) }], glass: [{ ...glassBox, ...L.glassStats(scene, W, glassBox) }] }
     const same = L.compareFrame({ here: scene, width: W, height: Hh, ref, floors })
     expect(same.pass).toBe(true)
-    expect(same.rows.map((r) => r.check)).toEqual(['a picture', 'whole picture, half size', 'whole picture, blocks', 'cut middle, full size', 'cut middle, blocks', 'glass glass, mean luma', 'glass glass, near white'])
+    expect(same.rows.map((r) => r.check)).toEqual(['a picture', 'whole picture, half size', 'whole picture, blocks', 'whole picture, how far apart', 'cut middle, full size', 'cut middle, blocks', 'cut middle, how far apart', 'glass glass, mean luma', 'glass glass, near white'])
+    // how far apart is noted and holds nothing: the floors hold the test
+    expect(same.rows.filter((r) => r.pass === null).map((r) => r.check)).toEqual(['whole picture, how far apart', 'cut middle, how far apart'])
+    expect(same.numbers.apart).toMatchObject({ largest: 0, mean: 0, over: 0, box: null })
     const white = Buffer.from(scene)
     for (let y = 8; y < 24; y++) for (let x = 16; x < 48; x++) white.fill(255, (y * W + x) * 3, (y * W + x) * 3 + 3)
     const bad = L.compareFrame({ here: white, width: W, height: Hh, ref, floors })
     expect(bad.pass).toBe(false)
-    expect(bad.rows.filter((r) => !r.pass).map((r) => r.check)).toContain('glass glass, near white')
+    expect(bad.rows.filter((r) => r.pass === false).map((r) => r.check)).toContain('glass glass, near white')
     const flat = L.compareFrame({ here: Buffer.alloc(W * Hh * 3), width: W, height: Hh, ref, floors })
     expect(flat.pass).toBe(false)
     expect(flat.rows).toHaveLength(1)
+  })
+  it('says how far two pictures stand apart, and where', () => {
+    const W = 64
+    const Hh = 32
+    const a = Buffer.alloc(W * Hh * 3, 100)
+    const b = Buffer.from(a)
+    // one pixel 40 levels off in one channel, and a block of 4 x 2 pixels 9 levels off, in the lower right
+    b[(3 * W + 5) * 3 + 1] = 140
+    for (let y = 28; y < 30; y++) for (let x = 56; x < 60; x++) b[(y * W + x) * 3] = 109
+    // and one pixel exactly at the threshold, which does not count
+    b[(10 * W + 10) * 3 + 2] = 100 + L.APART.levels
+    const m = L.apart(a, b, W, Hh)
+    expect(m.largest).toBe(40)
+    expect(m.largestAt).toEqual({ x: 5, y: 3 })
+    expect(m.over).toBe(9)
+    expect(m.share).toBeCloseTo(9 / (W * Hh), 9)
+    expect(m.mean).toBeCloseTo((40 + 8 * 9 + L.APART.levels) / (W * Hh * 3), 9)
+    expect(m.box).toEqual({ x: 5, y: 3, w: 55, h: 27 })
+    expect(m.cells[0]).toEqual({ column: 8, row: 4, pixels: 8 })
+    expect(m.cells[1]).toEqual({ column: 1, row: 1, pixels: 1 })
+    const text = L.apartText(m, { scale: 2 })
+    expect(text).toContain('largest 40 of 255 at x 10 y 6')
+    expect(text).toContain(`9 pixels (${((9 / (W * Hh)) * 100).toFixed(3)} %) over ${L.APART.levels}`)
+    expect(text).toContain('x 10 to 119, y 6 to 59')
+    expect(text).toContain('most in column 8 row 4: 8, column 1 row 1: 1')
+    expect(L.apartText(L.apart(a, a, W, Hh))).toBe(`largest 0 of 255, mean 0.000, 0 pixels (0.000 %) over ${L.APART.levels}`)
+    // a cut says its places in the pixels of the full picture
+    expect(L.apartText(m, { x: 1000, y: 500 })).toContain('at x 1005 y 503')
+    const pic = L.apartPicture(a, b, W, Hh)
+    expect(pic[(3 * W + 5) * 3]).toBe(255)
+    expect(pic[(28 * W + 56) * 3 + 2]).toBe(144)
+    expect(pic[0]).toBe(0)
   })
   it('writes a table with ok, FAILS and noted', () => {
     const text = L.tableText([{ check: 'a', found: 'x', wanted: 'x', pass: true }, { check: 'b', found: 'y', wanted: 'z', pass: false }, { check: 'c', found: 'w', wanted: '', pass: null }])
@@ -483,6 +561,74 @@ describe('the measures of a picture', () => {
     expect(text).toMatch(/a\s+x\s+x\s+ok/)
     expect(text).toMatch(/b\s+y\s+z\s+FAILS/)
     expect(text).toMatch(/c\s+w\s+noted/)
+  })
+})
+
+describe('what the shader compiler wrote', () => {
+  const fragment = ['#version 300 es', '#define SHADER_NAME GlobeGlass', '#define USE_FOG 1', 'precision highp float;', 'uniform float uTime;', 'float glassSeen(int k) {', '  float x;', '  if (k > 0) x = 1.0;', '  return x;', '}', 'void main() {}'].join('\n')
+  const other = fragment.replace('#define USE_FOG 1', '#define USE_FOG 0')
+  const vertex = '#define SHADER_NAME GlobeGlass\nvoid main() {}'
+  const translated = Array.from({ length: 30 }, (_, k) => `// translated line ${k + 1}`).join('\n')
+  const program = (log: string, frag = fragment) => ({ log, askedBy: 'the page', shaders: [{ stage: 'vertex', source: vertex, translated: '' }, { stage: 'fragment', source: frag, translated }] })
+  it('reads a message of the Direct3D compiler: place, kind, code and text', () => {
+    expect(S.parseMessage('(1185,1): warning X4000: use of potentially uninitialized variable (f_glassSeen_int)')).toEqual({ line: 1185, column: 1, columnEnd: null, kind: 'warning', code: 'X4000', text: 'use of potentially uninitialized variable (f_glassSeen_int)' })
+    expect(S.parseMessage('(503,12-121): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value')).toMatchObject({ line: 503, column: 12, columnEnd: 121, code: 'X3595' })
+    expect(S.parseMessage('C:\\fakepath(12,3-9): error X3004: undeclared identifier')).toMatchObject({ kind: 'error', code: '' })
+    expect(S.parseMessage('(7,2): error X3004: undeclared identifier x')).toMatchObject({ kind: 'error', code: 'X3004', line: 7 })
+    expect(S.parseMessage('   ')).toBeNull()
+    expect(S.parseMessage('something else went wrong')).toMatchObject({ kind: 'warning', line: null })
+  })
+  it("finds a translated name in the shader's own source", () => {
+    expect(S.ownNames('f_glassSeen_int')).toEqual(['glassSeen_int', 'glassSeen'])
+    expect(S.ownNames('f_stageGone')).toEqual(['stageGone'])
+    expect(S.ownNames('_uTime')).toEqual(['uTime'])
+    expect(S.whereWritten(fragment, 'glassSeen')).toEqual({ line: 6, text: 'float glassSeen(int k) {' })
+    expect(S.whereWritten(fragment, 'glassSeen_int')).toBeNull()
+    expect(S.whereWritten(fragment, 'uTime')).toBeNull()
+  })
+  it('lists each different program once, with its log in full and the place of each message', () => {
+    const log = '(12,1): warning X4000: use of potentially uninitialized variable (f_glassSeen_int)\n(20,1): warning X4000: use of potentially uninitialized variable (f_glassSeen_int)'
+    const seen = { linked: 9, logs: [program(log), program(log.replace('(12,1)', '(14,1)').replace('(20,1)', '(22,1)'), other), program('(3,5-9): warning X3577: value cannot be NaN, isnan() may not be necessary.  /Gis may force isnan() to be performed')] }
+    const entries = S.sortLogs(seen)
+    // the same two shaders with another switch are one entry; another message is another
+    expect(entries.map((e) => e.programs)).toEqual([2, 1])
+    expect(entries[0]).toMatchObject({ fragment: 'GlobeGlass', vertex: 'GlobeGlass', others: ['(14,1) (22,1)'] })
+    const text = S.shaderList(seen, ['the head'])
+    expect(text.startsWith('the head\n')).toBe(true)
+    expect(text).toContain('programs linked by the page: 9; programs whose log is not empty: 3; different ones (other shaders or other messages): 2; messages that are errors: 0')
+    expect(text).toContain('== 1. fragment shader "GlobeGlass", vertex shader "GlobeGlass": 2 programs with these messages (asked by the page) ==')
+    for (const l of log.split('\n')) expect(text).toContain(`  ${l}`)
+    expect(text).toContain('the same messages in the other program (the same two shaders with other switches) stand at: (14,1) (22,1)')
+    expect(text).toContain('"f_glassSeen_int" is glassSeen of the fragment shader\'s own source, line 6: float glassSeen(int k) {')
+    expect(text).toContain('line 12 of the translated fragment shader: // translated line 12')
+    expect(text).toContain('- warning X3577 at (3,5-9): value cannot be NaN')
+    expect(S.briefLogs(seen)[0]).toEqual({ fragment: 'GlobeGlass', vertex: 'GlobeGlass', programs: 2, messages: entries[0]!.messages })
+  })
+  it('counts an error as an error, names a shader with no name by its first line, and says when nothing was written', () => {
+    const seen = { linked: 1, logs: [{ log: '(7,2): error X3004: undeclared identifier x', askedBy: 'this tool', shaders: [{ stage: 'fragment', source: 'precision highp float;\nuniform sampler2D tDiffuse;\nvoid main() {}', translated: '' }] }] }
+    const text = S.shaderList(seen)
+    expect(text).toContain('messages that are errors: 1')
+    expect(text).toContain('fragment shader "no name; it begins: uniform sampler2D tDiffuse;", vertex shader "none"')
+    expect(text).toContain('the browser gave back no translated shader')
+    expect(S.shaderList({ linked: 4, logs: [] })).toContain('no program wrote a message')
+    expect(S.shaderList(null)).toContain('the watch did not run on this page')
+  })
+  it('reads one answer of the maths probe', () => {
+    const lines = ['pow(0, 0) 0.00', '0 / 0 nan', 'isnan(nan) 1.00']
+    expect(S.mathsAnswer(lines, 'isnan(nan)')).toBe('1.00')
+    expect(S.mathsAnswer(lines, '0 / 0')).toBe('nan')
+    expect(S.mathsAnswer(lines, 'sqrt(-1)')).toBeNull()
+    expect(S.mathsAnswer(undefined, 'isnan(nan)')).toBeNull()
+  })
+  it('draws the frames of every season and of the loop, so that every program is compiled', () => {
+    const cfg = readJson(rel('config', 'showcase.json'))
+    expect(Object.keys(S.WALK)).toEqual(['film-b', 'loop'])
+    expect(Math.max(...S.WALK['film-b'])).toBe(3599)
+    expect(Math.max(...S.WALK.loop)).toBeLessThan(480)
+    expect(cfg.formats.preview.id).toBe('preview')
+    expect(S.SHADER_WATCH).toContain('WEBGL_debug_shaders')
+    // the watch is one expression that a page can run before its own scripts
+    expect(() => new Function(S.SHADER_WATCH)).not.toThrow()
   })
 })
 

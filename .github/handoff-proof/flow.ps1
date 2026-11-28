@@ -76,9 +76,16 @@ if ($env:PROOF_MODE -eq 'small') {
   Line 'render-first-call' '3' 'node tools/handoff.mjs render' -Once
   # wait for the first finished chunk, then end the process that renders and everything it started
   $Chunk = $null
-  for ($i = 0; $i -lt 600 -and -not $Chunk; $i++) {
+  $Tries = 0
+  if ($script:LastCode -eq 3) { $Tries = 400 }
+  for ($i = 0; $i -lt $Tries -and -not $Chunk; $i++) {
     $Chunk = Get-ChildItem -Path 'out/master/test/film-b' -Filter '*.mp4' -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $Chunk) { Start-Sleep -Seconds 3 }
+  }
+  if (-not $Chunk) {
+    Note 'PROBLEM: the render finished no chunk to stop it after; the flow ends here'
+    node (Join-Path $Help 'after.mjs') $env:PROOF_OUT
+    exit 0
   }
   $Sha1 = (Get-FileHash -LiteralPath $Chunk.FullName -Algorithm SHA256).Hash
   $Job = Get-Content -Raw 'out/work/handoff/job.json' | ConvertFrom-Json

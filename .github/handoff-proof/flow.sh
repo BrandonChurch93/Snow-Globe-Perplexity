@@ -63,11 +63,18 @@ if [ "$PROOF_MODE" = small ]; then
   line test 0 'node tools/handoff.mjs test'
   ONCE=1 line render-first-call 3 'node tools/handoff.mjs render'
   # wait for the first finished chunk, then end the process that renders, and it alone
-  for i in $(seq 1 600); do
-    ls out/master/test/film-b/*.mp4 > /dev/null 2>&1 && break
-    sleep 3
-  done
+  if [ "$LAST_CODE" = 3 ]; then
+    for i in $(seq 1 400); do
+      ls out/master/test/film-b/*.mp4 > /dev/null 2>&1 && break
+      sleep 3
+    done
+  fi
   CHUNK="$(ls out/master/test/film-b/*.mp4 2> /dev/null | head -1)"
+  if [ -z "$CHUNK" ]; then
+    note "PROBLEM: the render finished no chunk to stop it after; the flow ends here"
+    node "$HELP/after.mjs" "$PROOF_OUT"
+    exit 0
+  fi
   SHA1="$(node -e "console.log(require('crypto').createHash('sha256').update(require('fs').readFileSync(process.argv[1])).digest('hex'))" "$CHUNK")"
   PID="$(node -p "require('./out/work/handoff/job.json').pid")"
   note "the render is at work as process $PID; first finished chunk: $CHUNK"

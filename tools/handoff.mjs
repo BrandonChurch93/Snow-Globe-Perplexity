@@ -91,7 +91,7 @@ function reportText(cmd, ctx, result, state) {
     `tool       node tools/handoff.mjs ${cmd}, Node ${process.version} on ${process.platform} ${process.arch}`,
     ...(L.anyTestSwitch(ctx.T) ? [`NOTE       this was a run of the tool's own tests (${Object.entries(ctx.T).filter(([, v]) => v).map(([k, v]) => (v === true ? k : `${k}=${v}`)).join(', ')}). It is no run of the film`] : []),
   ]
-  const tables = ctx.tables.filter((t) => t.rows.length).flatMap((t) => [bar, `${t.title}:`, L.tableText(t.rows)])
+  const tables = ctx.tables.filter((t) => t.rows.length).flatMap((t) => [bar, `${t.title}:`, L.tableText(t.rows), ...(t.after?.length ? ['', ...t.after] : [])])
   return [...head, bar, ...ctx.lines, ...tables, bar, L.verdictLine(state, result.why), ''].join('\n')
 }
 
@@ -165,7 +165,7 @@ async function carryOut(cmd, ctx) {
     result = { pass: false, why: `the tool itself stopped on an error, which is a fault of the tool and not of this machine: ${String(e?.message ?? e).split('\n')[0]}`, error: String(e?.stack ?? e) }
   }
   const state = result.pass ? 'PASS' : 'FAIL'
-  if (result.rows?.length && !ctx.tables.some((t) => t.rows === result.rows)) ctx.tables.push({ title: `the checks of "${cmd}"`, rows: result.rows })
+  if (result.rows?.length && !ctx.tables.some((t) => t.rows === result.rows)) ctx.tables.push({ title: `the checks of "${cmd}"`, rows: result.rows, after: result.after })
   if (KEPT[cmd] && !result.refused) {
     const { rows, ...rest } = result
     writeJson(file(KEPT[cmd]), { ...rest, ...(cmd === 'check' || cmd === 'deliver' ? { rows } : {}), command: cmd })

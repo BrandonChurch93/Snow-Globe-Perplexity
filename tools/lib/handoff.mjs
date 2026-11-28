@@ -91,6 +91,39 @@ export function drawVerdict({ renderer, cards, allowSoftware = false }) {
 // ---------------------------------------------------------------------------------------------------------------------
 // Versions.
 
+/**
+ * The seam of the loop: the step from its last frame back to its first, against the steps beside it. A loop that
+ * closes steps across its seam as it steps on either side of it; a loop that does not close jumps there.
+ * MEASURED on the whole loop of engine 22b2ad3ea80cf9c7 (480 frames, preview size, 2 samples, Linux in software,
+ * mean absolute difference of 320 x 180 grey pictures in levels of 255): the seam 0.656, the four steps on each
+ * side 0.41 to 0.47, the median step of the loop 1.08 and its largest 10.56 (in the storm). So the largest step of
+ * the loop says nothing about the seam, and the steps beside it do: the seam there is 1.4 times the largest of them.
+ */
+export const SEAM = { beside: 4, times: 3, least: 1, wanted: 'at most three times the largest of the four steps on each side of it, or under one level' }
+export const besideSeam = (steps, k = SEAM.beside) => Math.max(0, ...steps.slice(0, k), ...steps.slice(-k))
+export const seamOk = ({ seam, beside }) => seam <= Math.max(beside * SEAM.times, SEAM.least)
+
+/**
+ * What the page wrote while it loaded and drew, sorted. An error (a shader that does not compile or link, a script
+ * that throws) stops the doctor. A warning does not: on Windows the shader compiler of Direct3D writes warnings for
+ * shaders that compile and draw, on every card. Each different warning is kept once, with how often it came; the
+ * place in the shader, (line,column), is left out of the comparison because it differs from program to program.
+ */
+export function pageMessages(list = []) {
+  const errors = []
+  const warnings = new Map()
+  for (const m of list) {
+    const text = String(m)
+    if (/^warning: /.test(text)) {
+      const key = text.replace(/\(\d+,[\d-]+\)/g, '(line)')
+      const had = warnings.get(key)
+      if (had) had.times++
+      else warnings.set(key, { text, times: 1 })
+    } else if (!errors.includes(text)) errors.push(text)
+  }
+  return { errors, warnings: [...warnings.values()] }
+}
+
 export const LEAST = { node: [20, 19, 0], git: [2, 25, 0], ffmpeg: [7, 0, 0], chrome: [147, 0, 0] }
 /** The Node the build tools take: 20.19 or newer of 20, 22.12 or newer of 22, or anything newer than 22. */
 export function nodeOk(text) {
@@ -394,12 +427,74 @@ export function pictureProblem(rgb, width, height) {
   return ''
 }
 
-const num = (x, digits = 2) => (x === Infinity ? 'identical' : Number(x).toFixed(digits))
+const num = (x, digits = 2) => (x === Infinity ? 'identical' : `${Number(x).toFixed(digits)} dB`)
 
 /**
  * One reference frame against what this machine drew. `here` is the frame at full size, `ref` the reference's
  * decoded pictures. Returns the numbers and one row for each check, each with its floor.
  */
+/**
+ * How far two pictures stand apart, pixel by pixel. A pixel's difference is the largest of its three channels'
+ * differences, in levels of 255. The floors above hold the test; this says where the difference lies.
+ */
+export const APART = { levels: 8, columns: 8, rows: 4 }
+export const APART_MEASURE = `a pixel counts as apart when one of its channels differs by more than ${APART.levels} of 255 levels; the picture is laid out as ${APART.columns} columns by ${APART.rows} rows of cells, column 1 at the left and row 1 at the top`
+export function apart(a, b, width, height, { levels = APART.levels, columns = APART.columns, rows = APART.rows } = {}) {
+  const px = width * height
+  const cells = new Array(columns * rows).fill(0)
+  let largest = 0
+  let sum = 0
+  let over = 0
+  let x0 = width, y0 = height, x1 = -1, y1 = -1
+  let at = null
+  for (let y = 0; y < height; y++) {
+    const cy = Math.min(rows - 1, Math.floor((y * rows) / height))
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 3
+      const d0 = Math.abs(a[i] - b[i])
+      const d1 = Math.abs(a[i + 1] - b[i + 1])
+      const d2 = Math.abs(a[i + 2] - b[i + 2])
+      sum += d0 + d1 + d2
+      const d = d0 > d1 ? (d0 > d2 ? d0 : d2) : d1 > d2 ? d1 : d2
+      if (d > largest) {
+        largest = d
+        at = { x, y }
+      }
+      if (d > levels) {
+        over++
+        cells[cy * columns + Math.min(columns - 1, Math.floor((x * columns) / width))]++
+        if (x < x0) x0 = x
+        if (x > x1) x1 = x
+        if (y < y0) y0 = y
+        if (y > y1) y1 = y
+      }
+    }
+  }
+  const most = cells
+    .map((n, k) => ({ column: (k % columns) + 1, row: Math.floor(k / columns) + 1, pixels: n }))
+    .filter((c) => c.pixels > 0)
+    .sort((p, q) => q.pixels - p.pixels || p.row - q.row || p.column - q.column)
+  return { largest, largestAt: at, mean: px ? sum / (px * 3) : 0, over, share: px ? over / px : 0, levels, box: over ? { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 } : null, cells: most }
+}
+
+/** One line of words for what apart() found. `scale` and `offset` put places into the pixels of the full picture. */
+export function apartText(m, { scale = 1, x = 0, y = 0 } = {}) {
+  const head = `largest ${m.largest} of 255${m.largestAt && m.largest ? ` at x ${m.largestAt.x * scale + x} y ${m.largestAt.y * scale + y}` : ''}, mean ${m.mean.toFixed(3)}, ${m.over} pixels (${(m.share * 100).toFixed(3)} %) over ${m.levels}`
+  if (!m.over) return head
+  const cells = m.cells.slice(0, 3).map((c) => `column ${c.column} row ${c.row}: ${c.pixels}`).join(', ')
+  return `${head}; they lie within x ${m.box.x * scale + x} to ${(m.box.x + m.box.w) * scale + x - 1}, y ${m.box.y * scale + y} to ${(m.box.y + m.box.h) * scale + y - 1} of the full picture, most in ${cells}`
+}
+
+/** A picture of where two pictures differ: grey, the difference times 16, so that one level shows. */
+export function apartPicture(a, b, width, height, times = 16) {
+  const out = Buffer.alloc(width * height * 3)
+  for (let i = 0; i < out.length; i += 3) {
+    const d = Math.min(255, Math.max(Math.abs(a[i] - b[i]), Math.abs(a[i + 1] - b[i + 1]), Math.abs(a[i + 2] - b[i + 2])) * times)
+    out[i] = out[i + 1] = out[i + 2] = d
+  }
+  return out
+}
+
 export function compareFrame({ here, width, height, ref, floors }) {
   const rows = []
   const row = (check, found, wanted, pass) => rows.push({ check, found, wanted, pass })
@@ -409,16 +504,20 @@ export function compareFrame({ here, width, height, ref, floors }) {
   const h = half(here, width, height)
   const whole = psnr(h.data, ref.half.data)
   const wholeCoarse = coarsePsnr(h.data, ref.half.data, h.width, h.height)
-  row('whole picture, half size', `${num(whole.psnr)} dB`, `${floors.psnrWhole} dB or more`, whole.psnr >= floors.psnrWhole)
-  row('whole picture, blocks', `${num(wholeCoarse)} dB`, `${floors.coarseWhole} dB or more`, wholeCoarse >= floors.coarseWhole)
+  row('whole picture, half size', num(whole.psnr), `${floors.psnrWhole} dB or more`, whole.psnr >= floors.psnrWhole)
+  row('whole picture, blocks', num(wholeCoarse), `${floors.coarseWhole} dB or more`, wholeCoarse >= floors.coarseWhole)
+  const wholeApart = apart(h.data, ref.half.data, h.width, h.height)
+  row('whole picture, how far apart', apartText(wholeApart, { scale: 2 }), 'noted only: it says where the difference lies', null)
   const cuts = []
   for (const c of ref.cuts) {
     const mine = crop(here, width, c)
     const p = psnr(mine, c.data)
     const coarse = coarsePsnr(mine, c.data, c.w, c.h)
-    cuts.push({ name: c.name, psnr: p.psnr, coarse, maxDiff: p.maxDiff })
-    row(`cut ${c.name}, full size`, `${num(p.psnr)} dB`, `${floors.psnrCut} dB or more`, p.psnr >= floors.psnrCut)
-    row(`cut ${c.name}, blocks`, `${num(coarse)} dB`, `${floors.coarseCut} dB or more`, coarse >= floors.coarseCut)
+    const cutApart = apart(mine, c.data, c.w, c.h)
+    cuts.push({ name: c.name, psnr: p.psnr, coarse, maxDiff: p.maxDiff, apart: cutApart })
+    row(`cut ${c.name}, full size`, num(p.psnr), `${floors.psnrCut} dB or more`, p.psnr >= floors.psnrCut)
+    row(`cut ${c.name}, blocks`, num(coarse), `${floors.coarseCut} dB or more`, coarse >= floors.coarseCut)
+    row(`cut ${c.name}, how far apart`, apartText(cutApart, { x: c.x, y: c.y }), 'noted only', null)
   }
   const glass = []
   for (const g of ref.glass ?? []) {
@@ -429,7 +528,7 @@ export function compareFrame({ here, width, height, ref, floors }) {
     row(`glass ${g.name}, mean luma`, `${s.meanLuma.toFixed(4)} (the reference is ${g.meanLuma.toFixed(4)})`, `within ${floors.glassLuma} of the reference`, lumaOff <= floors.glassLuma)
     row(`glass ${g.name}, near white`, `${(s.nearWhite * 100).toFixed(2)} % (the reference is ${(g.nearWhite * 100).toFixed(2)} %)`, `at most ${(floors.glassWhite * 100).toFixed(1)} points over the reference`, whiteOver <= floors.glassWhite)
   }
-  return { rows, pass: rows.every((r) => r.pass), numbers: { psnrWhole: whole.psnr, coarseWhole: wholeCoarse, maxDiff: whole.maxDiff, cuts, glass } }
+  return { rows, pass: rows.every((r) => r.pass !== false), numbers: { psnrWhole: whole.psnr, coarseWhole: wholeCoarse, maxDiff: whole.maxDiff, apart: wholeApart, cuts, glass } }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

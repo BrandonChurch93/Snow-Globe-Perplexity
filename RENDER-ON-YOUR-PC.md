@@ -13,6 +13,10 @@ graphics card of this computer. This file makes four files on the Desktop:
 | `Snow Globe Seasons - Portfolio Looping Video - 3840x2160.mp4` | the loop, 480 frames, no sound |
 | `Snow Globe Seasons - Portfolio Screenshot - 3840x2160.png` | the first frame of the loop |
 
+On Windows, Chrome draws the film through Direct3D 11. Before this file existed, the film's pictures had been
+measured on Linux only, drawn in software. Step 1 is the first time this film is drawn by a Windows graphics
+card. That is why step 1 draws a little, compares it, reports and stops.
+
 ## Rules for the agent
 
 1. Do not edit any file of the repo. Do not repair code, shaders, settings or tests. A fault is mended by the remote team.
@@ -74,8 +78,10 @@ winget install --id Git.Git -e --source winget --accept-package-agreements --acc
 winget install --id OpenJS.NodeJS.LTS -e --source winget --accept-package-agreements --accept-source-agreements
 ```
 
-A winget line is good when it ends with `Successfully installed`, or says the program is already installed and no
-newer version is there. Windows may show a prompt that asks for leave to install: that is for Brandon to answer.
+A winget line is good when its last line is `Successfully installed`, or
+`No newer package versions are available from the configured sources.` (the program was there already; winget
+ends with an exit code that is not 0 then, and that is no failure). Windows may show a prompt that asks for leave
+to install: that is for Brandon to answer.
 
 A program installed a moment ago is found only by a terminal opened after the install. If `git --version` or
 `node --version` still finds nothing after its winget line was good, stop and tell Brandon this, word for word:
@@ -120,6 +126,11 @@ A Chrome window opens and closes by itself. Do not touch it.
 
 Good: `PASS: this machine can draw the film: ...` with the name of the graphics card that draws.
 
+Under its table the doctor also prints what the shader compiler of this machine wrote about the film's shaders,
+and what the graphics card answers to a list of small sums (the maths probe). Both are for the remote team. They
+are marked `noted` and fail nothing: a shader that warns still compiles and draws. Only a shader that does not
+compile fails the doctor, and then its message is in the report in full.
+
 Bad, each with the one thing to do:
 
 | the FAIL says | do this |
@@ -154,6 +165,24 @@ itself is expected to take. Chrome windows open and close by themselves. Do not 
 computer sleep.
 
 It answers `RUNNING:` every few minutes: run the same line again each time.
+
+How the frames are compared, and why so:
+
+- The reference pictures were drawn on a Linux machine in software. A graphics card under Direct3D 11 (Windows)
+  or Metal (macOS) rounds its sums a little differently, so the same frame comes out a level or two apart in many
+  pixels and further apart along thin bright edges. A frame is therefore never asked to be equal to its reference.
+- Each frame is measured three ways. The whole picture at half size, and two cuts of 960 x 540 at full size, must
+  each reach a floor in PSNR (how close the pixels are, in dB, higher is closer). The same pieces must reach a
+  floor in a coarser measure, the PSNR of the means of 8 x 8 pixel blocks, which a shift of one pixel hardly
+  moves. A region of the glass must keep its mean brightness and must not turn white.
+- The floors are written in `render/STAMP.json` and printed in the report beside every number. They were set from
+  the same frames drawn on three test renderers, with a margin under the lowest. A frame that is wrong (a layer
+  missing, white glass, a flat or empty picture) falls far under them.
+- The report also says, for every frame, how far the picture stands from its reference: the largest and the mean
+  difference in levels of 255, how many pixels are more than 8 levels apart, and where in the picture they lie.
+  These lines are marked `noted` and fail nothing. They tell the remote team where to look.
+- What this machine drew is kept in `out/work/handoff/compared`, and a sheet of pictures shows each frame beside
+  its reference.
 
 Good: `PASS: the short test passed on <the graphics card>: ...`. The test film is then on the Desktop as
 `Snow Globe Seasons - Test - 3840x2160.mp4`, with a sheet of pictures beside it.

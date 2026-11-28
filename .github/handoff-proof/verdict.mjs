@@ -26,7 +26,9 @@ try {
 } catch {}
 const written = new Set([...md.matchAll(/```[a-z]*\r?\n([\s\S]*?)```/g)].flatMap((m) => m[1].split(/\r?\n/)).map((l) => l.trim()).filter(Boolean))
 const asWritten = (line) => line.replace(/--branch \S+ https:/, '--branch main https:')
-const ofTheFile = (line) => /^(node tools\/handoff\.mjs|git |cd |winget |brew |node --version)/.test(line)
+// the job that lists shader messages runs no line of the file: it clones and builds another head with its own lines
+const ofFile = process.env.PROOF_MODE !== 'shaders'
+const ofTheFile = (line) => ofFile && /^(node tools\/handoff\.mjs|git |cd |winget |brew |node --version)/.test(line)
 const lines = []
 const say = (t = '') => lines.push(t)
 say(`===== VERDICT of ${job} =====`)
@@ -41,7 +43,7 @@ for (const r of rows) {
   if (r.last) say(`       said   ${r.last.slice(0, 400)}`)
 }
 for (const name of expect) if (!rows.some((r) => r.name === name)) problems.push(`${name}: never ran (the job stopped before it)`)
-if (!md) problems.push('RENDER-ON-YOUR-PC.md was not found in the clone')
+if (!md && ofFile) problems.push('RENDER-ON-YOUR-PC.md was not found in the clone')
 say('')
 const notes = read('notes.txt').split(/\r?\n/).filter(Boolean)
 if (notes.length) {

@@ -11,8 +11,10 @@ on:
       - agent/p6-handoff
   workflow_dispatch:
 
+# A newer push ends the run of an older one. A push that asks only for the list of shader messages has a group of
+# its own, so that it does not end a whole proof that is still running.
 concurrency:
-  group: handoff-proof-${{ github.ref }}
+  group: handoff-proof-${{ github.ref }}-${{ contains(github.event.head_commit.message, '[proof shaders]') && 'shaders' || 'whole' }}
   cancel-in-progress: true
 
 permissions:
@@ -60,12 +62,13 @@ jobs:
             switches: ''
             refusal: 'yes'
             expect: winget-git,winget-node,winget-ffmpeg,winget-chrome,clone,setup,doctor-refuses-software
-          # frames at 3840 x 2160 at the masters' tier against the references, whatever Chrome draws with by itself
+          # frames at 3840 x 2160 at the masters' tier against the references, drawn by a third renderer: Chrome's
+          # own software renderer (by itself Chrome on this machine draws through Direct3D 11, which the next job covers)
           - id: windows-3840
             os: windows-latest
             shell: powershell
             mode: uhd
-            switches: software,refs=film-b:120+film-b:720,stretch=720-721/1
+            switches: software,angle=swiftshader,refs=film-b:120+film-b:720,stretch=720-721/1
             refusal: 'yes'
             expect: clone,setup,doctor-refuses-software,doctor,test,render-refuses-unreleased
           # the same with Direct3D 11 asked for by name, the shader path of a Windows graphics card
@@ -91,14 +94,23 @@ jobs:
             switches: tones,refs=film-b:120+film-b:720+loop:0,stretch=720-721/1
             refusal: 'no'
             expect: clone,setup,doctor,test,render-refuses-unreleased
+          # what the Direct3D shader compiler writes about every program of the film and what the card answers to the
+          # maths probe, for this push or for the head named in .github/handoff-proof/other-head.txt
+          - id: windows-shaders
+            os: windows-latest
+            shell: none
+            mode: shaders
+            switches: ''
+            refusal: 'no'
+            expect: clone,checkout,install,build,shader-list
     env:
       PROOF_BRANCH: ${{ github.ref_name }}
       PROOF_MODE: ${{ matrix.mode }}
       PROOF_SWITCHES: ${{ matrix.switches }}
       PROOF_REFUSAL: ${{ matrix.refusal }}
-      # A push whose message holds [proof small] leaves the 3840 jobs out, [proof 3840] leaves the others out:
-      # the job still starts, does nothing and ends green.
-      PROOF_LEFT_OUT: ${{ (contains(github.event.head_commit.message, '[proof small]') && matrix.mode == 'uhd') || (contains(github.event.head_commit.message, '[proof 3840]') && matrix.mode != 'uhd') }}
+      # A push whose message holds [proof small] leaves the 3840 jobs out, [proof 3840] leaves the others out,
+      # [proof shaders] leaves all out but the list of shader messages: the job still starts, does nothing and ends green.
+      PROOF_LEFT_OUT: ${{ (contains(github.event.head_commit.message, '[proof small]') && matrix.mode == 'uhd') || (contains(github.event.head_commit.message, '[proof 3840]') && matrix.mode != 'uhd') || (contains(github.event.head_commit.message, '[proof shaders]') && matrix.mode != 'shaders') }}
     steps:
       # The helpers only, beside the clone under test. The film's clone is made by the flow with a plain git clone.
       - name: left out of this push
@@ -113,7 +125,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: _proof
-          sparse-checkout: .github
+          sparse-checkout: |
+            .github
+            tools/lib
 
       - name: the newest LTS of Node
         if: env.PROOF_LEFT_OUT != 'true' && matrix.node == 'lts'
@@ -135,6 +149,13 @@ jobs:
         timeout-minutes: 320
         shell: bash
         run: bash "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/flow.sh"
+
+      - name: the shader messages of one head
+        if: env.PROOF_LEFT_OUT != 'true' && matrix.mode == 'shaders'
+        continue-on-error: true
+        timeout-minutes: 90
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/shaders.sh"
 
       - name: the verdict
         if: always() && env.PROOF_LEFT_OUT != 'true'
