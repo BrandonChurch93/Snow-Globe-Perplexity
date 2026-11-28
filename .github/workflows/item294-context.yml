@@ -1,12 +1,13 @@
 # Item 294: what the live page does when the browser takes its WebGL context away, read where a graphics card draws.
 # Each job builds the page at one commit on a hosted machine, opens it in the installed Chrome and runs
-# tools/lostcontext.mjs of this push on it: the context is taken with the WEBGL_lose_context extension in eight cases,
-# and what stands on the screen, what reaches the card, whether the page comes back and every line of the console are read.
-# Twice: origin main as it stood at this push (named main: the page without the mend, where the test is red) and the
-# head of the push (the after). The jobs named console open the page with no loss, in two seasons on Windows, until the
-# page says its whole pictures have arrived (ready) or ten minutes have passed, and write every line of the console
-# (item 282: the lines Direct3D writes for a shader). The losses were read in the first run (46148923668); the second
-# run, with item 282's commit in the head, reads the console only.
+# tools/lostcontext.mjs of this push on it. The job named lost context takes the context with the WEBGL_lose_context
+# extension in eight cases, at two sizes, and reads what stands on the screen, which season mark is lit, what reaches
+# the card, whether the page comes back and every line of the console. The job named console opens the page with no
+# loss, in two seasons on Windows, until the page says its whole pictures have arrived (ready) or ten minutes have
+# passed, and writes every line of the console (item 282: the lines Direct3D writes for a shader).
+# The first run (46148923668) read the losses on main's build and on the branch's, on macOS and on Windows. The second
+# (46151819966) read the console only, on main's build and on the branch's with item 282's commit. This third run
+# reads the branch's last head alone (01929331): the losses on macOS, the console on Windows.
 # It starts by hand, and on every push to agent/p6-context-294-ci: the branch is for this reading and is not merged.
 # It has no timer and never starts on main. Every job ends green whatever happens: a red run sends a mail. What a job
 # read is the step "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
@@ -23,17 +24,15 @@ permissions:
 jobs:
   context:
     name: lost context ${{ matrix.tree.name }} ${{ matrix.os }}
-    if: ${{ false }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 75
+    timeout-minutes: 55
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-latest]
         # A tree with no head named is the head of the push itself.
         tree:
-          - { name: main, head: a7d799f29f87df2f97693dc32ea61217bef71a88, sizes: hd }
-          - { name: after, head: '', sizes: 'hd,phone' }
+          - { name: last, head: '0192933119e9737c8db81e48286b3855ca7dd9da', sizes: 'hd,phone' }
     steps:
       - name: the tool of this push
         continue-on-error: true
@@ -67,7 +66,7 @@ jobs:
 
       - name: the losses
         continue-on-error: true
-        timeout-minutes: 45
+        timeout-minutes: 40
         shell: bash
         working-directory: page
         run: |
@@ -99,8 +98,7 @@ jobs:
       fail-fast: false
       matrix:
         tree:
-          - { name: main, head: a7d799f29f87df2f97693dc32ea61217bef71a88 }
-          - { name: after, head: '' }
+          - { name: last, head: '0192933119e9737c8db81e48286b3855ca7dd9da' }
     steps:
       - name: the tool of this push
         continue-on-error: true
