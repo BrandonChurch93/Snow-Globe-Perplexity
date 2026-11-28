@@ -71,11 +71,25 @@ export function skitterShare(seconds: number, of: number): number {
 // where a texel is as wide as a lobe): what the shutter melts across the way is melted along it too, a leaf at rest is
 // read as it was, and a leaf comes to rest sharp, a level for every halving of its speed. How far it goes is the root
 // of the squares of its slide, its hops and the swing of its edge (`arm` of its length from its middle) about it.
-// Past `most` a leaf goes farther than a lobe is wide, and what its face still holds there (a darker patch beside a
-// paler one) would be drawn out into streaks along its way. So from `most` to `flat` its face goes to its one mean
-// colour: its colour is read coarser still and nearer the middle of its own cell of the sheet (`cells` across and
-// down), at `flat` at the middle itself, where the level holds the mean of the whole cell. Its outline stays at `most`.
-export const MELT = { texels: 256, arm: 0.25, most: 5, flat: 7, cells: [4, 2] } as const
+// Its outline is never read coarser than `most`.
+//
+// A smear so made still read as a shape cut from paper: one flat colour inside a hard edge, and hard where it ended
+// (film frames 2162 and 2163 at 3840 wide). So three things more:
+// - Its face keeps its own tones. It is never read coarser than `tones`, sixteen texels to a leaf's length: wider than
+//   any vein, so no rib comes back, and fine enough for the leaf's own paler and darker patches, which the shutter then
+//   draws out along its way. It does not go to its one mean colour.
+// - Its edge is open. A leaf at rest is cut where its sheet is half covered, as it always was. A lifted leaf is cut, in
+//   each pixel of each sample, at a number of that pixel's own between `0.5 - edge / 2` and `0.5 + edge / 2`: over a
+//   frame's samples its cover follows the cover of its coarse sheet and falls off across about a texel of that level,
+//   wide where the leaf is fast, a hair where it is slow, nothing where it lies. A leaf fills its cell of the sheet
+//   (`cells` across and down) to the cell's edge, so that cover is taken off over the last `rim` of the cell, or the
+//   open edge would end on the straight side of the leaf's card.
+// - Its moments lean to the middle of the exposure (`leafLean`). A frame gives a lifted leaf as many moments as before,
+//   but dealt so that their number falls in a straight line from the middle of the shutter to none as it opens and
+//   none as it closes: the smear is densest where the leaf was at the middle of the exposure and fades toward where it
+//   was as the shutter opened and as it closed. A leaf that takes off inside the exposure lay still before that, and
+//   lying still it was drawn sharp at the foot of its own smear; in that frame it is read as coarse as it leaves.
+export const MELT = { texels: 256, arm: 0.25, most: 5, tones: 4, edge: 0.7, rim: 0.125, cells: [4, 2] } as const
 
 /** How far a lifted leaf goes while the shutter is open, in mm: `pushMm` its slide, `swing` the radians it turns through and `leapMm` its hops over its whole way, `t` the share of its way behind it, `longSeconds` how long its way takes. */
 export function leafGoes(pushMm: number, swing: number, leapMm: number, sizeMm: number, t: number, longSeconds: number): number {
@@ -87,10 +101,39 @@ export function leafMelt(goesMm: number, sizeMm: number): number {
   return Math.min(MELT.most, Math.max(0, Math.log2(Math.max((goesMm * MELT.texels) / Math.max(sizeMm, 1e-3), 1))))
 }
 
-/** How much of the way to its one mean colour the face of such a leaf has gone: 0 up to `most` levels, 1 from `flat`. */
-export function leafFlat(goesMm: number, sizeMm: number): number {
-  const level = Math.log2(Math.max((goesMm * MELT.texels) / Math.max(sizeMm, 1e-3), 1))
-  return Math.min(1, Math.max(0, (level - MELT.most) / (MELT.flat - MELT.most)))
+/** The level at which the face of such a leaf is read: its outline's, and never coarser than `tones`. */
+export function leafFace(goesMm: number, sizeMm: number): number {
+  return Math.min(leafMelt(goesMm, sizeMm), MELT.tones)
+}
+
+/** Where in the shutter (0 as it opens, 1 as it closes) a lifted leaf is drawn for the moment that an even deal puts at `dealt`: nearer the middle, by the law above. */
+export function leafLean(dealt: number): number {
+  const q = Math.min(1, Math.max(0, dealt))
+  return q < 0.5 ? Math.sqrt(0.5 * q) : 1 - Math.sqrt(0.5 * (1 - q))
+}
+
+/** The cover of its sheet under which a pixel of a sample leaves a lifted leaf out: `deal` is the pixel's own number in that sample (0 to 1), `open` how far the leaf's level is over the one the lens reads (0 at rest, 1 from a level on). */
+export function leafCut(deal: number, open: number): number {
+  return 0.5 + (deal - 0.5) * MELT.edge * Math.min(1, Math.max(0, open))
+}
+
+/** The share of a frame's samples that keep a leaf where its sheet is covered by `cover`: `leafCut` over an even deal. */
+export function leafCover(cover: number, open: number): number {
+  const wide = MELT.edge * Math.min(1, Math.max(0, open))
+  return wide > 0 ? Math.min(1, Math.max(0, (cover - 0.5) / wide + 0.5)) : cover < 0.5 ? 0 : 1
+}
+
+/**
+ * Where in its frame's shutter a sample stands, 0 as it opens and 1 as it closes, read from the leaves' own clock
+ * (`seconds` since the landing). A landing lies on a frame of the film and the landed picture a whole number of frames
+ * after it, so the clock's part of a frame says it, whatever the frame did with its samples' moments (a frame in which
+ * the ball travels moves them, film/motion.ts). Where the clock stands outside an open shutter the sample stands where
+ * its set dealt it.
+ */
+export function leafShutter(seconds: number, dealt: number): number {
+  const frames = seconds * config.film.fps
+  const place = (frames - Math.floor(frames + 1e-6)) / (config.film.shutterDegrees / 360)
+  return place <= 1 + 1e-6 ? Math.min(1, Math.max(0, place)) : dealt
 }
 
 const leafUniforms = {
@@ -131,7 +174,12 @@ float leafLong = uLeafMove.w * (0.6 + 1.3 * leafHash(leafId * 5.3));
 float leafNow = uLeafTime.x;
 #ifdef STAGE_STREAK
 vGustPart = float(gl_InstanceID % STAGE_STREAK);
-leafNow += uLeafTime.y * ((vGustPart + 0.5) / float(STAGE_STREAK) - 0.5);
+// The moment of this part (MELT, above): uLeafTime.z is where this sample's share of an even deal of the shutter
+// begins, uLeafTime.w where the sample itself stands in the shutter.
+if (uLeafTime.y > 0.0) {
+  float leafDealt = uLeafTime.z + uLeafTime.y / ${SHUTTER_SECONDS.toFixed(6)} * (vGustPart + 0.5) / float(STAGE_STREAK);
+  leafNow += ${SHUTTER_SECONDS.toFixed(6)} * ((leafDealt < 0.5 ? sqrt(0.5 * leafDealt) : 1.0 - sqrt(0.5 * (1.0 - leafDealt))) - uLeafTime.w);
+}
 #endif
 float leafT = clamp((leafNow - leafWait) / leafLong, 0.0, 1.0);
 float leafLeft = (1.0 - leafT) * (1.0 - leafT) * (1.0 - leafT) * (1.0 - leafT);
@@ -172,7 +220,9 @@ float leafSize = color.z * uLeafSpan.y;
 float leafSwing = ${MELT.arm.toFixed(2)} * leafSize * (abs(leafHash(leafId * 6.7) - 0.5) * 2.0 * uLeafTurn.y * leafStir + leafOver * 6.2831853 * (leafHash(leafId * 1.7) < 0.5 ? 1.0 : 2.0) + (1.0 - leafOver) * 4.5 * leafLive * leafStir);
 float leafLeap = 3.14159265 * leafHops * leafLive * uLeafTurn.x * (0.4 + leafHash(leafId * 4.1)) * leafStir;
 float leafGoes = sqrt(leafPush * leafPush + leafSwing * leafSwing + leafLeap * leafLeap) * 4.0 * (1.0 - leafT) * (1.0 - leafT) * (1.0 - leafT) / leafLong * ${SHUTTER_SECONDS.toFixed(6)};
-vLeafMelt = uLeafTime.y > 0.0 && uState.w < 0.5 && leafNow > leafWait ? clamp(log2(max(leafGoes * ${MELT.texels.toFixed(1)} / max(leafSize, 1e-3), 1.0)), 0.0, ${MELT.flat.toFixed(1)}) : 0.0;
+// A leaf that takes off before the shutter closes is read so through the whole exposure, as coarse as it leaves.
+float leafShut = uLeafTime.x + ${SHUTTER_SECONDS.toFixed(6)} * (1.0 - uLeafTime.w);
+vLeafMelt = uLeafTime.y > 0.0 && uState.w < 0.5 && leafShut > leafWait ? clamp(log2(max(leafGoes * ${MELT.texels.toFixed(1)} / max(leafSize, 1e-3), 1.0)), 0.0, ${MELT.most.toFixed(1)}) : 0.0;
 #endif
 float leafUp = leafHop + leafSize * 0.55 * abs(sin(leafRoll)) + 0.06;
 vec3 leafPlace = vec3(leafAt.x + leafOff.x, max(leafOff.y + leafUp, 0.03), leafAt.y + leafOff.z);
@@ -259,15 +309,23 @@ void main() {
   // A lifted leaf (MELT, above) is read coarser where its own level is over the one the lens reads it at.
   vec2 leafAt = vLeafUv * vec2(textureSize(uLeafMap, 0));
   float leafSeen = 0.5 * log2(max(max(dot(dFdx(leafAt), dFdx(leafAt)), dot(dFdy(leafAt), dFdy(leafAt))), 1.0));
-  vec4 leaf = vLeafMelt > leafSeen ? textureLod(uLeafMap, vLeafUv, min(vLeafMelt, ${MELT.most.toFixed(1)})) : texture2D(uLeafMap, vLeafUv);
-  // The sheet is dark where it is clear, so a coarse level holds the leaf's colour times its cover.
-  if (vLeafMelt > leafSeen) leaf.rgb *= mix(1.0, 1.0 / max(leaf.a, 0.5), min(vLeafMelt - leafSeen, 1.0));
-  // Past the last level of its outline its face goes to its one mean colour (MELT, above).
-  if (vLeafMelt > ${MELT.most.toFixed(1)}) {
-    vec2 leafCells = vec2(${MELT.cells[0].toFixed(1)}, ${MELT.cells[1].toFixed(1)});
-    vec2 leafMid = (floor(vLeafUv * leafCells) + 0.5) / leafCells;
-    vec4 leafMean = textureLod(uLeafMap, mix(vLeafUv, leafMid, (vLeafMelt - ${MELT.most.toFixed(1)}) / ${(MELT.flat - MELT.most).toFixed(1)}), max(vLeafMelt, leafSeen));
-    leaf.rgb = leafMean.rgb / max(leafMean.a, 0.1);
+  vec4 leaf = vLeafMelt > leafSeen ? textureLod(uLeafMap, vLeafUv, vLeafMelt) : texture2D(uLeafMap, vLeafUv);
+  if (vLeafMelt > leafSeen) {
+    float leafOpen = min(vLeafMelt - leafSeen, 1.0);
+    // Its face keeps its own tones (MELT, above). The sheet is dark where it is clear, so a level holds the leaf's colour
+    // times its cover; where the face's own level is all but clear (the rim of the coarser outline) the outline's
+    // level gives the colour.
+    vec4 leafFace = textureLod(uLeafMap, vLeafUv, min(vLeafMelt, max(${MELT.tones.toFixed(1)}, leafSeen)));
+    vec3 leafOwn = mix(leaf.rgb / max(leaf.a, 0.1), leafFace.rgb / max(leafFace.a, 0.2), smoothstep(0.2, 0.6, leafFace.a));
+    leaf.rgb = mix(leaf.rgb, leafOwn, leafOpen);
+    // Its edge is open (MELT, above): this pixel of this sample keeps the leaf where its sheet's cover is over a number
+    // of the pixel's own, which goes round with the samples as the pixel's part does.
+    vec2 leafIn = fract(vLeafUv * vec2(${MELT.cells[0].toFixed(1)}, ${MELT.cells[1].toFixed(1)}));
+    leafIn = min(leafIn, 1.0 - leafIn);
+    float leafRim = mix(1.0, smoothstep(0.0, ${MELT.rim.toFixed(3)}, min(leafIn.x, leafIn.y)), leafOpen);
+    float leafDeal = fract(stageStill(ivec2(gl_FragCoord.yx) + ivec2(7, 91)) + uGustSlot.z);
+    if (leaf.a * leafRim < 0.5 + (leafDeal - 0.5) * ${MELT.edge.toFixed(2)} * leafOpen) discard;
+    leaf.a = 1.0;
   }
 #else
   vec4 leaf = texture2D(uLeafMap, vLeafUv);
@@ -419,5 +477,10 @@ export function update(moment: KitMoment): void {
   // The landing's lift (above): fall stands alone, the leaves are on their way, and the frame has samples enough.
   const parts = !flown && f.from === f.to && f.to.season === 'fall' && skitterShare(leafUniforms.uLeafTime.value.x, f.sample?.of ?? 0) > 0 ? partStreaks(f.sample, f.blurMm, f.pose.focusMm) : 0
   leafUniforms.uLeafTime.value.y = parts * SHUTTER_SECONDS
+  // The lean of a lifted leaf's moments (MELT, above): where this sample's share of an even deal of the shutter begins,
+  // and where the sample itself stands in the shutter.
+  const of = f.sample?.of ?? 1
+  leafUniforms.uLeafTime.value.z = parts > 0 && f.sample ? Math.min(of - 1, Math.floor(f.sample.t * of)) / of : 0
+  leafUniforms.uLeafTime.value.w = parts > 0 && f.sample ? leafShutter(leafUniforms.uLeafTime.value.x, f.sample.t) : 0
   inAir?.(flown || parts > 0)
 }
