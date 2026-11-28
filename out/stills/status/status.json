@@ -1,45 +1,43 @@
 {
-  "number": 265,
-  "time": "2026-11-28 12:58 UTC",
+  "number": 266,
+  "time": "2026-11-28 13:21 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 265 · 2026-11-28 12:58 UTC · Phase 6",
+    "Status 266 · 2026-11-28 13:21 UTC · Phase 6",
     "Phases 1 to 5 complete. Phase 6 in progress. Three words are asked of Brandon and all three still stand. One: move on to the film and the masters, or one more round of looks first, asked in Status 236 at about 5:20 PM MT Friday. Two: take the level line's mend, yes or no, asked in Status 262. Three: take the third what-if, fall's lit faces going out before winter's base comes, yes or no, asked in Status 263. The work goes on in any case and only the freeze waits.",
-    "Chain 47 has landed (decision 312). The counter of broken pixels that works on Windows is on the main branch since 5:50 AM MT, and no pixel moved. Stated by the helpers as measured on their machines and read whole here: the eight guard stills equal the list, the four peaks of the change at 4K (film frames 677, 1395, 2116 and 2836) equal chain 46's with the same tool and the same count of samples, the eight measures of the change are equal to the pixel, summer's sharpness 0.8981, at most 1,774,148 of 1,800,000 triangles, 1148 tests passed and 8 skipped. Not checked by this chain: the counter through Direct3D 11, since the helpers draw in software; that rests on the earlier hosted runs.",
-    "The render instructions for his computer are not merged, and Status 264's line that they would merge right after chain 47 no longer holds. Two fresh readers of two model families read them cold. One says an agent cannot follow them alone yet, 3 of 10, and that this version should not be handed over. The other says yes after its list, 4 of 10. Verified here: the file's clone line takes the main branch, which holds no instructions until the merge; and the tool could close any automated Chrome on his PC, not only its own. Also named: his yes stopped the agent but not the tool; how he gets the two sound mixes was not said; the file spoke of ten test frames where three are drawn today; the check of the screenshot against the loop's first frame was only a note; the upload could send without its own yes. All fifteen points are ordered as musts.",
-    "Rulings in that order. The two sound mixes come with the repo once it is private at the freeze, so he puts no file anywhere. A separate approval step writes down his own words, tied to his machine, the tested build and the previews he saw, before the full render and before any upload. Every uploaded file is read back. Nothing of his is closed or removed that the run did not start. The merge waits for the mends, a hosted run on the mended head and a fresh reader who says yes with no must. Its builder's limits: the words by 7:40 AM MT, the tool's guards by 9:20 AM MT, then the hosted run of about 110 minutes. Unknown and said in the file: no real graphics card has drawn a test frame yet; his step 1 is the first.",
-    "The controls' rework for an early shake, item 285, is closed as not mended. Its whole report of 507 lines is read. On the hosted Mac's card the two changes do not make an early shake land sooner, and a page that opens in spring is ready 5 to 9 s later with them, so nothing of that branch goes on the main branch. Found on the way: one picture of spring costs 3.0 to 4.0 s in a single call on that card where others of its size take under a tenth of a second. Ordered: its cause, and a mend only if no pixel moves; and a measure of the first press on a page that has its sound. All of it is unknown on a real graphics card.",
-    "The what-ifs, none on the main branch. The sand mound's second version is pushed. Seen here at draft and at 1920 wide: the mound sinks into a soft golden haze and is gone by film frame 2110, with no bristles. Its builder's own doubts: frame 2109 reads as two things, and the haze reads as mist. Four frames at 4K are ordered and due by 6:15 AM MT; the leaves' rework is due by 6:20 AM MT. Each is laid beside the main branch at 4K before it is offered.",
-    "The page's lost drawing context, item 294: the whole report is due by 6:50 AM MT, then a fresh critic of another family.",
-    "Remaining in phase 6 and what he receives. The render instructions: one file in the repo and one line to give Claude Code, after the mends above. The what-ifs, each shown before and after at 4K, none merged without his word. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last the fresh review and BUILD COMPLETE. Sound credits 7,420 of 10,000 (measured from the ledger at 5:58 AM MT: 52 calls), no call since 10:47 PM MT Wednesday. No film render and no new preview video. The live page is the sixteenth publish, unchanged since 2:57 AM MT.",
-    "phase 6: 58.16 h used of its 12.00 h box",
-    "allowance (after the review): 58.16 h used of 12.00 h allowed",
+    "The render instructions (decision 313). Their builder pushed the proof stamp made again for the main branch's engine. Stated by the builder and not run here: its three drawn reference pictures and all 20 fingerprints equal the earlier ones byte for byte, so chain 47 moved none of them, and 1302 tests passed with 8 skipped, twice. It also said that the tool's guards cannot be pushed by 9:20 AM MT: about 5 to 6 hours in one pair of hands. Ruling: the mends are split between two builders. The stricter of the two cold readers, who named the faults in the check of the files, the upload and the cleaning, mends those on a branch of its own. The first builder keeps the file's words, his approval step, the two mixes and the render's guards, then joins both. Limits: the file's words by 7:40 AM MT, the second builder's first group by 9:00 AM MT, the first builder's new limit for its guards comes at 7:40 AM MT. Then the hosted run of about 110 minutes and a fresh reader of a third family. The merge stays held until that reader says yes with no must.",
+    "The sand mound's second what-if is seen at 4K. It is not on the main branch. Four helpers drew film frames 2107 to 2110 as the masters draw them, each on a machine whose calibration pixels equal the wanted value. Looked at here at own size beside the main branch's frames: no bristles and no dots in rows, so the first version's fault is gone. On the main branch the mound slides off to the right as one smear. In the what-if the mound stays on the table, a pale cloud lifts off it, the mound fades to a dark remnant in frame 2109 and is gone in 2110. Doubts, named by all four helpers and seen here: the cloud is smooth with no grain in it and reads as mist or as a light more than as sand, and frame 2109 reads as two things. It is shown as it stands. No third rework without his word, and the main branch stays unless he prefers the puff. Not judged in motion at 4K.",
+    "The leaves' rework is late. Stated by its builder at 4K with 24 samples: every leaf that lifts at the landing is one soft blob in film frame 2170; in frame 2162 the feathered edge and the fan of ribs are gone, and one bunch right of the right foot keeps three to five soft streaks. It has 15 more minutes for that bunch, then it is committed as it stands with the place named. Due by 6:55 AM MT. Then helpers draw three frames at the masters' quality and they are laid beside the main branch before any of it is shown. Its other pieces and its whole report: by 7:45 AM MT. Then a fresh reviewer of another family reads all the what-ifs.",
+    "Other open work. The first press with sound and the slow spring picture, the two pieces left of item 285: by 7:10 AM MT and by 8:30 AM MT. The page's lost drawing context, item 294: the whole report by 6:50 AM MT, then a fresh critic. All of both is unknown on a real graphics card.",
+    "Remaining in phase 6 and what he receives. The render instructions: one file in the repo and one line to give Claude Code, after the mends above. The what-ifs, each shown before and after at 4K, none merged without his word. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last the fresh review and BUILD COMPLETE. Sound credits 7,420 of 10,000 (measured from the ledger at 6:20 AM MT: 52 calls), no call since 10:47 PM MT Wednesday. No film render and no new preview video. The live page is the sixteenth publish, unchanged since 2:57 AM MT.",
+    "phase 6: 58.53 h used of its 12.00 h box",
+    "allowance (after the review): 58.53 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-265-1.jpg",
-      "caption": "Summer's sand mound leaving the table, film frames 2100 to 2116 at draft, the main branch above and the second what-if below, not on main",
+      "file": "out/stills/status/status-266-1.jpg",
+      "caption": "Summer's sand mound leaving at 4K at own size, film frames 2107 to 2110, the main branch above and the second what-if below in each pair, not on main",
       "w": 1200,
-      "h": 643
+      "h": 948
     },
     {
-      "file": "out/stills/status/status-265-2.jpg",
-      "caption": "Film frame 2109 at 1920 wide at three times with the second what-if, the mound as a soft haze, not on main",
-      "w": 1200,
-      "h": 600
+      "file": "out/stills/status/status-266-2.jpg",
+      "caption": "Film frame 2108 whole, drawn at 4K and shown at 1600 wide, the main branch above and the second what-if below, not on main",
+      "w": 1017,
+      "h": 1200
     },
     {
-      "file": "out/stills/status/status-265-3.jpg",
-      "caption": "Fall after its landing at draft, the main branch left and the what-if branch right with the leaves' first what-if, being reworked, not on main",
+      "file": "out/stills/status/status-266-3.jpg",
+      "caption": "Still: spring landed hero, hd, draft",
       "w": 1200,
-      "h": 337
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-265-4.jpg",
-      "caption": "Still: summer rest hero, hd, draft",
+      "file": "out/stills/status/status-266-4.jpg",
+      "caption": "Still: spring rest hero, hd, draft",
       "w": 1200,
       "h": 675
     }
