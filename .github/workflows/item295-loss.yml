@@ -31,13 +31,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Sixth push. Spring stands still too, before its first picture: the sampler on spring from 1.5 s after the address
-          # was asked for, and on winter from 1.2 s, to see what the card does before and while it stands. And winter with the
-          # canvas kept out of sight by the tool for 25 s after the first picture (as the page keeps it before): does the card
-          # still stand, and is the card still lost, when Chrome's window drawing has no canvas to wait for.
-          - { arm: q6-canvas-hidden, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 45, after: 5, spindump: 0, flags: '', more: '--hide-canvas 25 --oslog all' }
-          - { arm: q6-spring-sampled, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '4:season=spring', stay: 20, after: 5, spindump: 14, flags: '', more: '--spindump-at 1500 --oslog all' }
-          - { arm: q6-winter-early-sampled, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '3:', stay: 20, after: 5, spindump: 14, flags: '', more: '--spindump-at 1200 --oslog all' }
+          # Seventh push. The commit of Nov 25 stands still as long and loses nothing in 12 loads; it had no still under the
+          # canvas and no fade. The commit that brought the still and the fade (62f380c2, Nov 26) and the one before it on
+          # main's first parent line; and main's page with the canvas kept in full sight with no fade by a style of the tool.
+          - { arm: q4-before-first-still, os: macos-latest, page: b4e262ebea24887f397f2c71e5a4da17d215fa24, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q4-first-still, os: macos-latest, page: 62f380c2a2e476cc1552230abdcaae011537ed01, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '' }
+          - { arm: q7-canvas-plain, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '--plain-canvas --oslog all' }
     steps:
       - name: the tools of this branch
         continue-on-error: true

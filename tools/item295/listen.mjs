@@ -52,6 +52,9 @@ const spindumpS = Number(str('spindump', '0'))
 // first picture (opacity 0, no fade) until S s after the first picture, then lets go. Both are tools beside the page.
 const spindumpAtMs = Number(str('spindump-at', '-1'))
 const hideCanvasS = Number(str('hide-canvas', '0'))
+// --plain-canvas: a style of the tool keeps the canvas in full sight with no fade from the page's first moment to its
+// last (opacity 1, no transition), as the page's canvas was before it had a still under it. A tool beside the page.
+const plainCanvas = args['plain-canvas'] === true
 const oslog = str('oslog', 'lost')
 // --webkit: the driver's own build of WebKit in a window instead of Chrome (the engine of Safari; it is not Safari itself).
 // It has no chrome://gpu and names no processes to the driver: its processes are found by their names.
@@ -336,6 +339,20 @@ async function one(base, query, round) {
     })
     page.on('crash', () => messages.push({ afterGotoMs: Date.now() - t0, text: 'the page crashed (its process went)' }))
     await page.addInitScript(early)
+    if (plainCanvas) {
+      await page.addInitScript(() => {
+        const put = () => {
+          if (document.getElementById('__listen_plain') || !document.documentElement) return
+          const st = document.createElement('style')
+          st.id = '__listen_plain'
+          st.textContent = 'canvas{opacity:1 !important;transition:none !important}'
+          document.documentElement.appendChild(st)
+        }
+        put()
+        document.addEventListener('DOMContentLoaded', put)
+      })
+      notes.push('the tool keeps the canvas at opacity 1 with no fade for the whole load')
+    }
     if (hideCanvasS > 0) {
       await page.addInitScript(() => {
         const put = () => {
