@@ -2,8 +2,9 @@ import * as THREE from 'three'
 import type { Gfx } from './gl'
 import { Pass } from './fullscreen'
 import type { Sample } from './sampler'
+import { MEAN_STEP_GLSL } from './chunks/number'
 
-const MEAN = `uniform sampler2D uMean;
+const MEAN = `${MEAN_STEP_GLSL}uniform sampler2D uMean;
 uniform sampler2D uSample;
 uniform float uWeight;
 out vec4 o;
@@ -12,7 +13,7 @@ void main() {
   vec4 s = texelFetch(uSample, p, 0);
   if (uWeight >= 1.0) { o = s; return; }
   vec4 m = texelFetch(uMean, p, 0);
-  o = m + (s - m) * uWeight;
+  o = meanStep(m, s, uWeight);
 }`
 
 /**
@@ -80,7 +81,7 @@ bool meets(vec3 from, vec3 dir, out vec3 at) {
   if (ball) { at = from - dir * b; return true; }
   return false;
 }
-bool sound(vec4 v) { return !(any(isnan(v)) || any(isinf(v))); }
+bool sound(vec4 v) { return !numberBroken(v); }
 void main() {
   ivec2 p = ivec2(gl_FragCoord.xy);
   vec4 own = texelFetch(uSample, p, 0);
@@ -219,7 +220,7 @@ void main() {
     float other = guide(q);
     w *= 1.0 - smoothstep(${LENS_FILL.guideStep[0]!.toFixed(3)}, ${LENS_FILL.guideStep[1]!.toFixed(3)}, abs(other - own) / (max(other, own) + ${LENS_FILL.guideFloor.toFixed(3)}));
     vec4 m = texelFetch(uMean, q, 0);
-    if (!(w > 0.0) || any(isnan(m)) || any(isinf(m))) continue;
+    if (!(w > 0.0) || numberBroken(m)) continue;
     sum += m * w;
     n += w;
   }

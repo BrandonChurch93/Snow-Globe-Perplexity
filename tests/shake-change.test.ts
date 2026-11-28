@@ -756,7 +756,7 @@ describe('the dressing on the glass under a change', () => {
     const gone = /\nbool stageGone\(float c\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1] ?? ''
     const body = /if \(uState\.z < -9\.0\) \{([^}]+)\}/.exec(gone)?.[1]?.replace(/\s+/g, ' ').trim()
     expect(body).toBe('h = stageHash(vec3(gl_FragCoord.xy, uPass.x)); if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w; h = fract(h + uPass.y);')
-    expect(STAGE_FRAG_PARS).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
+    expect(gone).toContain('gone = uState.w > 1.5 ? h < c : h >= c;')
     // And the share it is held against: the share that has passed, and in a frame of two to seven samples the whole number of
     // samples under that share times the count plus the pixel's own level on the still tile, as a share of the count.
     const change = /\nfloat stageChange\(\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1] ?? ''
@@ -837,21 +837,20 @@ describe('the dressing on the glass under a change', () => {
 
   it('holds the pattern still where the page draws one sample a frame, so a pixel goes once and stays gone, and leaves a captured frame as it was', () => {
     const body = /\nbool stageGone\(float c\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1]
-    expect(body?.split('\n')[0]).toBe('  if (uPass.w < 0.5) return stageGoneStill(c);')
-    // What a captured frame runs is every line after that one, and it is the text it was before the page's own path left it.
-    expect(body?.split('\n').slice(1).join('\n')).toBe(
+    expect(body?.split('\n').slice(0, 2)).toEqual(['  bool still = uPass.w < 0.5;', '  bool gone = still && stageGoneStill(c);'])
+    // What a captured frame runs is every line after those two, and it is what it was before the page's own path left it, written with one exit.
+    expect(body?.split('\n').slice(2).join('\n')).toBe(
       [
-        '  if (uState.w > 0.5) {',
+        '  if (!still && uState.w > 0.5) {',
         '    float h = stageHash(vec3(gl_FragCoord.xy, uSeed));',
         '    if (uState.z < -9.0) {',
         '      h = stageHash(vec3(gl_FragCoord.xy, uPass.x));',
         '      if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w;',
         '      h = fract(h + uPass.y);',
         '    } else if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * 0.14, 0.001, 0.999);',
-        '    if (uState.w > 1.5 ? h < c : h >= c) return true;',
+        '    gone = uState.w > 1.5 ? h < c : h >= c;',
         '  }',
-        '  if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;',
-        '  return false;',
+        '  return gone || (!still && uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w);',
       ].join('\n'),
     )
     // A captured frame never takes the page's branch, whatever its tier, and the page always does.
@@ -864,8 +863,8 @@ describe('the dressing on the glass under a change', () => {
     // Nothing in it reads the frame: no seed, no share of a pass, and no hash but the pixel's own.
     expect(still).not.toMatch(/uSeed|uPass|stageHash/)
     expect(still).toContain('float h = stageStill(ivec2(gl_FragCoord.xy));')
-    expect(still).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
-    expect(still).toContain('return uFlags.w < 1.0 && stageStill(ivec2(gl_FragCoord.yx) + 29) >= uFlags.w;')
+    expect(still).toContain('gone = uState.w > 1.5 ? h < c : h >= c;')
+    expect(still).toContain('return gone || (uFlags.w < 1.0 && stageStill(ivec2(gl_FragCoord.yx) + 29) >= uFlags.w);')
     // The level is the middle of the byte the tile holds for the pixel, read whole and from nothing else.
     expect(STAGE_FRAG_PARS).toContain('uniform highp sampler2D uStill;')
     expect(STAGE_FRAG_PARS).toContain('float stageStill(ivec2 at) {\n  return (floor(texelFetch(uStill, at & 127, 0).r * 255.0 + 0.5) + 0.5) / 256.0;\n}')
@@ -971,8 +970,8 @@ describe('the dressing on the glass under a change', () => {
   const kept = (mode: number, c: number, presence: number, h: number, h2: number): boolean => !(mode > 0.5 && (mode > 1.5 ? h < c : h >= c)) && !(presence < 1 && h2 >= presence)
   /** The share is the part of all hashes that the stipple keeps, and a picture thinned by it is the mean of the samples that keep it and that drop it. */
   const thinsAsTheStippleDoesInTheMean = (): void => {
-    expect(STAGE_FRAG_PARS).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
-    expect(STAGE_FRAG_PARS).toContain('if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;')
+    expect(STAGE_FRAG_PARS).toContain('gone = uState.w > 1.5 ? h < c : h >= c;')
+    expect(STAGE_FRAG_PARS).toContain('return gone || (!still && uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w);')
     const n = 240
     for (const mode of [MODE.always, MODE.incoming, MODE.outgoing])
       for (const c of [0, 0.125, 0.37, 0.5, 0.815, 1])

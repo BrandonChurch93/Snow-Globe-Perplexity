@@ -13,7 +13,7 @@
 //   pow      pow(x, y) with x below zero, or x zero and y zero or below
 //   all      pow and sqrt, inversesqrt, log, log2, normalize, atan, acos, asin, mod
 //   smooth   smoothstep with both edges equal
-//   noguard  isnan() and isinf() always answer false, as a compiler with fast maths may make them
+//   noguard  isnan(), isinf() and the build's own tests of the bits (src/core/chunks/number.ts) always answer false
 //   dry      the same wrappers, each answering what the plain function answers: it shows what the wrappers alone change
 //   as0, asunit, asbig   an open case answers 0, 0.577 or 1e30 instead of no number
 // Narrowing, for finding a call: `pow~text` (only calls whose text holds `text`), `pow#a-b` (only the calls numbered
@@ -66,11 +66,19 @@ vec3 sm_smoothstep(vec3 a, vec3 b, vec3 x) { return vec3(sm_smoothstep(a.x, b.x,
 `
   // 'noguard': isnan() and isinf() always answer false, as a compiler with fast maths may make them. A picture that is
   // the same with it proves that no guard of that kind was needed: nothing that is not a number reached one.
+  // The build's guards read the bits through src/core/chunks/number.ts, which stands aside where NUMBER_TESTS is
+  // defined, so the mode puts its own answers in their place.
   const NOGUARD = `
 bool sm_never(float x) { return false; }
 bvec2 sm_never(vec2 x) { return bvec2(false); }
 bvec3 sm_never(vec3 x) { return bvec3(false); }
 bvec4 sm_never(vec4 x) { return bvec4(false); }
+#define NUMBER_TESTS
+bool numberBroken(float x) { return false; }
+bool numberBroken(vec3 v) { return false; }
+bool numberBroken(vec4 v) { return false; }
+bool numberNan(float x) { return false; }
+bool numberInf(float x) { return false; }
 `
   const DEF_NOGUARD = '#define isnan sm_never\n#define isinf sm_never\n'
   const DEF_POW = '#define pow sm_pow\n'

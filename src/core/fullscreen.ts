@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { NUMBER_GLSL } from './chunks/number'
 
 const VERT = `in vec3 position;
 void main() {
@@ -16,7 +17,7 @@ export class Pass {
     this.material = new THREE.RawShaderMaterial({
       glslVersion: THREE.GLSL3,
       vertexShader: VERT,
-      fragmentShader: `precision highp float;\nprecision highp int;\nprecision highp sampler2D;\n${fragment}`,
+      fragmentShader: `precision highp float;\nprecision highp int;\nprecision highp sampler2D;\n${NUMBER_GLSL}${fragment}`,
       uniforms,
       depthTest: false,
       depthWrite: false,

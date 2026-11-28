@@ -796,15 +796,13 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
     float ends = abs(q.x) - 1.0;
     if (ends > e.x) e = vec3(ends, q.x < 0.0 ? -1.0 : 1.0, 0.0);
     return e;
-  }
-  if (shape < ${n(SHAPE.fleck + 0.5)}) {
+  } else if (shape < ${n(SHAPE.fleck + 0.5)}) {
     float r = length(q) + 1e-4;
     float ang = dot(q, q) > 0.0 ? atan(q.y, q.x) : 0.0;
     float lobes = 2.0 + floor(fract(own.x * 7.0) * 4.0);
     float rim = (0.6 + 0.2 * mix(0.3, 1.0, own.y) * sin(lobes * ang + 6.2831853 * own.x) + 0.1 * sin((lobes + 3.0) * ang + 6.2831853 * own.y)) * mix(1.0, 0.45, fract(own.y * 13.0) * abs(sin(ang + 6.2831853 * own.x)));
     return vec3(r - rim, q.x / r, q.y / r);
-  }
-  if (shape > ${n(SHAPE.bat - 0.5)}) {
+  } else if (shape > ${n(SHAPE.bat - 0.5)}) {
     float tt = abs(q.y);
     q.x -= vL4.y * tt * tt;
     float lead = 0.1 + 0.24 * smoothstep(0.0, 0.4, tt) - 0.52 * pow(smoothstep(0.4, 1.0, tt), 1.4);
@@ -822,15 +820,14 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
     float ear = max(abs(tt - 0.065) * 2.2 + (q.x - 0.52), 0.4 - q.x);
     if (ear < e.x) e = vec3(ear, 1.0, 0.0);
     return e;
-  }
-  if (cardLeafForm(own) > 0.5) {
+  } else if (cardLeafForm(own) > 0.5) {
     vec2 m = cardMaple(q);
     vec2 c = (q - vec2(${n(CARD.maple.mid)}, 0.0)) / m.y;
     vec3 e = vec3(m.y - m.x, c.x, c.y);
     float st = max(abs(q.y) - 0.035, max(q.x - ${n(CARD.maple.mid)}, -1.0 - q.x));
     if (st < e.x) e = vec3(st, 0.0, side);
     return e;
-  }
+  } else {
   float stem = 0.16;
   float v = clamp((u - stem) / (1.0 - stem), 0.0, 1.0);
   float w = u < stem ? 0.035 : max(cardLeafHalf(v, own), 0.035 * (1.0 - smoothstep(0.0, 0.2, v)));
@@ -839,6 +836,7 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
   float ends = abs(q.x) - 1.0;
   if (ends > e.x) e = vec3(ends, q.x < 0.0 ? -1.0 : 1.0, 0.0);
   return e;
+  }
 }
 /** A card far out of focus is its outline spread by the lens: a soft blob with the outline's own middle, length and width. x, y, z: the blob's form in the card's axes; w: how much of the blob is drawn (0 for a sharp card). */
 vec4 cardBlob = vec4(0.0);
