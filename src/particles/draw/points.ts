@@ -477,6 +477,11 @@ export class ParticleDraw {
     }
     for (const a of quads ? this.instanced : this.single) a.needsUpdate = true
     this.drawn = Math.max(0, Math.min(n, Math.floor(n * fraction)))
+    // a level that draws a part of the list sends that part alone: the rest is never read, and the whole list is megabytes a frame
+    for (const a of quads ? this.instanced : this.single) {
+      a.clearUpdateRanges()
+      if (this.drawn > 0) a.addUpdateRange(0, this.drawn * a.itemSize)
+    }
     this.sprites.geometry.setDrawRange(0, this.drawn)
     const bats = this.uniforms.uBat!.value as THREE.Vector4[]
     const batKind = source.kinds.findIndex((kind) => lookOf(kind).shape === SHAPE.bat)
