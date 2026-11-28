@@ -1,46 +1,47 @@
 {
-  "number": 257,
-  "time": "2026-11-28 09:31 UTC",
+  "number": 258,
+  "time": "2026-11-28 10:01 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 257 · 2026-11-28 09:31 UTC · Phase 6",
+    "Status 258 · 2026-11-28 10:01 UTC · Phase 6",
     "Phases 1 to 5 complete. Phase 6 in progress. The decision asked of Brandon in Status 236 at about 5:20 PM MT Friday stands unanswered: move on to the film and the masters, or one more round of looks first. The work goes on in either case and only the freeze waits. A second, smaller word will be asked of him once its pictures are drawn: whether to take the mend of spring's level line.",
-    "Film frame 2828, item 287: the odd drawing is now caught in the wild twice, both times as the named cause says. Stated by the two lent machines: one odd drawing in 12 on the first at 2:17 AM MT Saturday and one in 17 on the second at 2:21 AM MT, and in both fall's set was made before winter's. Counted by the second over its 17 drawings: winter first 16 times, fall first once, and that once is the odd one. Stated by the diagnosing builder as measured on the two records: both are the same bytes as the odd picture, and their lists of calls equal its own drawing with winter's loads held back, byte for byte. Read by me in the first record: the same order of making. The cure is pushed on its own branch since 2:25 AM MT, read back here as one commit on four files: a page that captures makes the sets in one fixed order, and the live page is left as it was. Stated by its builder: type check clean, 1,144 tests passed and none failed, the new test red on the main branch and green with the cure. Before it lands: its remaining floors by 3:40 AM MT and a helper's count of the time to the first picture by 3:25 AM MT.",
-    "The change of season on chain 45: all sixteen strips and the whole film sheet are in, drawn by four helpers at preview size, and I looked at each. Seen in the first picture attached: summer into fall in 24 frames, the storm closing over the miniature, the bloom at film frames 2112 and 2120, then the leaves and fall. Stated by the helpers and seen by me in the frames I enlarged: in each change the old base and the new stand in one another for about five frames, and the bloom rings the glass and does not cover the base. Blur softens it in most. Seen in the second picture: at film frame 2836, fall into winter, winter's gold rings and snow rim carry fall's three lit faces with little blur. The kit forbids a clean frame of a base that is half one season and half another, so this is a candidate fault, not ruled yet. Two fresh critics of two model families judge the seventeen pictures since 2:28 AM MT, neither told of the other. Ten of the fast moments are being drawn at 3840 as the masters draw them, due by 3:30 AM MT, and I rule only with those in hand, since the strips are drafts. A slip of mine, caught before any critic was started: my first order for the critic left out how the change is meant to look and that the strips are drafts. It was rewritten.",
-    "The sixteenth publish: built here on the branch of the first pictures, with the type check clean and 1,129 tests passed and none failed, measured here at 2:25 AM MT. The security review found nothing that blocks and gave no warning, and its 18 file hashes equal my build without the sound, 18 of 18, measured here. The review pictures are being drawn now. But the live check's early word at 2:17 AM MT is that it will read FAIL on one count. Stated by the helper as measured on its machine, a software renderer: in the first shake from spring into summer the page stood 7,484 ms at low quality and 14,382 ms at medium, against 9,733 and 11,469 ms on the build that is live now. So on that machine the first shake's mend does not show, where two other measures found the stand gone, 470 ms and 64 to 74 ms. Why is not known yet. A guess of mine, not measured: the helper pressed 52 and 80 s after the first picture, before the page had made the next season. Its full report with the page's own marks follows and I rule then.",
-    "Under way beside it. Spring's level line: the candidate mend on its own branch, report by 3:15 AM MT, then 4K frames and the yes or no for Brandon. The render instructions for his computer: the mend of the path that could end with no film, last report by 3:50 AM MT, then a cold reading by a fresh critic. The second form of the counter of broken samples: report by 3:30 AM MT.",
-    "Remaining in phase 6 and what he receives. The sixteenth publish on the live page. The render instructions: one file in the repo and one line to give Claude Code. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last, a fresh reviewer's score against the showcase standard and BUILD COMPLETE. Open, below the bar, as in Status 256 with two changes: film frame 2828's cause is caught twice and its cure is pushed, and the base at film frame 2836 is a new candidate. Not verified: a real graphics card, a phone, Safari, Firefox, sound heard, a signed in browser.",
-    "Sound credits 7,420 of 10,000 (measured from the ledger at 2:23 AM MT: 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render and no new preview since Preview 07.",
-    "phase 6: 54.69 h used of its 12.00 h box",
-    "allowance (after the review): 54.69 h used of 12.00 h allowed",
+    "The sixteenth publish is live since 2:57 AM MT Saturday, measured here. Over the fifteenth it carries chain 45: winter's frost beside the foot, summer's lights slim and its seeds without the bunches of dots at the close camera, the further mend of the first shake's stall, and the film's shaders made safe for the Windows compiler. Measured here before it: type check clean, 1,129 tests passed and none failed, 328 files, the upload read back equal. The live check on a helper machine, a software renderer, says FAIL on one count alone, and I published all the same and say why. Stated by the helper as measured there: the page stands still inside a shake that is pressed early, 7,484 ms at low quality, 14,382 ms at medium and 7,139 ms at the plain address, against 9,733, 11,469 and 7,561 ms on the fifteenth. Every one of those presses came while the page was still making the other seasons, which takes 127 to 218 s after the first picture on that machine. Pressed after that, no shake stands, at low, medium and plain and through a whole round of four. Left then is one stand of 2.5 to 3.3 s at the very first press. So it is no worse in kind than what was live, clean once the page is ready, and it carries the mends. The fault stays open in three named parts and its builder gets a follow-up order. How long any of it lasts on a real graphics card is unknown. Everything else in the check holds: no page message in any run, the right season after every landing, each of nine addresses with a whole globe, as the first two pictures show. One frame at the season's turn shows a fine stipple on the base at low quality, as the fifteenth did more faintly.",
+    "The change of season on chain 45, judged. Two fresh critics of two model families, neither told of the other, give 6 and 8 of 10 and both say not ready. Both name the same two things: summer's sand mound slides off the table as one piece at film frames 2107 to 2110, and fall's leaves barely move when the globe lands. The second critic calls spring into summer and fall into winter clean, and winter into spring and summer into fall not. My own look at the frames as the masters draw them at 3840, drawn by helpers: at film frame 2836 winter's snow rim and gold rings carry fall's three lit faces, drawn in level slices, the third picture. It shows for a few frames at speed and the kit allows the few frames in which the old base gives way, so it is a finding to mend and not a broken rule. At film frame 1408 about ten yellow green square tiles show in summer's lawn at the lower right, the fourth picture, a new candidate. Film frames 677 and 2124 show no fault and 2116 is smeared as it should be. Measured here on rough draft 7: fall's leaves do skitter, but they begin six to eight frames after the landing, a tenth of a second late. The ruling is logged next. The mends are look work, so they are made as what-ifs on a branch and shown before and after, and nothing goes on the main branch without Brandon's word.",
+    "Film frame 2828, item 287: the two lent machines ended their counts by themselves. Counted here from their tables: 4 of 105 drawings were the odd one, and in all 4 fall's set was made before winter's. All 101 with winter's set first were the usual bytes. The cure's last floor holds: stated by a helper as measured, the page's time to the first picture is 1.08 percent shorter with the cure than without, six loads each. The cure lands in the next chain after its builder's report, due by 3:40 AM MT.",
+    "Rough draft 8 of the film is being drawn on chain 45's tree by four helpers since 2:41 AM MT, at preview size, the cheap kind. 4 of 12 parts are in at 3:00 AM MT. Preview 08 follows in this thread when it is joined and looked at.",
+    "Under way beside it. Spring's level line: the candidate mend's report is in and is read next, then 4K frames before and after and the yes or no for Brandon. The counter of broken samples for the Windows render: its second form is reported as passing and is read next. The render instructions for his computer: last report by 3:50 AM MT, then a cold reading by a fresh critic. Winter's icicles in the first shake at 3840: a helper states that they draw as upright blocks crossed by level lines at film frame 669. I have not looked at that frame yet.",
+    "Remaining in phase 6 and what he receives. The render instructions: one file in the repo and one line to give Claude Code. On his word the freeze: the repo goes private and the references are redrawn. Then the film steps of the build order and the full 4K 60 render on his gaming PC on his word: With Prompt and Without Prompt at 3840x2160, the Portfolio Looping Video and the Portfolio Screenshot. Last, a fresh reviewer's score against the showcase standard and BUILD COMPLETE. Open, below the bar: the change's two named faults and the base at film frame 2836, summer's lawn tiles at 1408, the first shake's stands on a slow machine, spring's level line, and the list of Status 256. Not verified: a real graphics card, a phone, Safari, Firefox, sound heard, a signed in browser.",
+    "Sound credits 7,420 of 10,000 (measured from the ledger at 3:00 AM MT: 52 calls), no call since 05:47 UTC on Thursday (10:47 PM MT Wednesday). No film render. No new preview since Preview 07.",
+    "phase 6: 55.20 h used of its 12.00 h box",
+    "allowance (after the review): 55.20 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-257-1.jpg",
-      "caption": "Summer into fall in 24 frames, film frames 2016 to 2200, at preview size on chain 45, a draft, not judged yet",
-      "w": 1200,
-      "h": 450
-    },
-    {
-      "file": "out/stills/status/status-257-2.jpg",
-      "caption": "Fall into winter at film frames 2832 and 2836 at two times, at 2836 winter's base carries fall's three lit faces, a candidate fault, not ruled yet",
-      "w": 1200,
-      "h": 600
-    },
-    {
-      "file": "out/stills/status/status-257-3.jpg",
-      "caption": "Film frames 2827 and 1395 at two times, fall's storm before the turn and the bloom at its peak in spring into summer, drafts",
-      "w": 1200,
-      "h": 498
-    },
-    {
-      "file": "out/stills/status/status-257-4.jpg",
-      "caption": "Still: fall landed hero, hd, draft",
+      "file": "out/stills/status/status-258-1.jpg",
+      "caption": "The sixteenth publish read on a helper machine, nine loads at the plain address and at low and medium quality, live now",
       "w": 1200,
       "h": 675
+    },
+    {
+      "file": "out/stills/status/status-258-2.jpg",
+      "caption": "The sixteenth publish on a helper machine, a round of four real shakes at low quality, at the landing and seconds after, live now",
+      "w": 1200,
+      "h": 506
+    },
+    {
+      "file": "out/stills/status/status-258-3.jpg",
+      "caption": "Fall into winter at film frame 2836 at 4K as the masters draw it, winter's base carrying fall's three lit faces, whole above and enlarged below, below the bar",
+      "w": 1185,
+      "h": 1200
+    },
+    {
+      "file": "out/stills/status/status-258-4.jpg",
+      "caption": "Spring into summer at film frame 1408 at 4K as the masters draw it, square tiles in summer's lawn at the lower right, a new candidate, below the bar",
+      "w": 1200,
+      "h": 383
     }
   ]
 }
