@@ -179,7 +179,7 @@ BELOW THE BAR OR NOT SEEN, plainly:
 - The lean of lens point with place in the pixel that `lensOrder` deals is lost for the flown parts; I did not measure what that costs.
 - (a) and (b) of section 12 are dropped, unproven as a gain. My answer about the tile and my guess about the foot's kick were wrong.
 
-14. ADDED 03:02 UTC, 28 November: (c) BESIDE MAIN ON THE LEAVES LEAVING AND THE PETALS ARRIVING (decision 258, points 3 to 6)
+14. ADDED 03:01 UTC, 28 November: (c) BESIDE MAIN ON THE LEAVES LEAVING AND THE PETALS ARRIVING (decision 258, points 3 to 6)
 Four helpers drew these at 3840 x 2160, final tier, (c) on 07c94d0a (engine 144059cb99b0d134) and main on 60f4d0ae (engine dc59c0d7c2daa6ab). I drew none. Each pair is measured as 1388, 1389 and 2121 were: the strongest wave of 3.5 to 12 px across a box, beside the middle wave of that band (how far a rib stands out of the grain), and the spread of the fine part (the picture less itself blurred by 1.5 px). The flown parts are found two ways: the pixels that differ between the two frames by more than 2 levels, grown by 2 px (as in section 13), and the footprint, where a quarter or more of the 15 x 15 around a pixel differs at all. The second is needed here because the leaves that leave are dark and the two frames differ on them by one level mostly.
 A correction to section 13 and the handover: they say 02:35 UTC; they were written at 02:34.
 
@@ -197,3 +197,43 @@ SEEN (pictures 43, 44 at true levels, 45 with the levels times 4):
 - With the levels times 4 (picture 45) main's leaf shows a plain comb, and its darker smears a crossed weave; with (c) the weave is gone to a fine grain, and of the comb a faint trace is left at the top of that leaf (x 3040 to 3110, y 1705 to 1735). It is weaker than main's and I do not see it without the gain. It is a trace of a row of copies all the same, so I name it.
 - No new dotted edge. The grain with (c) is a little more than main's, as the numbers say; I can see it only with the gain.
 NOT LOOKED AT: the globe and all above row 1296 beyond the count; the frame in motion; anything at a tier or size other than this one.
+
+ADDED 03:11 UTC: FRAMES 682 AND 681 (change 1, the petals arriving). Both pairs came up at 03:04.
+Records. 682: 58 samples each; main 455316120b5916fa (668 s), (c) 8563f9a2e9dd0545 (692 s). 681: 55 samples each; main 3577b5dcea51b918 (572 s), (c) 767c23fd937df42e (568 s). Engines as above.
+A limit of the wave's number in these two frames: in nearly every box the strongest wave of 3.5 to 12 px lies at the long end of the band (10.5 to 11.8 px), where the petals' own shapes are, on main and with (c) alike. So here it reads shape more than rib. The count of boxes where it stands out of the band's middle wave is the better reading, and the eye.
+
+FRAME 682. MEASURED, main then (c).
+- Whole frame: 423,216 px differ at all, 202,025 by more than 2, 31,377 by more than 8, the largest 51. None by more than 2 above row 1296.
+- Parts that differ by more than 2, grown by 2 px (365,390 px): spread of the fine part 5.389, 5.598; mean step 3.444, 3.874.
+- Footprint (529,105 px): spread of the fine part 4.618, 4.788; mean step 2.718, 3.022. Fine part over 6 levels: 51,746, 56,218 px; over 10: 20,675, 22,857; over 20: 5,339, 5,626.
+- Single pixels over the middle of their 5 x 5 by more than 8 levels: in the footprint 4,978, 6,707; in the ring of 40 px around it 889, 893. By more than 16: 804, 1,046; ring 221, 221. Of those in the footprint, bright single pixels on dark ground (middle under 60): over 8, 681, 1,026; over 16, 122, 166. Dark single pixels (under the middle by more than 8): 4,021, 5,211.
+- 113 boxes of 200 x 60 px on the footprint: strongest wave, mean 1.345, 1.225; standing out of the middle wave, mean 2.747, 2.223; boxes over 2.0 times: 84, 53; over 3.0: 39, 23. (c) over main by more than a tenth in 2 boxes, by more than a fifth in none (largest ratio 1.174). 327 boxes of 100 x 40: over 2.0 times 193, 116; over 3.0: 87, 52; (c) over main by more than a fifth in 5.
+- The root's place, x 1100 to 1400, y 1580 to 1800: spread of the fine part 3.675, 4.090; mean step 3.131, 3.718. Pixels more than 10 levels off the middle of their 3 x 3: on red 1.14, 2.40 percent; on luma 1.29, 3.59 percent; on the largest channel 1.01, 2.18 percent (the root measured 0.98 and 2.60). More than 6 levels off: on red 3.88, 7.01 percent.
+- The cut, x 760 to 1520, y 1560 to 1860: wave 0.710, 0.553 (2.37 and 1.60 times the middle wave); spread of the fine part 2.944, 3.203; mean step 2.149, 2.453.
+- Edges (the root's order of 03:05). The width of a flown edge from 10 to 90 percent of its step, on luma, the profile across the edge averaged along it, the same line on both frames:
+  the bar beside the base, upper left side, from (2943.4, 1661.7) to (2993.4, 1615.7), step 86 levels: 8.032 px, 7.910 px; ratio 0.985.
+  the finger left of the base, from (587.5, 1803.1) to (605.5, 1853.1), step 58 levels: 7.401, 7.280; ratio 0.984.
+  the stem left of the base, left side, x 467.5, y 1838 to 1876, step 16 levels: 8.648, 8.564; ratio 0.990.
+  the small petal in front of the base (x 1647 to 1680, y 1908 to 1950), upper right side, from (1656, 1909) to (1679, 1937), step 64 levels: 3.627, 4.163; ratio 1.148. Its left side (x 1652.5, y 1914 to 1934, a short edge with a poor plateau, so less sure): 3.611, 4.621; ratio 1.280.
+  Over the whole footprint, the slope of the picture blurred by 2 px at its steepest twentieth: 18.322, 18.315 levels a px; ratio 1.000 (681: 10.972, 10.935, ratio 0.997; 2828: 2.154, 2.148, ratio 0.997).
+  I cannot tell from one frame which softness is the lens and which is the travel. The bar lies at the base's side and I take it as in focus; the small petal lies in front of the base and I take it as out of focus. Neither is proven. Three edges are within two hundredths; the small petal's is not within a tenth: it is softer with (c) by about half a pixel.
+SEEN (pictures 37 to 40):
+- Left of the base main carries rows of copies and ribs across the smears (picture 40, at four times: the combs across each finger). With (c) they are gone: smooth smears with a fine grain. No rib and no row of copies with (c) anywhere I looked, at one to one, two times, four and five times.
+- Right of the base the two are alike; the dark hash at the smears' edges is on both.
+- With (c) the smears are sandy, in the body and at the edge. Where main's edge was already a hash (the right edge of the big petal at x 1340 to 1370, y 1600 to 1650) the two are alike. Where main's edge was smooth, the edge with (c) is dotted: the small petal at x 1647 to 1680, y 1908 to 1950 (picture 39, at eight times). At one to one I read this as grain on the petal, not as single dots; from four times up the dots are plain.
+BELOW THE BAR OF POINT 6, frame 682: by the count, more single pixels on the flown parts with (c) than on main (a third more over 8 levels, three tenths more over 16); by the eye from four times up, a dotted edge where main's was smooth, at the small petal named above; and that petal's edge is softer by 15 percent.
+
+FRAME 681. MEASURED, main then (c).
+- Whole frame: 598,259 px differ at all, 284,356 by more than 2, 35,240 by more than 8, the largest 56. None by more than 2 above row 1296.
+- Parts that differ by more than 2, grown by 2 px (518,260 px): spread of the fine part 3.327, 3.551; mean step 2.777, 3.232.
+- Footprint (715,838 px): spread of the fine part 2.922, 3.108; mean step 2.283, 2.621. Fine part over 6 levels: 35,669, 42,340 px; over 10: 9,270, 11,105; over 20: 747, 802.
+- Single pixels over the middle of their 5 x 5 by more than 8 levels: in the footprint 3,744, 5,643; in the ring around it 539, 539. By more than 16: 370, 518; ring 111, 111. Bright single pixels on dark ground in the footprint: over 8, 477, 969; over 16, 19, 69. Dark single pixels: 3,244, 4,954.
+- 180 boxes of 200 x 60 px: strongest wave, mean 0.929, 0.855; standing out, mean 2.109, 1.684; boxes over 2.0 times: 77, 31; over 3.0: 19, 14. (c) over main by more than a tenth in 15 boxes, by more than a fifth in 4 (largest ratio 1.478). 519 boxes of 100 x 40: over 2.0 times 176, 83; (c) over main by more than a fifth in 31. In the boxes where (c) is most over main the wave stands out under 1.9 times the middle wave (x 3550 to 3650, y 1940 to 1980: 0.561, 0.911 at 10.00 px, 1.31 and 1.76 times): I looked at that place at five times and saw grain, no rib.
+- The strongest rib on main, x 850 to 950, y 1560 to 1600: 2.893 at 11.11 px (5.07 times the middle wave); with (c) 1.055 (1.45 times).
+- The root's place of 682 in this frame, x 1100 to 1400, y 1580 to 1800: spread of the fine part 1.728, 2.005; pixels more than 10 levels off the middle of their 3 x 3, on red: 0.30, 0.77 percent.
+- Where the single pixels rise most: x 3255 to 3455, y 1532 to 1632, over 8 levels: 37, 306. x 1208 to 1408, y 1520 to 1620: 305, 600.
+SEEN (pictures 41, 42, 46, 47):
+- Main has ribs and streaks inside the smears on both sides of the base; with (c) they are gone to a fine grain. No rib and no row of copies with (c).
+- THE FRINGE (the thin scatter of single pink pixels beside the first petals), 681 and 682: (c) does not take it away and makes it a little worse. Outside the flown parts it is the same to the pixel (the ring's counts are equal). At the smears' own edges main already has a hash where the front's feather cuts a petal (picture 47, both alike there), and with (c) the edges that were smooth on main turn sandy too (picture 46: x 3240 to 3500, y 1530 to 1660). At one to one it reads as a soft grain at the edge; from four times up as dots.
+BELOW THE BAR OF POINT 6, frame 681: the same as 682. More single pixels on the flown parts than on main (a half more over 8 levels; bright ones on dark ground twice as many), and sandy edges where main's were smooth, named above.
+NOT LOOKED AT, both frames: the globe and all above row 1296 beyond the count; the frames in motion (681 then 682 played); the lower fifth of the frame beyond the boxes named; any other tier or size.
