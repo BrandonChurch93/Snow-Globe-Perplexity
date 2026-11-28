@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 256 · 2026-11-28 09:02 UTC
+Status 257 · 2026-11-28 09:31 UTC
 
-- `out/stills/status/status-256-1.jpg`: Summer half a second after its landing at 4K, film frame 1470 at the final tier with 24 samples, a cut at full size, on main now
-- `out/stills/status/status-256-2.jpg`: Spring's level line at low quality without the air at two times, the last frame of a shake, the main branch left and the candidate mend right, a what-if, never pushed, waits for his word
-- `out/stills/status/status-256-3.jpg`: Film frame 1470 whole, the 4K drawing shown at 1600 wide, on main now
-- `out/stills/status/status-256-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-257-1.jpg`: Summer into fall in 24 frames, film frames 2016 to 2200, at preview size on chain 45, a draft, not judged yet
+- `out/stills/status/status-257-2.jpg`: Fall into winter at film frames 2832 and 2836 at two times, at 2836 winter's base carries fall's three lit faces, a candidate fault, not ruled yet
+- `out/stills/status/status-257-3.jpg`: Film frames 2827 and 1395 at two times, fall's storm before the turn and the bloom at its peak in spring into summer, drafts
+- `out/stills/status/status-257-4.jpg`: Still: fall landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-28 09:02 UTC
-clock: phase 6, tick of 29.4 minutes
-phase 6: 54.22 h used of its 12.00 h box
-allowance (after the review): 54.22 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 54.22 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-28 09:31 UTC
+clock: phase 6, tick of 28.3 minutes
+phase 6: 54.69 h used of its 12.00 h box
+allowance (after the review): 54.69 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 54.69 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
