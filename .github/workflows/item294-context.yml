@@ -3,8 +3,10 @@
 # tools/lostcontext.mjs of this push on it: the context is taken with the WEBGL_lose_context extension in eight cases,
 # and what stands on the screen, what reaches the card, whether the page comes back and every line of the console are read.
 # Twice: origin main as it stood at this push (named main: the page without the mend, where the test is red) and the
-# head of the push (the after). The jobs named console open the page with no loss, in two seasons on Windows, until every
-# season is made, and write every line of the console (item 282: the lines Direct3D writes for a shader).
+# head of the push (the after). The jobs named console open the page with no loss, in two seasons on Windows, until the
+# page says its whole pictures have arrived (ready) or ten minutes have passed, and write every line of the console
+# (item 282: the lines Direct3D writes for a shader). The losses were read in the first run (46148923668); the second
+# run, with item 282's commit in the head, reads the console only.
 # It starts by hand, and on every push to agent/p6-context-294-ci: the branch is for this reading and is not merged.
 # It has no timer and never starts on main. Every job ends green whatever happens: a red run sends a mail. What a job
 # read is the step "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
@@ -21,6 +23,7 @@ permissions:
 jobs:
   context:
     name: lost context ${{ matrix.tree.name }} ${{ matrix.os }}
+    if: ${{ false }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 75
     strategy:
@@ -137,7 +140,7 @@ jobs:
         working-directory: page
         run: |
           cp ../_tool/tools/lostcontext.mjs tools/lostcontext.mjs
-          node tools/lostcontext.mjs --dist dist --name "console-${{ matrix.tree.name }}-fall" --local --cases usual --sizes hd --season fall --quality plain --limit 240 --ready 360
+          node tools/lostcontext.mjs --dist dist --name "console-${{ matrix.tree.name }}-fall" --local --cases usual --sizes hd --season fall --quality plain --until detail --limit 240 --ready 600
 
       - name: the console in winter
         continue-on-error: true
@@ -146,7 +149,7 @@ jobs:
         working-directory: page
         run: |
           cp ../_tool/tools/lostcontext.mjs tools/lostcontext.mjs
-          node tools/lostcontext.mjs --dist dist --name "console-${{ matrix.tree.name }}-winter" --local --cases usual --sizes hd --season winter --quality plain --limit 240 --ready 360
+          node tools/lostcontext.mjs --dist dist --name "console-${{ matrix.tree.name }}-winter" --local --cases usual --sizes hd --season winter --quality plain --until detail --limit 240 --ready 600
 
       - name: what was read
         if: always()
