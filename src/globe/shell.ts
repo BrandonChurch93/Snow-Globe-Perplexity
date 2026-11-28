@@ -450,7 +450,7 @@ vec3 glassSeen(vec3 o, vec3 d, float soft, int k, float own) {
         float lit = exp(-dist * dist / (2.0 * 650.0 * 650.0));
         vec3 slab = uRoomFloor * (1.0 - 0.6 * contact) + uSlab * uKeyCol * max(uKeyDir.y, 0.0) * (1.0 - contact) * lit;
         slab += uSlab * uPool * 3.0 * exp(-dist * dist / (2.0 * 110.0 * 110.0)) * (1.0 - 0.6 * contact);
-        float away = smoothstep(1400.0, 2900.0, length(s.xz));
+        float away = 1.0 - clamp((-dw.y / max(length(dw.xz), 1e-5) - 0.003) / 0.097, 0.0, 1.0);
         c = mix(slab * ${num(glassLook.floor)}, c, away);
       }
     }
