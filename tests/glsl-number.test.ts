@@ -131,6 +131,26 @@ describe('shader arithmetic: the test for a broken number', () => {
     for (const f of FORMS) expect(tool, `${f.name} ${f.type}`).toMatch(new RegExp(`\\nbool ${f.name}\\(${f.type} \\w+\\) \\{ return false; \\}\\n`))
   })
 
+  /**
+   * Under Direct3D only a shader that asks isnan() is built with the strict rules for numbers. The probe's second
+   * shader asks it nowhere, as the build's own shaders, and takes its broken values from a uniform's bits.
+   */
+  it('is asked of the card a second time in a shader that holds no isnan()', () => {
+    const probe = readFileSync(join('src', ASKS), 'utf8')
+    const from = probe.indexOf('\nconst PLAIN: ')
+    const to = probe.indexOf('\nconst VERT = ')
+    expect(from).toBeGreaterThan(probe.indexOf(QUESTION))
+    expect(to).toBeGreaterThan(from)
+    const plain = probe.slice(from, to)
+    expect(bare(plain)).toEqual([])
+    expect(bare(probe.slice(to))).toEqual([])
+    for (const asked of ["  ['numberBroken(nan bits)', 'numberBroken(nanBits()) && ", "  ['numberBroken(inf bits)', 'numberBroken(infBits()) && "]) expect(plain).toContain(asked)
+    expect(plain).toContain('const PLAIN_PARS = `uniform uint uNan;\nuniform uint uInf;\nfloat nanBits() { return uintBitsToFloat(uNan); }\nfloat infBits() { return uintBitsToFloat(uInf); }\n`\n')
+    expect(probe).toContain("gl.uniform1ui(gl.getUniformLocation(program, 'uNan'), 0x7fc00000)")
+    expect(probe).toContain("gl.uniform1ui(gl.getUniformLocation(program, 'uInf'), 0x7f800000)")
+    expect(probe).toContain("return [...ask(gfx, CASES, ''), ...ask(gfx, PLAIN, PLAIN_PARS)]")
+  })
+
   it('is painted by the strict run where the glass writes its guard', () => {
     const guard = readFileSync(join('src', 'globe', 'shell.ts'), 'utf8').match(/^const NUMBER_GUARD = ' {2}(.*)'$/m)?.[1]
     expect(guard).toBe('if (numberBroken(gl_FragColor)) gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);')
