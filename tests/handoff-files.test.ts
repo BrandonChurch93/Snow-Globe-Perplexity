@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { once } from 'node:events'
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import sharp from 'sharp'
@@ -16,6 +16,7 @@ import { readBack, recordsFor, recordsZip } from '../tools/lib/handoff-upload.mj
 import { readAssetStream } from '../tools/lib/handoff-release-assets.mjs'
 import { redactRecordText, releaseBody, releaseMachine, safeDraftIdentity } from '../tools/lib/handoff-record-privacy.mjs'
 import { zipRead, zipWrite } from '../tools/lib/handoff-zip.mjs'
+import { bootstrapGuide, chooseGuideLine, guideCommands, planGuideLine } from '../.github/handoff-proof/guide-lines.mjs'
 
 const roots: string[] = []
 const temporary = () => {
@@ -362,5 +363,140 @@ describe('release and records privacy', () => {
     const hash = L.sha256File(file)
     expect(recordsFor(ctx(H), mode)).toMatchObject({ file, entries: 1 })
     expect(L.sha256File(file)).toBe(hash)
+  })
+})
+
+describe('the handoff guide proof', () => {
+  const helpers = path.resolve('.github', 'handoff-proof')
+  const fence = (lines: string[]) => ['```sh', ...lines, '```', ''].join('\n')
+  const fixture = (lines: string[]) => {
+    const clone = temporary()
+    const out = temporary()
+    const guide = path.join(clone, 'RENDER-ON-YOUR-PC.md')
+    const md = fence(lines)
+    fs.writeFileSync(guide, md)
+    fs.writeFileSync(path.join(out, 'clone-path.txt'), clone)
+    return { clone, out, guide, commands: guideCommands(md) }
+  }
+  const record = (out: string, name: string, cmd: string, proof: unknown = null, last = '', code = '0', want = '0', ok = 'yes') => {
+    const tsv = [name, cmd.replace(/\t/g, ' '), code, want, ok, '1', last, proof ? JSON.stringify(proof) : ''].join('\t')
+    fs.appendFileSync(path.join(out, 'results.tsv'), tsv + '\n')
+  }
+  const verdict = (out: string, { job = 'fixture', want = '', mode = '', branch = '' } = {}) =>
+    spawnSync(process.execPath, [path.join(helpers, 'verdict.mjs'), out, job, want], {
+      encoding: 'utf8',
+      env: { ...process.env, PROOF_MODE: mode, PROOF_BRANCH: branch, GITHUB_STEP_SUMMARY: path.join(out, 'summary.md') },
+    })
+
+  it('reads only trimmed executable lines of closed fences and refuses ambiguous choices', () => {
+    const F = '```'
+    const md = ['node outside', F + 'sh', '  node tools/handoff.mjs setup\t--as-written  ', 'git --version', 'brew --version',
+      'winget install --id Git.Git', 'cd MyClone', 'some git --version', 'npm run build', F, F, 'git --version', F,
+      'The fence ' + F + ' in prose opens nothing.', F, 'node no-closing-fence'].join('\r\n')
+    const lines = guideCommands(md)
+    expect([...lines]).toEqual(['node tools/handoff.mjs setup\t--as-written', 'git --version', 'brew --version', 'winget install --id Git.Git', 'cd MyClone'])
+    expect(chooseGuideLine(lines, 'setup')).toBe('node tools/handoff.mjs setup\t--as-written')
+    expect(() => chooseGuideLine(guideCommands(fence(['node tools/handoff.mjs setup', 'node tools/handoff.mjs setup --another'])), 'setup')).toThrow('more than one distinct command')
+    expect(() => chooseGuideLine(lines, 'clean')).toThrow('no command')
+  })
+
+  it('changes only the clone branch token or the approval placeholder when requested', () => {
+    const commands = guideCommands(fence(['git clone --depth=3 --branch  main https://example.test/film.git folder',
+      'node tools/handoff.mjs approve render <his words>', 'node tools/handoff.mjs approve upload <words>']))
+    const branch = planGuideLine(commands, 'clone', 'bootstrap', { branch: 'agent/fixture' })
+    expect(branch.actual).toBe('git clone --depth=3 --branch  agent/fixture https://example.test/film.git folder')
+    expect(branch.change).toContain('replaced branch main with agent/fixture')
+    expect(planGuideLine(commands, 'clone', 'bootstrap', { branch: 'main' })).toMatchObject({ change: '', actual: branch.original })
+    expect(() => planGuideLine(commands, 'clone', 'bootstrap', { branch: 'main; git status' })).toThrow('plain branch name')
+    for (const w of ['render', 'upload']) {
+      const approval = planGuideLine(commands, 'approve-' + w, 'clone', { words: 'For proof 7' })
+      expect(approval.actual).toBe('node tools/handoff.mjs approve ' + w + ' For proof 7')
+      expect(approval.change).toContain('proof-only words')
+    }
+    expect(() => planGuideLine(commands, 'approve-render', 'clone', { words: 'yes; stop' })).toThrow('letters, digits and spaces')
+  })
+
+  it('reports exact, changed and original commands separately in the verdict', () => {
+    const f = fixture(['node tools/handoff.mjs status', 'node tools/handoff.mjs approve render <his words>'])
+    const exact = planGuideLine(f.commands, 'status', 'clone')
+    const approval = planGuideLine(f.commands, 'approve-render', 'clone')
+    const branch = 'agent/fixture'
+    const clone = planGuideLine(guideCommands(fs.readFileSync(bootstrapGuide, 'utf8')), 'clone', 'bootstrap', { branch })
+    record(f.out, 'status', exact.actual, exact)
+    record(f.out, 'clone', clone.actual, clone)
+    record(f.out, 'approve', approval.actual, approval)
+    const ran = verdict(f.out, { branch, want: 'status,clone,approve' })
+    expect(ran.status, ran.stdout + ran.stderr).toBe(0)
+    expect(ran.stdout).toContain(exact.actual + '   (written in the file)')
+    expect(ran.stdout).toContain(clone.actual + '   (changed for this proof: replaced branch main with agent/fixture')
+    expect(ran.stdout).toContain(approval.actual + '   (changed for this proof: replaced <his words> with proof-only words')
+    expect(ran.stdout).toContain('guide  ' + clone.original)
+    expect(fs.readFileSync(path.join(f.out, 'summary.md'), 'utf8')).toContain('VERDICT: PASS')
+    const main = fixture(['node tools/handoff.mjs status'])
+    const literal = planGuideLine(guideCommands(fs.readFileSync(bootstrapGuide, 'utf8')), 'clone', 'bootstrap', { branch: 'main' })
+    record(main.out, 'clone', literal.actual, literal)
+    const ranMain = verdict(main.out, { branch: 'main', want: 'clone' })
+    expect(ranMain.status, ranMain.stdout + ranMain.stderr).toBe(0)
+    expect(ranMain.stdout).toContain(literal.actual + '   (written in the file)')
+  })
+
+  it('returns a failing process status for a forged substitution, a bad result or a missing row', () => {
+    const f = fixture(['node tools/handoff.mjs status'])
+    const correct = planGuideLine(f.commands, 'status', 'clone')
+    const actual = correct.actual + ' --not-in-guide'
+    record(f.out, 'mismatch', actual, { ...correct, actual, change: 'made up for this test' })
+    record(f.out, 'bad-result', correct.actual, correct, 'FAIL: own fixture', '1', '0', 'no')
+    const ran = verdict(f.out, { want: 'mismatch,bad-result,not-run' })
+    expect(ran.status).toBe(1)
+    expect(ran.stdout).toContain('does not match the guide or a permitted proof substitution')
+    expect(ran.stdout).toContain('bad-result: MEASURED exit 1, STATED wanted 0')
+    expect(ran.stdout).toContain('not-run: never ran')
+    expect(ran.stdout).not.toContain(actual + '   (written in the file)')
+    expect(fs.readFileSync(path.join(f.out, 'verdict.txt'), 'utf8')).toContain('VERDICT: FAIL')
+  })
+
+  it('keeps the shader and upload stand-in commands separate from the guide', () => {
+    const shader = fixture(['git clone --branch main https://example.test/film.git folder'])
+    record(shader.out, 'clone', 'git clone --branch unrelated https://example.test/film.git shaders')
+    const shaders = verdict(shader.out, { mode: 'shaders', want: 'clone' })
+    expect(shaders.status).toBe(0)
+    expect(shaders.stdout).toContain('the shader job ran its own line, not a guide command')
+    const upload = fixture(['node tools/handoff.mjs upload'])
+    record(upload.out, 'upload-test', 'node tools/handoff.mjs upload-test')
+    const test = verdict(upload.out, { mode: 'upload', want: 'upload-test' })
+    expect(test.status).toBe(0)
+    expect(test.stdout).toContain("the upload's own test, by design not a guide command")
+    expect(verdict(upload.out).status).toBe(1)
+  })
+
+  it('labels the Windows picture-only pass without treating it as render readiness', () => {
+    const f = fixture(['node tools/handoff.mjs test'])
+    const test = planGuideLine(f.commands, 'test', 'clone')
+    const ending = 'PASS: the picture passed on the hosted card, and the render is not ready: the final mixes are missing'
+    record(f.out, 'test', test.actual, test, ending)
+    fs.writeFileSync(path.join(f.out, 'test.out.txt'), 'progress\n' + ending + '\n')
+    const windows = verdict(f.out, { job: 'windows-3840', want: 'test' })
+    expect(windows.status).toBe(0)
+    expect(windows.stdout).toContain('(picture only; render not ready)')
+    const small = verdict(f.out, { job: 'windows-powershell-small', want: 'test' })
+    expect(small.status).toBe(1)
+    expect(small.stdout).toContain('needs a render-ready short test')
+  })
+
+  it.skipIf(process.platform === 'win32')('executes newly written guide arguments through the Bash runner', () => {
+    const cmd = 'node tools/handoff.mjs setup\t--only-in-the-guide'
+    const f = fixture([cmd])
+    fs.mkdirSync(path.join(f.clone, 'tools'))
+    fs.writeFileSync(path.join(f.clone, 'tools', 'handoff.mjs'), 'console.log(process.argv.slice(2).join(" "))\n')
+    const script = 'HELP="$1"; . "$HELP/proof.sh"; line setup 0 setup --only-in-the-guide'
+    const ran = spawnSync('bash', ['-c', script, 'proof', helpers], {
+      cwd: f.clone, encoding: 'utf8',
+      env: { ...process.env, PROOF_GUIDE: f.guide, PROOF_GUIDE_SOURCE: 'clone', PROOF_OUT: f.out, PROOF_BRANCH: '' },
+    })
+    expect(ran.status, ran.stdout + ran.stderr).toBe(0)
+    expect(fs.readFileSync(path.join(f.out, 'setup.out.txt'), 'utf8')).toBe('setup --only-in-the-guide\n')
+    const checked = verdict(f.out, { want: 'setup' })
+    expect(checked.status, checked.stdout + checked.stderr).toBe(0)
+    expect(checked.stdout).toContain(cmd + '   (written in the file)')
   })
 })
