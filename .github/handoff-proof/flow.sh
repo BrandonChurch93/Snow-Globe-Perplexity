@@ -57,6 +57,34 @@ else
   line doctor-by-itself any 'node tools/handoff.mjs doctor'
 fi
 
+# A real update of the browser in the middle. Hosted macOS machines update Chrome while a job runs (seen in runs
+# 46097010961 and 46100206929), and the render then stops, as it must. The flow does what the row of step 2.2 says,
+# as the agent would: the short test again, then the same render line again. Three times at most in one job.
+# The update that the tool's own test makes up has a line of its own further down and is not meant here.
+UPDATES=0
+UPDATE_WORDS='the browser was updated'
+real_update() { grep -- "$UPDATE_WORDS" "$1" 2> /dev/null | grep -qv 'made up'; }
+# the words that excuse a stopped render line, while the row can still be followed
+also_ok() { [ "$UPDATES" -lt 3 ] && echo "$UPDATE_WORDS"; }
+follow_row() {
+  UPDATES=$((UPDATES + 1))
+  note "a real update of the browser stopped the render ($(grep -- "$UPDATE_WORDS" "$1" | grep -v 'made up' | tail -1 | sed 's/: the browser was updated.*//' | sed 's/^FAIL: //' | tr -d '\r' | cut -c1-160)). The flow does what the row of step 2.2 says: the short test again, then the render line again"
+  line "test-after-real-update-$UPDATES" 0 'node tools/handoff.mjs test'
+}
+# render_line NAME WANT [what its output must say]: the render line, followed to its end
+render_line() {
+  local name="$1"
+  while :; do
+    ALSO_OK="$(also_ok)" line "$name" "$2" 'node tools/handoff.mjs render' "${3:-}"
+    if [ "$LAST_CODE" = 1 ] && [ "$UPDATES" -lt 3 ] && real_update "$PROOF_OUT/$name.out.txt"; then
+      follow_row "$PROOF_OUT/$name.out.txt"
+      name="$1-after-update-$UPDATES"
+      continue
+    fi
+    break
+  done
+}
+
 # from here on the switches of the tool's own tests are set
 export HANDOFF_TEST="$PROOF_SWITCHES"
 note "the switches of the tool's own tests from here on: $PROOF_SWITCHES"
@@ -93,17 +121,40 @@ if [ "$PROOF_MODE" = small ]; then
     line test-after-update 0 'node tools/handoff.mjs test'
     ;;
   esac
-  ONCE=1 line render-first-call 3 'node tools/handoff.mjs render'
-  # wait for the first finished chunk, then end the process that renders, and it alone
-  if [ "$LAST_CODE" = 3 ]; then
-    for i in $(seq 1 400); do
-      ls out/master/test/film-b/*.mp4 > /dev/null 2>&1 && break
-      sleep 3
-    done
-  fi
+  # the first call, which comes back while the render goes on in the background. Then wait for the first finished
+  # chunk, and end the process that renders, and it alone. When a real update of the browser stops the render
+  # before that, the row is followed and the first call is made again
+  FIRST=render-first-call
+  REPORT=out/work/handoff/report-render.txt
+  ENDED=''
+  while :; do
+    touch "$PROOF_OUT/before-the-render"
+    ENDED=''
+    ALSO_OK="$(also_ok)" ONCE=1 line "$FIRST" 3 'node tools/handoff.mjs render'
+    if [ "$LAST_CODE" = 3 ]; then
+      for i in $(seq 1 400); do
+        ls out/master/test/film-b/*.mp4 > /dev/null 2>&1 && break
+        if [ "$REPORT" -nt "$PROOF_OUT/before-the-render" ] && tail -2 "$REPORT" | grep -q '^FAIL: '; then
+          ENDED="$REPORT"
+          break
+        fi
+        sleep 3
+      done
+    elif [ "$LAST_CODE" = 1 ]; then
+      ENDED="$PROOF_OUT/$FIRST.out.txt"
+    fi
+    if [ -n "$ENDED" ] && [ "$UPDATES" -lt 3 ] && real_update "$ENDED"; then
+      follow_row "$ENDED"
+      FIRST="render-first-call-after-update-$UPDATES"
+      continue
+    fi
+    break
+  done
   CHUNK="$(ls out/master/test/film-b/*.mp4 2> /dev/null | head -1)"
   if [ -z "$CHUNK" ]; then
-    note "PROBLEM: the render finished no chunk to stop it after; the flow ends here"
+    SAID=''
+    [ -n "$ENDED" ] && SAID=". The render said: $(grep -v '^[[:space:]]*$' "$ENDED" | tail -1 | tr -d '\r' | cut -c1-300)"
+    note "PROBLEM: the render finished no chunk to stop it after; the flow ends here$SAID"
     node "$HELP/after.mjs" "$PROOF_OUT"
     exit 0
   fi
@@ -119,11 +170,11 @@ if [ "$PROOF_MODE" = small ]; then
   fi
   note "the process that renders was ended by force, and only it: what it had started is left behind"
   sleep 3
-  line render-carries-on 0 'node tools/handoff.mjs render' 'carrying on'
+  render_line render-carries-on 0 'carrying on'
   SHA2="$(node -e "console.log(require('crypto').createHash('sha256').update(require('fs').readFileSync(process.argv[1])).digest('hex'))" "$CHUNK")"
   note "the chunk finished before the stop: sha256 $SHA1; after the render carried on: $SHA2"
   [ "$SHA1" = "$SHA2" ] || note "PROBLEM: a chunk that was finished before the stop was drawn again"
-  line render-again 0 'node tools/handoff.mjs render' 'already'
+  render_line render-again 0 'already'
   line check 0 'node tools/handoff.mjs check'
   line deliver 0 'node tools/handoff.mjs deliver'
   node "$HELP/after.mjs" "$PROOF_OUT"

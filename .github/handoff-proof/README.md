@@ -11,6 +11,8 @@ It runs only on a push to `agent/p6-handoff` and by hand, never on main.
 | `after.mjs` | lists the Desktop and gathers the reports for the uploaded artifact |
 | `verdict.mjs` | reads what the lines did, checks that every line run is written in the handoff file, and writes the verdict |
 | `shader-warnings.mjs`, `shaders.sh` | list what the shader compiler of the machine writes about every program of the film, and what the card answers to the maths probe, for one head |
+| `held-file.mjs` | on Windows, proves that the tool's rename waits for a file another program holds, where a plain rename fails |
+| `upload-test.ps1` | the upload's own test in the job `windows-upload-test`: stand-in files to a draft release, read back, the draft removed by its id |
 | `other-head.txt` | one line, a branch and a full commit: the head the job `windows-shaders` lists instead of this branch. Comments only means this branch |
 
 The film's clone is made by a plain `git clone` into a folder with a space in its name, under the git defaults of
@@ -20,5 +22,11 @@ handoff file did not put there.
 The switches of the tool's own tests are set here through one variable. The handoff file never names it.
 
 A word in the message of a push chooses the jobs. `[proof small]` leaves the 3840 jobs out, `[proof 3840]` leaves
-the others out, `[proof shaders]` runs only the list of shader messages, and `[skip ci]` starts no run.
-A job that is left out still starts, does nothing and ends green.
+the others out, `[proof shaders]` runs only the list of shader messages, `[proof upload]` runs only the upload's
+own test, and `[skip ci]` starts no run. A job that is left out still starts, does nothing and ends green.
+
+Hosted macOS machines update Chrome while a job runs. When that stops a render line, `flow.sh` does what the row
+of step 2.2 of the handoff file says, as the agent would: the short test again, then the render line again, three
+times at most in one job. The verdict lists those lines under names that end in `after-update` and
+`test-after-real-update`. The update that the tool's own test makes up (job `windows-gitbash-small`) is a line of
+its own and proves the same row on Windows.

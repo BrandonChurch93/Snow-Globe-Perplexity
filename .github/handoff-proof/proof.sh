@@ -2,6 +2,7 @@
 # line NAME WANT 'the line' [what its output must say]
 #   runs the line exactly as written, again while it ends with exit code 3 (RUNNING), and notes what came of it.
 #   WANT is the exit code that is wanted, or the word any. ONCE=1 before it runs the line one time only.
+#   ALSO_OK='words' before it takes exit code 1 as wanted too when the output says those words.
 set +e
 # on Windows the folder comes as D:\a\_temp; bash wants /d/a/_temp
 RUNNER_TEMP_HERE="$(cygpath -u "$RUNNER_TEMP" 2> /dev/null || echo "$RUNNER_TEMP")"
@@ -37,6 +38,12 @@ line() {
   if [ -n "$must" ] && ! grep -Eqi -- "$must" "$file"; then
     ok=no
     last="(the output does not say: $must) $last"
+  fi
+  # a render line that a real update of the browser stopped is no failure of the proof: the file has a row for it,
+  # and the flow follows that row next (see render_line in flow.sh)
+  if [ -n "${ALSO_OK:-}" ] && [ "$code" = 1 ] && grep -- "$ALSO_OK" "$file" | grep -qv 'made up'; then
+    ok=yes
+    last="(stopped by a real update of the browser; the row of step 2.2 is followed next) $(grep -v '^[[:space:]]*$' "$file" | tail -1 | tr -d '\r' | tr '\t' ' ' | cut -c1-500)"
   fi
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$cmd" "$code" "$want" "$ok" "$n" "$last" >> "$PROOF_OUT/results.tsv"
   LAST_CODE=$code
