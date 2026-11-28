@@ -30,6 +30,12 @@
 // carries no data-live; at the first picture the page's own fade runs, from V to 1. --canvas-will-change: a style of the
 // tool sets will-change: opacity on the canvas from the page's first moment and nothing else. Both write down what the
 // canvas's computed style was. Named so, never counted with the listening ones.
+// --watch-canvas: the recorder of the canvas's computed style alone. No rule of the tool is put into the page: whatever
+// the canvas's opacity is comes from the page's own index.html. Read in every frame before the first picture, at the
+// events of the fade and at the load's end.
+// --dist-b <built page>: a paired run on one machine. The loads alternate between the page of --dist (side A) and the
+// page of --dist-b (side B), A first, each side on a server of its own, each load in a browser begun for it. Every load
+// carries its side, and the table ends with one line for each side.
 // --local opens the installed Chrome in a window with the machine's graphics card, with the flags of every tool of
 // this tree; without it the pinned browser draws with the software renderer.
 // It writes <out>/<name>.json, <name>.txt, and for each load <tag>.png, <tag>-chrome.log, <tag>-gpu.txt and what the
@@ -79,6 +85,8 @@ const cutCanvas = args['cut-canvas'] === true
 const canvasOpacity = str('canvas-opacity', '')
 if (canvasOpacity !== '' && !(Number(canvasOpacity) > 0 && Number(canvasOpacity) < 1)) throw new Error(`--canvas-opacity is ${canvasOpacity}. It is a number between 0 and 1.`)
 const canvasWillChange = args['canvas-will-change'] === true
+const watchCanvas = args['watch-canvas'] === true
+const distB = typeof args['dist-b'] === 'string' ? path.resolve(args['dist-b']) : null
 // --fade-canvas frames|S: the tool holds the canvas out of sight (opacity 0, no fade) and holds the page's still under
 // it (the page's own call that ends the still is kept back), then lets the page's own rule fade the canvas in over
 // 0.5 s and ends the still when that fade is over, as the page does. With "frames" it lets go when the page's frames
@@ -106,7 +114,9 @@ fs.mkdirSync(out, { recursive: true })
 const mac = process.platform === 'darwin'
 const utc = () => new Date().toISOString().slice(11, 19)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-const build = fs.existsSync(path.join(dist, 'build.json')) ? fs.readFileSync(path.join(dist, 'build.json'), 'utf8').trim() : 'no build.json'
+const buildOf = (dir) => (fs.existsSync(path.join(dir, 'build.json')) ? fs.readFileSync(path.join(dir, 'build.json'), 'utf8').trim() : 'no build.json')
+const build = buildOf(dist)
+const buildB = distB ? buildOf(distB) : null
 
 // The driver writes every line the browser prints to this file, once it is told to before it is loaded.
 const driverLog = path.join(out, `${name}-driver.log`)
@@ -327,6 +337,8 @@ function styleCanvas({ id, css }) {
   const s = (w.canvasStyle = { css, putAt: null, putBy: null, canvasThereAtPut: null, bodyThereAtPut: null, reads: 0, firstReadAt: null, lastReadAt: null, opacityFirst: null, opacityLast: null, opacityMin: null, opacityMax: null, willChange: null, transition: null, liveSetAt: null, liveAt: null, opacityAtLive: null, transitionAtLive: null, willChangeAtLive: null, events: [], fadeOverAt: null, fadeOverBy: null, opacityAfterFade: null, endedByPageAt: null, endedSeenAt: null, opacityWhenEnded: null, willChangeWhenEnded: null })
   const now = () => Math.round(performance.now())
   const put = (by) => {
+    // With no rule to put (the recorder alone) nothing is put into the page.
+    if (css === null) return
     if (document.getElementById(id) || !document.documentElement) return
     const st = document.createElement('style')
     st.id = id
@@ -338,7 +350,7 @@ function styleCanvas({ id, css }) {
     s.bodyThereAtPut = document.body !== null
   }
   put('at once')
-  if (s.putAt === null) {
+  if (css !== null && s.putAt === null) {
     const seen = new MutationObserver(() => {
       put('when the document got its root')
       if (s.putAt !== null) seen.disconnect()
@@ -517,9 +529,9 @@ async function machineLog(fromMs, toMs, file) {
 // Chrome's own lines worth a place in the table. The whole of them is in <tag>-chrome.log.
 const TELLING = /gpu_process_host|exit_code|GPU process|watchdog|[Cc]ontext lost|context was lost|ContextResult|command buffer|Metal|MTL|Exiting GPU|out of memory|OOM|hang|Hang|timed? ?out|Timeout|device lost|DeviceLost|GL_OUT_OF_MEMORY|CONTEXT_LOST|blocklist|crash/
 
-async function one(base, query, round) {
+async function one(base, query, round, side = null) {
   const beganUtc = utc()
-  const tag = `${name}-r${round}-${query === '' ? 'address' : query.replace(/[^a-z0-9]+/gi, '-')}`
+  const tag = `${name}-r${round}-${side === null ? '' : `${side}-`}${query === '' ? 'address' : query.replace(/[^a-z0-9]+/gi, '-')}`
   const logFrom = fs.existsSync(driverLog) ? fs.statSync(driverLog).size : 0
   const began = Date.now()
   const browser = await begin(tag)
@@ -628,6 +640,10 @@ async function one(base, query, round) {
       await page.addInitScript(styleCanvas, { id: '__listen_willchange', css: 'canvas{will-change:opacity !important}' })
       notes.push("the tool sets will-change: opacity on the canvas from the page's first moment; its opacity and its fade are the page's own")
     }
+    if (watchCanvas && canvasOpacity === '' && !canvasWillChange) {
+      await page.addInitScript(styleCanvas, { id: null, css: null })
+      notes.push("the tool puts no rule into the page; it reads the canvas's computed style in every frame before the first picture, at the events of the fade and at the load's end")
+    }
     if (fadeCanvas !== '') {
       const frames = fadeCanvas === 'frames'
       await page.addInitScript(holdAndFade, { mode: frames ? 'frames' : 'seconds', seconds: frames ? null : Number(fadeCanvas), afterMs: FADE_AFTER_MS, steadyMs: FADE_STEADY_MS })
@@ -700,7 +716,7 @@ async function one(base, query, round) {
       const c = got.canvasStyle
       const first = got.marks?.find((m) => m.mark === 'first-picture')?.at ?? null
       const rel = (t) => (t === null || first === null ? `${t}` : `${t - first >= 0 ? '+' : ''}${t - first}`)
-      notes.push(`the canvas's style by the page's clock: the tool's rule (${c.css}) put ${c.putAt} ms of the page, ${c.putBy}, the canvas ${c.canvasThereAtPut ? 'already there' : 'not yet there'}, the body ${c.bodyThereAtPut ? 'already there' : 'not yet there'}; before data-live ${c.reads} frames read (${c.firstReadAt} to ${c.lastReadAt} ms of the page): opacity ${c.opacityFirst} first, ${c.opacityLast} last, ${c.opacityMin} to ${c.opacityMax}, will-change ${c.willChange}, transition ${c.transition}; data-live set ${rel(c.liveSetAt)} of the first picture; at the first frame with data-live (${rel(c.liveAt)}): opacity ${c.opacityAtLive}, transition ${c.transitionAtLive}, will-change ${c.willChangeAtLive}; the fade's events: ${c.events.map((e) => `${e.type} ${rel(e.at)} opacity ${e.opacity} elapsed ${e.elapsed}`).join(', ') || 'none'}; the fade ended by the page ${rel(c.endedByPageAt)}, seen in a frame ${rel(c.endedSeenAt)}: opacity ${c.opacityWhenEnded}, will-change ${c.willChangeWhenEnded}`)
+      notes.push(`the canvas's style by the page's clock: ${c.css === null ? 'no rule of the tool' : `the tool's rule (${c.css}) put ${c.putAt} ms of the page, ${c.putBy}, the canvas ${c.canvasThereAtPut ? 'already there' : 'not yet there'}, the body ${c.bodyThereAtPut ? 'already there' : 'not yet there'}`}; before data-live ${c.reads} frames read (${c.firstReadAt} to ${c.lastReadAt} ms of the page): opacity ${c.opacityFirst} first, ${c.opacityLast} last, ${c.opacityMin} to ${c.opacityMax}, will-change ${c.willChange}, transition ${c.transition}; data-live set ${rel(c.liveSetAt)} of the first picture; at the first frame with data-live (${rel(c.liveAt)}): opacity ${c.opacityAtLive}, transition ${c.transitionAtLive}, will-change ${c.willChangeAtLive}; the fade's events: ${c.events.map((e) => `${e.type} ${rel(e.at)} opacity ${e.opacity} elapsed ${e.elapsed}`).join(', ') || 'none'}; the fade ended by the page ${rel(c.endedByPageAt)}, seen in a frame ${rel(c.endedSeenAt)}: opacity ${c.opacityWhenEnded}, will-change ${c.willChangeWhenEnded}`)
     }
     if (got.canvasAtEnd) notes.push(`the canvas at the load's end: opacity ${got.canvasAtEnd.opacity}, will-change ${got.canvasAtEnd.willChange}, its own transition "${got.canvasAtEnd.inlineTransition}", the still ${got.canvasAtEnd.stillThere ? 'still there' : 'gone'}`)
     const shot = `${tag}.png`
@@ -739,9 +755,9 @@ async function one(base, query, round) {
         }
       }
     }
-    result = { name, tag, query, round, beganUtc, endedUtc: utc(), endedBy, shot, t0, firstAtWall: firstAt, lossSeenWall: lossSeen, ...got, messages, told, crashCount: /GPU process crash count\s*:?\s*(\d+)/.exec(cardText)?.[1] ?? null }
+    result = { name, tag, side, query, round, beganUtc, endedUtc: utc(), endedBy, shot, t0, firstAtWall: firstAt, lossSeenWall: lossSeen, ...got, messages, told, crashCount: /GPU process crash count\s*:?\s*(\d+)/.exec(cardText)?.[1] ?? null }
   } catch (error) {
-    result = { name, tag, query, round, beganUtc, endedUtc: utc(), failed: String(error?.message ?? error), messages, marks: [], lost: [], back: [], refused: [], gaps: [], perSecond: {}, frames: 0 }
+    result = { name, tag, side, query, round, beganUtc, endedUtc: utc(), failed: String(error?.message ?? error), messages, marks: [], lost: [], back: [], refused: [], gaps: [], perSecond: {}, frames: 0 }
   } finally {
     sampling = false
     await loop
@@ -770,7 +786,14 @@ async function one(base, query, round) {
   // The machine's own log: around the loss where one was seen (25 s before it to 15 s after), else the first 90 s of the load.
   const seen = result.lossSeenWall ?? null
   if (oslog === 'all' || (oslog === 'lost' && (result.lost?.length || round === 1))) logLines = await machineLog(seen === null ? began : seen - 25000, seen === null ? Math.min(Date.now(), began + 90000) : seen + 15000, path.join(out, `${tag}-oslog.txt`)).catch(() => null)
-  return { ...result, root, graphicsProcesses: gpus, chromeLines: lines.length, telling, reports, machineLogLines: logLines, notes, samples }
+  // The kernel's own line of a card that did not answer, counted in the machine's log of this load where one was kept.
+  let kernelLines = null
+  try {
+    if (logLines !== null) kernelLines = fs.readFileSync(path.join(out, `${tag}-oslog.txt`), 'utf8').split('\n').filter((l) => /timed out!/.test(l)).length
+  } catch {
+    kernelLines = null
+  }
+  return { ...result, root, graphicsProcesses: gpus, chromeLines: lines.length, telling, reports, machineLogLines: logLines, kernelLines, notes, samples }
 }
 
 function line(r) {
@@ -792,9 +815,11 @@ function line(r) {
 }
 
 const server = await serve({ dist, port: 0 })
+const serverB = distB ? await serve({ dist: distB, port: 0 }) : null
 const file = path.join(out, `${name}.json`)
 const table = path.join(out, `${name}.txt`)
 fs.writeFileSync(table, `item 295, listen ${name}: ${dist}, ${build}, ${webkitMode ? `the driver's WebKit ${webkit.executablePath().split('/').find((x) => /^webkit-\d+/.test(x)) ?? ''} in a window with the card (the engine of Safari, not Safari itself)` : local ? 'the installed Chrome with the card' : 'the pinned browser, software'}, nothing of the tool on the card, flags ${extraFlags.join(' ') || 'none of its own'}${plainFlags ? ', WITHOUT the flags of the tree\'s tools (no --ignore-gpu-blocklist, --enable-gpu-rasterization, --disable-hang-monitor, --hide-scrollbars, --mute-audio, nor the three against throttling and the colour profile one; the driver\'s other default switches stay, the whole line is in each load\'s chrome log)' : ''}, window ${viewW}x${viewH} at scale ${scale}${spindumpS ? `, SPINDUMP ${spindumpS} s at the first picture (not a listening load)` : ''}, stay ${stayMs / 1000} s, after a loss ${afterLossMs ? `${afterLossMs / 1000} s` : 'the whole stay'}, ${os.cpus().length} processors, ${Math.round(os.totalmem() / 1048576)} MB, begun ${new Date().toISOString()}\n`)
+if (distB) fs.appendFileSync(table, `a paired run: side A is ${dist}, ${build}; side B is ${distB}, ${buildB}; the loads alternate, A first${watchCanvas ? '; no rule of the tool is in either page' : ''}\n`)
 
 // The card as the browser names it before any page of ours, in a browser of its own.
 try {
@@ -814,10 +839,11 @@ const most = Math.max(...loads.map((l) => l.count))
 for (let round = 1; round <= most; round++) {
   for (const l of loads) {
     if (round > l.count) continue
-    const r = await one(server.url, l.query, round)
+    const side = distB ? (round % 2 === 1 ? 'A' : 'B') : null
+    const r = await one(side === 'B' ? serverB.url : server.url, l.query, round, side)
     results.push(r)
     if (results.length === 1 && r.agent) fs.appendFileSync(table, `${r.agent} · ${r.cores} processors · the card by the page's own context at the end of the first load: ${r.cardByPage ?? 'not asked (lost) or not named'}\n`)
-    const text = `${utc()} ${line(r)}`
+    const text = `${utc()} ${side === null ? '' : `side ${side}, `}${line(r)}`
     console.log(text)
     fs.appendFileSync(table, `${text}\n`)
     for (const m of r.messages.slice(0, 4)) fs.appendFileSync(table, `    message at ${m.afterGotoMs} ms after the address was asked: ${m.text}\n`)
@@ -830,6 +856,25 @@ for (let round = 1; round <= most; round++) {
   }
 }
 await server.close()
+if (serverB) await serverB.close()
+// A paired run: one line for each side, with what the recorder read of the canvas's opacity.
+if (distB) {
+  const few = (list) => [...new Set(list.map((x) => String(x)))].join(' and ') || 'not read'
+  for (const side of ['A', 'B']) {
+    const of = results.filter((r) => r.side === side)
+    const ok = of.filter((r) => !r.failed)
+    const drew = ok.filter((r) => r.marks.some((m) => m.mark === 'first-picture'))
+    const lost = ok.filter((r) => r.lost.length)
+    const anew = ok.filter((r) => r.graphicsProcesses.length > 1)
+    const kernel = ok.filter((r) => (r.kernelLines ?? 0) > 0)
+    const styles = ok.map((r) => r.canvasStyle).filter(Boolean)
+    const read = styles.filter((c) => c.reads > 0)
+    const faded = styles.filter((c) => c.fadeOverBy === 'transitionend')
+    const last = `${name} side ${side} (${side === 'A' ? build : buildB}): ${of.length} loads (rounds ${of.map((r) => r.round).join(' ')}); a first picture in ${drew.length}; the card lost in ${lost.length} (rounds ${lost.map((r) => r.round).join(' ') || 'none'}); a graphics process begun anew in ${anew.length} (rounds ${anew.map((r) => r.round).join(' ') || 'none'}); the kernel's line in the machine's log of ${kernel.length} (rounds ${kernel.map((r) => r.round).join(' ') || 'none'}); the canvas's opacity before the first picture, read in ${read.length} loads over ${read.reduce((n, c) => n + c.reads, 0)} frames: lowest ${few(read.map((c) => c.opacityMin))}, highest ${few(read.map((c) => c.opacityMax))}; at the end of the fade (${faded.length} loads): ${few(faded.map((c) => c.opacityAfterFade))}; at the load's end: ${few(ok.filter((r) => r.canvasAtEnd).map((r) => r.canvasAtEnd.opacity))}; loads with a message ${of.filter((r) => r.messages.length).length}; failed ${of.filter((r) => r.failed).length}`
+    console.log(last)
+    fs.appendFileSync(table, `${last}\n`)
+  }
+}
 for (const l of loads) {
   const of = results.filter((r) => r.query === l.query)
   const drew = of.filter((r) => !r.failed && r.marks.some((m) => m.mark === 'first-picture'))

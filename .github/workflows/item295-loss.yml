@@ -1,50 +1,44 @@
-# Item 295: why main's page loses its WebGL context in winter on the hosted macOS card, and what that means for real
-# Apple machines. A diagnosis: nothing here mends anything, and nothing here is merged.
-# Every job builds one page on one hosted machine and opens it in the installed Chrome with tools/item295/listen.mjs,
-# which only listens: nothing of a tool is on the card. The page is main, untouched (a3320a30, the same src as the
-# 6befeeb0 the trials of item 285 opened), or an older commit of main, or the probe build of this branch, whose only
-# change to main's src is switches that turn a part off (src/core/off295.ts names them).
-# The arm q5-webkit opens the page in the driver's own build of WebKit (the engine of Safari, not Safari itself); the
-# arms named after an image open it in the installed Chrome of another free hosted macOS image.
-# The matrix below names the arms of this push (the arms of the pushes before it are in this file's history): the page, the addresses and how many browsers each gets, how long a
-# load is left, the browser's own switches, and whether the machine's sampler is begun (never in a listening arm).
-# It starts on a push to agent/p6-loss-295 that changes this file, and by hand. It has no timer and never starts on
-# main or on another builder's branch. Every job ends green whatever happens: a red run sends a mail. What a job read is
-# the step "what was read" of its log and the files of its artifact. It uses no secret and writes nothing to the repo.
+# Item 295: why main's page loses its WebGL context in winter on the hosted macOS card, and the hosted proof of the
+# one value mend that root ordered in its ruling 334 (the canvas waits at opacity 0.004 and not at 0 before its first
+# picture). The mend itself is on the branch agent/p6-hair-295; this branch holds tools only. Nothing here is merged.
+# Started by hand only, with two commits as inputs: a (side A, the mend's parent, main as it is) and b (side B, the
+# mend's head). It has no timer, starts on no push, and never starts on main or on another builder's branch.
+# The jobs pair-1 and pair-2 each take one hosted Mac. Each builds both pages in the job and opens them in the installed
+# Chrome with tools/item295/listen.mjs: 20 loads that alternate A and B, A first, each load in a browser begun for it,
+# winter at the plain address, left 40 s and 5 s after a loss, the machine's log kept. No rule of the tool is in either
+# page: the opacity of the canvas comes from each page's own index.html, and the tool's recorder reads the computed
+# opacity in every frame before the first picture, at the events of the fade and at the load's end.
+# The jobs b-windows and b-linux open side B alone on a hosted Windows and a hosted Linux machine, 10 loads each, to see
+# that the value does no harm there. Those machines have no graphics card of their own: what draws is named in the files.
+# Every job ends green whatever happens: a red run sends a mail. What a job read is the step "what was read" of its log
+# and the files of its artifact. It uses no secret and writes nothing to the repo.
+# The runs before this one (the diagnosis, ten pushes) are in this file's history.
 name: item 295 the lost card
 
 on:
-  push:
-    branches: [agent/p6-loss-295]
-    paths: ['.github/workflows/item295-loss.yml']
   workflow_dispatch:
+    inputs:
+      a:
+        description: "side A: the mend's parent, a commit of main"
+        required: true
+        type: string
+      b:
+        description: "side B: the mend's head"
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  arm:
+  pair:
     name: ${{ matrix.arm }}
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
     timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # Tenth push, ordered by root's ruling 331 of 19:23 UTC (one run, four arms, at most four hosted Macs, no other run
-          # of this branch beside it). The seventh push kept the card when the canvas was in full sight from the page's
-          # first moment. The question of this push: is the card also kept when the canvas is in sight from the first
-          # moment at an opacity no eye can see, and the page's own fade then runs at the mark exactly as on main?
-          # Four arms of 10 winter loads of main's page at the plain address, each load in a browser begun for it, left
-          # 40 s and 5 s after a loss, tools beside the page only, the machine's log kept in every load:
-          #   q10-hair: a style of the tool gives the canvas opacity 0.004 while it carries no data-live.
-          #   q10-hair-02: the same with 0.02, in case the browser treats 0.004 as nothing.
-          #   q10-will-change: the canvas at opacity 0 as on main, plus will-change: opacity on it from the first moment.
-          #   q10-main: main as it is, with the listening tool and the machine's log only, the control of this run.
-          - { arm: q10-hair, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '--canvas-opacity 0.004 --oslog all' }
-          - { arm: q10-hair-02, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '--canvas-opacity 0.02 --oslog all' }
-          - { arm: q10-will-change, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '--canvas-will-change --oslog all' }
-          - { arm: q10-main, os: macos-latest, page: a3320a306c1df32d86daf8f1ef82cab612d0eacc, loads: '10:', stay: 40, after: 5, spindump: 0, flags: '', more: '--oslog all' }
+        arm: [pair-1, pair-2]
     steps:
       - name: the tools of this branch
         continue-on-error: true
@@ -53,12 +47,20 @@ jobs:
           path: tools-tree
           persist-credentials: false
 
-      - name: the page
+      - name: side A
         continue-on-error: true
         uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.page }}
-          path: page
+          ref: ${{ inputs.a }}
+          path: page-a
+          persist-credentials: false
+
+      - name: side B
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.b }}
+          path: page-b
           persist-credentials: false
 
       - name: the machine
@@ -68,38 +70,45 @@ jobs:
           mkdir -p tools-tree/out/work/item295
           note="tools-tree/out/work/item295/${{ matrix.arm }}-machine.txt"
           {
-            echo "arm ${{ matrix.arm }}, page $(git -C page rev-parse HEAD), tools $(git -C tools-tree rev-parse HEAD), image ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)"
+            echo "arm ${{ matrix.arm }}, side A $(git -C page-a rev-parse HEAD), side B $(git -C page-b rev-parse HEAD), tools $(git -C tools-tree rev-parse HEAD), image ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)"
+            echo "chip: $(sysctl -n machdep.cpu.brand_string); cores: $(sysctl -n hw.ncpu); memory: $(( $(sysctl -n hw.memsize) / 1073741824 )) GB; model: $(sysctl -n hw.model)"
             sw_vers
-            sysctl -n machdep.cpu.brand_string hw.ncpu hw.memsize hw.model
             "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version
             system_profiler SPHardwareDataType SPDisplaysDataType 2>/dev/null | grep -v -i -E "serial|uuid|udid"
-            echo "--- ioreg, the accelerators"
-            ioreg -r -c IOAccelerator -w 0 -d 3 2>/dev/null | head -120
             echo "--- ioreg, lines that name the card"
             ioreg -l -w 0 2>/dev/null | grep -i -E "paravirt|VRAM|gpu-core|MetalPlugin" | head -40
           } > "$note" 2>&1 || true
-          head -60 "$note"
+          head -50 "$note"
 
-      - name: install and build
+      - name: install and build both pages
         continue-on-error: true
-        timeout-minutes: 20
+        timeout-minutes: 25
         shell: bash
         run: |
-          ( cd page && npm ci --no-audit --no-fund && npm run build )
-          echo "page built: $(cat page/dist/build.json)" | tee -a "tools-tree/out/work/item295/${{ matrix.arm }}-machine.txt"
-          if cmp -s page/package-lock.json tools-tree/package-lock.json; then
-            ln -s ../page/node_modules tools-tree/node_modules
+          note="tools-tree/out/work/item295/${{ matrix.arm }}-machine.txt"
+          ( cd page-a && npm ci --no-audit --no-fund && npm run build )
+          ( cd page-b && npm ci --no-audit --no-fund && npm run build )
+          if cmp -s page-a/package-lock.json tools-tree/package-lock.json; then
+            ln -s ../page-a/node_modules tools-tree/node_modules
           else
             ( cd tools-tree && npm ci --no-audit --no-fund )
           fi
-
-      - name: the driver's WebKit
-        if: contains(matrix.more, '--webkit')
-        continue-on-error: true
-        timeout-minutes: 10
-        shell: bash
-        working-directory: tools-tree
-        run: npx playwright-core install webkit
+          # What follows only tells: nothing in it may end the step.
+          set +e
+          {
+            echo "side A built: $(cat page-a/dist/build.json)"
+            echo "side B built: $(cat page-b/dist/build.json)"
+            echo "--- the files of the two commits that differ (node_modules and dist left out)"
+            diff -rq -x node_modules -x dist -x .git page-a page-b
+            echo "--- index.html, A against B"
+            diff page-a/index.html page-b/index.html
+            echo "--- the files of the two built pages that differ"
+            diff -rq page-a/dist page-b/dist
+            echo "--- the rule of the canvas in each built page"
+            echo "A: $(grep -o '#view[^}]*}' page-a/dist/index.html | tr '\n' ' ')"
+            echo "B: $(grep -o '#view[^}]*}' page-b/dist/index.html | tr '\n' ' ')"
+          } 2>&1 | tee -a "$note"
+          true
 
       - name: the loads
         continue-on-error: true
@@ -107,11 +116,7 @@ jobs:
         shell: bash
         working-directory: tools-tree
         run: |
-          flags="${{ matrix.flags }}"
-          more=()
-          if [ -n "$flags" ]; then more=(--flags "$flags"); fi
-          # matrix.more is words for the tool as they stand (--plain-flags, --viewport 640x360, --scale 2): split on purpose.
-          node tools/item295/listen.mjs --dist ../page/dist --name "${{ matrix.arm }}" --local --loads "${{ matrix.loads }}" --stay "${{ matrix.stay }}" --after-loss "${{ matrix.after }}" --spindump "${{ matrix.spindump }}" ${{ matrix.more }} "${more[@]}" || true
+          node tools/item295/listen.mjs --dist ../page-a/dist --dist-b ../page-b/dist --name "${{ matrix.arm }}" --local --loads "20:" --stay 40 --after-loss 5 --spindump 0 --oslog all --watch-canvas || echo "the tool ended badly: $?"
 
       - name: what was read
         if: always()
@@ -119,8 +124,92 @@ jobs:
         shell: bash
         working-directory: tools-tree
         run: |
-          cat "out/work/item295/${{ matrix.arm }}.txt"
-          for f in out/work/item295/*-spindump.txt; do [ -f "$f" ] && gzip -9 "$f"; done
+          cat "out/work/item295/${{ matrix.arm }}.txt" || true
+          rm -f out/work/item295/*-driver.log
+          find out/work/item295 -name '*-chrome.log' -size +2000k -exec gzip -9 {} \;
+          du -sh out/work/item295
+
+      - name: the files
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.arm }}
+          path: tools-tree/out/work/item295
+          if-no-files-found: warn
+          retention-days: 14
+
+  elsewhere:
+    name: ${{ matrix.arm }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The switches for these machines: Linux has no window of its own, so the tool is begun under xvfb-run there,
+          # and the browser is allowed to draw WebGL without a graphics card (its own switch, named in the table).
+          - { arm: b-windows, os: windows-latest, under: '' }
+          - { arm: b-linux, os: ubuntu-latest, under: 'xvfb-run -a' }
+    steps:
+      - name: the tools of this branch
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          path: tools-tree
+          persist-credentials: false
+
+      - name: side B
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.b }}
+          path: page-b
+          persist-credentials: false
+
+      - name: the machine
+        continue-on-error: true
+        shell: bash
+        run: |
+          mkdir -p tools-tree/out/work/item295
+          note="tools-tree/out/work/item295/${{ matrix.arm }}-machine.txt"
+          {
+            echo "arm ${{ matrix.arm }}, side B $(git -C page-b rev-parse HEAD), tools $(git -C tools-tree rev-parse HEAD), image ${ImageOS:-} ${ImageVersion:-} $(uname -sm), node $(node --version)"
+            node -e "const os=require('os');console.log('chip: '+os.cpus()[0].model+'; cores: '+os.cpus().length+'; memory: '+Math.round(os.totalmem()/1073741824)+' GB; system: '+os.platform()+' '+os.release())"
+          } > "$note" 2>&1 || true
+          cat "$note"
+
+      - name: install and build the page
+        continue-on-error: true
+        timeout-minutes: 25
+        shell: bash
+        run: |
+          note="tools-tree/out/work/item295/${{ matrix.arm }}-machine.txt"
+          ( cd page-b && npm ci --no-audit --no-fund && npm run build )
+          ( cd tools-tree && npm ci --no-audit --no-fund )
+          # What follows only tells: nothing in it may end the step.
+          set +e
+          {
+            echo "side B built: $(cat page-b/dist/build.json)"
+            echo "B: $(grep -o '#view[^}]*}' page-b/dist/index.html | tr '\n' ' ')"
+          } 2>&1 | tee -a "$note"
+          true
+
+      - name: the loads
+        continue-on-error: true
+        timeout-minutes: 30
+        shell: bash
+        working-directory: tools-tree
+        run: |
+          ${{ matrix.under }} node tools/item295/listen.mjs --dist ../page-b/dist --name "${{ matrix.arm }}" --local --loads "10:" --stay 40 --after-loss 5 --spindump 0 --oslog none --watch-canvas --flags "--enable-unsafe-swiftshader" || echo "the tool ended badly: $?"
+
+      - name: what was read
+        if: always()
+        continue-on-error: true
+        shell: bash
+        working-directory: tools-tree
+        run: |
+          cat "out/work/item295/${{ matrix.arm }}.txt" || true
           rm -f out/work/item295/*-driver.log
           find out/work/item295 -name '*-chrome.log' -size +2000k -exec gzip -9 {} \;
           du -sh out/work/item295
