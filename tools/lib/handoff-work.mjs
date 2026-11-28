@@ -1630,7 +1630,7 @@ export function clean(ctx, recordsZip = null) {
   const bad = L.KINDS.find((kind) => files.filter((f) => f?.kind === kind).length !== 1)
   if (bad || files.length !== L.KINDS.length) return { pass: false, why: 'the last delivery does not name all the checked files, so the work files stay. Run the delivery again' }
   for (const f of files) if (!fileMatches(f.file, f.sha256, f.bytes)) return { pass: false, why: `${f.file} does not match the last delivery by SHA-256, so the work files stay. Run the delivery again` }
-  if (delivered.reportSha256 && !fileMatches(delivered.report, delivered.reportSha256)) return { pass: false, why: `${delivered.report} does not match the last delivery by SHA-256, so the work files stay. Run the delivery again` }
+  if (delivered.report && !fileMatches(delivered.report, delivered.reportSha256)) return { pass: false, why: `${delivered.report} does not match the last delivery by SHA-256, so the work files stay. Run the delivery again` }
   const dirs = [['master'], ['deliver'], ['work']].map((parts) => rel('out', ...parts))
   const inWork = (file) => dirs.some((dir) => {
     const part = path.relative(dir, fs.realpathSync(file))

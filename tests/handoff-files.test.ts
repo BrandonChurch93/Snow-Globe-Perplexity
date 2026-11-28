@@ -163,4 +163,22 @@ describe('Desktop ownership', () => {
     expect(zip).not.toHaveBeenCalled()
     expect(fs.existsSync(path.join(ctx.H, 'render-state.json'))).toBe(true)
   })
+
+  it('keeps the work when the delivered report is unsealed or differs from its sealed hash', () => {
+    const { ctx, result } = failedBundle()
+    const files = L.KINDS.map((kind: string) => ({ kind, ...write(path.join(result.desktop, kind), kind) }))
+    const report = path.join(result.desktop, 'render report.txt')
+    const sealed = write(report, 'old')
+    write(path.join(ctx.H, 'render-state.json'), '{}')
+    const zip = vi.fn(() => { throw new Error('do not clean this test fixture') })
+    const check = (reportSha256?: string) => {
+      write(path.join(ctx.H, 'deliver.json'), JSON.stringify({ pass: true, files, report, reportSha256 }))
+      expect(Work.clean({ H: ctx.H, T: { small: true } }, zip)).toMatchObject({ pass: false, why: expect.stringContaining(report) })
+    }
+    check()
+    write(report, 'new')
+    check(sealed.sha256)
+    expect(zip).not.toHaveBeenCalled()
+    expect(fs.existsSync(path.join(ctx.H, 'render-state.json'))).toBe(true)
+  })
 })
