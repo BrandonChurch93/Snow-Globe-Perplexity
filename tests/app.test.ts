@@ -1595,9 +1595,14 @@ describe('the canvas over the first still', () => {
     return { canvas, heard, waits, ended, told }
   }
 
-  it('fades the canvas in to full sight over half a second, by the sheet of the page', () => {
-    expect(rule('#view')).toMatch(/opacity: 0;/)
-    expect(rule('#view[data-live]')).toMatch(/opacity: 1;/)
+  // A layer at exactly 0 is not drawn by the browser. A canvas first drawn at the first picture lost the card on hosted Macs
+  // (item 295), so the canvas waits at a hair: there for the machine, a level at most for the eye.
+  it('keeps the canvas at a hair and never at nothing before its first picture, and fades it in to full sight over half a second, by the sheet of the page', () => {
+    const waiting = /\n\s*opacity: ([\d.]+);/.exec(rule('#view'))![1]!
+    expect(waiting).toBe('0.004')
+    expect(Number(waiting)).toBeGreaterThan(0)
+    expect(rule('#view[data-live]')).toMatch(/\n\s*opacity: 1;/)
+    expect(rule('#view[data-live]')).toMatch(/\n\s*transition: opacity 0\.5s ease;/)
     expect(fadeMs).toBe(500)
   })
 

@@ -41,7 +41,8 @@
         position: absolute;
         left: 0;
         top: 0;
-        opacity: 0;
+        /* A hair and not 0: a layer at exactly 0 is not drawn, and a canvas first drawn at the first picture lost the card on hosted Macs (item 295). */
+        opacity: 0.004;
       }
       #view[data-live] {
         opacity: 1;
