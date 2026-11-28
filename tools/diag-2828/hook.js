@@ -177,6 +177,93 @@
     return { total, tries, found, ground: Array.from(ground), full }
   }
 
+  // what one drawing of triangles does to the watched pixel, taken apart: the whole drawing under scissors of growing size with depth not written, the triangles that leave a mark against the depth as it stands, and each of those alone. The colours are put back after; depth is never written.
+  const purity = (gl, orig, a, name) => {
+    if (name !== 'drawElements') return null
+    const gy = CFG.h - 1 - CFG.y
+    const x = CFG.x
+    const sc = O.isEnabled.call(gl, 0x0c11)
+    const box = O.getParameter.call(gl, 0x0c10)
+    const dm = O.getParameter.call(gl, 0x0b72)
+    const cm = O.getParameter.call(gl, 0x0c23)
+    O.enable.call(gl, 0x0c11)
+    O.depthMask.call(gl, false)
+    O.colorMask.call(gl, true, true, true, true)
+    const out = { boxes: [], found: [] }
+    const put = (px, py, v) => {
+      O.scissor.call(gl, px, py, 1, 1)
+      O.clearBufferfv.call(gl, 0x1800, 0, new Float32Array(v))
+    }
+    const centre = readAt(gl, x, gy, 1, 1)
+    // the boxes: the pixel alone, with its neighbour of the same row of its block of four, with the one of the same column, the block of four, then the blocks of 4, 16 and 64 it lies in
+    const qx = x - (x % 2)
+    const qy = gy - (gy % 2)
+    const rects = [[x, gy, 1, 1], [qx, gy, 2, 1], [x, qy, 1, 2], [qx, qy, 2, 2]]
+    for (const n of [4, 16, 64]) rects.push([x - (x % n), gy - (gy % n), n, n])
+    for (const [bx, by, bw, bh] of rects) {
+      const keep = readAt(gl, bx, by, bw, bh)
+      O.scissor.call(gl, bx, by, bw, bh)
+      orig.apply(gl, a)
+      const now = readAt(gl, bx, by, bw, bh)
+      const o0 = ((gy - by) * bw + (x - bx)) * 4
+      let changed = 0
+      for (let j = 0; j < bh; j++)
+        for (let i = 0; i < bw; i++) {
+          const o = (j * bw + i) * 4
+          if (!same(keep.slice(o, o + 4), now.slice(o, o + 4))) {
+            changed++
+            put(bx + i, by + j, keep.slice(o, o + 4))
+          }
+        }
+      const b = { box: [bx, by, bw, bh], at: now.slice(o0, o0 + 4), changed }
+      if (bw * bh <= 16) {
+        b.keep = keep
+        b.now = now
+      }
+      out.boxes.push(b)
+    }
+    const ground = [0.5, 0.25, 0.125, 0.5]
+    const tris = Math.floor(a[1] / 3)
+    let tries = 0
+    const prefix = (m) => {
+      tries++
+      put(x, gy, ground)
+      if (m > 0) orig.call(gl, a[0], m * 3, a[2], a[3])
+      return readAt(gl, x, gy, 1, 1)
+    }
+    let base = prefix(0)
+    let from = 0
+    const full = prefix(tris)
+    while (out.found.length < 24 && !same(base, full)) {
+      let lo = from
+      let hi = tris
+      while (hi - lo > 1) {
+        const mid = (lo + hi) >> 1
+        if (same(prefix(mid), base)) lo = mid
+        else hi = mid
+      }
+      const v = prefix(hi)
+      out.found.push({ tri: hi - 1, prefix: v })
+      base = v
+      from = hi
+    }
+    const bytes = a[2] === 0x1405 ? 4 : a[2] === 0x1403 ? 2 : 1
+    for (const f of out.found) {
+      put(x, gy, ground)
+      orig.call(gl, a[0], 3, a[2], a[3] + f.tri * 3 * bytes)
+      f.alone = readAt(gl, x, gy, 1, 1)
+    }
+    put(x, gy, centre)
+    out.tries = tries
+    out.full = full
+    out.centre = centre
+    O.colorMask.call(gl, cm[0], cm[1], cm[2], cm[3])
+    O.depthMask.call(gl, dm)
+    O.scissor.call(gl, box[0], box[1], box[2], box[3])
+    if (!sc) O.disable.call(gl, 0x0c11)
+    return out
+  }
+
   const traced = (gl, orig, a, name, k, tag, info) => {
     const fb = sampleFb()
     if (!fb || D.drawFb !== fb) {
@@ -185,8 +272,11 @@
     }
     const gy = CFG.h - 1 - CFG.y
     const before = readAt(gl, CFG.x - 1, gy - 1, 3, 3)
+    const pw = want('purity', (w) => (w.sample === -1 || w.sample === D.sample) && w.n === a[1])
+    const pureBefore = pw ? purity(gl, orig, a, name) : null
     const r = orig.apply(gl, a)
     const after = readAt(gl, CFG.x - 1, gy - 1, 3, 3)
+    const pureAfter = pw ? purity(gl, orig, a, name) : null
     D.lines.push(tag)
     const c0 = before.slice(16, 20)
     const c1 = after.slice(16, 20)
@@ -196,6 +286,10 @@
       rec.blockAfter = after
     }
     if (rec.centre) rec.units = cover(gl, orig, a, name, c1)
+    if (pw) {
+      rec.pureBefore = pureBefore
+      rec.pureAfter = pureAfter
+    }
     D.px.push(rec)
     return r
   }

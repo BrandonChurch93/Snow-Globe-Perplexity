@@ -10,7 +10,7 @@ mkdir -p "$D"
 [ -f "$D/ref.json" ] || cp tools/diag-2828/ref.json "$D/ref.json"
 first=$1; last=$2; mode=${3:-full}; until=${4:-0}; who=${5:-m}
 echo "start $(date -u +%H:%M:%S) head $(git rev-parse HEAD) engine $(cat dist/build.json) changed: $(git status --short | tr '\n' ' ') runs $first to $last mode $mode" >> "$D/status.txt"
-odd=0
+odd=${ODD0:-0}
 for i in $(seq "$first" "$last"); do
   if [ "$until" -gt 0 ] && [ "$(date +%s)" -ge "$until" ]; then echo "stopped by the clock before run $i at $(date -u +%H:%M:%S)" >> "$D/status.txt"; break; fi
   n=$(printf '%s%03d' "$who" "$i")
