@@ -224,18 +224,37 @@ How the frames are compared, and why so:
   each reach a floor in PSNR (how close the pixels are, in dB, higher is closer). The same pieces must reach a
   floor in a coarser measure, the PSNR of the means of 8 x 8 pixel blocks, which a shift of one pixel hardly
   moves. A region of the glass must keep its mean brightness and must not turn white.
-- The floors are written in `render/STAMP.json` and printed in the report beside every number: 39 dB for the
-  whole picture and 41 dB for it in blocks, 40 dB for a cut and 44 dB for it in blocks. The glass region may lie
+- The floors are written in `render/STAMP.json` and printed in the report beside every number: 38 dB for the
+  whole picture and 40 dB for it in blocks, 40 dB for a cut and 44 dB for it in blocks. The glass region may lie
   0.01 from its reference in brightness (on a scale of 0 to 1) and may hold half a point more of near white.
 - Why these: the same frames were drawn at 3840 x 2160 on two test machines, through Direct3D 11 on Windows and
-  through Metal on macOS, and compared with the references. A right picture reached 41.4 dB or more for the whole
-  picture, 43.6 in blocks, 43.2 for a cut and 48.0 for a cut in blocks, and its glass lay within 0.001 of the
-  reference. A picture from an engine one small mend apart reached 36.8, 38.4, 38.4 and 40.7. The floors lie
-  between the two. A frame that is wrong in a bigger way (a layer missing, white glass, a flat or empty picture)
-  falls far under them.
-- Those two test machines have no real graphics card, so no NVIDIA card was measured. When a frame fails here by
-  a little, the floor may be at fault and not the picture. You do not decide that: do what the `Bad:` row below
-  says, and the remote team reads the numbers and the sheet of pictures.
+  through Metal on macOS, and compared with the references. Each of the four floors in dB is the midpoint,
+  rounded to a whole dB, between a wrong picture and the careful case of a right one, both at film B frame 720:
+
+  | measure, in dB | wrong picture | careful case | midpoint | floor |
+  | --- | --- | --- | --- | --- |
+  | the whole picture | 36.83 | 39.15 | 37.99 | 38 |
+  | the whole picture in blocks | 38.44 | 42.08 | 40.26 | 40 |
+  | a cut | 38.42 | 41.84 | 40.13 | 40 |
+  | a cut in blocks | 40.68 | 46.99 | 43.84 | 44 |
+
+  The wrong picture is that frame from an engine one small mend apart. It fails all four floors. The careful case
+  is a card that stands as far from one test machine as the other test machine does, with that distance on top of
+  the one measured to the reference. On the two test machines themselves a right picture reached 40.5 dB or more
+  for the whole picture, 43.1 in blocks, 43.1 for a cut and 47.9 for a cut in blocks, and its glass lay within
+  0.001 of the reference. A frame that is wrong in a bigger way (a layer missing, white glass, a flat or empty
+  picture) falls far under the floors. Every measure behind the table, the run that made it and how the careful
+  case is worked out stand in `render/STAMP.json` under `floorsFrom`, so the floors can be worked out again.
+- Some fine noise in the film (the runs of water on spring's glass, the grain of moss, the lumps of the table,
+  sparkles) is worked out by the graphics card itself, and each kind of card works it out a little differently.
+  Such a place looks the same in kind on every machine and has its streaks and grains at other places. So the
+  film this computer renders carries its own card's pattern there, not the cloud's. Of the frames measured, the
+  one with spring's wet glass stood nearest its floors, on both test machines.
+- Those two test machines have no real graphics card, so no NVIDIA card was measured. Of the ten single frames
+  this test draws, three were measured there (film B frames 120 and 720, and the first frame of the loop on
+  macOS alone). The other seven were compared on Linux alone. When a frame fails here by a little, the floor may
+  be at fault and not the picture. You do not decide that: do what the `Bad:` row below says, and the remote
+  team reads the numbers and the sheet of pictures.
 - The report also says, for every frame, how far the picture stands from its reference: the largest and the mean
   difference in levels of 255, how many pixels are more than 8 levels apart, and where in the picture they lie.
   These lines are marked `noted` and fail nothing. They tell the remote team where to look.
@@ -272,6 +291,18 @@ and wait.
 
 Give Brandon the whole text of `out/work/handoff/report-test.txt` as one block, with its `TO LOOK AT` block if it
 has one. Say where the test film and the sheet of pictures are, and ask him to open both and look.
+
+On the sheet each frame stands twice: on the left the picture drawn in the cloud, on the right the one this
+computer drew. Tell Brandon what to look for, word for word:
+
+"Left is the cloud's picture, right is what this computer drew. Some things differ and that is expected: where
+the runs of water stand on spring's glass, and the fine grain of the moss, of the lumps on the table and of the
+sparkles. They look the same in kind and stand at other places. Four things are not expected: stripes or blocks
+in that grain, an area that is flat or blank, a thing that is missing, a colour cast over the picture. If you see
+one of the four, the render is not started: bring the sheet and the test film into the build thread."
+
+If Brandon says he sees one of the four, do not go on to step 2. Whether the render is started is then ruled on
+in the build thread, and you wait for his word after that.
 
 If the report holds a line that begins `MORE THAN 10 HOURS`, say that line to Brandon first, before the block.
 The test has passed all the same. Whether a render that long is started on this machine is for the remote team

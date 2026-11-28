@@ -843,16 +843,45 @@ describe('the handoff file and the tools it names', () => {
     expect(f.glassWhite).toBe(0.005)
     expect(text).toContain('may hold half a point more of near white')
     // the floors lie under every right picture measured and over the wrong one, as floorsFrom tells it
-    const right = { psnrWhole: 41.42, coarseWhole: 43.56, psnrCut: 43.15, coarseCut: 48.01 }
+    const right = { psnrWhole: 40.51, coarseWhole: 43.17, psnrCut: 43.13, coarseCut: 47.96 }
     const wrong = { psnrWhole: 36.83, coarseWhole: 38.44, psnrCut: 38.42, coarseCut: 40.68 }
+    // decision 274: each floor is the midpoint, rounded to a whole dB, between the wrong picture and the careful
+    // case, a third renderer as far from one test renderer as the other is, on top of the measured distance
+    const careful = { psnrWhole: 39.15, coarseWhole: 42.08, psnrCut: 41.84, coarseCut: 46.99 }
+    const measured = { psnrWhole: [40.51, 44.86], coarseWhole: [43.17, 48.63], psnrCut: [43.13, 47.75], coarseCut: [47.96, 53.98] }
+    const mse = (db: number) => 65025 / 10 ** (db / 10)
+    const names = { psnrWhole: 'the whole picture', coarseWhole: 'the whole picture in blocks', psnrCut: 'a cut', coarseCut: 'a cut in blocks' }
     for (const k of Object.keys(right) as (keyof typeof right)[]) {
       expect(f[k], k).toBeLessThan(right[k])
       expect(f[k], k).toBeGreaterThan(wrong[k])
       expect(plan.floorsFrom).toContain(String(right[k]))
       expect(plan.floorsFrom).toContain(String(wrong[k]))
+      const [toReference, betweenTheTwo] = measured[k]
+      expect(10 * Math.log10(65025 / (mse(toReference) + mse(betweenTheTwo))), k).toBeCloseTo(careful[k], 1)
+      expect(careful[k], k).toBeLessThan(right[k])
+      const midpoint = (wrong[k] + careful[k]) / 2
+      expect(f[k], k).toBe(Math.round(midpoint))
+      expect(plan.floorsFrom).toContain(`(${wrong[k]} + ${careful[k]}) / 2 = ${midpoint.toFixed(2)}, so ${f[k]}`)
+      expect(plan.floorsFrom).toContain(`${toReference} and ${betweenTheTwo} give ${careful[k]}`)
+      expect(md).toContain(`| ${names[k]} | ${wrong[k]} | ${careful[k]} | ${midpoint.toFixed(2)} | ${f[k]} |`)
     }
+    expect(text).toContain('Each of the four floors in dB is the midpoint, rounded to a whole dB, between a wrong picture and the careful case of a right one')
+    // what differs from the cloud's pictures and is expected, and what is not, stands where the sheet is looked at
+    const report = md.slice(md.indexOf('### 1.6 Report and STOP'), md.indexOf('## Step 2'))
+    expect(report.length).toBeGreaterThan(500)
+    const said = report.replace(/\s+/g, ' ')
+    for (const expected of ["where the runs of water stand on spring's glass", 'the fine grain of the moss', 'the lumps on the table', 'the sparkles']) expect(said).toContain(expected)
+    for (const not of ['stripes or blocks in that grain', 'an area that is flat or blank', 'a thing that is missing', 'a colour cast']) expect(said).toContain(not)
+    expect(said).toContain('If Brandon says he sees one of the four, do not go on to step 2')
     expect(plan.floorsFrom).not.toMatch(/NOT SET/)
     expect(plan.floorsFrom).toMatch(/run \d{8,}/)
+    // what was never measured stays said, in the plan and in the file
+    const drawn = (readJson(rel('render', 'PLAN.json')) as { frames: { what: string }[] }).frames.filter((x) => x.what !== 'opening')
+    expect(drawn.length).toBe(10)
+    expect(text).toContain('so no NVIDIA card was measured')
+    expect(text).toContain('Of the ten single frames this test draws, three were measured there')
+    expect(text).toContain('The other seven were compared on Linux alone')
+    expect(plan.floorsFrom).toContain('Not measured: any real graphics card, and the other seven frames of film B in the plan on any renderer but Linux')
   })
   it('gives the same winget lines the doctor prints', () => {
     for (const t of ['git', 'node', 'ffmpeg', 'chrome'] as const) expect(md).toContain(L.installLine(t, 'win32'))

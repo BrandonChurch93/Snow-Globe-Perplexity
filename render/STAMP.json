@@ -12,9 +12,9 @@
     "film-b:2440",
     "film-b:2880"
   ],
-  "engineHash": "144059cb99b0d134",
-  "commit": "6cfeb17d92e7a83856583c139146359af4558bc0",
-  "made": "2026-11-28T04:00:12.717Z",
+  "engineHash": "fc272474aa83fe51",
+  "commit": "08690cd40907e8747431a334c0cf007473f4c461",
+  "made": "2026-11-28T05:49:52.021Z",
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "c5bc5c38fdabce09",
@@ -61,23 +61,23 @@
     "files": "lossless WebP, each decoded again and compared when it was written"
   },
   "floors": {
-    "psnrWhole": 39,
-    "coarseWhole": 41,
+    "psnrWhole": 38,
+    "coarseWhole": 40,
     "psnrCut": 40,
     "coarseCut": 44,
     "glassLuma": 0.01,
     "glassWhite": 0.005
   },
-  "floorsFrom": "Set on 28 November 2026 from film B frames 120 and 720 and loop frame 0, drawn at 3840 x 2160 in the masters' tier on two test renderers and compared with the Linux references: the Microsoft Basic Render Driver through Direct3D 11 on hosted Windows (run 46100206929, job windows-3840) and Apple Metal on hosted macOS (run 46100206929, job macos-3840). The lowest a right picture reached there: 41.42 dB whole, 43.56 dB whole in blocks, 43.15 dB for a cut, 48.01 dB for a cut in blocks; the glass lay within 0.0006 of the reference in brightness and held no more near white. A picture that is wrong by one small mend of the engine (frame 720 before and after the mend of spring's glass in main f063702c, both drawn on Linux) reached 36.83 dB whole, 38.44 dB in blocks, 38.42 dB in its glass cut and 40.68 dB there in blocks. Every floor lies between the two. It also lies under what a third renderer would reach that stood as far from Windows as macOS does, with that distance on top of the measured one (40.12, 42.59, 41.86 and 47.04 dB). Not measured: any real graphics card, and the other seven frames of the plan on any renderer but Linux.",
+  "floorsFrom": "Set on 28 November 2026 by one rule for the four floors in dB (decision 274): each floor is the midpoint, rounded to a whole dB, between a wrong picture and the careful case of a right one, both at film B frame 720. The wrong picture: frame 720 before and after one small mend of the engine (the mend of spring's glass in main f063702c), both drawn on Linux, reached 36.83 dB whole, 38.44 dB whole in blocks, 38.42 dB in its glass cut and 40.68 dB there in blocks. The careful case: a third renderer that stands as far from one test renderer as the other test renderer does, with that distance on top of the measured one to the Linux reference, reaches 39.15 dB whole, 42.08 dB whole in blocks, 41.84 dB for a cut and 46.99 dB for a cut in blocks. The midpoints: (36.83 + 39.15) / 2 = 37.99, so 38; (38.44 + 42.08) / 2 = 40.26, so 40; (38.42 + 41.84) / 2 = 40.13, so 40; (40.68 + 46.99) / 2 = 43.84, so 44. The wrong picture fails all four. How the careful case is worked out: a PSNR of d dB is a mean squared error of 65025 / 10^(d / 10); the two errors are added and turned back into dB; of the two ways (beyond Windows, beyond macOS) the lower is taken. Whole: 40.51 and 44.86 give 39.15. Whole in blocks: 43.17 and 48.63 give 42.08. A cut: 43.13 and 47.75 give 41.84. A cut in blocks: 47.96 and 53.98 give 46.99. The measures: film B frames 120 and 720 and loop frame 0, drawn at 3840 x 2160 in the masters' tier on two test renderers and compared with the Linux references: the Microsoft Basic Render Driver through Direct3D 11 on hosted Windows (run 46107721981, job windows-3840) and Apple Metal on hosted macOS (run 46107721981, job macos-3840), both with engine 144059cb99b0d134. Frame 720 against its Linux reference: on Windows 40.51 dB whole, 43.17 in blocks, the glass cut 50.28 and 53.58 in blocks, the base cut 43.13 and 48.23 in blocks; on macOS 40.76 and 43.35, the glass cut 51.16 and 54.27, the base cut 43.19 and 47.96. Windows against macOS at frame 720: 44.86 dB whole, 48.63 in blocks, the glass cut 54.44 and 59.86, the base cut 47.75 and 53.98. The lowest a right picture reached over all frames measured: 40.51 dB whole, 43.17 dB whole in blocks, 43.13 dB for a cut, 47.96 dB for a cut in blocks; the glass lay within 0.0007 of the reference in brightness and held no more near white. The two floors of the glass (0.01 in brightness, half a point of near white) stand as they were. Why renderers differ: some fine noise of the film (the runs of water on spring's glass, the grain of moss, the lumps of the table, sparkles) is a hash made of the sine of a large number in the shader, which each renderer works out a little differently, so that noise is the same in kind and stands at other places on each. Windows and macOS stand nearer each other than either stands to Linux. Before spring's glass wore its film of water at the landing, frame 720 reached 42.88 dB whole and 45.85 dB in blocks on Windows (run 46100206929). Not measured: any real graphics card, and the other seven frames of film B in the plan on any renderer but Linux.",
   "references": [
     {
       "what": "film-b",
       "frame": 120,
       "name": "winter at rest",
-      "engineHash": "144059cb99b0d134",
+      "engineHash": "fc272474aa83fe51",
       "samples": 24,
       "travelPx": 2.73,
-      "seconds": 131.6,
+      "seconds": 135.8,
       "png": {
         "sha256": "188d0fc9058522f6de412b7b1a7a87f615813f214a1a0360cbe0accb11f1e573",
         "bytes": 14031775
@@ -129,10 +129,10 @@
       "what": "film-b",
       "frame": 720,
       "name": "spring in storm, just landed",
-      "engineHash": "144059cb99b0d134",
+      "engineHash": "fc272474aa83fe51",
       "samples": 24,
       "travelPx": 7.27,
-      "seconds": 204.2,
+      "seconds": 204,
       "png": {
         "sha256": "a0f74bad16db639165a1a17e84025a52491684a28b35eb232faef190bc82fc4f",
         "bytes": 12772503
@@ -184,10 +184,10 @@
       "what": "loop",
       "frame": 0,
       "name": "the first frame of the loop, which is also the screenshot",
-      "engineHash": "144059cb99b0d134",
+      "engineHash": "fc272474aa83fe51",
       "samples": 96,
       "travelPx": 0.09,
-      "seconds": 383.9,
+      "seconds": 385.4,
       "png": {
         "sha256": "dff51b5e335ad41fbb03f1190dfc86a47ecfc668c6318a964a69008deada7680",
         "bytes": 13329762
@@ -239,7 +239,7 @@
       "what": "opening",
       "frame": 450,
       "name": "the opening while the prompt is typed",
-      "engineHash": "144059cb99b0d134",
+      "engineHash": "fc272474aa83fe51",
       "samples": 0,
       "pack": "665ac47671ead473d999f38848f854408e3a83b92459ecb66413e87120acec77",
       "renderer": "none: read from the opening pack, never drawn",

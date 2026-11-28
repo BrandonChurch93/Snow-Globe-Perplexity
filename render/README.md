@@ -83,7 +83,15 @@ All of `refs/` is at most 40 MB, and no file here is over 45 MB. The tool refuse
 | `glassLuma` | how far the mean brightness of a glass region may lie from the reference's (0 to 1) |
 | `glassWhite` | how much more of a glass region may be near white than in the reference (0 to 1) |
 
-`floorsFrom` says which runs on which renderers they were set from, and with what margin. Each floor lies between
-the lowest a right picture reached on the test renderers and what a picture from an engine one small mend apart
-reached. When the floors are changed, the numbers in step 1.5 of `RENDER-ON-YOUR-PC.md` are changed with them (a
-test of `tests/handoff.test.ts` holds the two together), and the stamp is written again.
+`floorsFrom` says which runs on which renderers they were set from. The four floors in dB follow one rule: each
+is the midpoint, rounded to a whole dB, between a wrong picture (film B frame 720 from an engine one small mend
+apart) and the careful case of a right one (a third renderer that stands as far from one test renderer as the
+other does, with that distance on top of the measured one). `floorsFrom` holds every number of that sum, so the
+floors can be worked out again from the measures. When the floors are changed, the numbers in step 1.5 of
+`RENDER-ON-YOUR-PC.md` are changed with them (a test of `tests/handoff.test.ts` holds the plan, the sum and the
+file together), and the stamp is written again.
+
+Some fine noise of the film is a hash made of the sine of a large number in shader text. Each renderer works that
+out a little differently, so the runs of water on spring's glass, the grain of moss, the lumps of the table and
+sparkles are the same in kind and stand at other places on each. The floors leave room for that, and the film a
+machine renders carries its own card's pattern there.
