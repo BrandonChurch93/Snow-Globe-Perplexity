@@ -128,8 +128,11 @@ async function captured(ends: readonly string[], asks: readonly string[] = confi
 const ENDS: Record<string, string[]> = {
   'in the order the page asks': ['winter', 'spring', 'summer', 'fall'],
   'in the order of making': ['winter', 'spring', 'fall', 'summer'],
-  // The order of the two drawings of film frame 2828 that had the other pixel in the count of Nov 28 (b012 and c017): their sets were made fall, winter, spring, summer.
+  // The orders of the four drawings of film frame 2828 that had the other pixel in the count of Nov 28.
+  // In three of them (b012, b055, c017) the sets were made fall, winter, spring, summer:
   'fall first': ['fall', 'winter', 'spring', 'summer'],
+  // and in the fourth (c050) spring, fall, winter, summer.
+  'spring first, fall second': ['spring', 'fall', 'winter', 'summer'],
   'winter last': ['spring', 'summer', 'fall', 'winter'],
   'all reversed': ['fall', 'summer', 'spring', 'winter'],
   'summer first, winter third': ['summer', 'fall', 'winter', 'spring'],
