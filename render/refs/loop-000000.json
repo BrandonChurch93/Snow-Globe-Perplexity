@@ -1,0 +1,55 @@
+{
+  "what": "loop",
+  "frame": 0,
+  "name": "the first frame of the loop, which is also the screenshot",
+  "engineHash": "7dbb2c54aa42b34a",
+  "samples": 96,
+  "travelPx": 0.09,
+  "seconds": 398,
+  "png": {
+    "sha256": "dff51b5e335ad41fbb03f1190dfc86a47ecfc668c6318a964a69008deada7680",
+    "bytes": 13329762
+  },
+  "renderer": "ANGLE (Mesa, Vulkan 1.4.335 (llvmpipe (LLVM 21.1.8 256 bits) (0x00000000)), llvmpipe)",
+  "browser": "147.0.7727.15",
+  "half": {
+    "file": "loop-000000-half.webp",
+    "sha256": "97f85aa152699a668a7efbdede61b36eda979f0bec5ccb59fb4854812cc526d5",
+    "bytes": 1616324,
+    "width": 1920,
+    "height": 1080
+  },
+  "cuts": [
+    {
+      "name": "house",
+      "x": 1320,
+      "y": 900,
+      "w": 960,
+      "h": 540,
+      "file": "loop-000000-cut-house.webp",
+      "sha256": "a41e9856af0ddac233640af2aeb052e25023e3a681e11cc1ee46d427f91c6975",
+      "bytes": 604938
+    },
+    {
+      "name": "frost",
+      "x": 1200,
+      "y": 240,
+      "w": 960,
+      "h": 540,
+      "file": "loop-000000-cut-frost.webp",
+      "sha256": "b5136d03b36933dd6f59ae991323d2af829d5ec6373be9cee89f0ca188fa648e",
+      "bytes": 518398
+    }
+  ],
+  "glass": [
+    {
+      "name": "middle",
+      "x": 1440,
+      "y": 420,
+      "w": 960,
+      "h": 840,
+      "meanLuma": 0.319976,
+      "nearWhite": 0.002964
+    }
+  ]
+}

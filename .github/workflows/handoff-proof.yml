@@ -1,0 +1,364 @@
+# Proves RENDER-ON-YOUR-PC.md on real Windows and macOS machines: the lines of the file, exactly as written, in
+# Windows PowerShell and in Git Bash, in a folder with a space in its name, from a plain git clone.
+# It starts by hand (workflow_dispatch). While the handoff was being proven it also started on every push to
+# agent/p6-handoff: that is the one line under "on" that names the branch, and the last commit of that branch takes
+# it out, so that in what reaches main the workflow starts by hand only. It has no timer and never starts on main.
+# Every job ends green whatever happens, the last one too: a red run sends a mail. So a green run means only that
+# the machines ran. The verdict of each job, PASS or FAIL with its first failing line, is written by a step that
+# always runs, to three places: the log, the file verdict.txt of the job's artifact, and the summary of the job.
+# The last job, the verdicts, needs every other job and gathers their verdicts into one table in the summary of the
+# run: one row a job, PASS, FAIL or NOT RUN. A job whose verdict is missing is a row NOT RUN, never a PASS.
+# A line that is made to fail (the expect list names it) and did fail is a passing line of its verdict.
+# It uses no secret. One job, windows-upload-test, is given the token of the run itself with leave to write, for
+# the upload's own test. When its last step had to remove a draft the test left, that is a PROBLEM of its verdict.
+name: handoff proof
+
+on:
+  workflow_dispatch:
+
+# A newer push ends the run of an older one. A push that asks only for the list of shader messages has a group of
+# its own, so that it does not end a whole proof that is still running.
+concurrency:
+  group: handoff-proof-${{ github.ref }}-${{ contains(github.event.head_commit.message, '[proof shaders]') && 'shaders' || 'whole' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    name: ${{ matrix.id }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # the whole handoff in small, stopped once and carried on, in Windows PowerShell
+          - id: windows-powershell-small
+            os: windows-latest
+            shell: powershell
+            mode: small
+            switches: software,small,tones,fast-watch
+            refusal: 'yes'
+            expect: clone,setup,doctor-refuses-software,doctor,test-fails,test,pull,setup-again,doctor-again,test-again,render-first-call,test-in-mid-render,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+          # the same in Git Bash. Here the test film is held open while the test runs again, and a browser that
+          # updated itself in the middle of the render, with finished chunks on disk, is made up once: the render
+          # stops, the test runs again, and the render carries on to its end
+          - id: windows-gitbash-small
+            os: windows-latest
+            shell: bash
+            mode: small
+            switches: software,small,tones,fast-watch,browser-moved
+            refusal: 'yes'
+            expect: clone,setup,doctor-refuses-software,doctor,test-fails,test,pull,setup-again,doctor-again,test-again,render-first-call,test-in-mid-render,render-stops-for-browser,test-after-update,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+          # the same on the newest LTS of Node
+          - id: windows-newest-lts-small
+            os: windows-latest
+            shell: powershell
+            node: lts
+            mode: small
+            switches: software,small,tones,fast-watch
+            refusal: 'yes'
+            expect: clone,setup,doctor-refuses-software,doctor,test-fails,test,pull,setup-again,doctor-again,test-again,render-first-call,test-in-mid-render,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+          # the winget lines of the file, then setup and the doctor with what they installed
+          - id: windows-winget-lines
+            os: windows-latest
+            shell: powershell
+            mode: installs
+            switches: ''
+            refusal: 'yes'
+            expect: winget-git,winget-node,winget-ffmpeg,winget-chrome,winget-gh,clone,setup,doctor-refuses-software
+          # frames at 3840 x 2160 at the masters' tier against the references, with Chrome as it starts by itself on
+          # this machine: through Direct3D 11, on Microsoft's software card. No sound is given, so the test film is silent.
+          # (Chrome's own software renderer lost its graphics context at 3840 x 2160 on this machine, run 46097010961.)
+          - id: windows-3840
+            os: windows-latest
+            shell: powershell
+            mode: uhd
+            switches: software,refs=film-b:120+film-b:720,stretch=720-721/1
+            refusal: 'yes'
+            expect: clone,setup,doctor-refuses-software,doctor,test,render-refuses-unreleased
+          # The same with Direct3D 11 asked for by name, the shader path of a Windows graphics card. Here the short
+          # test is made to fail (floors-high raises the floors out of reach), so that the row of step 1.5 for a FAIL
+          # is proven with real pictures: the folder on the Desktop with the report, the numbers, the sheet and
+          # what this machine drew. That the same frames pass is proven by the job above, on the same renderer.
+          - id: windows-3840-direct3d11
+            os: windows-latest
+            shell: powershell
+            mode: uhd
+            switches: software,tones,angle=d3d11,floors-high,refs=film-b:120+film-b:720,stretch=720-721/1
+            refusal: 'yes'
+            expect: clone,setup,doctor-refuses-software,doctor,test-fails,render-refuses-unreleased
+          # the fallback: macOS, Metal
+          - id: macos-small
+            os: macos-latest
+            shell: bash
+            mode: small
+            switches: small,tones,fast-watch
+            refusal: 'no'
+            expect: clone,setup,doctor,test-fails,test,pull,setup-again,doctor-again,test-again,render-first-call,test-in-mid-render,render-carries-on,render-again,check,deliver,upload-refuses,clean,upload-after-clean
+          - id: macos-3840
+            os: macos-latest
+            shell: bash
+            mode: uhd
+            switches: tones,refs=film-b:120+film-b:720+loop:0,stretch=720-721/1
+            refusal: 'no'
+            expect: clone,setup,doctor,test,render-refuses-unreleased
+          # what the Direct3D shader compiler writes about every program of the film and what the card answers to the
+          # maths probe, for this push or for the head named in .github/handoff-proof/other-head.txt
+          - id: windows-shaders
+            os: windows-latest
+            shell: none
+            mode: shaders
+            switches: ''
+            refusal: 'no'
+            expect: clone,checkout,install,build,shader-list,still-fall-rest
+    env:
+      PROOF_BRANCH: ${{ github.ref_name }}
+      PROOF_MODE: ${{ matrix.mode }}
+      PROOF_SWITCHES: ${{ matrix.switches }}
+      PROOF_REFUSAL: ${{ matrix.refusal }}
+      # A push whose message holds [proof small] leaves the 3840 jobs out, [proof 3840] leaves the others out,
+      # [proof shaders] leaves all out but the list of shader messages: the job still starts, does nothing and ends green.
+      # [proof upload] leaves every job of this list out: only the upload's own test runs.
+      PROOF_LEFT_OUT: ${{ (contains(github.event.head_commit.message, '[proof small]') && matrix.mode == 'uhd') || (contains(github.event.head_commit.message, '[proof 3840]') && matrix.mode != 'uhd') || (contains(github.event.head_commit.message, '[proof shaders]') && matrix.mode != 'shaders') || contains(github.event.head_commit.message, '[proof upload]') }}
+    steps:
+      # The helpers only, beside the clone under test. The film's clone is made by the flow with a plain git clone.
+      - name: left out of this push
+        if: env.PROOF_LEFT_OUT == 'true'
+        continue-on-error: true
+        shell: bash
+        run: echo "VERDICT of ${{ matrix.id }}, left out of this push by its message"
+
+      - name: the helpers of the proof
+        if: env.PROOF_LEFT_OUT != 'true'
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          path: _proof
+          persist-credentials: false
+          sparse-checkout: |
+            .github
+            tools/lib
+
+      - name: the newest LTS of Node
+        if: env.PROOF_LEFT_OUT != 'true' && matrix.node == 'lts'
+        continue-on-error: true
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: the lines of the file, in Windows PowerShell
+        if: env.PROOF_LEFT_OUT != 'true' && matrix.shell == 'powershell'
+        continue-on-error: true
+        timeout-minutes: 320
+        shell: powershell
+        run: '& "$env:GITHUB_WORKSPACE\_proof\.github\handoff-proof\flow.ps1"'
+
+      - name: the lines of the file, in bash
+        if: env.PROOF_LEFT_OUT != 'true' && matrix.shell == 'bash'
+        continue-on-error: true
+        timeout-minutes: 320
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/flow.sh"
+
+      - name: the shader messages of one head
+        if: env.PROOF_LEFT_OUT != 'true' && matrix.mode == 'shaders'
+        continue-on-error: true
+        timeout-minutes: 90
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/shaders.sh"
+
+      # one guard still, drawn by Direct3D in the same clone, kept with the list to be looked at far away
+      - name: the guard still of fall at rest
+        if: env.PROOF_LEFT_OUT != 'true' && matrix.mode == 'shaders'
+        continue-on-error: true
+        timeout-minutes: 20
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/still.sh"
+
+      # always runs; writes the verdict to the log, to verdict.txt and to the summary of the job; cannot end the job red
+      - name: the verdict
+        if: always() && env.PROOF_LEFT_OUT != 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          node "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/after.mjs" "$RUNNER_TEMP/proof-out" last || true
+          node "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/verdict.mjs" "$RUNNER_TEMP/proof-out" "${{ matrix.id }}" "${{ matrix.expect }}"
+
+      - name: the reports
+        if: always() && env.PROOF_LEFT_OUT != 'true'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.id }}
+          path: ${{ runner.temp }}/proof-out
+          if-no-files-found: warn
+          retention-days: 14
+
+      # the verdict alone, small, for the table of the last job
+      - name: the verdict for the table
+        if: always() && env.PROOF_LEFT_OUT != 'true'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdict-${{ matrix.id }}
+          path: ${{ runner.temp }}/proof-out/verdict.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # The upload's own test: stand-in files of a few bytes go to a draft release, a cut connection is played, the
+  # files are read back, and the one draft is removed by its id. It needs leave to write releases, so this job, and
+  # no other, is given the token of the run with contents: write. It is the run's own token and no stored secret.
+  # The token is in the environment of two steps only (the test, and the last step that makes sure no draft is
+  # left), in no file and in no log. No checkout action runs here: the helpers come with the plain clone.
+  upload-test:
+    name: windows-upload-test
+    if: ${{ !contains(github.event.head_commit.message, '[proof small]') && !contains(github.event.head_commit.message, '[proof 3840]') && !contains(github.event.head_commit.message, '[proof shaders]') }}
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      PROOF_BRANCH: ${{ github.ref_name }}
+      PROOF_MODE: upload
+    steps:
+      - name: a plain clone in a folder with a space
+        continue-on-error: true
+        shell: powershell
+        run: |
+          $Root = Join-Path $env:RUNNER_TEMP 'render proof'
+          New-Item -ItemType Directory -Force -Path $Root | Out-Null
+          Set-Location -LiteralPath $Root
+          git clone --filter=blob:none --single-branch --branch $env:PROOF_BRANCH https://github.com/BrandonChurch93/Snow-Globe-Perplexity.git Snow-Globe-Perplexity
+
+      - name: the upload's own test, with the token of this run
+        continue-on-error: true
+        timeout-minutes: 20
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: '& "$env:RUNNER_TEMP\render proof\Snow-Globe-Perplexity\.github\handoff-proof\upload-test.ps1"'
+
+      # Runs even after a failure. A draft with the test's mark is removed by its id when this run made it, or when
+      # it is older than 30 minutes (a test at work on another machine is left alone). When it had to, that is a
+      # PROBLEM in the notes, and so a FAIL of the verdict; the job stays green as every job does.
+      - name: no draft of the test is left
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          OUT="$(cygpath -u "$RUNNER_TEMP")/proof-out"
+          mkdir -p "$OUT"
+          mine="$(grep -ho 'the draft is made: id [0-9]*' "$OUT/upload-test.out.txt" 2> /dev/null | grep -o '[0-9]*$' | sort -u | tr '\n' ' ')"
+          cutoff="$(date -u -d '30 minutes ago' +%Y%m%d%H%M%S)"
+          listed=no
+          for try in 1 2 3; do
+            if list="$(gh api "repos/$REPO/releases?per_page=100" --jq '.[] | select(.draft == true and (.tag_name | startswith("handoff-upload-test"))) | "\(.id) \(.tag_name)"')"; then
+              listed=yes
+              break
+            fi
+            sleep 5
+          done
+          if [ "$listed" != yes ]; then
+            echo "PROBLEM: the releases of the repo could not be listed, so it is not known whether a draft of the test is left" | tee -a "$OUT/notes.txt"
+            exit 1
+          fi
+          had=0
+          while read -r id tag; do
+            [ -z "$id" ] && continue
+            stamp="$(echo "$tag" | sed -E 's/^handoff-upload-test-([0-9]{14}).*$/\1/')"
+            remove=no
+            case " $mine " in *" $id "*) remove=yes ;; esac
+            if [[ "$stamp" =~ ^[0-9]{14}$ ]]; then
+              [ "$stamp" \< "$cutoff" ] && remove=yes
+            else
+              remove=yes
+            fi
+            if [ "$remove" = yes ]; then
+              gh api --method DELETE "repos/$REPO/releases/$id"
+              echo "PROBLEM: a draft with the test's mark was left and had to be removed here: id $id, $tag (removal ended with exit code $?)" | tee -a "$OUT/notes.txt"
+              had=1
+            else
+              echo "a draft of a test that is at work on another machine now is left alone: id $id, $tag" | tee -a "$OUT/notes.txt"
+            fi
+          done <<< "$list"
+          [ "$had" = 0 ] && echo "the last step found no draft with the test's mark that had to be removed" | tee -a "$OUT/notes.txt"
+          exit $had
+
+      # always runs; writes the verdict to the log, to verdict.txt and to the summary of the job; cannot end the job red
+      - name: the verdict
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: node "$RUNNER_TEMP/render proof/Snow-Globe-Perplexity/.github/handoff-proof/verdict.mjs" "$RUNNER_TEMP/proof-out" windows-upload-test upload-test
+
+      - name: the reports
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-upload-test
+          path: ${{ runner.temp }}/proof-out
+          if-no-files-found: warn
+          retention-days: 14
+
+      # the verdict alone, small, for the table of the last job
+      - name: the verdict for the table
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdict-windows-upload-test
+          path: ${{ runner.temp }}/proof-out/verdict.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # The last job. It needs every other job and runs whatever came of them. It reads the verdict each job wrote and
+  # puts one table into the summary of the run: one row a job, PASS, FAIL or NOT RUN. A job that wrote no verdict
+  # is a row NOT RUN, never a PASS. It ends green too: a green run means only that the machines ran.
+  verdicts:
+    name: the verdicts
+    needs: [proof, upload-test]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROOF_JOBS: windows-powershell-small,windows-gitbash-small,windows-newest-lts-small,windows-winget-lines,windows-3840,windows-3840-direct3d11,macos-small,macos-3840,windows-shaders,windows-upload-test
+    steps:
+      - name: the helpers of the proof
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          path: _proof
+          persist-credentials: false
+          sparse-checkout: |
+            .github
+
+      - name: the verdicts of the jobs
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: verdict-*
+          path: ${{ runner.temp }}/verdicts
+
+      # always runs; writes the table to the log, to verdicts.md and to the summary of the run; cannot end the job red
+      - name: the verdict of the run, one table
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: node "$GITHUB_WORKSPACE/_proof/.github/handoff-proof/verdicts.mjs" "$RUNNER_TEMP/verdicts" "$PROOF_JOBS" "$RUNNER_TEMP/verdicts/verdicts.md"
+
+      - name: the table
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdicts
+          path: ${{ runner.temp }}/verdicts/verdicts.md
+          if-no-files-found: warn
+          retention-days: 14

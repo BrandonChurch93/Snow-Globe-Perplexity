@@ -1,0 +1,55 @@
+{
+  "what": "film-b",
+  "frame": 120,
+  "name": "winter at rest",
+  "engineHash": "7dbb2c54aa42b34a",
+  "samples": 24,
+  "travelPx": 2.73,
+  "seconds": 139.3,
+  "png": {
+    "sha256": "188d0fc9058522f6de412b7b1a7a87f615813f214a1a0360cbe0accb11f1e573",
+    "bytes": 14031775
+  },
+  "renderer": "ANGLE (Mesa, Vulkan 1.4.335 (llvmpipe (LLVM 21.1.8 256 bits) (0x00000000)), llvmpipe)",
+  "browser": "147.0.7727.15",
+  "half": {
+    "file": "film-b-000120-half.webp",
+    "sha256": "96046e10569b17ea0dfdcb30f97b95e03c4e83c310b61c98a7e20ce0b8cac178",
+    "bytes": 1802152,
+    "width": 1920,
+    "height": 1080
+  },
+  "cuts": [
+    {
+      "name": "house",
+      "x": 1290,
+      "y": 780,
+      "w": 960,
+      "h": 540,
+      "file": "film-b-000120-cut-house.webp",
+      "sha256": "68ca5dba4ce9be29e5f326681f28c9580fbbe17cf5d8abc832fb9bf6066cd6c3",
+      "bytes": 610392
+    },
+    {
+      "name": "frost",
+      "x": 1020,
+      "y": 90,
+      "w": 960,
+      "h": 540,
+      "file": "film-b-000120-cut-frost.webp",
+      "sha256": "4b6308ed057836148247a925e8e052d8f97133bf0ee2315d5e5596fcf809a436",
+      "bytes": 475718
+    }
+  ],
+  "glass": [
+    {
+      "name": "middle",
+      "x": 1370,
+      "y": 300,
+      "w": 1100,
+      "h": 1000,
+      "meanLuma": 0.304342,
+      "nearWhite": 0.002642
+    }
+  ]
+}

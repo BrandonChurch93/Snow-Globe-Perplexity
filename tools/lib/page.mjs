@@ -5,6 +5,7 @@ import { launch, machineId, pinnedBrowser, watchPage, ensureDir, freeDiskGb, ren
 import { serve } from './server.mjs'
 import { loadConfig, rel, writeJson, readJson } from './paths.mjs'
 import { engineHash, buildAssetIndex } from './hashes.mjs'
+import { flatHint, goneHint, lostHint } from './lost-context.mjs'
 
 export const cfg = loadConfig()
 export const formatById = (id) => {
@@ -133,8 +134,8 @@ export class Session {
   }
 
   alive(page) {
-    if (page.crashed || page.isClosed()) throw new Error('the page crashed or closed while a picture was drawn (the machine may be out of memory: look at dmesg). No picture was written.')
-    if (this.browser.isConnected && !this.browser.isConnected()) throw new Error('the browser went away while a picture was drawn (the machine may be out of memory: look at dmesg). No picture was written.')
+    if (page.crashed || page.isClosed()) throw new Error(`the page crashed or closed while a picture was drawn (${goneHint()}). No picture was written.`)
+    if (this.browser.isConnected && !this.browser.isConnected()) throw new Error(`the browser went away while a picture was drawn (${goneHint()}). No picture was written.`)
   }
 
   async contextLost(page) {
@@ -156,7 +157,7 @@ export class Session {
       return lost() ? { lost: 'while the picture was read back' } : { data }
     })
     this.alive(page)
-    if (r.lost) throw new Error(`the WebGL context was lost ${r.lost} (the graphics process may have been killed for memory: look at dmesg). No picture was written.`)
+    if (r.lost) throw new Error(`the WebGL context was lost ${r.lost} (${lostHint()}). No picture was written.`)
     return Buffer.from(r.data.slice(r.data.indexOf(',') + 1), 'base64')
   }
 
@@ -166,10 +167,10 @@ export class Session {
       return { x: r.x, y: r.y, width: r.width, height: r.height }
     })
     this.alive(page)
-    if (await this.contextLost(page)) throw new Error('the WebGL context was lost before the picture was taken (the graphics process may have been killed for memory: look at dmesg). No picture was written.')
+    if (await this.contextLost(page)) throw new Error(`the WebGL context was lost before the picture was taken (${lostHint()}). No picture was written.`)
     const png = await page.screenshot({ type: 'png', clip: box, animations: 'disabled', caret: 'hide' })
     this.alive(page)
-    if (await this.contextLost(page)) throw new Error('the WebGL context was lost while the picture was taken (the graphics process may have been killed for memory: look at dmesg). No picture was written.')
+    if (await this.contextLost(page)) throw new Error(`the WebGL context was lost while the picture was taken (${lostHint()}). No picture was written.`)
     return png
   }
 
@@ -292,7 +293,7 @@ export async function flatValue(png) {
 
 export async function refuseFlat(png, what) {
   const flat = await flatValue(png)
-  if (flat) throw new Error(`${what} came back as one flat value (${flat.join(', ')}) over the whole picture, which no frame of the cut is. The graphics process may have been killed for memory: look at dmesg. No picture and no record were written.`)
+  if (flat) throw new Error(`${what} came back as one flat value (${flat.join(', ')}) over the whole picture, which no frame of the cut is. ${flatHint()} No picture and no record were written.`)
 }
 
 export async function renderStill(session, spec, { file, noext = [], force = false, page: given = null, aid = false } = {}) {

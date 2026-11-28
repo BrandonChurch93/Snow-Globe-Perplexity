@@ -6,9 +6,10 @@ import { Session, cfg, formatById } from './lib/page.mjs'
 import { Run } from './lib/frames.mjs'
 import { pieceCounts, sampleRule, tierOf } from './lib/master.mjs'
 
-const USAGE = `node tools/shutter-frame.mjs --what film-b|loop --frames A,B,C [--tier name] [--format uhd] [--out out/work/shutter] [--tag name]
+const USAGE = `node tools/shutter-frame.mjs --what film-b|loop --frames A,B,C [--tier name] [--format uhd] [--out out/work/shutter] [--tag name] [--local]
   draws each frame as the masters draw it (the count of the final tier's rule, and the slow count in the slow runs of deliver.master.slow),
-  or with --tier as that tier draws it, and writes its PNG with one line: the frame, the travel, the samples, the seconds and the sha256 of the PNG`
+  or with --tier as that tier draws it, and writes its PNG with one line: the frame, the travel, the samples, the seconds and the sha256 of the PNG
+  --local draws with the installed Chrome and the machine's graphics card, as npm run master -- --local does`
 
 const args = parseArgs(process.argv.slice(2))
 const str = (k) => (args[k] !== undefined && args[k] !== true ? String(args[k]) : '')
@@ -24,7 +25,7 @@ const format = formatById(str('format') || cfg.deliver.master.format)
 const dir = rel(str('out') || path.join('out', 'work', 'shutter'))
 const tag = str('tag')
 fs.mkdirSync(dir, { recursive: true })
-const session = await Session.open({ what: `shutter-frame ${process.argv.slice(2).join(' ')}` })
+const session = await Session.open({ local: args.local === true, what: `shutter-frame ${process.argv.slice(2).join(' ')}` })
 try {
   const run = new Run(session, { by: 'shutter-frame', looks: false })
   const track = { kind: what === 'loop' ? 'loop' : 'film', name: what, format, tier: given || tierOf(rule.base), assets: 'full', fps: cfg.film.fps, step: 1 }

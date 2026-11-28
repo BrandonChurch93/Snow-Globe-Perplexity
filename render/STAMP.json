@@ -1,0 +1,2306 @@
+{
+  "version": 1,
+  "title": "Snow Globe Seasons",
+  "about": "The stamp of the render handoff: what the film is, what it was checked against and whether it may be rendered. Made by node tools/handoff.mjs stamp; see render/README.md. Do not edit by hand.",
+  "releasedForFinalRender": false,
+  "stillToDraw": [
+    "film-b:675",
+    "film-b:1000",
+    "film-b:1440",
+    "film-b:1720",
+    "film-b:2160",
+    "film-b:2440",
+    "film-b:2880"
+  ],
+  "engineHash": "7dbb2c54aa42b34a",
+  "commit": "a8ff69789e771524e596bed6c45d2140212eee5a",
+  "made": "2026-11-28T15:06:47.675Z",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "c5bc5c38fdabce09",
+    "summer": "e54346370f9c451d",
+    "fall": "762ec02dc7ee1a90"
+  },
+  "format": {
+    "id": "uhd",
+    "width": 3840,
+    "height": 2160,
+    "fps": 60
+  },
+  "tier": {
+    "name": "the masters' tier",
+    "samples": 24,
+    "slow": {
+      "underPx": 1.5,
+      "samples": 96,
+      "runFrames": 30
+    },
+    "motion": {
+      "spacingPx": 0.75,
+      "maxSamplesPerFrame": 128,
+      "evenFromPx": 1.5,
+      "spreadFromPx": 6,
+      "spreadFullPx": 18
+    },
+    "chunkFrames": 30
+  },
+  "frames": {
+    "film-b": 3600,
+    "loop": 480,
+    "opening": 867,
+    "film-a": 4467
+  },
+  "drawnBy": {
+    "renderer": "ANGLE (Mesa, Vulkan 1.4.335 (llvmpipe (LLVM 21.1.8 256 bits) (0x00000000)), llvmpipe)",
+    "browser": "147.0.7727.15"
+  },
+  "measures": {
+    "half": "the mean of each 2 x 2 block of pixels, rounded half up",
+    "coarse": "PSNR of the means of 8 x 8 pixel blocks, which a shift of one pixel hardly moves",
+    "glass": "the mean BT.709 luma of the region from 0 to 1, and the share of its pixels whose luma is 235 of 255 or more",
+    "files": "lossless WebP, each decoded again and compared when it was written"
+  },
+  "floors": {
+    "psnrWhole": 38,
+    "coarseWhole": 40,
+    "psnrCut": 40,
+    "coarseCut": 44,
+    "glassLuma": 0.01,
+    "glassWhite": 0.005
+  },
+  "floorsFrom": "Set on 28 November 2026 by one rule for the four floors in dB (decision 274): each floor is the midpoint, rounded to a whole dB, between a wrong picture and the careful case of a right one, both at film B frame 720. The wrong picture: frame 720 before and after one small mend of the engine (the mend of spring's glass in main f063702c), both drawn on Linux, reached 36.83 dB whole, 38.44 dB whole in blocks, 38.42 dB in its glass cut and 40.68 dB there in blocks. The careful case: a third renderer that stands as far from one test renderer as the other test renderer does, with that distance on top of the measured one to the Linux reference, reaches 39.15 dB whole, 42.08 dB whole in blocks, 41.84 dB for a cut and 46.99 dB for a cut in blocks. The midpoints: (36.83 + 39.15) / 2 = 37.99, so 38; (38.44 + 42.08) / 2 = 40.26, so 40; (38.42 + 41.84) / 2 = 40.13, so 40; (40.68 + 46.99) / 2 = 43.84, so 44. The wrong picture fails all four. How the careful case is worked out: a PSNR of d dB is a mean squared error of 65025 / 10^(d / 10); the two errors are added and turned back into dB; of the two ways (beyond Windows, beyond macOS) the lower is taken. Whole: 40.51 and 44.86 give 39.15. Whole in blocks: 43.17 and 48.63 give 42.08. A cut: 43.13 and 47.75 give 41.84. A cut in blocks: 47.96 and 53.98 give 46.99. The measures: film B frames 120 and 720 and loop frame 0, drawn at 3840 x 2160 in the masters' tier on two test renderers and compared with the Linux references: the Microsoft Basic Render Driver through Direct3D 11 on hosted Windows (run 46107721981, job windows-3840) and Apple Metal on hosted macOS (run 46107721981, job macos-3840), both with engine 144059cb99b0d134. Frame 720 against its Linux reference: on Windows 40.51 dB whole, 43.17 in blocks, the glass cut 50.28 and 53.58 in blocks, the base cut 43.13 and 48.23 in blocks; on macOS 40.76 and 43.35, the glass cut 51.16 and 54.27, the base cut 43.19 and 47.96. Windows against macOS at frame 720: 44.86 dB whole, 48.63 in blocks, the glass cut 54.44 and 59.86, the base cut 47.75 and 53.98. The lowest a right picture reached over all frames measured: 40.51 dB whole, 43.17 dB whole in blocks, 43.13 dB for a cut, 47.96 dB for a cut in blocks; the glass lay within 0.0007 of the reference in brightness and held no more near white. The two floors of the glass (0.01 in brightness, half a point of near white) stand as they were. Why renderers differ: some fine noise of the film (the runs of water on spring's glass, the grain of moss, the lumps of the table, sparkles) is a hash made of the sine of a large number in the shader, which each renderer works out a little differently, so that noise is the same in kind and stands at other places on each. Windows and macOS stand nearer each other than either stands to Linux. Before spring's glass wore its film of water at the landing, frame 720 reached 42.88 dB whole and 45.85 dB in blocks on Windows (run 46100206929). Not measured: any real graphics card, and the other seven frames of film B in the plan on any renderer but Linux.",
+  "screenshot": {
+    "width": 3840,
+    "height": 2160,
+    "bitDepth": 8,
+    "measure": "BT.709 luma PSNR in dB",
+    "measuredDb": 47.74,
+    "marginDb": 3,
+    "floorDb": 44.74,
+    "from": "MEASURED: the first frame of a four-frame loop, frames 0 through 3 at 60 fps, finished 2026-11-28T13:51:18.693Z. Drawn in the final tier on Linux lavapipe with 96 samples per frame and engine 7dbb2c54aa42b34a; the draw took 1760.400 s across those frames. The retained 3840 x 2160 8-bit PNG decoded in full, SHA-256 dff51b5e335ad41fbb03f1190dfc86a47ecfc668c6318a964a69008deada7680. Final MP4 SHA-256 7cf1fc84ae19466be03cad30a73801ff220a271291f22292bce80258f114b17d; FFmpeg 8.0.1-3ubuntu2, libx264 core 165, intermediate CRF 6, final one-pass CRF 18 slow, H.264 High level 5.2, yuv420p, BT.709 with TV range, 5 reference frames and 3 B-frames. A fresh luma comparison of the final MP4's first frame directly against this PNG measured 47.74 dB. STATED: hold 3.00 dB below that measurement as margin, so the floor is 44.74 dB. UNKNOWN: this measure on other renderers or for a full loop encode."
+  },
+  "references": [
+    {
+      "what": "film-b",
+      "frame": 120,
+      "name": "winter at rest",
+      "engineHash": "7dbb2c54aa42b34a",
+      "samples": 24,
+      "travelPx": 2.73,
+      "seconds": 139.3,
+      "png": {
+        "sha256": "188d0fc9058522f6de412b7b1a7a87f615813f214a1a0360cbe0accb11f1e573",
+        "bytes": 14031775
+      },
+      "renderer": "ANGLE (Mesa, Vulkan 1.4.335 (llvmpipe (LLVM 21.1.8 256 bits) (0x00000000)), llvmpipe)",
+      "browser": "147.0.7727.15",
+      "half": {
+        "file": "film-b-000120-half.webp",
+        "sha256": "96046e10569b17ea0dfdcb30f97b95e03c4e83c310b61c98a7e20ce0b8cac178",
+        "bytes": 1802152,
+        "width": 1920,
+        "height": 1080
+      },
+      "cuts": [
+        {
+          "name": "house",
+          "x": 1290,
+          "y": 780,
+          "w": 960,
+          "h": 540,
+          "file": "film-b-000120-cut-house.webp",
+          "sha256": "68ca5dba4ce9be29e5f326681f28c9580fbbe17cf5d8abc832fb9bf6066cd6c3",
+          "bytes": 610392
+        },
+        {
+          "name": "frost",
+          "x": 1020,
+          "y": 90,
+          "w": 960,
+          "h": 540,
+          "file": "film-b-000120-cut-frost.webp",
+          "sha256": "4b6308ed057836148247a925e8e052d8f97133bf0ee2315d5e5596fcf809a436",
+          "bytes": 475718
+        }
+      ],
+      "glass": [
+        {
+          "name": "middle",
+          "x": 1370,
+          "y": 300,
+          "w": 1100,
+          "h": 1000,
+          "meanLuma": 0.304342,
+          "nearWhite": 0.002642
+        }
+      ]
+    },
+    {
+      "what": "film-b",
+      "frame": 720,
+      "name": "spring in storm, just landed",
+      "engineHash": "7dbb2c54aa42b34a",
+      "samples": 24,
+      "travelPx": 7.27,
+      "seconds": 214.3,
+      "png": {
+        "sha256": "a0f74bad16db639165a1a17e84025a52491684a28b35eb232faef190bc82fc4f",
+        "bytes": 12772503
+      },
+      "renderer": "ANGLE (Mesa, Vulkan 1.4.335 (llvmpipe (LLVM 21.1.8 256 bits) (0x00000000)), llvmpipe)",
+      "browser": "147.0.7727.15",
+      "half": {
+        "file": "film-b-000720-half.webp",
+        "sha256": "679f360695eb3a3c3d3cb0ff8a97546166a6a14620e2a62174dc2eddd08da10b",
+        "bytes": 1595296,
+        "width": 1920,
+        "height": 1080
+      },
+      "cuts": [
+        {
+          "name": "glass",
+          "x": 1440,
+          "y": 600,
+          "w": 960,
+          "h": 540,
+          "file": "film-b-000720-cut-glass.webp",
+          "sha256": "b54293f25bfd05c5ae068cf5e0da4747a96293b283d6f4eeca48402420554cc4",
+          "bytes": 421672
+        },
+        {
+          "name": "base",
+          "x": 1440,
+          "y": 1440,
+          "w": 960,
+          "h": 540,
+          "file": "film-b-000720-cut-base.webp",
+          "sha256": "6e3d07041a5c5d5066de7650bf336992c36a1007ffcddfe1ef53770c8ec7b580",
+          "bytes": 554900
+        }
+      ],
+      "glass": [
+        {
+          "name": "middle",
+          "x": 1420,
+          "y": 330,
+          "w": 1000,
+          "h": 960,
+          "meanLuma": 0.720836,
+          "nearWhite": 0.002756
+        }
+      ]
+    },
+    {
+      "what": "loop",
+      "frame": 0,
+      "name": "the first frame of the loop, which is also the screenshot",
+      "engineHash": "7dbb2c54aa42b34a",
+      "samples": 96,
+      "travelPx": 0.09,
+      "seconds": 398,
+      "png": {
+        "sha256": "dff51b5e335ad41fbb03f1190dfc86a47ecfc668c6318a964a69008deada7680",
+        "bytes": 13329762
+      },
+      "renderer": "ANGLE (Mesa, Vulkan 1.4.335 (llvmpipe (LLVM 21.1.8 256 bits) (0x00000000)), llvmpipe)",
+      "browser": "147.0.7727.15",
+      "half": {
+        "file": "loop-000000-half.webp",
+        "sha256": "97f85aa152699a668a7efbdede61b36eda979f0bec5ccb59fb4854812cc526d5",
+        "bytes": 1616324,
+        "width": 1920,
+        "height": 1080
+      },
+      "cuts": [
+        {
+          "name": "house",
+          "x": 1320,
+          "y": 900,
+          "w": 960,
+          "h": 540,
+          "file": "loop-000000-cut-house.webp",
+          "sha256": "a41e9856af0ddac233640af2aeb052e25023e3a681e11cc1ee46d427f91c6975",
+          "bytes": 604938
+        },
+        {
+          "name": "frost",
+          "x": 1200,
+          "y": 240,
+          "w": 960,
+          "h": 540,
+          "file": "loop-000000-cut-frost.webp",
+          "sha256": "b5136d03b36933dd6f59ae991323d2af829d5ec6373be9cee89f0ca188fa648e",
+          "bytes": 518398
+        }
+      ],
+      "glass": [
+        {
+          "name": "middle",
+          "x": 1440,
+          "y": 420,
+          "w": 960,
+          "h": 840,
+          "meanLuma": 0.319976,
+          "nearWhite": 0.002964
+        }
+      ]
+    },
+    {
+      "what": "opening",
+      "frame": 450,
+      "name": "the opening while the prompt is typed",
+      "engineHash": "7dbb2c54aa42b34a",
+      "samples": 0,
+      "pack": "665ac47671ead473d999f38848f854408e3a83b92459ecb66413e87120acec77",
+      "renderer": "none: read from the opening pack, never drawn",
+      "browser": "",
+      "half": {
+        "file": "opening-000450-half.webp",
+        "sha256": "a1beaa758db62b25604d26e574cb27e3ac71dbb6eab6dec6a0ab498269a45281",
+        "bytes": 44952,
+        "width": 1920,
+        "height": 1080
+      },
+      "cuts": [
+        {
+          "name": "prompt",
+          "x": 520,
+          "y": 900,
+          "w": 960,
+          "h": 540,
+          "file": "opening-000450-cut-prompt.webp",
+          "sha256": "9cba39bf6f2db7647897fbd0601fe2105b5847c86822cfd1fe441ef76ee3cc0c",
+          "bytes": 14412
+        },
+        {
+          "name": "send",
+          "x": 2400,
+          "y": 900,
+          "w": 960,
+          "h": 540,
+          "file": "opening-000450-cut-send.webp",
+          "sha256": "3d803ff4bf23eaa71342f7ff3d544ba3bcc40f97230100c55a1f192bfe11c85a",
+          "bytes": 15164
+        }
+      ],
+      "glass": []
+    }
+  ],
+  "test": {
+    "stretch": {
+      "first": 660,
+      "last": 779,
+      "landing": 720,
+      "why": "two seconds of film B across the landing of spring at frame 720: the end of the change out of winter, the landing and the first second of the storm. Its frames hold 24 to 99 samples, so the 24 and the 96 sample frames are both timed."
+    }
+  },
+  "opening": {
+    "branch": "agent/p6-opening-master",
+    "commit": "e44b7e51f656d15a4bfd9199eeeeb3c83c1bc69c",
+    "path": "out/opening-master",
+    "folder": "render/opening-pack",
+    "frames": 867,
+    "files": {
+      "opening.bin": "665ac47671ead473d999f38848f854408e3a83b92459ecb66413e87120acec77",
+      "manifest.json": "8a008845dc265099975e587213f77c49cdd76b3d44ea98d9fc63ae5630998410"
+    }
+  },
+  "sound": {
+    "film-a": "883ee8bd67c284161d0156b0e10fcc7dc79be5c0526423809174e456544b5515",
+    "film-b": "3edd8ff579404fce8d62a041b2172306a6b26eb9a31d59e0b90d82315337bf23"
+  },
+  "delivery": {
+    "folder": "Snow Globe Seasons",
+    "names": {
+      "film-a": "Snow Globe Seasons - With Prompt - 3840x2160.mp4",
+      "film-b": "Snow Globe Seasons - Without Prompt - 3840x2160.mp4",
+      "loop": "Snow Globe Seasons - Portfolio Looping Video - 3840x2160.mp4",
+      "still": "Snow Globe Seasons - Portfolio Screenshot - 3840x2160.png"
+    },
+    "test": "Snow Globe Seasons - Test - 3840x2160.mp4"
+  },
+  "video": {
+    "codec": "libx264",
+    "profile": "high",
+    "level": "5.2",
+    "pixFmt": "yuv420p",
+    "maxrateMbps": 300,
+    "bufsizeMbps": 300
+  },
+  "samples": {
+    "film-b": [
+      [
+        52,
+        1
+      ],
+      [
+        50,
+        1
+      ],
+      [
+        49,
+        1
+      ],
+      [
+        47,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        45,
+        1
+      ],
+      [
+        44,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        40,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        38,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        32,
+        1
+      ],
+      [
+        31,
+        1
+      ],
+      [
+        30,
+        2
+      ],
+      [
+        29,
+        1
+      ],
+      [
+        28,
+        1
+      ],
+      [
+        27,
+        2
+      ],
+      [
+        26,
+        1
+      ],
+      [
+        25,
+        2
+      ],
+      [
+        24,
+        123
+      ],
+      [
+        96,
+        426
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        31,
+        1
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        24,
+        29
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        45,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        57,
+        1
+      ],
+      [
+        62,
+        1
+      ],
+      [
+        64,
+        1
+      ],
+      [
+        61,
+        1
+      ],
+      [
+        54,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        44,
+        1
+      ],
+      [
+        31,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        49,
+        1
+      ],
+      [
+        45,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        28,
+        1
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        40,
+        1
+      ],
+      [
+        45,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        61,
+        1
+      ],
+      [
+        64,
+        1
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        60,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        29,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        38,
+        1
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        27,
+        2
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        56,
+        1
+      ],
+      [
+        59,
+        1
+      ],
+      [
+        58,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        47,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        55,
+        1
+      ],
+      [
+        65,
+        1
+      ],
+      [
+        69,
+        1
+      ],
+      [
+        70,
+        1
+      ],
+      [
+        66,
+        1
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        56,
+        1
+      ],
+      [
+        55,
+        1
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        43,
+        1
+      ],
+      [
+        60,
+        1
+      ],
+      [
+        74,
+        1
+      ],
+      [
+        80,
+        1
+      ],
+      [
+        81,
+        1
+      ],
+      [
+        77,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        59,
+        1
+      ],
+      [
+        78,
+        1
+      ],
+      [
+        81,
+        2
+      ],
+      [
+        84,
+        1
+      ],
+      [
+        91,
+        1
+      ],
+      [
+        99,
+        1
+      ],
+      [
+        92,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        55,
+        1
+      ],
+      [
+        58,
+        1
+      ],
+      [
+        54,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        28,
+        1
+      ],
+      [
+        27,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        43,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        55,
+        1
+      ],
+      [
+        54,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        24,
+        46
+      ],
+      [
+        96,
+        120
+      ],
+      [
+        24,
+        137
+      ],
+      [
+        96,
+        88
+      ],
+      [
+        24,
+        140
+      ],
+      [
+        96,
+        69
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        29,
+        1
+      ],
+      [
+        31,
+        1
+      ],
+      [
+        24,
+        29
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        45,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        58,
+        1
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        62,
+        1
+      ],
+      [
+        56,
+        1
+      ],
+      [
+        51,
+        2
+      ],
+      [
+        32,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        49,
+        1
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        31,
+        1
+      ],
+      [
+        28,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        40,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        55,
+        1
+      ],
+      [
+        62,
+        1
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        61,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        32,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        29,
+        1
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        28,
+        1
+      ],
+      [
+        32,
+        1
+      ],
+      [
+        38,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        55,
+        2
+      ],
+      [
+        50,
+        1
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        46,
+        2
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        43,
+        1
+      ],
+      [
+        57,
+        1
+      ],
+      [
+        67,
+        1
+      ],
+      [
+        70,
+        2
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        44,
+        1
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        57,
+        1
+      ],
+      [
+        71,
+        1
+      ],
+      [
+        76,
+        2
+      ],
+      [
+        72,
+        1
+      ],
+      [
+        44,
+        1
+      ],
+      [
+        55,
+        1
+      ],
+      [
+        74,
+        1
+      ],
+      [
+        77,
+        1
+      ],
+      [
+        78,
+        1
+      ],
+      [
+        82,
+        1
+      ],
+      [
+        88,
+        1
+      ],
+      [
+        96,
+        1
+      ],
+      [
+        90,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        57,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        28,
+        1
+      ],
+      [
+        26,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        40,
+        3
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        43,
+        1
+      ],
+      [
+        24,
+        46
+      ],
+      [
+        96,
+        120
+      ],
+      [
+        24,
+        134
+      ],
+      [
+        96,
+        95
+      ],
+      [
+        24,
+        131
+      ],
+      [
+        96,
+        74
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        30,
+        1
+      ],
+      [
+        31,
+        1
+      ],
+      [
+        24,
+        29
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        58,
+        1
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        58,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        38,
+        1
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        26,
+        1
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        43,
+        1
+      ],
+      [
+        49,
+        1
+      ],
+      [
+        59,
+        1
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        58,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        29,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        38,
+        1
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        27,
+        2
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        50,
+        1
+      ],
+      [
+        56,
+        1
+      ],
+      [
+        57,
+        1
+      ],
+      [
+        56,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        26,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        47,
+        1
+      ],
+      [
+        45,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        47,
+        1
+      ],
+      [
+        60,
+        1
+      ],
+      [
+        68,
+        1
+      ],
+      [
+        71,
+        1
+      ],
+      [
+        70,
+        1
+      ],
+      [
+        57,
+        1
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        56,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        44,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        61,
+        1
+      ],
+      [
+        73,
+        1
+      ],
+      [
+        77,
+        2
+      ],
+      [
+        72,
+        1
+      ],
+      [
+        38,
+        1
+      ],
+      [
+        60,
+        1
+      ],
+      [
+        76,
+        1
+      ],
+      [
+        78,
+        2
+      ],
+      [
+        83,
+        1
+      ],
+      [
+        92,
+        1
+      ],
+      [
+        100,
+        1
+      ],
+      [
+        95,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        58,
+        1
+      ],
+      [
+        55,
+        1
+      ],
+      [
+        43,
+        1
+      ],
+      [
+        30,
+        1
+      ],
+      [
+        27,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        41,
+        2
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        54,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        43,
+        1
+      ],
+      [
+        24,
+        46
+      ],
+      [
+        96,
+        150
+      ],
+      [
+        24,
+        61
+      ],
+      [
+        96,
+        178
+      ],
+      [
+        24,
+        68
+      ],
+      [
+        96,
+        97
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        31,
+        1
+      ],
+      [
+        32,
+        1
+      ],
+      [
+        24,
+        29
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        45,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        58,
+        1
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        61,
+        1
+      ],
+      [
+        55,
+        1
+      ],
+      [
+        50,
+        1
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        31,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        45,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        29,
+        1
+      ],
+      [
+        26,
+        1
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        38,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        57,
+        1
+      ],
+      [
+        59,
+        2
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        31,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        32,
+        1
+      ],
+      [
+        26,
+        1
+      ],
+      [
+        28,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        44,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        57,
+        2
+      ],
+      [
+        55,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        44,
+        1
+      ],
+      [
+        45,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        49,
+        1
+      ],
+      [
+        61,
+        1
+      ],
+      [
+        68,
+        1
+      ],
+      [
+        69,
+        1
+      ],
+      [
+        67,
+        1
+      ],
+      [
+        44,
+        1
+      ],
+      [
+        40,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        54,
+        1
+      ],
+      [
+        49,
+        1
+      ],
+      [
+        40,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        56,
+        1
+      ],
+      [
+        69,
+        1
+      ],
+      [
+        76,
+        1
+      ],
+      [
+        77,
+        1
+      ],
+      [
+        74,
+        1
+      ],
+      [
+        45,
+        1
+      ],
+      [
+        57,
+        1
+      ],
+      [
+        74,
+        1
+      ],
+      [
+        77,
+        1
+      ],
+      [
+        76,
+        1
+      ],
+      [
+        80,
+        1
+      ],
+      [
+        88,
+        1
+      ],
+      [
+        96,
+        1
+      ],
+      [
+        91,
+        1
+      ],
+      [
+        47,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        58,
+        1
+      ],
+      [
+        54,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        29,
+        1
+      ],
+      [
+        27,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        54,
+        1
+      ],
+      [
+        53,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        24,
+        46
+      ],
+      [
+        96,
+        205
+      ],
+      [
+        24,
+        307
+      ],
+      [
+        96,
+        185
+      ]
+    ],
+    "loop": [
+      [
+        96,
+        49
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        27,
+        1
+      ],
+      [
+        29,
+        1
+      ],
+      [
+        24,
+        29
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        44,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        57,
+        1
+      ],
+      [
+        61,
+        1
+      ],
+      [
+        59,
+        1
+      ],
+      [
+        54,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        40,
+        1
+      ],
+      [
+        44,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        34,
+        1
+      ],
+      [
+        26,
+        1
+      ],
+      [
+        28,
+        1
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        38,
+        1
+      ],
+      [
+        43,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        56,
+        2
+      ],
+      [
+        54,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        32,
+        1
+      ],
+      [
+        33,
+        1
+      ],
+      [
+        31,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        24,
+        1
+      ],
+      [
+        28,
+        1
+      ],
+      [
+        32,
+        1
+      ],
+      [
+        38,
+        1
+      ],
+      [
+        46,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        38,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        40,
+        1
+      ],
+      [
+        35,
+        1
+      ],
+      [
+        30,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        47,
+        1
+      ],
+      [
+        58,
+        1
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        61,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        39,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        54,
+        1
+      ],
+      [
+        49,
+        1
+      ],
+      [
+        41,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        68,
+        1
+      ],
+      [
+        77,
+        1
+      ],
+      [
+        79,
+        1
+      ],
+      [
+        77,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        56,
+        1
+      ],
+      [
+        74,
+        1
+      ],
+      [
+        78,
+        2
+      ],
+      [
+        81,
+        1
+      ],
+      [
+        85,
+        1
+      ],
+      [
+        91,
+        1
+      ],
+      [
+        81,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        51,
+        1
+      ],
+      [
+        52,
+        1
+      ],
+      [
+        48,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        25,
+        2
+      ],
+      [
+        32,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        36,
+        1
+      ],
+      [
+        37,
+        1
+      ],
+      [
+        42,
+        1
+      ],
+      [
+        47,
+        1
+      ],
+      [
+        49,
+        2
+      ],
+      [
+        40,
+        1
+      ],
+      [
+        24,
+        46
+      ],
+      [
+        96,
+        265
+      ]
+    ]
+  },
+  "disk": {
+    "chunkMb": 27,
+    "pngMb": 16,
+    "finalMb": {
+      "film-a": 500,
+      "film-b": 500,
+      "loop": 400,
+      "still": 30
+    }
+  }
+}
