@@ -126,12 +126,14 @@ All on this machine (lavapipe, 4 CPUs, 7.6 GiB), one render at a time.
 
 ## The scatter in the air as a smear (decision 220, open item 268)
 
-Written 23:40 UTC, 27 November 2026, the lines on frame 2121 added at 23:50 UTC. The whole report is `streak-report.txt` beside this file; the pictures are `streak-1` to `streak-8`, named in `captions.txt`.
+Written 23:40 UTC, 27 November 2026, the lines on frame 2121 added at 23:50 UTC, those on the frames at 3840 on the head at 00:38 UTC on 28 November. The whole report is `streak-report.txt` beside this file; the pictures are `streak-1` to `streak-13`, named in `captions.txt`.
 
 - Code: `agent/p6-petal-streak`, head `beed6a06` (one commit `beb62adb` on main `5b76c959`, then merges of main `8f763981` and `48a2e3b7`). Engine `8dec00b8dd77ff93`. Five files: `src/core/materials.ts`, the two slabs of spring and fall, one exported word in `src/shake/change.ts`, `tests/gust-streak.test.ts`.
 - What it does: in a film frame of 8 samples or more, while a petal or a leaf is in the air, each sample's share of the shutter is cut into 8 parts, the scatter is drawn at each, and every pixel keeps one by its level in the still tile. The row of copies becomes one smear with a fine grain.
 - The live page never takes this path: it has no sample, so the second mesh is never made and the first mesh's shader is the one it was.
 - Proven: frame 1388 and fall's frame 2827 at 3840 before and after; frames 1386 to 1391 at preview; the eight guards equal to chain 39's list on the head; tsc; the whole vitest (1054 passed, 8 skipped).
 - The arriving scatter, one frame: frame 2121 at preview (fall's leaves blown in) on main `48a2e3b7` and on the head. Before, the leaves are rows of copies; after, smears. 35,530 pixels differ, none above row 353 (`streak-8`).
-- Not seen: the arriving scatter of changes 1 and 2 before and after; any arriving frame at 3840; any master chunk; the page in a browser during a change; the cost on a graphics card (23 percent on frame 1388 in software).
+- On the head at 3840: frame 2121 (leaves arriving, one smear each), frames 1388 and 1389 as a pair. The grain inside a smear is unrelated from one frame to the next (correlation 0.02) and about 2 levels wide, against 26.5 levels of change in the smear itself. Section 10 of the report.
+- Below the bar, found on that pair: a faint rib stays at one place of frame 1388 (x 585 to 649, y 1612 to 1645), as strong as before the mend, about 3 levels from crest to trough. Taken for a petal thrown by the foot's kick, whose jump this change does not cut into parts. Not proven. `streak-13`.
+- Not seen: the two frames played at speed; the arriving scatter of change 2 before and after; any master chunk; the page in a browser during a change; the cost on a graphics card (23 percent on frame 1388 in software).
 
