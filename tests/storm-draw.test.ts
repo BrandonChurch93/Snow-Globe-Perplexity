@@ -1,13 +1,18 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { CARD_FRAG_PARS, CARD_VERT, CARD_VERT_PARS } from '../src/particles/draw/cards'
 import { CARD, PIXEL_SIGMA2, SEED_NEAR, SEED_RESTS, SHAPE, STORM_FLOOD, STORM_LANDING, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC, SUMMER_EDGE, lookOf } from '../src/particles/draw/looks'
-import { seatsOn } from '../src/particles/draw/points'
+import { lightRide, rideMatrix, seatsOn } from '../src/particles/draw/points'
 import { VERT_MAIN } from '../src/particles/draw/shader'
-import { gridOf } from '../src/scene/layout'
+import { centreHeightMm, gridOf } from '../src/scene/layout'
 import { config, particleKinds } from '../src/config'
 import { BEHAVIOUR } from '../src/particles/engine/kinds'
+import { CENTRE_Y } from '../src/particles/engine/sdf'
+import { filmCut } from '../src/film/cut'
+import { loopMoment, timelineMoment } from '../src/film/moments'
+import { eventSeconds, filmTimeline, globePoseAt, prerollSeconds, stateSeconds, stillTimeline } from '../src/film/timeline'
 import { innerRadiusMm, lensIor, lensPlace, lensRadiusMm } from '../src/globe/lens'
 import { VEIL_LOOK, veilUniforms } from '../src/core/chunks/veil'
 import type { KitMoment } from '../src/seasons/kit'
@@ -385,6 +390,206 @@ describe('how the storm is drawn', () => {
     expect(CARD.down.puff.long[0]).toBeGreaterThan(0.7)
     expect(CARD.down.puff.tipFade).toBeGreaterThan(0.5)
     expect(CARD.down.puff.bead).toBe(0)
+  })
+
+  it("open item 276: in a frame of the film a light of the storm is held at its place in the ball as the ball stands at the middle of the exposure, by degrees from the take over's end and nowhere else, and both its ends go out to nothing", () => {
+    const glow = CARD.glow
+    // the ends: the tail's goes out inside the streak, over the longer way; the head's is laid past where the streak ended, so that up to its old end the streak has all the light it had and no light is fainter at its brightest
+    expect(glow.stormEnds[0]).toBeGreaterThan(0.2)
+    expect(glow.stormEnds[0]).toBeLessThanOrEqual(1)
+    expect(glow.stormEnds[1]).toBeGreaterThanOrEqual(0.15)
+    expect(glow.stormEnds[1]).toBeLessThanOrEqual(0.5)
+    expect(glow.stormEnds[0]).toBeGreaterThan(glow.stormEnds[1])
+    // a streak no longer than its core is soft is a round point and keeps its round ends, and the ends come with the storm's pace by degrees
+    expect(glow.stormEndsFrom[0]).toBeGreaterThanOrEqual(1)
+    expect(glow.stormEndsFrom[1]).toBeGreaterThan(glow.stormEndsFrom[0])
+    expect(glow.stormEndsBy).toBeGreaterThan(0)
+    expect(glow.stormEndsBy).toBeLessThanOrEqual(0.5)
+    const ends = [
+      'if (!spark && vL2.w > 0.0) {',
+      `float endsE = smoothstep(0.0, ${glow.stormEndsBy}, vL2.w) * smoothstep(${glow.stormEndsFrom[0]}, ${glow.stormEndsFrom[1].toFixed(1)}, vStreak.z / sqrt(vc));`,
+      `float tE = clamp(dot(p, vStreak.xy), -vStreak.z, vStreak.z * (1.0 + ${glow.stormEnds[1]} * endsE));`,
+      'vec2 dE = p - vStreak.xy * tE;',
+      'if (run) dE -= vec2(-vStreak.y, vStreak.x) * (pointBend * (tE * tE / max(vStreak.z, 1e-3) - 0.333 * vStreak.z));',
+      'd2 = dot(dE, dE);',
+      'float alongE = tE / max(vStreak.z, 1e-3);',
+      `fade *= mix(1.0, smoothstep(-1.0, ${glow.stormEnds[0] - 1}, alongE) * (1.0 - smoothstep(1.0, ${1 + glow.stormEnds[1]}, alongE)), endsE);`,
+    ]
+    let at = 0
+    for (const line of ends) {
+      const next = CARD_FRAG_PARS.indexOf(line, at)
+      expect(next, line).toBeGreaterThan(at)
+      at = next
+    }
+    // the streak as it was is not touched up to its old end: the light's own fade is whole from 0.4 of its half length on, and the head's window is whole up to 1
+    expect(CARD_FRAG_PARS).toContain(`if (!spark) fade = mix(1.0, mix(${glow.stormTail}, 1.0, smoothstep(-vStreak.z, 0.4 * vStreak.z, t)), vL2.w);`)
+    // the ends are set before the core is, and the core reads them
+    expect(CARD_FRAG_PARS.indexOf('core = rc * rc / vc', at)).toBeGreaterThan(at)
+    // the card holds what is drawn past the head's end, along the arc: a light of the storm alone has the wider card
+    expect(CARD_VERT).toContain(`float endC = storming && (shape > ${(SHAPE.light - 0.5).toFixed(1)} && shape < ${(SHAPE.light + 0.5).toFixed(1)}) ? ${glow.stormEnds[1]} : 0.0;`)
+    expect(CARD_VERT).toContain('vec2 extC = min(vec2(reachC + (0.67 + endC * (2.0 + endC)) * abs(arcC) * hlC) + (1.05 + endC) * hlC * abs(alC), vec2(uLimit.y));')
+    // the ride: read by a light of the storm alone, and only where the draw says a share of it
+    // one streak has the light the band of lines had, and no streak is fainter at its brightest than it was: a light's strength in the storm was raised with the ride (decision 255)
+    expect(glow.stormGain).toBeGreaterThanOrEqual(2.4)
+    expect(glow.stormRideBy).toBeGreaterThan(0)
+    expect(glow.stormRideBy).toBeLessThanOrEqual(0.5)
+    expect(CARD_VERT_PARS).toContain('uniform mat4 uMidPose;')
+    expect(CARD_VERT_PARS).toContain('uniform vec2 uMidHold;')
+    expect(CARD_VERT).toContain(`if (storming && (shape > ${(SHAPE.light - 0.5).toFixed(1)} && shape < ${(SHAPE.light + 0.5).toFixed(1)}) && uMidHold.x > 0.0) {`)
+    expect(CARD_VERT).toContain('holdC += stC * (uPoint.z / max(shut, 1e-6)) * (uMidHold.y * uMidHold.x);')
+    expect(CARD_VERT).toContain('vec4 midP = lensPlace((modelMatrix * (uMidPose * vec4(nowL, 1.0))).xyz - rideC, eye - rideC);')
+    expect(CARD_VERT.split('uMidHold').length - 1).toBe(4)
+    expect(CARD_VERT.split('uMidPose').length - 1).toBe(2)
+    // and the light is summer's alone: no kind of another season has its shape
+    for (const season of config.seasons) for (const kind of particleKinds(season)) expect(lookOf(kind.kind).shape === SHAPE.light, kind.kind).toBe(season === 'summer' && kind.kind === 'firefly')
+
+    const film = filmTimeline(filmCut())
+    const fps = config.film.fps
+    const shutter = config.film.shutterDegrees / 360 / fps
+    const summer = { veil: summerVeil }
+    const other = { veil: {} }
+    const kit = (season: string): { veil: unknown } => (season === 'summer' ? summer : other)
+    const sampleAt = (u: number) => ({ index: 0, px: 0, py: 0, lu: 0, lv: 0, t: u })
+    // a sample of film frame `i`: its share of the shutter is `u` and it is drawn at the share `at` (in a frame where the ball travels the capture moves a sample's moment a little and leaves its share as it was)
+    const frame = (i: number, u: number, at = u) => {
+      const moment = timelineMoment(film, prerollSeconds + i / fps + at * shutter, 1, 1)
+      return { sample: sampleAt(u) as ReturnType<typeof sampleAt> | null, view: '', live: false, moment, globe: moment.globe, from: kit(moment.from), to: kit(moment.to) }
+    }
+    const shake = film.events.find((e) => e.from === 'spring' && e.to === 'summer')!
+    const beat = eventSeconds(shake) / config.film.beatsPerBar
+    const frameOf = (b: number): number => Math.round((shake.startSec + b * beat - prerollSeconds) * fps)
+    const first = frameOf(0)
+    const takeEnd = frameOf(TAKE_END_BEAT)
+    const landing = frameOf(LANDING_BEAT)
+    expect(takeEnd).toBeGreaterThan(first + 60)
+    expect(landing - takeEnd).toBeGreaterThanOrEqual(12)
+    const same = (a: { x: number; y: number; z: number; tiltX: number; tiltZ: number; twist?: number }, b: typeof a): boolean => a.x === b.x && a.y === b.y && a.z === b.z && a.tiltX === b.tiltX && a.tiltZ === b.tiltZ && (a.twist ?? 0) === (b.twist ?? 0)
+
+    // nothing of it up to the take over's end, at any moment of the shutter, moved or not: the take over's frames are as they were
+    for (let i = first; i < takeEnd; i++) for (const u of [0, 0.25, 0.5, 0.75, 1]) {
+      expect(lightRide(film, frame(i, u)), `frame ${i} at ${u}`).toBeNull()
+      expect(lightRide(film, frame(i, u, Math.min(1, u + 0.02))), `frame ${i} at ${u}, moved`).toBeNull()
+    }
+    // from there it comes by degrees, so no light sharpens between two frames: read at one and the same share of the shutter, the share of the ride rises from frame to frame by little more than a third at the most, is next to nothing on the first frames, whole once the storm has gone `stormRideBy` of the way to the look of the landing, and whole at the landing
+    for (const u of [0, 0.25, 0.75, 1]) {
+      let last = 0
+      let whole = -1
+      for (let i = takeEnd; i <= landing; i++) {
+        const f = frame(i, u)
+        const ride = lightRide(film, f)
+        const share = ride ? ride.share : 0
+        expect(share, `frame ${i} at ${u}`).toBeGreaterThanOrEqual(last)
+        expect(share - last, `frame ${i} at ${u}`).toBeLessThan(0.35)
+        if (landingLook(f) >= glow.stormRideBy) expect(share, `frame ${i} at ${u}`).toBe(1)
+        if (share === 1 && whole < 0) whole = i
+        last = share
+      }
+      expect(lightRide(film, frame(takeEnd, u))?.share ?? 0).toBeLessThan(0.001)
+      expect(lightRide(film, frame(takeEnd + 1, u))?.share ?? 0).toBeLessThan(0.02)
+      expect(whole).toBeGreaterThan(takeEnd + 4)
+      expect(whole).toBeLessThan(takeEnd + 9)
+      expect(lightRide(film, frame(landing, u))!.share).toBe(1)
+    }
+
+    // where it stands, the light is held at the ball's pose at the middle of that frame's exposure, the same at every sample of the frame; a sample drawn at its own share is not moved, and one whose moment was moved is put back by as much
+    for (const i of [takeEnd + 4, takeEnd + 9, landing - 1, landing, landing + 1, landing + 12]) {
+      const mid = globePoseAt(film, prerollSeconds + i / fps + 0.5 * shutter)
+      for (const u of [0.02, 0.3, 0.71, 0.98]) {
+        const ride = lightRide(film, frame(i, u))
+        expect(ride, `frame ${i} at ${u}`).not.toBeNull()
+        expect(ride!.mid).toEqual(mid)
+        expect(ride!.move).toBe(0)
+        const moved = lightRide(film, frame(i, u, u + 0.015))
+        expect(moved!.mid).toEqual(mid)
+        expect(moved!.move).toBeCloseTo(0.015, 9)
+        expect(moved!.share).toBeGreaterThan(0)
+      }
+    }
+    // a sample at which the ball stands as it stands at the middle has nothing to be held to: the middle of the shutter itself, and every frame once the ball has come to rest after the landing
+    let stood = 0
+    for (let i = takeEnd + 9; i <= landing + 180; i++) for (const u of [0.1, 0.5, 0.9]) {
+      const f = frame(i, u)
+      const still = same(f.globe, globePoseAt(film, prerollSeconds + i / fps + 0.5 * shutter))
+      if (u === 0.5) expect(still).toBe(true)
+      if (still) stood++
+      expect(lightRide(film, f) === null, `frame ${i} at ${u}`).toBe(still)
+    }
+    expect(stood).toBeGreaterThan(180 + 60)
+
+    // the check that does nothing when the pose differs: a pose that is not the film's own at that time is another picture's (the app, a still, a trial), and the light is left as it is
+    const on = frame(landing - 3, 0.3)
+    expect(lightRide(film, on)).not.toBeNull()
+    expect(lightRide(film, { ...on, globe: { ...on.globe, x: on.globe.x + 1e-6 } })).toBeNull()
+    expect(lightRide(film, { ...on, globe: { ...on.globe, y: on.globe.y - 1e-6 } })).toBeNull()
+    expect(lightRide(film, { ...on, globe: { ...on.globe, z: on.globe.z + 1e-6 } })).toBeNull()
+    expect(lightRide(film, { ...on, globe: { ...on.globe, tiltX: on.globe.tiltX + 1e-9 } })).toBeNull()
+    expect(lightRide(film, { ...on, globe: { ...on.globe, tiltZ: on.globe.tiltZ - 1e-9 } })).toBeNull()
+    expect(lightRide(film, { ...on, globe: { ...on.globe, twist: (on.globe.twist ?? 0) + 1e-9 } })).toBeNull()
+    expect(lightRide(film, { ...on, globe: { x: 0, y: 0, z: 0, tiltX: 0, tiltZ: 0 } })).toBeNull()
+    expect(lightRide(film, { ...on, globe: { ...on.globe } })).not.toBeNull()
+    // and nothing in a picture drawn in one sample, in a view that is not the picture, in the app, in the loop, or in a still
+    expect(lightRide(film, { ...on, sample: null })).toBeNull()
+    expect(lightRide(film, { ...on, view: 'cover' })).toBeNull()
+    expect(lightRide(film, { ...on, live: true })).toBeNull()
+    expect(lightRide(film, { ...on, moment: { ...on.moment, period: 12 } })).toBeNull()
+    for (const t of [0, 1.7, 3.2, 5, 9]) {
+      const moment = loopMoment('summer', t, 1)
+      expect(lightRide(film, { sample: sampleAt(0.4), view: '', live: false, moment, globe: moment.globe, from: summer, to: summer }), `the loop at ${t}`).toBeNull()
+    }
+    const still = stillTimeline('summer')
+    for (const state of ['landed', 'rest', 'settled']) for (const u of [0, 0.5, 1]) {
+      const moment = timelineMoment(still, stateSeconds(state) + u * shutter, 1, 1)
+      expect(lightRide(film, { sample: sampleAt(u), view: '', live: false, moment, globe: moment.globe, from: summer, to: summer }), `the still ${state}`).toBeNull()
+    }
+
+    // over the whole film it answers only where summer's look of the landing stands, and never past it: not in winter, spring or fall, not in the shake out of summer once that look has gone
+    const final = film.events[film.events.length - 1]!
+    const frames = Math.round((final.startSec + eventSeconds(final) - prerollSeconds) * fps) + 240
+    let answered = 0
+    for (let i = 0; i < frames; i += 3) for (const u of [0.1, 0.9]) {
+      const f = frame(i, u)
+      const ride = lightRide(film, f)
+      if (landingLook(f) === 0) expect(ride, `frame ${i}`).toBeNull()
+      if (!ride) continue
+      answered++
+      expect(f.moment.to).toBe('summer')
+      expect(i).toBeGreaterThanOrEqual(takeEnd)
+      expect(i).toBeLessThanOrEqual(landing + Math.ceil(LANDING_LOOK.settled[1] * fps))
+      expect(ride.share).toBeGreaterThan(0)
+      expect(ride.share).toBeLessThanOrEqual(1)
+    }
+    expect(answered).toBeGreaterThan(10)
+
+    // the pose handed to the shader: a point of the liquid as the ball stands at the middle, said in the liquid's own space as the ball stands now. Proved against the stage's own groups (stage.ts): the world that the table may mirror, the ball's group moved and turned in the order XZY, and the inside hung at the ball's centre
+    expect(CENTRE_Y).toBe(centreHeightMm)
+    const world = new THREE.Group()
+    const ball = new THREE.Group()
+    const inside = new THREE.Group()
+    world.add(ball)
+    ball.add(inside)
+    inside.position.y = centreHeightMm
+    const placed = (g: { x: number; y: number; z: number; tiltX: number; tiltZ: number; twist?: number }, sign: number, p: THREE.Vector3): THREE.Vector3 => {
+      world.scale.y = sign
+      ball.position.set(g.x, g.y, g.z)
+      ball.rotation.set(g.tiltX, g.twist ?? 0, g.tiltZ, 'XZY')
+      world.updateMatrixWorld(true)
+      return p.clone().applyMatrix4(inside.matrixWorld)
+    }
+    const poses = [
+      [{ x: 0, y: 0, z: 0, tiltX: 0, tiltZ: 0 }, { x: 1.2, y: 0.4, z: -0.7, tiltX: 0.03, tiltZ: -0.02 }],
+      [{ x: -3, y: 22, z: 5, tiltX: 0.21, tiltZ: 0.4, twist: 0.3 }, { x: -2.6, y: 21.1, z: 5.5, tiltX: 0.18, tiltZ: 0.43, twist: 0.26 }],
+      [frame(landing - 2, 0.05).globe, globePoseAt(film, prerollSeconds + (landing - 2) / fps + 0.5 * shutter)],
+      [frame(landing + 4, 0.95).globe, globePoseAt(film, prerollSeconds + (landing + 4) / fps + 0.5 * shutter)],
+    ] as const
+    const into = new THREE.Matrix4()
+    for (const [now, mid] of poses) for (const sign of [1, -1]) for (const p of [new THREE.Vector3(0, 0, 0), new THREE.Vector3(31, -12, 8), new THREE.Vector3(-40, 25, -33), new THREE.Vector3(2, 47, 1)]) {
+      const want = placed(mid, sign, p)
+      const got = placed(now, sign, p.clone().applyMatrix4(rideMatrix(now, mid, into)))
+      expect(got.distanceTo(want)).toBeLessThan(1e-9)
+    }
+    // a ball that stands as it stood moves nothing
+    const none = rideMatrix(poses[1][0], poses[1][0], new THREE.Matrix4())
+    for (let k = 0; k < 16; k++) expect(none.elements[k]!).toBeCloseTo(k % 5 === 0 ? 1 : 0, 12)
   })
 
   it("a head afloat in the calm is a clock the card draws hair by hair: two rings of hairs round a small bright hub on a stalk that hangs, in three classes by depth, with no hair finer than a pixel, and none of it at the storm's full level", () => {

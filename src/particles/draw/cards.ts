@@ -50,6 +50,9 @@ uniform vec4 uBat[${BATS}];
 /** 1 where each particle is drawn once and whole (the app), 0 where the film's samples draw it many times over. */
 uniform float uWhole;
 uniform float uStormLanding;
+/** How a light of the storm rides with the ball through one exposure of the film (points.ts, lightRide). uMidPose takes a point of the liquid to where it is as the ball stands at the middle of the exposure, said in the liquid's own space as the ball stands now. uMidHold is the share of that hold that stands, and how far this sample's moment was moved from its share of the shutter. Both are nothing but in a sample of the film's frames. */
+uniform mat4 uMidPose;
+uniform vec2 uMidHold;
 /** The engine's own hash (hash2 in src/core/rng.ts): the same number that gives a particle its way of falling there. */
 uint cardHash2(uint a, uint b) {
   uint v = ((a ^ 0x9e3779b9u) * 0x85ebca6bu) ^ ((b + 0x7f4a7c15u) * 0xc2b2ae35u);
@@ -410,6 +413,15 @@ export const CARD_VERT = `
     vec2 holdC = vec2(0.0);
     // the down and the lights of the storm are drawn near where they are at the middle of the exposure: carried along its whole path from one moment of the shutter to the next, a short stroke is a row of dashes, a head a long smear and a light a faint thread
     if (storming && (${at(SHAPE.seed)} || ${at(SHAPE.light)})) holdC = -stC * uStorm.y * (uPoint.z / max(shut, 1e-6) - (1.0 - uStorm.x)) * (${at(SHAPE.light)} ? ${n(CARD.glow.stormHold)} : (whole > 0.5 ? ${n(CARD.hair.stormHold)} : ${n(CARD.line.stormHold)}));
+    if (storming && ${at(SHAPE.light)} && uMidHold.x > 0.0) {
+      // In a frame of the film the ball travels a little inside the shutter while it is set down and while it rocks after the landing, and each sample draws the ball where it stands at its own moment. A light's one streak, carried with the ball from sample to sample, was a band of lines side by side. So a light is held against the ball's travel as it is held against its own path: it is drawn at its place in the ball as the ball stands at the middle of the exposure, through the glass as the glass stands there, by the share that stands (points.ts, lightRide)
+      // the moments of a travelling frame's samples are moved a little from their shares of the shutter, and the hold above reads the share: the light is put back by that much of its own path
+      holdC += stC * (uPoint.z / max(shut, 1e-6)) * (uMidHold.y * uMidHold.x);
+      vec3 rideC = mat3(modelMatrix) * uMidPose[3].xyz;
+      vec4 midP = lensPlace((modelMatrix * (uMidPose * vec4(nowL, 1.0))).xyz - rideC, eye - rideC);
+      vec4 midV = viewMatrix * vec4(midP.xyz + rideC, 1.0);
+      holdC -= ((midV.xy + uAperture.xy * (lensC * (1.0 + uAperture.z * midV.z))) / -midV.z - (view.xy + uAperture.xy * (lensC * uAperture.z * view.z)) / -view.z) * (uPoint.y * uMidHold.x);
+    }
     vec3 pathC = (aNow - aPrev) * shut;
     if (storming && ${at(SHAPE.light)}) {
       // a light of the storm is a short bright streak that lies along the swirl of the picture, each a little out of its way: never a dot
@@ -591,7 +603,9 @@ export const CARD_VERT = `
       }
       keepC *= sheetSeenC;
     }
-    vec2 extC = min(vec2(reachC + 0.67 * abs(arcC) * hlC) + 1.05 * hlC * abs(alC), vec2(uLimit.y));
+    // a light of the storm is drawn out past its head's end by stormEnds[1] of its half length, along its arc (cardGlow): its card holds that too
+    float endC = storming && ${at(SHAPE.light)} ? ${n(CARD.glow.stormEnds[1])} : 0.0;
+    vec2 extC = min(vec2(reachC + (0.67 + endC * (2.0 + endC)) * abs(arcC) * hlC) + (1.05 + endC) * hlC * abs(alC), vec2(uLimit.y));
     // a head that lies is a pale tuft on what it lies on, each seen by its own share: none is a white point on the dark roof
     if (laidB) keepC = (1.0 - smoothstep(${n(SEED_RESTS.fade[0])}, ${n(SEED_RESTS.fade[1])}, uStorm.x)) * mix(${n(SEED_RESTS.seen[0])}, ${n(SEED_RESTS.seen[1])}, fract(own * 71.0));
     alpha = aData.z * (shape > ${n(SHAPE.bat - 0.5)} ? 1.0 : rim) * mix(1.0, mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), afloat * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0)) * keepC * (1.0 + ${n(STORM_FLOOD.frontGain)} * front);
@@ -1278,6 +1292,16 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     float bareGain = spark ? mix(1.0, clamp(pow(max(vCore.w * rc * rc / vc / ${n(CARD.spark.restBareLift[0])}, 1e-4), ${n(CARD.spark.restBareLift[1])}), ${n(CARD.spark.restBareLift[2])}, ${n(CARD.spark.restBareLift[3])}), (1.0 - glowS) * (1.0 - disc) * (1.0 - vL2.w)) : 1.0;
     paleS = spark ? step(fract(vL3.w * 47.0), vL4.x * mix(${n(CARD.spark.restPaleBy[0])}, ${n(CARD.spark.restPaleBy[1])}, smoothstep(${n(CARD.spark.restPaleLift[0])}, ${n(CARD.spark.restPaleLift[1])}, bareGain))) * (1.0 - glowS) * (1.0 - disc) * (1.0 - vL2.w) : 0.0;
     float bareTight = 1.0 + ${n(CARD.spark.restBareTight)} * max(log2(bareGain), 0.0);
+    // a light of the storm is a slim spindle of light: both its ends go out to nothing, so it has no square end. The tail's end goes out inside the streak, where its light is low already. The head's end is laid past where the streak ended, along the streak's own arc: up to its old end the streak has all the light it had, so no light is fainter at its brightest for its soft end. A streak that is no longer than its core is soft is a round point and keeps its ends, as a light does that the storm has only just taken up or is letting go
+    if (!spark && vL2.w > 0.0) {
+      float endsE = smoothstep(0.0, ${n(CARD.glow.stormEndsBy)}, vL2.w) * smoothstep(${n(CARD.glow.stormEndsFrom[0])}, ${n(CARD.glow.stormEndsFrom[1])}, vStreak.z / sqrt(vc));
+      float tE = clamp(dot(p, vStreak.xy), -vStreak.z, vStreak.z * (1.0 + ${n(CARD.glow.stormEnds[1])} * endsE));
+      vec2 dE = p - vStreak.xy * tE;
+      if (run) dE -= vec2(-vStreak.y, vStreak.x) * (pointBend * (tE * tE / max(vStreak.z, 1e-3) - 0.333 * vStreak.z));
+      d2 = dot(dE, dE);
+      float alongE = tE / max(vStreak.z, 1e-3);
+      fade *= mix(1.0, smoothstep(-1.0, ${n(CARD.glow.stormEnds[0] - 1)}, alongE) * (1.0 - smoothstep(1.0, ${n(1 + CARD.glow.stormEnds[1])}, alongE)), endsE);
+    }
     bareGain *= mix(1.0, ${n(CARD.spark.restPaleDim)}, paleS);
     bareGain = mix(bareGain, min(bareGain, ${n(CARD.spark.restPaleMost)} / max(vCore.w * rc * rc / vc, 1e-4)), paleS);
     vcBare = max(vc / bareTight, spark ? (1.0 - paleS) * (1.0 - glowS) * (1.0 - disc) * (1.0 - vL2.w) * ${n(CARD.spark.restWarmPx * CARD.spark.restWarmPx)} * uPoint.w * uPoint.w : 0.0);
