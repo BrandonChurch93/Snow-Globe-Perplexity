@@ -397,10 +397,12 @@ float frostBlur(vec3 P) {
 `
 
 // Where the foot's image lies on the slab (see SHEET): how far in front of the foot it fades out (mm), how much of the thin
-// film gives way there, and how thick the rime must be to stay.
+// film gives way there, and how thick the rime must be to stay. Its end at the foot's axis is spread once the foot is off
+// the table or the frost is on its way out, in the leaving over `IMAGE_LEAVE_MM` either way at the least.
 const IMAGE_REACH_MM = [22, 36]
 const IMAGE_CLEAR = 0.9
 const IMAGE_LUMP = [0.5, 0.85]
+const IMAGE_LEAVE_MM = 6
 
 const SHEET = `
 ${SLAB_GLSL}
@@ -476,8 +478,20 @@ void main() {
   // The foot's image lies on the slab in front of the foot (the hero camera looks down at 12 degrees: a thing 1 mm up the foot
   // is mirrored 5 mm nearer the eye). There the thin film of rime gives way and the lumps stay, so the image of the gilt band
   // and the rope is broken by snow and not buried under it.
-  float imageAhead = xz.y - sqrt(max(uFoot.z * uFoot.z - xz.x * xz.x, 0.0));
-  float imageZone = (1.0 - smoothstep(${IMAGE_REACH_MM[0].toFixed(1)}, ${IMAGE_REACH_MM[1].toFixed(1)}, imageAhead)) * smoothstep(uFoot.z + 3.0, uFoot.z - 3.0, abs(xz.x)) * step(0.0, xz.y);
+  float imageHalf = sqrt(max(uFoot.z * uFoot.z - xz.x * xz.x, 0.0));
+  float imageAhead = xz.y - imageHalf;
+  // The image ends at the foot's axis: behind it there is none. While the foot stands that end lies under it. Once the foot
+  // is up the table under it is seen, and in the leaving the frost that lay under it comes out from under it (LEAVE,
+  // above): a hard end is a straight edge along the table there. So with the foot off the table or the frost on its way
+  // the end is spread over the depth the foot hid at that place, which is nothing beside the foot, and in the leaving over
+  // IMAGE_LEAVE_MM at the least once the frost is that far out. A place that is seen while the foot stands is read as it
+  // was, the foot up or down, until the frost leaves.
+  float imageFront = step(0.0, xz.y);
+  if (uGone.x > 0.0 || uFoot.w > 0.0 || dot(uLean.zw, uLean.zw) > 0.0) {
+    float imageSpread = max(imageHalf, min(uGone.x, ${IMAGE_LEAVE_MM.toFixed(1)}));
+    if (imageSpread > 0.0) imageFront = smoothstep(-imageSpread, imageSpread, xz.y);
+  }
+  float imageZone = (1.0 - smoothstep(${IMAGE_REACH_MM[0].toFixed(1)}, ${IMAGE_REACH_MM[1].toFixed(1)}, imageAhead)) * smoothstep(uFoot.z + 3.0, uFoot.z - 3.0, abs(xz.x)) * imageFront;
   float imageKeep = mix(1.0, smoothstep(${IMAGE_LUMP[0].toFixed(2)}, ${IMAGE_LUMP[1].toFixed(2)}, max(h0, s0)), ${IMAGE_CLEAR.toFixed(2)} * imageZone);
   float body = mix(s0, h0, 0.72) * (0.4 + 0.75 * sugar + 0.45 * clot) * imageKeep;
   vec2 slope = uField.z * uSlabLook.z * vec2(h1 - h0, h2 - h0) / (e * 2.0 * uField.x);
