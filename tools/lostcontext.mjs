@@ -157,6 +157,8 @@ const read = (page) =>
       soft: imgs.length - stills.length,
       notice: notice ? notice.textContent : '',
       controls: document.getElementById('ui').dataset.interface ?? '',
+      lit: [...document.querySelectorAll('[data-season][aria-pressed="true"]')].map((b) => b.dataset.season).join(' '),
+      held: document.querySelector('[data-control="shake"]')?.getAttribute('aria-disabled') ?? '',
       lost: window.__card.isLost.call(view.getContext('webgl2')),
       marks: (window.__seen(), { ...window.__marks }),
       calls: window.__card.calls,
@@ -308,6 +310,10 @@ async function run(id, size) {
       need(!then.canvasShown, 'the canvas is still shown after the loss')
       need(then.stillFiles.length > 0 && then.stillFiles.every((f) => f.startsWith(`${wanted}-`)), `the still laid is ${then.stillFiles.join(', ') || 'none'}, wanted one of ${wanted}`)
       need(then.soft > 0 || then.stillArrived, 'no picture of the still was there in the frame after the loss')
+      // The season mark that is lit is the season of the still, in the middle of a change too, and Shake stays as it was.
+      need(then.lit === wanted, `the lit season mark after the loss is ${then.lit || 'none'}, the still is of ${wanted}`)
+      if (id === 'shake') need(then.held === 'true', 'Shake is no longer held after the loss')
+      notes.push(`season marks: ${at.lit || 'none'} lit before the loss, ${then.lit || 'none'} lit after it over the still of ${wanted}; Shake held: ${at.held} before, ${then.held} after`)
       need(then.calls === 0, `${then.calls} calls reached the card after the loss (${Object.entries(then.names).slice(0, 6).map(([k, n]) => `${k} ${n}`).join(', ')})`)
     }
     need(lost.dark < before.dark + 0.1 && lost.mean > before.mean * 0.6, `the picture right after the loss is darker than a whole one (mean ${lost.mean.toFixed(1)} against ${before.mean.toFixed(1)}, dark share ${lost.dark.toFixed(3)} against ${before.dark.toFixed(3)})`)

@@ -380,3 +380,27 @@ describe('the words of a page that stays on its still', () => {
     expect(copy.lost).not.toMatch(/[\u2014!|]/)
   })
 })
+
+/**
+ * The season marks are painted from the app's state (src/ui/index.ts): the season it names is the lit one. From the loss
+ * on the app (src/app/app.ts) names the season of the still. Both are read here as they are written; on the built page
+ * the marks are read in every case of `npm run lostcontext`, and in its case "shake" the loss comes in the middle of a change.
+ */
+describe('the season marks of a page that stands on its still', () => {
+  it('the lit mark is the season of the still that is laid, in the middle of a change too, and Shake stays held as it was', () => {
+    const app = readFileSync('src/app/app.ts', 'utf8')
+    const face = readFileSync('src/ui/index.ts', 'utf8')
+    const stand = app.slice(app.indexOf('    stand(): string {\n'), app.indexOf('    cannot(): void {\n'))
+    // One value for the still, for the address (it is what the watch is handed back) and for the mark, told once the still is laid.
+    const steps = ["const season = playing === 'live' ? (session.target ?? session.season) : shown\n", 'laid = season\n', 'window.stillOf?.(season)\n', 'tell()\n', 'return season\n']
+    const at = steps.map((step) => stand.indexOf(step))
+    expect(at.every((a, i) => a >= 0 && (i === 0 || a > at[i - 1]!))).toBe(true)
+    expect(app.match(/\blaid = /g)).toHaveLength(1)
+    // The state the interface is told: the season of the still, with the change and its hold as they were at the loss.
+    expect(app).toContain("    season: laid ?? session.season,\n    target: session.target,\n    busy: playing === 'live' && session.busy,\n")
+    // The interface: lit by the state's season alone; the mark of where a change goes shows only while that is another season; Shake is held by the change.
+    expect(face).toContain("      b.setAttribute('aria-pressed', String(id === state.season))\n")
+    expect(face).toContain("      b.toggleAttribute('data-target', state.busy && id === state.target && id !== state.season)\n")
+    expect(face).toContain('    const held = state.busy || latched\n')
+  })
+})
