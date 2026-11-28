@@ -255,6 +255,11 @@ How the frames are compared, and why so:
   macOS alone). The other seven were compared on Linux alone. When a frame fails here by a little, the floor may
   be at fault and not the picture. You do not decide that: do what the `Bad:` row below says, and the remote
   team reads the numbers and the sheet of pictures.
+- What was run where. The Windows and macOS test machines ran the commands of this file at commit 463ed0cd of
+  the repo, whose engine hash (1.3) is 74660360c1965b4f. The film in this clone is a newer build: the setup line
+  of 1.3 prints its engine hash, and `render/STAMP.json` holds it. That newer build was drawn and compared on
+  Linux only. It was run on no Windows and no macOS test machine. The remote team has said that it runs the
+  test machines once more on the final build before it releases the full render.
 - The report also says, for every frame, how far the picture stands from its reference: the largest and the mean
   difference in levels of 255, how many pixels are more than 8 levels apart, and where in the picture they lie.
   These lines are marked `noted` and fail nothing. They tell the remote team where to look.

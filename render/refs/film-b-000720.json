@@ -2,10 +2,10 @@
   "what": "film-b",
   "frame": 720,
   "name": "spring in storm, just landed",
-  "engineHash": "74660360c1965b4f",
+  "engineHash": "74bf12791db822a5",
   "samples": 24,
   "travelPx": 7.27,
-  "seconds": 212,
+  "seconds": 203.5,
   "png": {
     "sha256": "a0f74bad16db639165a1a17e84025a52491684a28b35eb232faef190bc82fc4f",
     "bytes": 12772503
