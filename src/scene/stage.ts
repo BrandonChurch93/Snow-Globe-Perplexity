@@ -152,6 +152,7 @@ export class GlobeStage implements Stage {
   awaited?: () => boolean
   /** The picture the page paints into while it draws one sample a frame; none on a page that captures. */
   private live: THREE.WebGLRenderTarget | null = null
+  private stopped = false
   private readonly hands = new Hands((season) => this.hand(season))
   /** The seasons made before the page drew. None has a hand: the frames that show one make what they draw of it. */
   private readonly early = new Set<string>()
@@ -288,8 +289,10 @@ export class GlobeStage implements Stage {
   /** The next frame, by the time it began, or nothing after `SOON_MS` on a page that draws slowly or not at all. */
   private frameOrSoon(): Promise<number | null> {
     return new Promise((resolve) => {
+      if (this.stopped) return
       let waiting = true
       const go = (frame: number | null): void => {
+        if (this.stopped) return
         if (frame !== null) this.pace.frame(frame)
         if (!waiting) return
         waiting = false
@@ -298,6 +301,11 @@ export class GlobeStage implements Stage {
       if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go)
       setTimeout(go, SOON_MS, null)
     })
+  }
+
+  /** No making and no hand is given another turn: each waits for one that does not come. A hand that waits for none ends where it is. */
+  stop(): void {
+    this.stopped = true
   }
 
   /** Resolves when every season asked for so far is built and, on a page that paints, in the GPU's hands. */
@@ -363,9 +371,10 @@ export class GlobeStage implements Stage {
    * way the renderer takes a buffer before the frame that needs it, and which is where a browser that does not link
    * aside waits for a program, one a frame.
    */
-  private async give(name: string, meshes: Drawn[], first: THREE.Texture[], go: () => boolean, owed: (d: Drawn) => boolean): Promise<void> {
+  private async give(name: string, meshes: Drawn[], first: THREE.Texture[], on: () => boolean, owed: (d: Drawn) => boolean): Promise<void> {
     const live = this.live
     if (!live) return
+    const go = (): boolean => !this.stopped && on()
     const { renderer } = this.gfx
     const aside = (target: THREE.WebGLRenderTarget, work: () => void): void => {
       const bound = renderer.getRenderTarget()

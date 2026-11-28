@@ -1591,8 +1591,8 @@ describe('the canvas over the first still', () => {
       firstStill: still ? { place: (): void => undefined, end: (): void => void ended.push({ mark: canvas.dataset.live, fade: canvas.style.transition }) } : undefined,
       setTimeout: (over: () => void, ms: number): number => waits.push({ over, ms }),
     }
-    reveal(canvas as unknown as HTMLCanvasElement, win as unknown as Window, () => void told.gone++)
-    return { canvas, heard, waits, ended, told }
+    const keep = reveal(canvas as unknown as HTMLCanvasElement, win as unknown as Window, () => void told.gone++)
+    return { canvas, heard, waits, ended, told, keep }
   }
 
   it('fades the canvas in to full sight over half a second, by the sheet of the page', () => {
@@ -1635,6 +1635,17 @@ describe('the canvas over the first still', () => {
     p.waits[0]!.over()
     expect(p.ended).toHaveLength(1)
     expect(p.told.gone).toBe(1)
+  })
+
+  // A canvas that lost its picture while it came in (src/app/lost.ts) has nothing to show: the still under it is the page's picture.
+  it('keeps the still where it is when the app says so: neither the end of the fade nor the end of the wait takes it away', () => {
+    const p = page(true)
+    p.keep()
+    p.heard.transitionend![0]!()
+    p.waits[0]!.over()
+    expect(p.ended).toHaveLength(0)
+    expect(p.told.gone).toBe(0)
+    expect(p.canvas.style.transition).toBe('')
   })
 
   it('starts a film or the loop at once: no still, no fade and no wait', () => {

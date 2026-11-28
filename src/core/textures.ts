@@ -89,10 +89,18 @@ export function prepareGroup(assets: Assets, group: string): Promise<void> {
 /** How many pictures are drawn from their `.first.` file and still wait for the whole one. */
 export const detailOwed = (group?: string): number => owed.filter((o) => !group || o.group === group).length
 
+let stopped = false
+
+/** The card is gone (src/app/lost.ts): no picture is handed to it from here on, and a picture on its way waits for a turn that does not come. */
+export function stopDetail(): void {
+  stopped = true
+}
+
 const nextFrame = (): Promise<void> =>
   new Promise((resolve) => {
-    if (typeof requestAnimationFrame !== 'function' || document.visibilityState === 'hidden') setTimeout(resolve, 16)
-    else requestAnimationFrame(() => resolve())
+    if (stopped) return
+    if (typeof requestAnimationFrame !== 'function' || document.visibilityState === 'hidden') setTimeout(() => stopped || resolve(), 16)
+    else requestAnimationFrame(() => stopped || resolve())
   })
 
 /** A page whose frames take longer than this is slow for other reasons, and gains nothing from spreading uploads over frames. */
@@ -106,7 +114,7 @@ let frameMs = 0
  * it goes with it instead, so a slow device does not also wait a frame for each picture.
  */
 async function turn(): Promise<void> {
-  if (frameMs > SLOW_FRAME_MS && performance.now() - frameAt < frameMs) return
+  if (!stopped && frameMs > SLOW_FRAME_MS && performance.now() - frameAt < frameMs) return
   const asked = performance.now()
   await nextFrame()
   frameAt = performance.now()

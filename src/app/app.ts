@@ -3,7 +3,7 @@ import type { Assets } from '../core/assets'
 import type { AppBridge, AppState, SoundEngine } from '../core/bridge'
 import type { Gfx } from '../core/gl'
 import type { Params } from '../core/params'
-import { loadDetail } from '../core/textures'
+import { loadDetail, stopDetail } from '../core/textures'
 import { Governor, levels, stageQuality } from '../core/quality'
 import type { Moment, Stage } from '../core/stage'
 import type { LoopParticles, SourceSwitch } from '../film/loop'
@@ -12,6 +12,7 @@ import { barSeconds } from '../film/timeline'
 import type { Pose } from '../scene/cameras'
 import { FRAME, controlsPx, framingOfRig, livePose, liveRig, roomUnder } from './framing'
 import { Drag, Look, MotionShake, stirAxis, type Stir } from './gestures'
+import type { ContextWatch } from './lost'
 import { audioBase, audioIndex, audioShips, loadAudio, loadInterface, loadProbe } from './mounts'
 import { Painter } from './painter'
 import { Autopilot, LoopPlayer } from './players'
@@ -27,6 +28,7 @@ export interface AppDeps {
   assets: Assets
   params: Params
   ready: Promise<void>
+  context?: ContextWatch | null
 }
 
 type Playing = AppState['playing']
@@ -39,6 +41,8 @@ interface FirstStill {
 declare global {
   interface Window {
     firstStill?: FirstStill
+    /** Lays the still of a season as the first was laid, where the page has lost its picture. */
+    stillOf?: (season: string) => void
   }
 }
 
@@ -58,8 +62,9 @@ const CONTROL = 'button, a[href], input, select, textarea, summary, [role="butto
  * picture of itself; a film or the loop has no still under it and starts at once, on its first frame. The still goes only
  * from under a canvas in full sight. A fade keeps the time of the page's frames and the wait the time of the wall: where
  * frames are few the wait is over on a canvas that has hardly begun to show, so the fade is cut short as the still goes.
+ * What it gives back keeps the still where it is: for a canvas that lost its picture while it came in.
  */
-export function reveal(canvas: HTMLCanvasElement, page: Pick<Window, 'firstStill' | 'setTimeout'>, gone: () => void): void {
+export function reveal(canvas: HTMLCanvasElement, page: Pick<Window, 'firstStill' | 'setTimeout'>, gone: () => void): () => void {
   let over = false
   const done = (): void => {
     if (over) return
@@ -73,6 +78,7 @@ export function reveal(canvas: HTMLCanvasElement, page: Pick<Window, 'firstStill
     page.setTimeout(done, REVEAL_MS)
   } else done()
   canvas.dataset.live = ''
+  return () => void (over = true)
 }
 
 export function startApp(d: AppDeps): AppBridge {
@@ -147,6 +153,11 @@ export function startApp(d: AppDeps): AppBridge {
   let barFor = ''
   let room = -1
   let roomFor = ''
+  let face: { dispose(): void } | null = null
+  let shown = params.season
+  let next = 0
+  let gone = false
+  let keepStill: () => void = () => undefined
 
   const state = (): AppState => ({
     ready,
@@ -172,6 +183,7 @@ export function startApp(d: AppDeps): AppBridge {
   }
 
   const applyLevel = (): void => {
+    if (gone) return
     stage.setQuality?.(stageQuality(governor.level))
     governor.rest()
   }
@@ -258,9 +270,10 @@ export function startApp(d: AppDeps): AppBridge {
     first.place(framingOfRig(liveRig(aspect, 0, 0, roomUnder(h, bar, w)), w, h).globe)
   }
 
-  const muted = (): boolean => !soundOn || playing !== 'live'
+  const muted = (): boolean => gone || !soundOn || playing !== 'live'
 
   const unlock = (): void => {
+    if (gone) return
     const active = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation
     if (active && !active.hasBeenActive) return
     if (engine?.available()) void engine.unlock()
@@ -268,7 +281,7 @@ export function startApp(d: AppDeps): AppBridge {
   }
 
   const startTrack = (): void => {
-    if (!track || !autopilot) return
+    if (gone || !track || !autopilot) return
     const t = Math.max(0, autopilot.seconds + (playing === 'film-a' ? autopilot.lead : 0))
     try {
       track.currentTime = t
@@ -318,7 +331,7 @@ export function startApp(d: AppDeps): AppBridge {
   }
 
   const shake = (to: string | null): boolean => {
-    if (playing !== 'live' || !ready) return false
+    if (gone || playing !== 'live' || !ready) return false
     const season = to === null ? session.shake() : session.goTo(to)
     if (!season) return false
     loader.hold(season, d.stage.expect?.(season))
@@ -331,7 +344,7 @@ export function startApp(d: AppDeps): AppBridge {
   }
 
   const stir = (s: Stir | null): void => {
-    if (!s || playing !== 'live') return
+    if (!s || gone || playing !== 'live') return
     const aspect = painter.width / Math.max(1, painter.height)
     sim.stir?.(...stirAxis(s, liveRig(aspect, look.yaw, look.pitch).yawDeg))
     if (s.begins) engine?.stir(s.force)
@@ -374,26 +387,27 @@ export function startApp(d: AppDeps): AppBridge {
     },
     setSound(on) {
       soundOn = on
-      if (engine?.available()) {
+      if (!gone && engine?.available()) {
         void engine.unlock()
         engine.setMuted(muted())
         if (on) engine.chime()
         else engine.tick()
       }
-      if (track) {
+      if (track && !gone) {
         track.muted = !on
         if (on && track.paused) startTrack()
       }
       tell()
     },
     setQuality(level) {
+      if (gone) return
       governor.fix(level)
       applyLevel()
       engine?.tick()
       tell()
     },
     setSeason(season) {
-      if (!config.seasons.includes(season)) return
+      if (gone || !config.seasons.includes(season)) return
       session.jump(season)
       if (looping) looping = new LoopPlayer(d.particles, d.loop, season)
       told = season
@@ -402,12 +416,13 @@ export function startApp(d: AppDeps): AppBridge {
       tell()
     },
     setState(name) {
-      if (playing !== 'live') return
+      if (gone || playing !== 'live') return
       session.setState(name)
       engine?.tick()
       tell()
     },
     setDiagnostic(view) {
+      if (gone) return
       diagnostic = view === 'none' ? '' : view
       stage.setDiagnostic(diagnostic)
       painter.flat = diagnostic !== ''
@@ -416,6 +431,7 @@ export function startApp(d: AppDeps): AppBridge {
     },
     play(what) {
       const go = (): void => {
+        if (gone) return
         start(what)
         engine?.tick()
         tell()
@@ -428,7 +444,8 @@ export function startApp(d: AppDeps): AppBridge {
   }
 
   const frame = (ms: number): void => {
-    requestAnimationFrame(frame)
+    if (gone) return
+    next = requestAnimationFrame(frame)
     const dt = last === null ? 0 : Math.max(0, (ms - last) / 1000)
     last = ms
     fit()
@@ -475,11 +492,12 @@ export function startApp(d: AppDeps): AppBridge {
       pose = livePose(painter.width / Math.max(1, painter.height), look.yaw, look.pitch, under(dt), moment)
     }
     painter.paint(pose, moment)
+    shown = moment.change > 0 && moment.change < 1 ? moment.to : moment.season
     drawn++
     if (drawn === 2) {
       ready = true
       doc.dataset.firstPicture = '1'
-      reveal(canvas, window, () => window.removeEventListener('resize', placeStill))
+      keepStill = reveal(canvas, window, () => window.removeEventListener('resize', placeStill))
       markFirst()
       governor.rest()
     } else if (ready && dt > 0) {
@@ -491,7 +509,7 @@ export function startApp(d: AppDeps): AppBridge {
 
   canvas.style.touchAction = 'none'
   canvas.addEventListener('pointerdown', (e) => {
-    if (playing !== 'live' || !e.isPrimary || e.button !== 0) return
+    if (gone || playing !== 'live' || !e.isPrimary || e.button !== 0) return
     pointer = e.pointerId
     canvas.setPointerCapture(e.pointerId)
     drag.down(e.clientX, e.clientY, e.timeStamp / 1000, Math.min(app.clientWidth, app.clientHeight))
@@ -550,12 +568,43 @@ export function startApp(d: AppDeps): AppBridge {
     })
   } else window.firstStill?.end()
 
-  void Promise.all([d.ready, (FILMS.includes(playing) ? loader.all : loader.first).catch(() => undefined), interfaceLoaded, playing === 'film-a' ? loadOpening() : null]).then(() => requestAnimationFrame(frame))
+  void Promise.all([d.ready, (FILMS.includes(playing) ? loader.all : loader.first).catch(() => undefined), interfaceLoaded, playing === 'film-a' ? loadOpening() : null]).then(() => (next = requestAnimationFrame(frame)))
+
+  // The browser took the context away (src/app/lost.ts). All that asks the card stands, the sound with it: it does not play on
+  // over a still. The still of the season on show is laid as the first picture was, and the canvas goes from over it in the
+  // same step, so that no frame shows what a browser leaves in a canvas it has emptied. In the middle of a change it is the
+  // still of the season the change goes into: the visitor asked for that one, and the load that follows brings the season
+  // of the still. The first still is that picture already where it has not gone yet. The controls stay, and do nothing.
+  d.context?.answerWith({
+    stand(): string {
+      const season = playing === 'live' ? (session.target ?? session.season) : shown
+      gone = true
+      cancelAnimationFrame(next)
+      keepStill()
+      stage.stop?.()
+      stopDetail()
+      engine?.setMuted(true)
+      track?.pause()
+      drag.up()
+      if (!window.firstStill || season !== params.season) window.stillOf?.(season)
+      if (playing === 'live') {
+        window.addEventListener('resize', placeStill)
+        placeStill()
+      }
+      delete canvas.dataset.live
+      return season
+    },
+    cannot(): void {
+      if (!ui) return
+      face?.dispose()
+      void import('../ui/cannot').then((m) => m.showCannot(ui)).catch(() => undefined)
+    },
+  })
 
   void afterFirstPicture.then(async () => {
     if (probing) {
       const [m, card] = await Promise.all([loadProbe(), import('../core/maths')])
-      if (m && ui) {
+      if (m && ui && !gone) {
         m.mountProbe(
           ui,
           createProbe({
@@ -573,7 +622,7 @@ export function startApp(d: AppDeps): AppBridge {
         )
       }
     } else if (controls && ui) {
-      controls.mountInterface(ui, bridge)
+      face = controls.mountInterface(ui, bridge)
       mounted = true
     }
     if (!audioShips || probing) return

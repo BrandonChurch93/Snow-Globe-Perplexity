@@ -47,6 +47,7 @@
     "make": "node tools/make.mjs",
     "texpack": "node tools/texpack.mjs",
     "firstlook": "node tools/firstlook.mjs",
+    "lostcontext": "node tools/lostcontext.mjs",
     "poster": "node tools/poster.mjs",
     "fit": "node tools/fit.mjs"
   },

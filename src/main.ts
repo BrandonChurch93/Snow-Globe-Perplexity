@@ -1,4 +1,5 @@
 import { startApp } from './app/app'
+import { ContextWatch } from './app/lost'
 import { createOverlay } from './app/overlay'
 import { config } from './config'
 import { createShowcase, type Showcase } from './capture/showcase'
@@ -38,6 +39,8 @@ if (!capture && document.visibilityState === 'visible') {
     setTimeout(resolve, PAGE_FRAME_MS)
   })
 }
+// A page that draws for a visitor answers a context the browser takes away (src/app/lost.ts). A capture page is watched by its tool.
+const context = capture ? null : new ContextWatch(canvas)
 const gfx = (() => {
   try {
     return createGfx(canvas, { deny: params.deny, preserve: capture })
@@ -139,5 +142,5 @@ if (capture) {
     return new LoopPaths(rest)
   }, true)
   if (params.diag) window.liveSim = sim
-  startApp({ gfx, stage, sim, particles, loop, assets, params, ready })
+  startApp({ gfx, stage, sim, particles, loop, assets, params, ready, context })
 }

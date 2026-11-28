@@ -122,7 +122,7 @@ function holds(query: string, width: number, height: number, coarse: boolean): b
   )
 }
 
-function open(width: number, height: number, search = '', screen: Screen = {}): { box: El; win: { firstStill?: FirstStill; resize(w: number, h: number): void; later(): void } } {
+function open(width: number, height: number, search = '', screen: Screen = {}): { box: El; win: { firstStill?: FirstStill; stillOf?: (season: string) => void; resize(w: number, h: number): void; later(): void } } {
   const box = new El('div', width, height)
   El.inset = screen.inset ?? 0
   const listeners: Record<string, (() => void)[]> = {}
@@ -131,6 +131,7 @@ function open(width: number, height: number, search = '', screen: Screen = {}): 
     innerWidth: width,
     innerHeight: height,
     firstStill: undefined as FirstStill | undefined,
+    stillOf: undefined as ((season: string) => void) | undefined,
     addEventListener: (name: string, fn: () => void) => void (listeners[name] ??= []).push(fn),
     removeEventListener: (name: string, fn: () => void) => void (listeners[name] = (listeners[name] ?? []).filter((x) => x !== fn)),
     setTimeout: (fn: () => void) => timers.push(fn),
@@ -589,5 +590,71 @@ describe('the page once the app runs', () => {
     win.firstStill!.end()
     expect(box.children).toHaveLength(0)
     expect(win.firstStill).toBeUndefined()
+  })
+})
+
+// A page whose WebGL context is gone (src/app/lost.ts) has no picture of its own, long after its first still went.
+describe('the still of a season, for a page that lost its picture', () => {
+  it('lays the still of the season asked for as the first was laid: soft at once, the file over it, and no word', () => {
+    for (const f of judged) {
+      const { box, win } = open(f.width, f.height, `?season=${config.seasons[0]}`)
+      const firstFiles = stillsIn(box).map((img) => img.src)
+      win.firstStill!.end()
+      for (const season of ['summer', config.seasons[0]!]) {
+        win.stillOf!(season)
+        expect(win.firstStill, f.id).toBeDefined()
+        const soft = softIn(box)
+        expect(soft, f.id).toHaveLength(1)
+        expect(table.b[season]!.some((data) => soft[0]!.src === `data:image/webp;base64,${data}`), f.id).toBe(true)
+        const b = boxOf(soft[0]!)
+        expect(b.x, f.id).toBeLessThanOrEqual(0)
+        expect(b.y, f.id).toBeLessThanOrEqual(0)
+        expect(b.right, f.id).toBeGreaterThanOrEqual(f.width)
+        expect(b.bottom, f.id).toBeGreaterThanOrEqual(f.height)
+        const stills = stillsIn(box)
+        expect(stills.length, f.id).toBeGreaterThan(0)
+        for (const img of stills) expect(img.src, f.id).toMatch(new RegExp(`^first/${season}-`))
+        // The page holds pictures and nothing else: the still of one season, with no copy of another left under it.
+        const kinds = new Set<string>()
+        const walk = (el: El): void => el.children.forEach((c) => (kinds.add(c.tag), walk(c)))
+        walk(box)
+        expect([...kinds].sort(), f.id).toEqual(['div', 'img', 'picture', 'source'])
+      }
+      // Asked for the season the page opened with, it is the same file in the same place as the first still was.
+      expect(stillsIn(box).map((img) => img.src), f.id).toEqual(firstFiles)
+    }
+  })
+
+  it('stands where the app says the glass is, follows a screen that changes shape, and goes as the first still goes', () => {
+    const f = config.formats.phone
+    const { box, win } = open(f.width, f.height)
+    win.firstStill!.end()
+    win.stillOf!('fall')
+    const img = stillsIn(box)[0]!
+    const before = boxOf(img)
+    const still = table.stills.find((s) => img.src.includes(`-${s[0]}.`))!
+    win.firstStill!.place({ cx: f.width / 2 + 3, cy: (still[3] / 1e5) * f.height + 5, r: (still[4] / 1e5) * f.height })
+    expect(boxOf(img).x - before.x).toBeCloseTo(3, 6)
+    expect(boxOf(img).y - before.y).toBeCloseTo(5, 6)
+    img.fire('load')
+    win.later()
+    win.resize(config.formats.hd.width, config.formats.hd.height)
+    const now = stillsIn(box)
+    expect(now[now.length - 1]!.src).not.toBe(img.src)
+    expect(now[now.length - 1]!.src).toMatch(/^first\/fall-/)
+    win.firstStill!.end()
+    expect(box.children).toHaveLength(0)
+    expect(win.firstStill).toBeUndefined()
+    // A still that is asked for while another lies there takes its place.
+    win.stillOf!('spring')
+    win.stillOf!('winter')
+    expect(stillsIn(box).every((s) => s.src.startsWith('first/winter-'))).toBe(true)
+    expect(softIn(box)).toHaveLength(1)
+  })
+
+  it('keeps the season it has when it is asked for one the page does not know', () => {
+    const { box, win } = open(1920, 1080, '?season=summer')
+    win.stillOf!('monsoon')
+    expect(stillsIn(box).every((s) => s.src.startsWith('first/summer-'))).toBe(true)
   })
 })

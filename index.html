@@ -393,7 +393,7 @@
           place(null, true)
         }
 
-        window.firstStill = {
+        var first = {
           place: place,
           end: function () {
             window.removeEventListener('resize', resized)
@@ -402,6 +402,16 @@
             delete window.firstStill
           },
         }
+        // A page whose picture is gone (src/app/lost.ts) asks for the still of a season, laid as the first was.
+        window.stillOf = function (name) {
+          first.end()
+          if (T.seasons.indexOf(name) >= 0) season = name
+          exact = null
+          window.firstStill = first
+          window.addEventListener('resize', resized)
+          place(null, true)
+        }
+        window.firstStill = first
         window.addEventListener('resize', resized)
         place(null, true)
       })()

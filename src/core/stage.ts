@@ -79,6 +79,8 @@ export interface Stage {
   awaited?(): boolean
   /** Resolves when every season asked for so far is ready down to the GPU, so that the first frame of it makes nothing. */
   settled?(): Promise<void>
+  /** The card is gone (src/app/lost.ts): from here on nothing is made and nothing is handed to it. */
+  stop?(): void
   collider(season: string): SdfGrid
   emitters(season: string): Record<string, Emitter[]>
   particleCount(): number
