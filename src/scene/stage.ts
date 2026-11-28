@@ -73,9 +73,13 @@ function picturesOf(m: THREE.Material, linked: Linked['uniforms']): THREE.Textur
   return out
 }
 
-/** Whether a frame drawn now draws `o`: neither it nor anything it hangs from is hidden. */
-export function inSight(o: THREE.Object3D): boolean {
-  for (let up: THREE.Object3D | null = o; up; up = up.parent) if (!up.visible) return false
+/**
+ * Whether a frame that draws what is under `root` draws `o`: neither it nor anything it hangs from below `root` is hidden.
+ * The root's own flag is not asked: the root of a season's set is hidden by the frame that does not show the season, and
+ * that says nothing of what the frames that showed it drew. With no root, up to the top.
+ */
+export function inSight(o: THREE.Object3D, root: THREE.Object3D | null = null): boolean {
+  for (let up: THREE.Object3D | null = o; up && up !== root; up = up.parent) if (!up.visible) return false
   return true
 }
 
@@ -273,7 +277,10 @@ export class GlobeStage implements Stage {
 
   /** Resolves when every season asked for so far is built and, on a page that paints, in the GPU's hands. */
   settled(): Promise<void> {
-    return Promise.allSettled([...this.prepared.values()]).then(() => this.hands.all)
+    return Promise.allSettled([...this.prepared.values()]).then(async () => {
+      // A hand that ends with its season on show begins the hand of what the season hides: that one too.
+      for (let all: Promise<void> | null = null; all !== this.hands.all; ) await (all = this.hands.all)
+    })
   }
 
   private scratchOf(type: THREE.TextureDataType, samples: number): THREE.WebGLRenderTarget {
@@ -312,11 +319,15 @@ export class GlobeStage implements Stage {
    */
   private async handHidden(name: string): Promise<void> {
     if (!this.live) return
-    const owed = (d: Drawn): boolean => !this.given.has(d) && !inSight(d)
+    const under = new Map<Drawn, THREE.Object3D | null>()
+    const owed = (d: Drawn): boolean => !this.given.has(d) && !inSight(d, under.get(d))
     const meshes: Drawn[] = []
-    const take = (d: Drawn): void => void (owed(d) && meshes.push(d))
-    for (const s of this.sets.values()) if (s.shown) for (const root of s.objects) drawnUnder(root, take)
-    for (const part of [this.shell.through, this.shell.shell, this.shell.bubble, this.shell.stamp]) drawnUnder(part, take)
+    const take = (root: THREE.Object3D | null) => (d: Drawn): void => {
+      under.set(d, root)
+      if (owed(d)) meshes.push(d)
+    }
+    for (const s of this.sets.values()) if (s.shown) for (const root of s.objects) drawnUnder(root, take(root))
+    for (const part of [this.shell.through, this.shell.shell, this.shell.bubble, this.shell.stamp]) drawnUnder(part, take(null))
     if (meshes.length) await this.give(name, meshes, [], () => this.live !== null, owed)
   }
 
