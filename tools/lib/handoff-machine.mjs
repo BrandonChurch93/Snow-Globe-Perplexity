@@ -5,6 +5,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
 import { findIn, pathDirs, SMI_ARGS, smiSummary } from './handoff.mjs'
+import { endRememberedBrowsers } from './handoff-processes.mjs'
+export { processStart } from './handoff-processes.mjs'
 
 const WIN = process.platform === 'win32'
 const MAC = process.platform === 'darwin'
@@ -264,23 +266,9 @@ export function keepAwake(pid = process.pid) {
   })
 }
 
-/** Stops the browsers a stopped render left behind: those the driver started with a profile of its own, and no other. */
-export function stopLeftBrowsers() {
-  try {
-    if (WIN) {
-      const out = powershell(`$n = 0; Get-CimInstance Win32_Process -Filter "Name = 'chrome.exe'" | Where-Object { $_.CommandLine -like '*playwright_chromiumdev_profile*' } | ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop; $n++ } catch {} }; Write-Output $n`)
-      return Number(out.trim()) || 0
-    }
-    const list = run('/usr/bin/pgrep', ['-f', 'playwright_chromiumdev_profile']).out.split('\n').map((l) => Number(l.trim())).filter((n) => n > 0 && n !== process.pid)
-    for (const pid of list) {
-      try {
-        process.kill(pid, 'SIGKILL')
-      } catch {}
-    }
-    return list.length
-  } catch {
-    return 0
-  }
+/** Stops only the browsers whose recorded identity and this clone's profile still match. */
+export function stopLeftBrowsers(work) {
+  return endRememberedBrowsers(work)
 }
 
 /** Whether a process with this number lives. */

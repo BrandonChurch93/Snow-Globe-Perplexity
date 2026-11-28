@@ -12,16 +12,33 @@ note "shell: bash $BASH_VERSION on $(uname -s)"
 note "folder: $ROOT"
 note "git core.autocrlf here: $(git config --show-origin --get-all core.autocrlf | tr '\n' ' ')"
 
-line git-version 0 'git --version'
-line node-version 0 'node --version'
-line clone 0 "git clone --filter=blob:none --single-branch --branch $PROOF_BRANCH https://github.com/BrandonChurch93/Snow-Globe-Perplexity.git Snow-Globe-Perplexity"
-line cd 0 'cd Snow-Globe-Perplexity'
+PROOF_GUIDE="$HELP/../../RENDER-ON-YOUR-PC.md"
+PROOF_GUIDE_SOURCE=bootstrap
+line git-version 0 git-version
+if [ "$WIN" = no ]; then line brew-version 0 brew-version '^Homebrew'; fi
+line node-version 0 node-version
+ONCE=1 line status-before-clone 1 status 'Cannot find module'
+[ "$LAST_OK" = yes ] || exit 1
+line clone 0 clone
+[ "$LAST_OK" = yes ] || exit 1
+line cd 0 cd
+[ "$LAST_OK" = yes ] || exit 1
 if [ "$WIN" = yes ]; then pwd -W > "$PROOF_OUT/clone-path.txt"; else pwd > "$PROOF_OUT/clone-path.txt"; fi
-note "clone head: $(git rev-parse HEAD), pushed: ${GITHUB_SHA:-}"
+PROOF_GUIDE="$PWD/RENDER-ON-YOUR-PC.md"
+PROOF_GUIDE_SOURCE=clone
+ONCE=1 line status-after-clone 0 status '^PASS: this is the clone of the film'
+[ "$LAST_OK" = yes ] || exit 1
+CLONE_HEAD="$(git rev-parse HEAD)"
+note "MEASURED clone head: $CLONE_HEAD, STATED pushed head: ${GITHUB_SHA:-unknown}"
+if [ -n "${GITHUB_SHA:-}" ] && [ "$CLONE_HEAD" != "$GITHUB_SHA" ]; then
+  note 'PROBLEM: the clone is not the head of this job'
+  exit 1
+fi
 STAMP_HASH="$(node -p "require('./render/STAMP.json').engineHash")"
 note "engine hash of this clone, before anything is installed: $(node "$HELP/engine-hash.mjs" .), the stamp's: $STAMP_HASH"
 
 # the same clone under the setting that changes line endings on Windows: the .gitattributes of the repo must win
+note 'proof only: a separate clone checks line endings, and a held file checks rename behavior'
 ( cd "$ROOT" && git -c core.autocrlf=true clone --quiet --filter=blob:none --single-branch --branch "$PROOF_BRANCH" https://github.com/BrandonChurch93/Snow-Globe-Perplexity.git "crlf check" )
 CRLF_HASH="$(node "$HELP/engine-hash.mjs" "$ROOT/crlf check")"
 note "engine hash of a clone made with core.autocrlf=true: $CRLF_HASH"
@@ -31,30 +48,30 @@ rm -rf "$ROOT/crlf check"
 # a file that another program holds: the tool's rename must wait for it
 note "$(node "$HELP/held-file.mjs" .)"
 
-line setup 0 'node tools/handoff.mjs setup'
+line setup 0 setup
 note "git status after setup: $(git status --short | tr '\n' '|')"
 
 # the doctor by itself: it names what is missing, each with its install line
-ONCE=1 line doctor-first any 'node tools/handoff.mjs doctor'
+ONCE=1 line doctor-first any doctor
 FIRST="$PROOF_OUT/doctor-first.out.txt"
 if [ "$WIN" = yes ]; then
   if grep -q 'winget install --id Gyan.FFmpeg' "$FIRST"; then
-    line install-ffmpeg any 'winget install --id Gyan.FFmpeg -e --source winget --accept-package-agreements --accept-source-agreements'
-    ONCE=1 line doctor-after-install any 'node tools/handoff.mjs doctor'
+    line install-ffmpeg any winget-ffmpeg
+    ONCE=1 line doctor-after-install any doctor
     if grep -q 'winget install --id Gyan.FFmpeg' "$PROOF_OUT/doctor-after-install.out.txt"; then
       note "PROBLEM: the winget line did not bring ffmpeg to this machine. It is brought by choco so that the rest can be proven"
       choco install ffmpeg -y --no-progress
     fi
   fi
-  grep -q 'winget install --id Google.Chrome' "$FIRST" && line install-chrome any 'winget install --id Google.Chrome -e --source winget --accept-package-agreements --accept-source-agreements'
+  grep -q 'winget install --id Google.Chrome' "$FIRST" && line install-chrome any winget-chrome
 else
-  grep -q 'brew install ffmpeg' "$FIRST" && line install-ffmpeg 0 'brew install ffmpeg'
-  grep -q 'brew install --cask google-chrome' "$FIRST" && line install-chrome 0 'brew install --cask google-chrome'
+  grep -q 'brew install ffmpeg' "$FIRST" && line install-ffmpeg 0 brew-ffmpeg
+  grep -q 'brew install --cask google-chrome' "$FIRST" && line install-chrome 0 brew-chrome
 fi
 if [ "${PROOF_REFUSAL:-no}" = yes ]; then
-  line doctor-refuses-software 1 'node tools/handoff.mjs doctor' 'draws in software'
+  line doctor-refuses-software 1 doctor 'draws in software'
 else
-  line doctor-by-itself any 'node tools/handoff.mjs doctor'
+  line doctor-by-itself any doctor
 fi
 
 # A real update of the browser in the middle. Hosted macOS machines update Chrome while a job runs (seen in runs
@@ -63,19 +80,35 @@ fi
 # The update that the tool's own test makes up has a line of its own further down and is not meant here.
 UPDATES=0
 UPDATE_WORDS='the browser was updated'
+guide_has() {
+  node "$HELP/guide-lines.mjs" has "$PROOF_GUIDE" "$1"
+}
+RENDER_GUARD="$(guide_has approve-render)" || { note 'PROBLEM: the render approval line is ambiguous'; exit 1; }
+UPLOAD_GUARD="$(guide_has approve-upload)" || { note 'PROBLEM: the upload approval line is ambiguous'; exit 1; }
+approve_render() {
+  [ "$RENDER_GUARD" = yes ] || return 0
+  ALSO_OK='is new since the test' ALSO_NOTE='new information since the test; the hosted approval is retried once' \
+    line "$1" 0 approve-render 'the full render is approved on this machine'
+  if [ "$LAST_CODE" = 1 ] && [ "$LAST_OK" = yes ]; then
+    line "$1-retry" 0 approve-render 'the full render is approved on this machine'
+  fi
+  [ "$LAST_OK" = yes ] || exit 1
+}
 real_update() { grep -- "$UPDATE_WORDS" "$1" 2> /dev/null | grep -qv 'made up'; }
 # the words that excuse a stopped render line, while the row can still be followed
 also_ok() { [ "$UPDATES" -lt 3 ] && echo "$UPDATE_WORDS"; }
 follow_row() {
   UPDATES=$((UPDATES + 1))
   note "a real update of the browser stopped the render ($(grep -- "$UPDATE_WORDS" "$1" | grep -v 'made up' | tail -1 | sed 's/: the browser was updated.*//' | sed 's/^FAIL: //' | tr -d '\r' | cut -c1-160)). The flow does what the row of step 2.2 says: the short test again, then the render line again"
-  line "test-after-real-update-$UPDATES" 0 'node tools/handoff.mjs test'
+  line "test-after-real-update-$UPDATES" 0 test
+  [ "$LAST_OK" = yes ] || exit 1
+  approve_render "approve-render-after-real-update-$UPDATES"
 }
 # render_line NAME WANT [what its output must say]: the render line, followed to its end
 render_line() {
   local name="$1"
   while :; do
-    ALSO_OK="$(also_ok)" line "$name" "$2" 'node tools/handoff.mjs render' "${3:-}"
+    ALSO_OK="$(also_ok)" line "$name" "$2" render "${3:-}"
     if [ "$LAST_CODE" = 1 ] && [ "$UPDATES" -lt 3 ] && real_update "$PROOF_OUT/$name.out.txt"; then
       follow_row "$PROOF_OUT/$name.out.txt"
       name="$1-after-update-$UPDATES"
@@ -88,20 +121,21 @@ render_line() {
 # from here on the switches of the tool's own tests are set
 export HANDOFF_TEST="$PROOF_SWITCHES"
 note "the switches of the tool's own tests from here on: $PROOF_SWITCHES"
-line doctor 0 'node tools/handoff.mjs doctor'
+line doctor 0 doctor
 
 if [ "$PROOF_MODE" = small ]; then
   # A short test that fails comes first, its failure made up by a switch of the tool's own tests: the row of step
   # 1.5 for a FAIL. One folder on the Desktop holds what the build thread needs, and the report names it.
   # The test that passes next takes that folder away.
-  HANDOFF_TEST="$PROOF_SWITCHES,floors-high" line test-fails 1 'node tools/handoff.mjs test' 'TO SEND'
+  HANDOFF_TEST="$PROOF_SWITCHES,floors-high" line test-fails 1 test 'TO SEND'
   note "$(node "$HELP/failed-test.mjs" . there small)"
-  line test 0 'node tools/handoff.mjs test'
+  line test 0 test
   note "$(node "$HELP/failed-test.mjs" . gone)"
   # step 2 begins with these four lines
-  line pull 0 'git pull --ff-only' 'Already up to date'
-  line setup-again 0 'node tools/handoff.mjs setup'
-  line doctor-again 0 'node tools/handoff.mjs doctor'
+  line pull 0 pull 'Already up to date'
+  [ "$LAST_OK" = yes ] || exit 1
+  line setup-again 0 setup
+  line doctor-again 0 doctor
   # on Windows the test film of the first test is held open meanwhile, as a player holds a film somebody looks at
   HOLDER=''
   SAYS=''
@@ -113,13 +147,19 @@ if [ "$PROOF_MODE" = small ]; then
     note "held open with no sharing while the test runs again, by process $HOLDER: $HELD_FILM"
     SAYS='is held open by another program'
   fi
-  line test-again 0 'node tools/handoff.mjs test' "$SAYS"
+  line test-again 0 test "$SAYS"
   if [ -n "$HOLDER" ]; then
     WINPID="$(cat "/proc/$HOLDER/winpid" 2> /dev/null)"
     kill "$HOLDER" 2> /dev/null
     [ -n "$WINPID" ] && MSYS_NO_PATHCONV=1 taskkill /PID "$WINPID" /F > /dev/null 2>&1
     note "the program that held the test film is ended"
   fi
+  [ "$LAST_OK" = yes ] || exit 1
+  if [ "$RENDER_GUARD" = yes ]; then
+    ONCE=1 line render-refuses-unapproved 1 render 'the full render is not approved on this machine'
+    [ "$LAST_OK" = yes ] || exit 1
+  fi
+  approve_render approve-render-before-first
   # the first call, which comes back while the render goes on in the background. Then wait until at least two
   # chunks are finished, and end the process that renders, and it alone. When a real update of the browser stops
   # the render before that, the row is followed and the first call is made again
@@ -129,7 +169,7 @@ if [ "$PROOF_MODE" = small ]; then
   while :; do
     touch "$PROOF_OUT/before-the-render"
     ENDED=''
-    ALSO_OK="$(also_ok)" ONCE=1 line "$FIRST" 3 'node tools/handoff.mjs render'
+    ALSO_OK="$(also_ok)" ONCE=1 line "$FIRST" 3 render
     if [ "$LAST_CODE" = 3 ]; then
       for i in $(seq 1 400); do
         [ "$(ls out/master/test/film-b/*.mp4 2> /dev/null | wc -l)" -ge 2 ] && break
@@ -174,7 +214,9 @@ if [ "$PROOF_MODE" = small ]; then
   # two pictures, and the films would not be joined (hosted macOS draws it differently every time).
   CAL1="$(node -p "require('./out/work/master/calibration.json').sha256")"
   note "finished chunks of film B on disk before the test in the middle of the render: $(ls out/master/test/film-b/*.mp4 2> /dev/null | wc -l | tr -d ' ')"
-  line test-in-mid-render 0 'node tools/handoff.mjs test' 'is kept and not drawn again'
+  line test-in-mid-render 0 test 'is kept and not drawn again'
+  [ "$LAST_OK" = yes ] || exit 1
+  approve_render approve-render-after-mid-test
   CAL2="$(node -p "require('./out/work/master/calibration.json').sha256")"
   note "the kept calibration picture before the test in the middle of the render: $CAL1; after it: $CAL2. $(node -p "'The second drawing of that test: ' + (((require('./out/work/handoff/test.json').calibration || {}).twice || {}).line || 'no line')")"
   [ "$CAL1" = "$CAL2" ] || note "PROBLEM: the test in the middle of the render replaced the kept calibration picture"
@@ -184,7 +226,9 @@ if [ "$PROOF_MODE" = small ]; then
   case ",$PROOF_SWITCHES," in *,browser-moved,*)
     line render-stops-for-browser 1 'node tools/handoff.mjs render' 'the browser was updated'
     note "finished chunks of film B on disk when the made up update stopped the render: $(ls out/master/test/film-b/*.mp4 2> /dev/null | wc -l | tr -d ' ')"
-    line test-after-update 0 'node tools/handoff.mjs test' 'is kept and not drawn again'
+    line test-after-update 0 test 'is kept and not drawn again'
+    [ "$LAST_OK" = yes ] || exit 1
+    approve_render approve-render-after-update
     CAL3="$(node -p "require('./out/work/master/calibration.json').sha256")"
     note "the kept calibration picture after the test that followed the made up update: $CAL3"
     [ "$CAL1" = "$CAL3" ] || note "PROBLEM: the test after the made up update replaced the kept calibration picture"
@@ -195,24 +239,36 @@ if [ "$PROOF_MODE" = small ]; then
   note "the chunk finished before the stop: sha256 $SHA1; after the render carried on: $SHA2"
   [ "$SHA1" = "$SHA2" ] || note "PROBLEM: a chunk that was finished before the stop was drawn again"
   render_line render-again 0 'already'
-  line check 0 'node tools/handoff.mjs check'
-  line deliver 0 'node tools/handoff.mjs deliver'
+  line check 0 check
+  if [ "$UPLOAD_GUARD" = yes ]; then
+    line approve-upload-before-deliver 1 approve-upload 'are not delivered to the Desktop yet'
+    [ "$LAST_OK" = yes ] || exit 1
+  fi
+  line deliver 0 deliver
   node "$HELP/after.mjs" "$PROOF_OUT"
-  # the upload on a machine without a GitHub sign in: everything is made ready, then it refuses with the one line
-  line upload-refuses 1 'node tools/handoff.mjs upload' 'is not signed in on this machine'
-  note "made ready for the upload: $(ls -l out/work/handoff/upload 2> /dev/null | awk 'NR>1 {printf "%s bytes: ", $5; for (i = 9; i <= NF; i++) printf "%s ", $i; printf "|"}')"
-  line clean 0 'node tools/handoff.mjs clean'
-  # after the clean the upload still finds the delivered files and the records
-  line upload-after-clean 1 'node tools/handoff.mjs upload' 'the work files are cleaned already'
+  if [ "$UPLOAD_GUARD" = yes ]; then
+    line approve-upload-refuses 1 approve-upload 'is not signed in on this machine'
+    [ "$LAST_OK" = yes ] || exit 1
+    line upload-refuses 1 upload 'the upload is not approved on this machine'
+  else
+    line upload-refuses 1 upload 'is not signed in on this machine'
+    note "made ready for the upload: $(ls -l out/work/handoff/upload 2> /dev/null | awk 'NR>1 {printf "%s bytes: ", $5; for (i = 9; i <= NF; i++) printf "%s ", $i; printf "|"}')"
+  fi
+  line clean 0 clean
+  if [ "$UPLOAD_GUARD" = yes ]; then
+    line upload-after-clean 1 upload 'the upload is not approved on this machine'
+  else
+    line upload-after-clean 1 upload 'the work files are cleaned already'
+  fi
 else
   case ",$PROOF_SWITCHES," in
     *,floors-high,*)
       # the row of step 1.5 for a FAIL, with real pictures at 3840 x 2160: every frame fails against floors raised
       # out of reach, and the folder on the Desktop holds the sheet and what this machine drew
-      line test-fails 1 'node tools/handoff.mjs test' 'TO SEND'
+      line test-fails 1 test 'TO SEND'
       note "$(node "$HELP/failed-test.mjs" . there uhd)"
       ;;
-    *) line test 0 'node tools/handoff.mjs test' ;;
+    *) line test 0 test ;;
   esac
   # with a stamp that is released the render line would start the real render here, so it is left out then
   if [ "$(node "$HELP/released.mjs" .)" = yes ]; then

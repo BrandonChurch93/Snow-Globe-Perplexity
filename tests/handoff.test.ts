@@ -1429,7 +1429,7 @@ describe('a short test that failed: the one folder for the build thread', () => 
     expect(lines[3]).toBe('  Brandon brings that folder into the build thread. The floors are ruled on there.')
     expect(L.toSendLines({ folder: 'x', files: 2, bytes: 5000, pictures: 0 })[2]).toBe('  holds    this report, the numbers (test.json), no picture, since the test drew none: 3 files, 0.0 MB')
   })
-  it('makes the folder on the Desktop, anew each time, and a test that passed takes it away', () => {
+  it('leaves a Desktop folder of unknown ownership and keeps the failed test inside the work folder', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'failed test '))
     try {
       const H = path.join(tmp, 'work')
@@ -1445,14 +1445,12 @@ describe('a short test that failed: the one folder for the build thread', () => 
       fs.mkdirSync(folder)
       fs.writeFileSync(path.join(folder, 'of an earlier test.png'), 'old')
       const kept = Work.keepFailedTest(ctx, { time, desktop })
-      expect(kept).toEqual({ folder, files: 4, bytes: 11, pictures: 2 })
-      expect(fs.readdirSync(folder).sort()).toEqual(['a-here-half.webp', 'contact-sheet.jpg', 'doctor.json', 'test.json'])
-      // a folder that is not the tool's own is left alone by a passing test; the tool's own goes
-      Work.dropFailedTest(ctx, { desktop })
-      expect(fs.existsSync(folder)).toBe(true)
+      expect(kept).toEqual({ folder: path.join(H, 'test-failed'), files: 4, bytes: 11, pictures: 2 })
+      expect(fs.readdirSync(folder)).toEqual(['of an earlier test.png'])
       fs.writeFileSync(path.join(folder, 'report-test.txt'), 'FAIL: made up')
       Work.dropFailedTest(ctx, { desktop })
-      expect(fs.existsSync(folder)).toBe(false)
+      expect(fs.readdirSync(folder).sort()).toEqual(['of an earlier test.png', 'report-test.txt'])
+      expect(fs.existsSync(path.join(H, 'test-failed'))).toBe(false)
       // no Desktop that can be written: the folder lies in the work folder
       const noDesk = path.join(tmp, 'a file, no folder')
       fs.writeFileSync(noDesk, '')

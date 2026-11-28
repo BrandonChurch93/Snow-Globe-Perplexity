@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
 import { readJson, rel } from './paths.mjs'
+import { launchHandoffBrowser, PROFILE_ENV } from './handoff-processes.mjs'
 
 export const SOFTWARE_FLAGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']
 // The second software renderer: Mesa lavapipe behind ANGLE's Vulkan back end. It is asked for by name,
@@ -49,10 +50,13 @@ export function findBrowser() {
 export const localArgs = (env = process.env) => String(env.SHOWCASE_LOCAL_ARGS ?? '').split(/\s+/).filter(Boolean)
 
 export async function launch({ local = false, headless = true, extraArgs = [] } = {}) {
+  const profile = process.env[PROFILE_ENV]
   if (local) {
+    if (profile) return launchHandoffBrowser(chromium, { channel: 'chrome', headless: false, args: [...COMMON_FLAGS, '--ignore-gpu-blocklist', '--enable-gpu-rasterization', ...localArgs(), ...extraArgs] }, profile)
     return chromium.launch({ channel: 'chrome', headless: false, args: [...COMMON_FLAGS, '--ignore-gpu-blocklist', '--enable-gpu-rasterization', ...localArgs(), ...extraArgs] })
   }
   const soft = softwareRenderer()
+  if (profile) return launchHandoffBrowser(chromium, { executablePath: findBrowser(), headless, args: [...soft.flags, ...COMMON_FLAGS, ...extraArgs], ...(soft.env ? { env: soft.env } : {}) }, profile)
   return chromium.launch({ executablePath: findBrowser(), headless, args: [...soft.flags, ...COMMON_FLAGS, ...extraArgs], ...(soft.env ? { env: soft.env } : {}) })
 }
 

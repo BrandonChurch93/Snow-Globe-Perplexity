@@ -13,6 +13,7 @@ import * as L from './lib/handoff.mjs'
 import * as X from './lib/handoff-machine.mjs'
 import * as A from './lib/handoff-approve.mjs'
 import { rel } from './lib/paths.mjs'
+import { stopVerifiedProcess } from './lib/handoff-processes.mjs'
 // on Windows: a rename that waits for a file another program holds, here and in every node process started from here
 import './lib/handoff-win-fs.mjs'
 
@@ -255,36 +256,20 @@ const jobFile = () => file('job.json')
 const seenFile = () => file('job-seen.json')
 const beatFile = () => file('heartbeat.json')
 
-function killTree(pid) {
-  try {
-    if (WIN) spawnSync(path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'taskkill.exe'), ['/PID', String(pid), '/T', '/F'], { windowsHide: true })
-    else {
-      try {
-        process.kill(-pid, 'SIGKILL')
-      } catch {}
-      process.kill(pid, 'SIGKILL')
-    }
-  } catch {}
+function killTree(record) {
+  return stopVerifiedProcess(record)
 }
 
-/** Ends what a stopped run left behind: its tools, its browsers and the lock of a render that is gone. */
+/** Ends only the verified tools and browsers a stopped handoff left behind. */
 function sweepLeftovers(ctx) {
   const kids = readOr(file('children.json'), [])
+  const browsers = X.stopLeftBrowsers(ctx.H)
   let ended = 0
-  for (const pid of kids) {
-    if (pid !== process.pid && X.alive(pid)) {
-      killTree(pid)
-      ended++
-    }
-  }
+  if (Array.isArray(kids)) for (const child of kids) if (killTree(child)) ended++
   try {
     fs.rmSync(file('children.json'), { force: true })
   } catch {}
-  const browsers = X.stopLeftBrowsers()
-  try {
-    fs.rmSync(rel('out', 'work', 'render.lock'), { force: true })
-  } catch {}
-  if (ended || browsers) ctx.say(`a stopped run had left ${ended} ${ended === 1 ? 'tool' : 'tools'} and ${browsers} ${browsers === 1 ? 'browser' : 'browsers'} behind; they are ended`)
+  if (ended || browsers) ctx.say(`MEASURED: ended ${ended} recorded ${ended === 1 ? 'tool' : 'tools'} and ${browsers} recorded ${browsers === 1 ? 'browser' : 'browsers'} left by the handoff`)
 }
 
 async function worker(cmd, T) {
@@ -595,7 +580,13 @@ async function main() {
       ctx.note(`===== ${cmd} ended by the tool: it did not end within ${limit} s =====`)
       deathReport(cmd, why, { died: false, lines: ctx.lines })
         .then((where) => {
-          for (const pid of readOr(file('children.json'), [])) if (pid !== process.pid && X.alive(pid)) killTree(pid)
+          // what the word started is ended with it: the tools on record, each by its number and its start, and the
+          // browsers this clone recorded with a profile of its own
+          const kids = readOr(file('children.json'), [])
+          if (Array.isArray(kids)) for (const child of kids) killTree(child)
+          try {
+            X.stopLeftBrowsers(H)
+          } catch {}
           end('FAIL', why, where)
         })
         .catch(() => end('FAIL', why))

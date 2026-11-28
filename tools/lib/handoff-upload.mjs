@@ -13,6 +13,8 @@ import * as L from './handoff.mjs'
 import * as X from './handoff-machine.mjs'
 import * as W from './handoff-work.mjs'
 import { zipWrite, zipRead } from './handoff-zip.mjs'
+import { privateRecord, redactRecordText, releaseBody, releaseMachine, safeDraftIdentity } from './handoff-record-privacy.mjs'
+import { readAssetStream, sha256Hex } from './handoff-release-assets.mjs'
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const mb = (bytes) => (bytes < 1e5 ? `${bytes} bytes` : `${(bytes / 1e6).toFixed(1)} MB`)
@@ -124,7 +126,7 @@ async function sendMissing(ctx, E, release, wanted, { rounds = 2, pauseMs = 2000
     const list = await api(ctx, E, 'GET', `repos/${E.slug}/releases/${release.id}/assets?per_page=100`)
     if (!list.ok || !Array.isArray(list.json)) return { ok: false, why: `the files of the release could not be listed (${list.said ?? 'GitHub gave no list'})`, sent }
     const plan = L.uploadPlan(wanted, list.json)
-    ctx.say(`on the release already: ${plan.keep.length} of ${wanted.length} whole${plan.drop.length ? `, ${plan.drop.length} short or not finished` : ''}. To send: ${plan.send.length ? plan.send.map((w) => w.label).join(', ') : 'nothing'}`)
+    ctx.say(`MEASURED from the listing: ${plan.keep.length} of ${wanted.length} look whole${plan.drop.length ? `, ${plan.drop.length} listed as incomplete or different` : ''}. Their bytes are not verified yet. To send: ${plan.send.length ? plan.send.map((w) => w.label).join(', ') : 'nothing'}`)
     let failed = null
     for (const d of plan.drop) {
       ctx.say(`removing ${d.name} from the release: ${d.why}`)
@@ -154,11 +156,40 @@ async function sendMissing(ctx, E, release, wanted, { rounds = 2, pauseMs = 2000
   }
 }
 
-/** The release as GitHub holds it now, against what was sent. */
-async function readBack(ctx, E, id, wanted) {
-  const r = await api(ctx, E, 'GET', `repos/${E.slug}/releases/${id}`)
+/** Proof from the listing is separate from proof of the actual downloaded bytes. */
+export async function readBack(ctx, E, id, wanted, { get = api, fetchAsset = readAssetStream } = {}) {
+  const r = await get(ctx, E, 'GET', `repos/${E.slug}/releases/${id}`)
   if (!r.ok || !r.json) return { release: null, rows: [{ check: 'the release, read back', found: `it could not be read (${r.said ?? 'GitHub gave no answer'})`, wanted: 'read back from GitHub', pass: false }] }
-  return { release: r.json, rows: L.readBackRows(wanted, r.json) }
+  const assets = Array.isArray(r.json.assets) ? r.json.assets.filter((a) => a && typeof a.name === 'string') : []
+  const release = { ...r.json, assets }
+  const rows = L.readBackRows(wanted, release)
+  if (release.draft !== true) return { release, rows }
+  rows[wanted.length].found = 'a draft, visible to everyone with write access to the repository'
+  for (const [index, w] of wanted.entries()) {
+    const matches = assets.filter((a) => a.name === w.name)
+    const a = matches[0]
+    const check = `downloaded from the draft: ${w.name}`
+    const validListedHash = /^sha256:[0-9a-f]{64}$/.test(a?.digest ?? '')
+    rows[index].wanted = `STATED: ${rows[index].wanted}`
+    if (a) rows[index].found = `MEASURED from the listing: ${rows[index].found}`
+    if (a && !validListedHash) {
+      rows[index].pass = false
+      rows[index].found = `MEASURED: ${a.size} listed bytes; GitHub did not list a valid SHA-256`
+    }
+    const expected = sha256Hex(w.sha256)
+    const want = expected ? `STATED: ${w.bytes} bytes and SHA-256 ${w.sha256}` : 'the SHA-256 of the exact file sent'
+    if (matches.length !== 1 || !Number.isSafeInteger(a?.id) || a.id <= 0) {
+      rows.push({ check, found: 'no single matching asset to download', wanted: want, pass: false })
+      continue
+    }
+    ctx.say(`reading back ${w.label} to measure its SHA-256`)
+    const read = await fetchAsset(ctx, E, a.id).catch(() => ({ sha256: null, bytes: null, why: 'the download failed' }))
+    const proven = sha256Hex(read.sha256) && read.bytes === w.bytes
+    const count = read.bytes === null ? 'UNKNOWN bytes received' : `MEASURED: ${read.bytes} bytes received`
+    const found = !read.sha256 ? `no SHA-256 from the download: ${read.why}; ${count}` : `MEASURED: downloaded ${read.bytes} bytes, SHA-256 ${read.sha256}`
+    rows.push({ check, found, wanted: want, pass: expected && proven && read.sha256 === w.sha256 })
+  }
+  return { release, rows }
 }
 
 function heart(ctx, what) {
@@ -197,12 +228,13 @@ function walk(dir, skip, out = []) {
 export function recordFiles(ctx, mode) {
   const names = new Map()
   const add = (file, name) => {
+    if (privateRecord(name)) return
     try {
       const st = fs.statSync(file)
       if (st.isFile() && st.size <= 64e6 && !names.has(name)) names.set(name, file)
     } catch {}
   }
-  const skip = (d) => ['upload', 'upload-test'].includes(path.basename(d)) && path.dirname(d) === ctx.H
+  const skip = (d) => privateRecord(W.short(d)) || (path.dirname(d) === ctx.H && ['upload', 'upload-test'].includes(path.basename(d)))
   for (const root of [ctx.H, W.chunksDir(mode), W.finalsDir(mode), rel('out', 'work', 'master')]) {
     for (const f of walk(root, skip)) if (RECORD.test(f) && !(path.dirname(f) === ctx.H && LIVE.test(path.basename(f)))) add(f, W.short(f))
   }
@@ -215,22 +247,25 @@ export function recordFiles(ctx, mode) {
 
 /** Writes the records zip into out/work/handoff/upload and reads it back whole. */
 export function recordsZip(ctx, mode) {
-  const entries = recordFiles(ctx, mode)
+  const entries = recordFiles(ctx, mode).map((e) => ({ ...e, data: redactRecordText(fs.readFileSync(e.file, 'utf8')) }))
   const file = path.join(ctx.H, 'upload', L.recordsName())
   fs.mkdirSync(path.dirname(file), { recursive: true })
   const made = zipWrite(file, entries)
   const back = zipRead(file)
-  if (back.length !== entries.length) throw new Error(`the records zip holds ${back.length} files where ${entries.length} were put in`)
+  if (back.length !== entries.length) throw new Error(`the records zip holds MEASURED ${back.length} files where MEASURED ${entries.length} were put in`)
   return { file, entries: made.entries, bytes: made.bytes }
 }
 
 /** The records zip of this render: made now while the work files are there, or the one that "clean" made before it deleted them. */
-function recordsFor(ctx, mode) {
+export function recordsFor(ctx, mode) {
   const file = path.join(ctx.H, 'upload', L.recordsName())
   const cleaned = !fs.existsSync(path.join(ctx.H, 'render-state.json'))
   if (cleaned && fs.existsSync(file)) {
-    ctx.say('records    the work files are cleaned already; the zip that was made before they were deleted is sent')
-    return { file, entries: zipRead(file).length, bytes: fs.statSync(file).size }
+    ctx.say('records    the work files are cleaned already; the earlier zip is read and redacted before it can be sent')
+    const kept = zipRead(file)
+    const redacted = kept.filter((e) => !privateRecord(e.name)).map((e) => ({ name: e.name, data: Buffer.from(redactRecordText(e.data.toString('utf8'))) }))
+    if (redacted.length !== kept.length || redacted.some((e, i) => !e.data.equals(kept[i].data))) return zipWrite(file, redacted)
+    return { file, entries: kept.length, bytes: fs.statSync(file).size }
   }
   return recordsZip(ctx, mode)
 }
@@ -302,13 +337,17 @@ export async function upload(ctx) {
   const hist = W.renderHistory(ctx.H)
   const ended = hist.sessions.map((s) => s.end ?? s.last).filter(Boolean).pop()
   const date = state?.date ?? ended ?? checked.time ?? new Date().toISOString()
-  const machine = state?.machine ?? os.hostname()
+  const doc = W.readOr(path.join(ctx.H, 'doctor.json'))
+  const machine = releaseMachine({ platform: process.platform, cards: doc?.machine?.cards ?? [], renderer: doc?.renderer ?? '' })
   const made = state?.made ?? new Date().toISOString()
   const names = L.releaseNames({ date, engineHash: stamp?.engineHash ?? 'unknown', machine, small: mode.small })
+  const unsafeDraft = 'the earlier draft has an old or changed name or description. It is left alone and nothing is sent. Ask the remote team to review that draft'
+  if (state?.id && (state.safeName !== true || state.tag !== names.tag)) return refuse(unsafeDraft)
   // the records and the sums, and no file of 2,000 MB or more: all of it before the first byte is sent
   const zip = recordsFor(ctx, mode)
   const records = { kind: 'records', file: zip.file, bytes: zip.bytes, sha256: L.sha256File(zip.file), label: L.recordsName(), name: L.assetName(L.recordsName()) }
   const commit = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: rel(), encoding: 'utf8', windowsHide: true })
+  const body = releaseBody({ machine, engineHash: stamp?.engineHash ?? 'unknown', commit: commit.status === 0 ? commit.stdout.trim() : 'not read', renderTime: date })
   const sumsFile = path.join(ctx.H, 'upload', L.sumsName())
   fs.writeFileSync(sumsFile, L.sumsText({ title: names.title, tag: names.tag, made, engineHash: stamp?.engineHash ?? 'unknown', commit: commit.status === 0 ? commit.stdout.trim() : 'not read', machine, files: [...files, records] }))
   const sums = { kind: 'sums', file: sumsFile, bytes: fs.statSync(sumsFile).size, sha256: L.sha256File(sumsFile), label: L.sumsName(), name: L.assetName(L.sumsName()) }
@@ -342,8 +381,8 @@ export async function upload(ctx) {
       release = all.all.find((r) => r.draft === true && r.tag_name === names.tag) ?? null
       if (release) ctx.say(`a draft of this render is on GitHub already (${release.html_url}); it is carried on`)
     }
+    if (release && !safeDraftIdentity(release, names, body)) return refuse(unsafeDraft)
     if (!release) {
-      const body = `Made by "node tools/handoff.mjs upload" on the machine ${machine}. Engine hash ${stamp?.engineHash ?? 'unknown'}, commit ${commit.status === 0 ? commit.stdout.trim() : 'not read'}. A draft: it is published to no one and makes no tag. The sums of every file are in "${L.sumsName()}".`
       const r = await api(ctx, E, 'POST', `repos/${E.slug}/releases`, { fields: { tag_name: names.tag, name: names.title, body, draft: true } })
       if (!r.ok && (r.kind === 'not found' || r.kind === 'not allowed')) return refuse(L.mayNotWrite(E.slug))
       if (!r.ok && r.kind === 'sign in') return refuse(L.notSignedIn())
@@ -351,7 +390,7 @@ export async function upload(ctx) {
       release = r.json
       ctx.say(`a draft release is made: "${names.title}"`)
     }
-    writeJson(stateFile, { id: release.id, tag: names.tag, title: names.title, url: release.html_url, slug: E.slug, engineHash: stamp?.engineHash, small: mode.small, date, machine, made })
+    writeJson(stateFile, { id: release.id, tag: names.tag, title: names.title, url: release.html_url, slug: E.slug, engineHash: stamp?.engineHash, small: mode.small, date, machine, made, safeName: true })
     ctx.say(`release    ${release.html_url}`)
     const went = await sendMissing(ctx, E, release, wanted)
     if (!went.ok) return { pass: false, why: `${went.why}. Nothing that was sent is lost. Run the same line again, and it sends only what is missing or short: node tools/handoff.mjs upload` }
@@ -359,7 +398,7 @@ export async function upload(ctx) {
     const pass = back.rows.every((r) => r.pass !== false)
     return {
       pass,
-      why: pass ? `the draft release "${names.title}" holds the ${wanted.length} files, each read back by its name, its bytes and its sum: ${release.html_url}` : `the release read back is not what was sent (${back.rows.filter((r) => r.pass === false).map((r) => `${r.check}: ${r.found}`).slice(0, 3).join('; ')}): ${release.html_url}`,
+      why: pass ? `the draft release "${names.title}" holds the files. MEASURED: all ${wanted.length} were downloaded and their SHA-256 sums matched: ${release.html_url}` : `the release read back is not what was sent (${back.rows.filter((r) => r.pass === false).map((r) => `${r.check}: ${r.found}`).slice(0, 3).join('; ')}): ${release.html_url}`,
       rows: back.rows,
       release: { id: release.id, tag: names.tag, title: names.title, url: release.html_url, repo: E.slug },
       files: wanted.map((w) => ({ kind: w.kind, name: w.name, label: w.label, bytes: w.bytes, sha256: w.sha256 })),
@@ -389,7 +428,7 @@ export async function uploadTest(ctx) {
   fs.rmSync(dir, { recursive: true, force: true })
   fs.mkdirSync(dir, { recursive: true })
   const made = new Date().toISOString()
-  const machine = os.hostname()
+  const machine = releaseMachine({ platform: process.platform })
   const names = L.testReleaseNames({ time: made, machine })
   const item = (label, kind) => {
     const file = path.join(dir, label)
@@ -404,7 +443,7 @@ export async function uploadTest(ctx) {
   const wanted = [...files, sums, records]
   const total = wanted.reduce((n, w) => n + w.bytes, 0)
   row('the stand-ins', `${wanted.length} files made by the test itself, ${total} bytes in all, every name with the word Test in it`, 'a few bytes each, and no film', wanted.every((w) => /test/i.test(w.label)) && total < 4096 && !L.tooLarge(wanted).length)
-  ctx.say(`the upload's own test: ${wanted.length} stand-in files of ${total} bytes in all go to a draft of ${E.slug}${g.isPrivate ? '' : ', which is not private: a draft is shown to no one, and these are no film'}`)
+  ctx.say(`the upload's own test: MEASURED ${wanted.length} stand-in files of ${total} bytes in all go to a draft of ${E.slug}. It can be seen by everyone with write access to the repo; there is no film`)
   heart(ctx, "the upload's test")
   let id = null
   try {
@@ -431,16 +470,8 @@ export async function uploadTest(ctx) {
     row('carrying on', second.ok ? `${second.sent.length} files sent, the 2 that were whole were not sent again` : second.why, '4 sent, 2 left as they were', second.ok && second.sent.length === 4 && !second.sent.includes(wanted[0].name) && !second.sent.includes(wanted[1].name))
     const back = await readBack(ctx, E, id, wanted)
     rows.push(...back.rows)
-    // byte for byte, which the stand-ins are small enough for
-    let same = 0
-    for (const w of wanted) {
-      const a = (back.release?.assets ?? []).find((x) => x.name === w.name)
-      if (!a) continue
-      const got = await api(ctx, E, 'GET', `repos/${E.slug}/releases/assets/${a.id}`, { accept: 'application/octet-stream' })
-      if (got.ok && got.bytes.equals(fs.readFileSync(w.file))) same++
-      else ctx.say(`read back, ${w.label}: ${got.ok ? `${got.bytes.length} bytes that are not the file` : got.said}`)
-    }
-    row('read back byte for byte', `${same} of ${wanted.length} files fetched from the release are the files that were sent`, 'every one', same === wanted.length)
+    const same = back.rows.filter((r) => r.check.startsWith('downloaded from the draft: ') && r.pass === true).length
+    row('read back and hashed', `MEASURED: ${same} of ${wanted.length} files were downloaded with the expected SHA-256`, 'every one', same === wanted.length)
   } finally {
     // the one draft this test made, by its id, and no other
     let all = { ok: false, said: 'not asked', all: [] }
@@ -467,7 +498,7 @@ export async function uploadTest(ctx) {
   const pass = rows.every((r) => r.pass !== false)
   return {
     pass,
-    why: pass ? `the upload's test passed on ${E.slug}: ${wanted.length} stand-in files of ${total} bytes in all went to a draft, a short one was removed and sent again, all were read back byte for byte, and the draft ${id} is removed. No release with the test's mark is left` : `the upload's test failed: ${rows.filter((r) => r.pass === false).map((r) => `${r.check}: ${r.found}`).slice(0, 3).join('; ')}`,
+    why: pass ? `the upload's test passed on ${E.slug}: MEASURED ${wanted.length} stand-in files of ${total} bytes went to a draft, a short one was removed and sent again, all were downloaded and matched by SHA-256, and draft ${id} was removed. No release with the test's mark is left` : `the upload's test failed: ${rows.filter((r) => r.pass === false).map((r) => `${r.check}: ${r.found}`).slice(0, 3).join('; ')}`,
     rows,
     release: { id, tag: names.tag, repo: E.slug },
   }
