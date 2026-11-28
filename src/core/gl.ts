@@ -32,7 +32,7 @@ function testTarget(gl: WebGL2RenderingContext, internal: number, type: number):
   return ok
 }
 
-export function createGfx(canvas: HTMLCanvasElement, opts: { deny: string[]; preserve: boolean }): Gfx {
+export function createGfx(canvas: HTMLCanvasElement, opts: { deny: string[]; preserve: boolean; visitor?: boolean }): Gfx {
   const gl = canvas.getContext('webgl2', {
     alpha: false,
     antialias: false,
@@ -57,6 +57,9 @@ export function createGfx(canvas: HTMLCanvasElement, opts: { deny: string[]; pre
   const aniso = gl.getExtension('EXT_texture_filter_anisotropic')
   const dbg = gl.getExtension('WEBGL_debug_renderer_info')
   const renderer = new THREE.WebGLRenderer({ canvas, context: gl, antialias: false, alpha: false, powerPreference: 'high-performance' })
+  // At a program's first use three asks the compiler what it said and writes it to the console. The render tools read those
+  // lines. A visitor's page has no reader for them, and Direct3D has a warning for a shader of ours that draws as it should.
+  if (opts.visitor) renderer.debug.checkShaderErrors = false
   renderer.outputColorSpace = THREE.LinearSRGBColorSpace
   renderer.toneMapping = THREE.NoToneMapping
   renderer.autoClear = true

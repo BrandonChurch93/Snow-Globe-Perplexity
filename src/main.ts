@@ -39,11 +39,13 @@ if (!capture && document.visibilityState === 'visible') {
     setTimeout(resolve, PAGE_FRAME_MS)
   })
 }
-// A page that draws for a visitor answers a context the browser takes away (src/app/lost.ts). A capture page is watched by its tool.
-const context = capture ? null : new ContextWatch(canvas)
+// A page that draws for a visitor answers a context the browser takes away (src/app/lost.ts) and does not ask the compiler
+// what it said of a shader (src/core/gl.ts). A capture page is watched by its tool, which reads both.
+const visitor = !capture
+const context = visitor ? new ContextWatch(canvas) : null
 const gfx = (() => {
   try {
-    return createGfx(canvas, { deny: params.deny, preserve: capture })
+    return createGfx(canvas, { deny: params.deny, preserve: capture, visitor })
   } catch (e) {
     const ui = document.getElementById('ui')
     if (!capture && ui) void import('./ui/cannot').then((m) => m.showCannot(ui))

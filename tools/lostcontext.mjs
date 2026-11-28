@@ -26,6 +26,8 @@ import { serve } from './lib/server.mjs'
  *     --local   the installed Chrome with its graphics card, as a visitor has it; without it the pinned browser
  *     --limit   the seconds a page is given to come to a mark
  *     --ready   the seconds the case `restore` waits for every season to be made before it takes the context
+ *     --until   what the case `usual` waits for: made (every season made, as it is) or detail (the whole pictures of
+ *               the season on show have arrived, which is what tools/firstlook.mjs calls ready)
  *
  * Files: out/work/context/<name>/: a picture before the loss, right after it, a moment later, and when the page is back
  * or stays as it is; a sheet of them for each case; lines.txt and result.json. It ends with 1 when a case fails.
@@ -44,6 +46,7 @@ const sizes = str('sizes', 'hd,phone').split(',')
 const season = str('season', cfg.seasons[0])
 const LIMIT = Number(str('limit', '300')) * 1000
 const READY = Number(str('ready', '300')) * 1000
+const UNTIL = str('until', 'made') === 'detail' ? 'detail' : 'made'
 const local = args.local === true
 const dir = ensureDir(outWork('context', name))
 for (const c of cases) if (!ALL.includes(c)) throw new Error(`no case ${c}: ${ALL.join(', ')}`)
@@ -261,16 +264,16 @@ async function run(id, size) {
       await sleep(1000)
     }
     if (id === 'usual') {
-      const made = await mark(page, () => document.documentElement.dataset.made === 'ready', READY)
-      need(made, `the seasons were not all made ${READY / 1000} s after the page was whole`)
+      const made = await mark(page, UNTIL === 'detail' ? () => document.documentElement.dataset.detail === 'ready' : () => document.documentElement.dataset.made === 'ready', READY)
+      need(made, UNTIL === 'detail' ? `the whole pictures had not arrived ${READY / 1000} s after the page was whole` : `the seasons were not all made ${READY / 1000} s after the page was whole`)
       await sleep(2000)
       // A picture at rest, and whether the page stands still: two pictures 1.5 s apart, equal in every pixel or not.
       const raw = async (k, label) => {
-        const s = await shot(k, label)
-        const pixels = await sharp(s.file).removeAlpha().raw().toBuffer()
+        await shot(k, label)
+        const pixels = await sharp(path.join(dir, `${tag}-${k}.png`)).removeAlpha().raw().toBuffer()
         return { pixels, sha: crypto.createHash('sha256').update(pixels).digest('hex').slice(0, 16) }
       }
-      const a = await raw('1-rest', 'at rest, every season made')
+      const a = await raw('1-rest', UNTIL === 'detail' ? 'at rest, the whole pictures arrived' : 'at rest, every season made')
       await sleep(1500)
       const b = await raw('2-rest-later', '1.5 s later')
       let differ = 0
@@ -359,7 +362,7 @@ async function run(id, size) {
         const second = loads
         const t1 = Date.now()
         await lose(page)
-        await shot('5-lost-again', 'right after the second loss')
+        await shot('5-lost-again', 'after the second loss')
         const none = await loadsAgain(second, WAIT_MS + LATE_MS + 3000)
         need(none === null, 'the page loaded again after a second loss')
         const stays = await read(page)
