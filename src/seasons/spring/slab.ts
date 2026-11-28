@@ -147,6 +147,9 @@ if (uPetalMode > 0.5) petalP.y = 0.07;
 vec4 petalW = modelMatrix * vec4(petalP, 1.0);
 vec4 petalV = viewMatrix * petalW;
 gl_Position = projectionMatrix * petalV;
+#ifdef STAGE_STREAK
+gl_Position = stageGustSeen(gl_Position);
+#endif
 vStageWorld = petalW.xyz;
 vStageLocal = (uGlobeInv * petalW).xyz;
 vStageAux = vec3(0.0, -petalV.z, length(petalV.xyz));
@@ -450,6 +453,6 @@ export function update(moment: KitMoment): void {
   // The arrival cues the puff early; blend that clock in from zero at actual contact.
   uniforms.uJump.value.y = petalContactShare(moment.sinceLanding)
   const f = moment.frame
-  const flies = f.from !== f.to && (f.from.season === 'spring' || f.to.season === 'spring') && gustStreaks(f.sample, f.to.season === 'spring')
+  const flies = f.from !== f.to && (f.from.season === 'spring' || f.to.season === 'spring') && gustStreaks(f.sample, f.to.season === 'spring', f.blurMm, f.pose.focusMm)
   for (const show of inAir) show(flies)
 }
