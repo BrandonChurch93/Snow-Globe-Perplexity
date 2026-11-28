@@ -52,6 +52,12 @@ fs.mkdirSync(out, { recursive: true })
 
 const cfg = JSON.parse(fs.readFileSync(path.join(path.dirname(dist), 'config', 'showcase.json'), 'utf8'))
 const nextOf = (s) => cfg.seasons[(cfg.seasons.indexOf(s) + 1) % cfg.seasons.length]
+const files = new Map()
+if (fs.existsSync(path.join(dist, 'assets', 'index.json')))
+  for (const set of Object.values(JSON.parse(fs.readFileSync(path.join(dist, 'assets', 'index.json'), 'utf8')).sets ?? {}))
+    for (const list of Object.values(set))
+      for (const f of list) if (!(files.get(f.bytes) ?? []).includes(f.path)) files.set(f.bytes, [...(files.get(f.bytes) ?? []), f.path])
+const named = (what) => String(what ?? '').replace(/file of (\d+) bytes/, (all, n) => files.get(Number(n))?.join(' or ') ?? all)
 const build = fs.existsSync(path.join(dist, 'build.json')) ? fs.readFileSync(path.join(dist, 'build.json'), 'utf8').trim() : 'no build.json'
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const utc = () => new Date().toISOString().slice(11, 19)
@@ -123,6 +129,19 @@ function watch([pieces, profile]) {
       return n
     }
     const size = (x) => (x && typeof x === 'object' && 'width' in x ? `${x.width}x${x.height}` : '')
+    // A picture is told by the bytes of the file it was decoded from: the list of assets turns the bytes into a path.
+    const pictures = new WeakMap()
+    const decode = window.createImageBitmap
+    window.createImageBitmap = function (from, ...rest) {
+      const o = rest.find((x) => x && typeof x === 'object')
+      const of = from instanceof Blob ? `file of ${from.size} bytes` : (pictures.get(from) ?? from?.constructor?.name ?? '')
+      const grown = o?.resizeWidth ? `, made ${o.resizeWidth}x${o.resizeHeight} from ${size(from)}` : ''
+      return decode.apply(this, [from, ...rest]).then((bitmap) => {
+        pictures.set(bitmap, `${of}${grown}`)
+        return bitmap
+      })
+    }
+    const picture = (x) => (x && typeof x === 'object' ? `, ${x.constructor?.name ?? ''}${pictures.has(x) ? ` of the ${pictures.get(x)}` : ''}` : '')
     const WHAT = {
       compileShader: (a) => `${(sources.get(a[0]) ?? '').length} chars`,
       linkProgram: (a) => nameOf(a[0]),
@@ -142,8 +161,8 @@ function watch([pieces, profile]) {
       drawRangeElements: (a) => `${nameOf(current)}, ${a[3]} indices`,
       bufferData: (a) => `${typeof a[1] === 'number' ? a[1] : (a[1]?.byteLength ?? 0)} bytes`,
       bufferSubData: (a) => `${a[2]?.byteLength ?? 0} bytes`,
-      texImage2D: (a) => (a.length >= 9 ? `${a[3]}x${a[4]}` : size(a[5])),
-      texSubImage2D: (a) => (a.length >= 9 ? `${a[4]}x${a[5]}` : size(a[6])),
+      texImage2D: (a) => (a.length >= 9 ? `${a[3]}x${a[4]}${picture(a[8])}` : `${size(a[5])}${picture(a[5])}`),
+      texSubImage2D: (a) => (a.length >= 9 ? `${a[4]}x${a[5]}${picture(a[8])}` : `${size(a[6])}${picture(a[6])}`),
       texStorage2D: (a) => `${a[3]}x${a[4]}, ${a[1]} levels`,
       compressedTexImage2D: (a) => `${a[3]}x${a[4]}`,
       compressedTexSubImage2D: (a) => `${a[4]}x${a[5]}`,
@@ -489,7 +508,7 @@ async function load(browser, base, season, quality, press) {
     inShake: sentAt !== null && from >= sentAt && freed !== null && from < freed,
     overPress: sentAt !== null && from < sentAt && from + ms > sentAt,
   }))
-  const pieces = got.pieces === null ? null : got.pieces.map(([from, ms, call, what]) => ({ from: rel(from), at: from, ms, call, what }))
+  const pieces = got.pieces === null ? null : got.pieces.map(([from, ms, call, what]) => ({ from: rel(from), at: from, ms, call, what: named(what) }))
   if (pieces)
     for (const s of stands) {
       const from = s.from + (first ?? 0)

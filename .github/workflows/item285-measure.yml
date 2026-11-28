@@ -2,7 +2,8 @@
 # Each job builds the page at one commit on a hosted machine, opens it in the installed Chrome and reads, for a page
 # that begins in one season, at low, medium and plain: the renderer the browser reports, the first picture, the mark
 # "ready" and every stand of 200 ms and more, for a press 5 s and 30 s after the first picture and one after "ready".
-# Twice: origin main as it was when the round began (the before) and the head of the push (the after).
+# Twice: origin main as it stood at this push, with what landed there since the round began (named main), and the
+# head of the push (the after). The main of the round's beginning, 3db81e01, was read by the first three runs.
 # Then the page is built once more with its names kept and loaded twice at low with every long call of the card
 # named and the browser's own profile of the thread, so that a stand can be called by what it is.
 # The reading is done by tools/item285b/measure.mjs, which changes nothing of the page.
@@ -31,7 +32,7 @@ jobs:
         season: [winter, spring]
         # A tree with no head named is the head of the push itself.
         tree:
-          - { name: before, head: 3db81e01a3084140ff7c322a15adaf2c60d33880 }
+          - { name: main, head: 86379968de0cd8a639b9673cb55224d33c962a34 }
           - { name: after, head: '' }
     steps:
       - name: the tool of this push
